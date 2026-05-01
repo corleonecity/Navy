@@ -2,73 +2,110 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>GTA V Map Viewer</title>
+  <title>GTA V Map (Custom Engine)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
+      overflow: hidden;
       background: #111;
       color: white;
+      font-family: Arial, sans-serif;
     }
 
     header {
-      padding: 10px;
+      position: absolute;
+      top: 0;
+      width: 100%;
       text-align: center;
+      padding: 10px;
       background: #222;
-      font-size: 20px;
+      z-index: 10;
     }
 
-    #map {
-      width: 100%;
-      height: calc(100vh - 50px);
+    canvas {
+      display: block;
     }
   </style>
 </head>
 <body>
 
-<header>
-  GTA V Map Viewer (Los Santos)
-</header>
-
-<div id="map"></div>
-
-<!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<header>GTA V Map Viewer (Custom)</header>
+<canvas id="mapCanvas"></canvas>
 
 <script>
-  // Map initialisieren
-  const map = L.map('map', {
-    crs: L.CRS.Simple,
-    minZoom: -2
-  });
+const canvas = document.getElementById("mapCanvas");
+const ctx = canvas.getContext("2d");
 
-  // Größe des Bildes (angepasst für GTA Map)
-  const bounds = [[0,0], [8192,8192]];
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-  // GTA Map Bild (frei verfügbare Beispiel-Map)
-  const image = L.imageOverlay(
-    'https://i.imgur.com/7Jb6KQm.jpg',
-    bounds
-  ).addTo(map);
+let scale = 1;
+let offsetX = 0;
+let offsetY = 0;
+let isDragging = false;
+let startX, startY;
 
-  map.fitBounds(bounds);
+const mapImage = new Image();
+mapImage.src = "https://i.imgur.com/7Jb6KQm.jpg";
 
-  // Beispiel Marker
-  const marker = L.marker([4000, 4000]).addTo(map);
-  marker.bindPopup("Los Santos Mitte");
+mapImage.onload = () => draw();
 
-  // Klick Event
-  map.on('click', function(e) {
-    L.popup()
-      .setLatLng(e.latlng)
-      .setContent("Koordinaten: " + e.latlng.toString())
-      .openOn(map);
-  });
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const width = mapImage.width * scale;
+  const height = mapImage.height * scale;
+
+  ctx.drawImage(mapImage, offsetX, offsetY, width, height);
+}
+
+// Zoom mit Mausrad
+canvas.addEventListener("wheel", (e) => {
+  e.preventDefault();
+
+  const zoom = e.deltaY < 0 ? 1.1 : 0.9;
+  scale *= zoom;
+
+  draw();
+});
+
+// Drag starten
+canvas.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  startX = e.clientX - offsetX;
+  startY = e.clientY - offsetY;
+});
+
+// Drag bewegen
+canvas.addEventListener("mousemove", (e) => {
+  if (!isDragging) return;
+
+  offsetX = e.clientX - startX;
+  offsetY = e.clientY - startY;
+
+  draw();
+});
+
+// Drag stoppen
+canvas.addEventListener("mouseup", () => isDragging = false);
+canvas.addEventListener("mouseleave", () => isDragging = false);
+
+// Klick Koordinaten
+canvas.addEventListener("click", (e) => {
+  const x = (e.clientX - offsetX) / scale;
+  const y = (e.clientY - offsetY) / scale;
+
+  alert(`Koordinaten: ${Math.floor(x)}, ${Math.floor(y)}`);
+});
+
+// Resize
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  draw();
+});
 </script>
 
 </body>
