@@ -1,57 +1,33 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <title>GTA V Map (Custom Engine)</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      background: #111;
-      color: white;
-      font-family: Arial, sans-serif;
-    }
-
-    header {
-      position: absolute;
-      top: 0;
-      width: 100%;
-      text-align: center;
-      padding: 10px;
-      background: #222;
-      z-index: 10;
-    }
-
-    canvas {
-      display: block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTA V Map Viewer</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        body, html, #map { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #0fa8d2; }
+    </style>
 </head>
 <body>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: -3,
+            maxZoom: 2,
+            center: [0, 0],
+            zoom: -1
+        });
 
-<header>GTA V Map Viewer (Custom)</header>
-<canvas id="mapCanvas"></canvas>
+        L.tileLayer('https://s.rsg.sc/sc/images/games/GTAV/map/atlas/{z}/{x}/{y}.jpg', {
+            attribution: '&copy; Rockstar Games',
+            noWrap: true
+        }).addTo(map);
 
-<script>
-const canvas = document.getElementById("mapCanvas");
-const ctx = canvas.getContext("2d");
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let scale = 1;
-let offsetX = 0;
-let offsetY = 0;
-let isDragging = false;
-let startX, startY;
-
-const mapImage = new Image();
-// WICHTIG: Ersetze diese URL mit einer funktionierenden GTA V Map
-// Beispiel funktionierende Quelle:
-mapImage.src = "https://www.gtavision.com/images/content/gtav/maps/grand-theft-auto-v_karte-landkarte_hq.jpg";
-</script>
-
+        const marker = L.marker([0, 0]).addTo(map);
+        marker.bindPopup("<b>Zentrum</b><br>Los Santos Map.");
+    </script>
 </body>
 </html>
