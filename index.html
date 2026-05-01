@@ -48,64 +48,9 @@ let isDragging = false;
 let startX, startY;
 
 const mapImage = new Image();
-mapImage.src = "https://i.imgur.com/7Jb6KQm.jpg";
-
-mapImage.onload = () => draw();
-
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const width = mapImage.width * scale;
-  const height = mapImage.height * scale;
-
-  ctx.drawImage(mapImage, offsetX, offsetY, width, height);
-}
-
-// Zoom mit Mausrad
-canvas.addEventListener("wheel", (e) => {
-  e.preventDefault();
-
-  const zoom = e.deltaY < 0 ? 1.1 : 0.9;
-  scale *= zoom;
-
-  draw();
-});
-
-// Drag starten
-canvas.addEventListener("mousedown", (e) => {
-  isDragging = true;
-  startX = e.clientX - offsetX;
-  startY = e.clientY - offsetY;
-});
-
-// Drag bewegen
-canvas.addEventListener("mousemove", (e) => {
-  if (!isDragging) return;
-
-  offsetX = e.clientX - startX;
-  offsetY = e.clientY - startY;
-
-  draw();
-});
-
-// Drag stoppen
-canvas.addEventListener("mouseup", () => isDragging = false);
-canvas.addEventListener("mouseleave", () => isDragging = false);
-
-// Klick Koordinaten
-canvas.addEventListener("click", (e) => {
-  const x = (e.clientX - offsetX) / scale;
-  const y = (e.clientY - offsetY) / scale;
-
-  alert(`Koordinaten: ${Math.floor(x)}, ${Math.floor(y)}`);
-});
-
-// Resize
-window.addEventListener("resize", () => {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-  draw();
-});
+// WICHTIG: Ersetze diese URL mit einer funktionierenden GTA V Map
+// Beispiel funktionierende Quelle:
+mapImage.src = "https://www.gtavision.com/images/content/gtav/maps/grand-theft-auto-v_karte-landkarte_hq.jpg";
 </script>
 
 </body>
