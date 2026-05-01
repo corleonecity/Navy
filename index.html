@@ -1,43 +1,52 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA V Map Script</title>
+    <title>GTA V Original Map Viewer</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        #map { height: 100vh; width: 100%; background: #0fa8d2; }
+        body { margin: 0; padding: 0; background-color: #0fa8d2; }
+        #map { height: 100vh; width: 100%; }
     </style>
 </head>
 <body>
 
-    <div id="map"></div>
+<div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // GTA V nutzt ein anderes Koordinatensystem als die Erde.
-        // Wir erstellen eine flache Projektion (L.CRS.Simple).
-        var map = L.map('map', {
-            crs: L.CRS.Simple,
-            minZoom: -3,
-            maxZoom: 2
-        });
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+    // Koordinatensystem für GTA V (flache Karte)
+    var map = L.map('map', {
+        crs: L.CRS.Simple,
+        minZoom: 1,
+        maxZoom: 5,
+    }).setView([-40, 40], 2);
 
-        // Annahme: Deine Map-Tiles liegen in einem Ordner /tiles/
-        // URL-Schema: tiles/{z}/{x}/{y}.png
-        L.tileLayer('https://s.rsg.sc/sc/images/games/gtav/map/atlas/{z}/{x}/{y}.jpg', {
-            attribution: 'Map data &copy; Rockstar Games'
-        }).addTo(map);
+    // Tile-Quellen (Diese URLs nutzen optimierte Kacheln von Community-Servern)
+    var satellite = L.tileLayer('https://s.rsg.sc/sc/images/games/gtav/map/satellite/{z}/{x}/{y}.jpg', {
+        noWrap: true,
+        attribution: 'Map &copy; Rockstar Games'
+    });
 
-        // Beispiel-Funktion: In-Game Koordinaten zu Map-Pixeln konvertieren
-        function gtaToPixels(x, y) {
-            // Grobe Umrechnung der GTA Map-Einheiten
-            return [y / 10, x / 10]; 
-        }
+    var atlas = L.tileLayer('https://s.rsg.sc/sc/images/games/gtav/map/atlas/{z}/{x}/{y}.jpg', {
+        noWrap: true,
+        attribution: 'Map &copy; Rockstar Games'
+    });
 
-        // Marker setzen (Beispiel: Michael's Haus)
-        var michaelsHaus = L.marker([-30, 10]).addTo(map)
-            .bindPopup('Michaels Haus');
+    // Karte initialisieren mit Satelliten-Ansicht
+    satellite.addTo(map);
 
-        map.setView([0, 0], -2);
-    </script>
+    // Auswahl-Menü rechts oben
+    var baseMaps = {
+        "Satellit": satellite,
+        "Atlas (Farbig)": atlas
+    };
+    L.control.layers(baseMaps).addTo(map);
+
+    // Beispiel-Marker für den Mount Chiliad
+    L.marker([-10, 45]).addTo(map).bindPopup("Mount Chiliad Spitze");
+
+</script>
 </body>
 </html>
