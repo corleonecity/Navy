@@ -1,56 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>GTA V Vektor Map Viewer</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTA V Map Viewer</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #0077be; /* Blau wie das Meer */ }
+        body, html { margin: 0; padding: 0; height: 100%; background: #0077be; }
         #map { height: 100vh; width: 100%; }
     </style>
 </head>
 <body>
+    <div id="map"></div>
 
-<div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Karte initialisieren
+        var map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: -2,
+            maxZoom: 2
+        });
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    // Initialisierung der Karte mit einfachem Koordinatensystem (CRS.Simple)
-    var map = L.map('map', {
-        crs: L.CRS.Simple,
-        minZoom: -2, // Erlaubt das Rauszoomen
-        maxZoom: 2,  // Erlaubt begrenztes Reinzoomen
-    });
+        // WICHTIG: Der Name hier muss EXAKT mit deiner Datei übereinstimmen
+        var imageUrl = 'map.jpg'; 
+        
+        // Wir definieren ein quadratisches Feld für das Bild
+        var imageBounds = [[0, 0], [1000, 1000]];
 
-    // Die Pfadangabe zu DEINEM Bild (muss im selben Ordner liegen)
-    var imageUrl = 'gtav_vector_map.png';
+        // Bild laden
+        L.imageOverlay(imageUrl, imageBounds).addTo(map);
 
-    // Die Abmessungen des Bildes definieren (Wichtig!)
-    // Da CRS.Simple Koordinaten 1:1 zu Pixeln nutzt,
-    // können wir die Koordinaten direkt setzen.
-    // Wir definieren ein Koordinatensystem von [0,0] bis [1000, 1000]
-    // und Leaflet passt das Bild an.
-    var imageBounds = [[0, 0], [1000, 1000]]; // [y, x] Koordinaten
+        // Kamera auf das Bild ausrichten
+        map.fitBounds(imageBounds);
 
-    // Das Bild als 'ImageOverlay' hinzufügen
-    L.imageOverlay(imageUrl, imageBounds).addTo(map);
-
-    // Die Standardansicht auf die Mitte der Karte setzen
-    map.fitBounds(imageBounds);
-
-    // Zoom-Begrenzung setzen, damit man nicht zu weit rauszoomen kann
-    map.setMaxBounds(imageBounds);
-
-    // BEISPIEL-MARKER (Koordinaten müssen angepasst werden)
-    // In CRS.Simple mit Bounds [0,0]-[1000,1000]:
-    // Mitte = [500, 500]
-    // Mount Chiliad (oben links) ca. = [850, 150]
-    // LS Airport (unten links) ca. = [100, 150]
-
-    L.marker([850, 150]).addTo(map).bindPopup("Mount Chiliad");
-    L.marker([100, 150]).addTo(map).bindPopup("LS Airport");
-
-</script>
+        // Hilfs-Marker
+        L.marker([850, 150]).addTo(map).bindPopup("Norden (Blaine County)");
+        L.marker([150, 450]).addTo(map).bindPopup("Süden (Los Santos)");
+    </script>
 </body>
 </html>
