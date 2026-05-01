@@ -7,30 +7,49 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         body, html, #map { 
-            margin: 0; padding: 0; height: 100%; width: 100%; 
-            background-color: #0fa8d2; /* Das Blau, das du siehst */
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            width: 100%; 
+            background-color: #0fa8d2; /* Wasserfarbe */
         }
     </style>
 </head>
 <body>
+
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Wir nutzen Koordinaten, die sicher im sichtbaren Bereich liegen
-        var map = L.map('map').setView([0, 0], 2);
+        // 1. Karte initialisieren mit Simple CRS (für Bilder statt Weltkugeln)
+        const map = L.map('map', {
+            crs: L.CRS.Simple,
+            minZoom: -2,
+            maxZoom: 2
+        });
 
-        // Diese Quelle (gta-5-map.com oder ähnliche) ist oft stabiler
-        // Wir fügen einen 'Cross-Origin' Parameter hinzu
-        L.tileLayer('https://map-tiles.gta-5-map.com/atlas/{z}/{x}/{y}.png', {
-            attribution: '&copy; GTA-5-Map',
-            noWrap: true,
-            bounds: [[-90, -180], [90, 180]]
-        }).addTo(map);
+        // 2. Deine Bild-URL definieren
+        const imageUrl = 'https://user2859.na.imgto.link/public/20260501/img-0104.avif';
+        
+        // 3. Die Abmessungen festlegen (Breite/Höhe in Leaflet-Einheiten)
+        // Du kannst diese Zahlen ändern, um das Seitenverhältnis anzupassen
+        const bounds = [[0, 0], [1000, 1000]]; 
 
-        // Ein großer roter Punkt in der Mitte, damit du siehst, ob die Logik läuft
-        L.circle([0, 0], {radius: 500000, color: 'red'}).addTo(map)
-            .bindPopup("Wenn du das siehst, geht das Skript, aber die Bilder laden nicht.");
+        // 4. Das Bild auf die Karte legen
+        const image = L.imageOverlay(imageUrl, bounds).addTo(map);
+
+        // 5. Die Ansicht auf das Bild zentrieren
+        map.fitBounds(bounds);
+
+        // 6. Beispiel-Marker (Koordinaten zwischen 0 und 1000)
+        // Syntax: [Y, X]
+        const marker = L.marker([500, 500]).addTo(map);
+        marker.bindPopup("<b>Mitte der Karte</b>").openPopup();
+
+        // Bonus: Klicke auf die Karte, um Koordinaten in der Konsole zu sehen
+        map.on('click', function(e) {
+            console.log("Koordinaten: " + e.latlng);
+        });
     </script>
 </body>
 </html>
