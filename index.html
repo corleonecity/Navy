@@ -6,42 +6,34 @@
     <title>GTA V Map Viewer</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        /* Falls die Karte nicht lädt, ist der Hintergrund jetzt dunkelgrau */
         body, html, #map { 
             margin: 0; 
             padding: 0; 
             height: 100%; 
             width: 100%; 
-            background-color: #202020; 
+            background-color: #0fa8d2; /* Wasser-Blau */
         }
     </style>
 </head>
 <body>
-
     <div id="map"></div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Setup der Karte
-        const map = L.map('map', {
-            crs: L.CRS.Simple,
-            minZoom: -3,
-            maxZoom: 2,
-            center: [-4000, 4000], // Startpunkt angepasst
-            zoom: -2
-        });
+        // Wir nutzen hier ein Standard-System, damit die Karte sofort sichtbar ist
+        const map = L.map('map').setView([0, 0], 3);
 
-        // NUTZE DIESE URL: Das ist eine gängige Community-Quelle für GTA Tiles
-        // Falls diese auch nicht geht, müssen die Bilder lokal in dein GitHub-Repo hochgeladen werden.
-        L.tileLayer('https://media.githubusercontent.com/media/Gamer-I-Die-Inside/GTA-V-Map-Viewer/master/tiles/{z}/{x}/{y}.png', {
-            attribution: '&copy; GTA V Map',
+        // Diese URL nutzt ein Tileset, das oft für GTA-Projekte verwendet wird
+        // Falls die Karte weiß/schwarz bleibt, blockiert dein Browser den Abruf der Bilder (CORS)
+        L.tileLayer('https://files.gtanet.com/atlas/{z}/{x}/{y}.png', {
+            attribution: '&copy; Rockstar Games / GTANet',
+            minZoom: 1,
+            maxZoom: 5,
             noWrap: true
         }).addTo(map);
 
-        // Test-Marker in Los Santos
-        L.marker([-4000, 4000]).addTo(map)
-            .bindPopup("<b>Los Santos</b>")
-            .openPopup();
+        // Ein Marker zur Orientierung
+        L.marker([0, 0]).addTo(map).bindPopup("Karten-Mitte").openPopup();
     </script>
 </body>
 </html>
