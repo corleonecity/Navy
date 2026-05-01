@@ -6,28 +6,42 @@
     <title>GTA V Map Viewer</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body, html, #map { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #0fa8d2; }
+        /* Falls die Karte nicht lädt, ist der Hintergrund jetzt dunkelgrau */
+        body, html, #map { 
+            margin: 0; 
+            padding: 0; 
+            height: 100%; 
+            width: 100%; 
+            background-color: #202020; 
+        }
     </style>
 </head>
 <body>
+
     <div id="map"></div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // Setup der Karte
         const map = L.map('map', {
             crs: L.CRS.Simple,
             minZoom: -3,
             maxZoom: 2,
-            center: [0, 0],
-            zoom: -1
+            center: [-4000, 4000], // Startpunkt angepasst
+            zoom: -2
         });
 
-        L.tileLayer('https://s.rsg.sc/sc/images/games/GTAV/map/atlas/{z}/{x}/{y}.jpg', {
-            attribution: '&copy; Rockstar Games',
+        // NUTZE DIESE URL: Das ist eine gängige Community-Quelle für GTA Tiles
+        // Falls diese auch nicht geht, müssen die Bilder lokal in dein GitHub-Repo hochgeladen werden.
+        L.tileLayer('https://media.githubusercontent.com/media/Gamer-I-Die-Inside/GTA-V-Map-Viewer/master/tiles/{z}/{x}/{y}.png', {
+            attribution: '&copy; GTA V Map',
             noWrap: true
         }).addTo(map);
 
-        const marker = L.marker([0, 0]).addTo(map);
-        marker.bindPopup("<b>Zentrum</b><br>Los Santos Map.");
+        // Test-Marker in Los Santos
+        L.marker([-4000, 4000]).addTo(map)
+            .bindPopup("<b>Los Santos</b>")
+            .openPopup();
     </script>
 </body>
 </html>
