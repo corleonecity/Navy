@@ -1,40 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
 <head>
-    <title>GTA V Map Viewer</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; background: #0077be; }
-        #map { height: 100vh; width: 100%; }
-    </style>
+  <meta charset="UTF-8">
+  <title>GTA V Map Viewer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #111;
+      color: white;
+    }
+
+    header {
+      padding: 10px;
+      text-align: center;
+      background: #222;
+      font-size: 20px;
+    }
+
+    #map {
+      width: 100%;
+      height: calc(100vh - 50px);
+    }
+  </style>
 </head>
 <body>
-    <div id="map"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // Karte initialisieren
-        var map = L.map('map', {
-            crs: L.CRS.Simple,
-            minZoom: -2,
-            maxZoom: 2
-        });
+<header>
+  GTA V Map Viewer (Los Santos)
+</header>
 
-        // WICHTIG: Der Name hier muss EXAKT mit deiner Datei übereinstimmen
-        var imageUrl = 'map.jpg'; 
-        
-        // Wir definieren ein quadratisches Feld für das Bild
-        var imageBounds = [[0, 0], [1000, 1000]];
+<div id="map"></div>
 
-        // Bild laden
-        L.imageOverlay(imageUrl, imageBounds).addTo(map);
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-        // Kamera auf das Bild ausrichten
-        map.fitBounds(imageBounds);
+<script>
+  // Map initialisieren
+  const map = L.map('map', {
+    crs: L.CRS.Simple,
+    minZoom: -2
+  });
 
-        // Hilfs-Marker
-        L.marker([850, 150]).addTo(map).bindPopup("Norden (Blaine County)");
-        L.marker([150, 450]).addTo(map).bindPopup("Süden (Los Santos)");
-    </script>
+  // Größe des Bildes (angepasst für GTA Map)
+  const bounds = [[0,0], [8192,8192]];
+
+  // GTA Map Bild (frei verfügbare Beispiel-Map)
+  const image = L.imageOverlay(
+    'https://i.imgur.com/7Jb6KQm.jpg',
+    bounds
+  ).addTo(map);
+
+  map.fitBounds(bounds);
+
+  // Beispiel Marker
+  const marker = L.marker([4000, 4000]).addTo(map);
+  marker.bindPopup("Los Santos Mitte");
+
+  // Klick Event
+  map.on('click', function(e) {
+    L.popup()
+      .setLatLng(e.latlng)
+      .setContent("Koordinaten: " + e.latlng.toString())
+      .openOn(map);
+  });
+</script>
+
 </body>
 </html>
