@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Virtual Fisher PRO v2.1</title>
+    <title>Virtual Fisher PRO v2.2</title>
     <style>
         /* --- GRUNDDESIGN & HINTERGRUND --- */
         body {
@@ -16,9 +16,9 @@
         .bg-bubbles { position: fixed; bottom: -50px; background: rgba(59,130,246,0.05); border-radius: 50%; animation: floatUp linear infinite; z-index: -1; }
         @keyframes floatUp { to { transform: translateY(-120vh) scale(1.5); opacity: 0; } }
 
-        /* --- HAUPT-CONTAINER (Responsive) --- */
+        /* --- HAUPT-CONTAINER --- */
         .container {
-            width: 95%; max-width: 600px; /* Passt sich Handys an */
+            width: 95%; max-width: 600px; 
             background: #161b22; padding: 20px; border-radius: 16px;
             box-shadow: 0 15px 50px rgba(0,0,0,0.9); border: 1px solid rgba(59, 130, 246, 0.2);
             text-align: center; position: relative; animation: fadeIn 0.4s ease-out;
@@ -26,31 +26,37 @@
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- ANGEL-ANIMATION --- */
+        /* --- ANGEL-ANIMATION (BOOT MIT SEIL) --- */
         #fishing-scene {
-            height: 120px; position: relative; margin-bottom: 15px; border-bottom: 3px solid #3b82f6;
+            height: 140px; position: relative; margin-bottom: 15px; border-bottom: 3px solid #3b82f6;
             overflow: hidden; border-radius: 12px 12px 0 0; background: linear-gradient(180deg, rgba(2, 6, 23, 0.8) 0%, rgba(30, 64, 175, 0.5) 100%);
             flex-shrink: 0;
         }
 
         .boat-container {
-            position: absolute; bottom: 12px; left: 15%;
+            position: absolute; bottom: 15px; left: 15%;
             animation: bobbingBoat 3s ease-in-out infinite; z-index: 3;
         }
-        @keyframes bobbingBoat { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-3px) rotate(2deg); } }
+        @keyframes bobbingBoat { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-4px) rotate(2deg); } }
 
-        .fisher-emoji { font-size: 38px; transform: scaleX(-1); display: inline-block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        /* Boot schaut nun nach rechts (scaleX(-1) entfernt) */
+        .fisher-emoji { font-size: 38px; display: inline-block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
         
         .bobber {
-            position: absolute; bottom: 15px; left: 50%;
+            position: absolute; bottom: 15px; left: 60%;
             width: 8px; height: 8px; background: #ef4444; border-radius: 50%;
             border: 1px solid #7f1d1d; transition: 0.2s; z-index: 3; box-shadow: 0 0 5px rgba(239,68,68,0.8);
         }
         .fishing-active .bobber { animation: bobbing 0.8s ease-in-out; }
         @keyframes bobbing { 0% { bottom: 15px; } 20% { bottom: 12px; } 40% { bottom: -2px; opacity: 0.4; } 80% { bottom: -2px; opacity: 0.4; } 100% { bottom: 15px; } }
 
+        /* SVG für das dynamische Angelseil */
+        #fishing-line-svg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none;
+        }
+
         .net-anim {
-            position: absolute; bottom: 5px; right: 20%; font-size: 30px;
+            position: absolute; bottom: 5px; right: 15%; font-size: 30px;
             animation: bobbingBoat 4s ease-in-out infinite reverse; z-index: 3;
             filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); display: none;
         }
@@ -85,7 +91,6 @@
         #game-controls { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
         #game-controls::-webkit-scrollbar { width: 4px; } #game-controls::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
 
-        /* Responsive Grid für Mobile & PC */
         .btn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 8px; }
         .btn-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
 
@@ -101,7 +106,8 @@
 
         input { padding: 12px; width: 90%; margin: 8px 0; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box; }
 
-        #log { height: 90px; overflow-y: auto; background: #0d1117; padding: 10px; border-radius: 8px; font-size: 13px; text-align: left; border-left: 3px solid #3b82f6; line-height: 1.6; margin-top: 10px; flex-shrink: 0;}
+        /* Deutlich größerer Log Bereich */
+        #log { height: 200px; overflow-y: auto; background: #0d1117; padding: 10px; border-radius: 8px; font-size: 13px; text-align: left; border-left: 3px solid #3b82f6; line-height: 1.6; margin-top: 10px; flex-shrink: 0;}
         #log::-webkit-scrollbar { width: 6px; } #log::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 
         /* --- MODAL / POPUP SYSTEM --- */
@@ -156,6 +162,7 @@
 <body>
 
 <script>
+    // Hintergrund-Bubbles
     for(let i=0; i<15; i++) {
         let div = document.createElement('div'); div.className = 'bg-bubbles';
         div.style.left = Math.random() * 100 + 'vw'; div.style.width = Math.random() * 15 + 5 + 'px'; div.style.height = div.style.width;
@@ -176,9 +183,16 @@
     <!-- Angel Szene -->
     <div id="fishing-scene">
         <div id="weather-layer" data-weather="none"></div>
+        
+        <!-- Das dynamische Angel-Seil -->
+        <svg id="fishing-line-svg">
+            <line id="line-element" x1="0" y1="0" x2="0" y2="0" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-dasharray="3,3" />
+        </svg>
+
         <div id="netAnim" class="net-anim">🕸️</div>
         <div class="boat-container"><div class="fisher-emoji">🚣</div></div>
         <div class="bobber" id="bobber"></div>
+        
         <div class="water-layer-2"></div>
         <div class="water-layer-1"></div>
     </div>
@@ -306,14 +320,17 @@ function getResetKeys() {
     let weekNo = Math.ceil((((d0 - yStart) / 86400000) + 1)/7); let weekly = `${d0.getUTCFullYear()}-W${weekNo}`;
     return { daily, weekly, monthly };
 }
+
 const questDB = {
     daily: [ {id:'d1',desc:'Fange 15 Fische',t:'c',req:15,rew:50}, {id:'d2',desc:'Fange 30 Fische',t:'c',req:30,rew:100}, {id:'d3',desc:'Fange 50 Fische',t:'c',req:50,rew:200}, {id:'d4',desc:'Verdiene 250$',t:'e',req:250,rew:100}, {id:'d5',desc:'Verdiene 1000$',t:'e',req:1000,rew:300} ],
     weekly: [ {id:'w1',desc:'Fange 150 Fische',t:'c',req:150,rew:500}, {id:'w2',desc:'Fange 300 Fische',t:'c',req:300,rew:1000}, {id:'w3',desc:'Fange 500 Fische',t:'c',req:500,rew:2000}, {id:'w4',desc:'Verdiene 3000$',t:'e',req:3000,rew:1000}, {id:'w5',desc:'Verdiene 10000$',t:'e',req:10000,rew:3000} ],
     monthly: [ {id:'m1',desc:'Fange 500 Fische',t:'c',req:500,rew:2500}, {id:'m2',desc:'Fange 1000 Fische',t:'c',req:1000,rew:5000}, {id:'m3',desc:'Fange 2500 Fische',t:'c',req:2500,rew:10000}, {id:'m4',desc:'Fange 5000 Fische',t:'c',req:5000,rew:20000}, {id:'m5',desc:'Fange 10000 Fische',t:'c',req:10000,rew:50000}, {id:'m6',desc:'Verdiene 5000$',t:'e',req:5000,rew:2000}, {id:'m7',desc:'Verdiene 15000$',t:'e',req:15000,rew:5000}, {id:'m8',desc:'Verdiene 50000$',t:'e',req:50000,rew:15000}, {id:'m9',desc:'Verdiene 150000$',t:'e',req:150000,rew:50000}, {id:'m10',desc:'Verdiene 500000$',t:'e',req:500000,rew:150000} ]
 };
+
 function checkQuestResets() {
     let k = getResetKeys(); 
-    if(!gameState.qs || typeof gameState.qs.d !== 'string' || !gameState.qs.p || !gameState.qs.c) {
+    // Sicherstellen, dass das Array existiert, um Bugs zu vermeiden
+    if(!gameState.qs || !gameState.qs.p) {
         gameState.qs = { d: k.daily, w: k.weekly, m: k.monthly, p: { dc:0, de:0, wc:0, we:0, mc:0, me:0 }, c: {} };
     }
     let qs = gameState.qs; let save = false;
@@ -322,7 +339,13 @@ function checkQuestResets() {
     if(qs.m !== k.monthly) { qs.m = k.monthly; qs.p.mc=0; qs.p.me=0; for(let c in qs.c) if(c.startsWith('m')) delete qs.c[c]; save=true; }
     if(save) saveData();
 }
-function addQuestProgress(t, amt) { let p = gameState.qs.p; if(t === 'c') { p.dc+=amt; p.wc+=amt; p.mc+=amt; } if(t === 'e') { p.de+=amt; p.we+=amt; p.me+=amt; } }
+
+function addQuestProgress(t, amt) { 
+    if(!gameState.qs || !gameState.qs.p) return;
+    let p = gameState.qs.p; 
+    if(t === 'c') { p.dc+=amt; p.wc+=amt; p.mc+=amt; } 
+    if(t === 'e') { p.de+=amt; p.we+=amt; p.me+=amt; } 
+}
 
 function getFishChance(zIdx, itemN) {
     if(!gameState) return 0;
@@ -381,7 +404,7 @@ function updateDex(item) {
     gameState.dex[item.baseName].count++;
 }
 
-// 🔥 ECHTE LIVE DATENBANK ANBINDUNG
+// 🔥 LIVE DATENBANK
 async function loadData() {
     if (!currentUser) return;
     const userRef = ref(db, "users/" + currentUser);
@@ -426,12 +449,19 @@ async function loadData() {
 
 function saveData() { if (currentUser && gameState) set(ref(db, "users/" + currentUser), gameState); }
 
+// BANKROTT SYSTEM: Setzt bei -150.000 komplett auf Null zurück!
 window.checkBankruptcy = async function() {
     if (gameState && gameState.money <= -150000) {
-        let u = currentUser; currentUser = null; gameState = null;
-        await set(ref(db, "users/" + u), null);
-        localStorage.removeItem('vFisher_user');
+        gameState.money = 0; // Stoppt den Loop kurzzeitig
         alert("💸 BANKROTT! Dein Schuldenberg hat -150.000$ erreicht. Dein Spielstand wurde soeben vernichtet.");
+        
+        let u = currentUser; 
+        currentUser = null; 
+        localStorage.removeItem('vFisher_user');
+        
+        // Kompletter Reset in Firebase
+        let defaultState = { name: u, money: 0, xp: 0, level: 1, zone: 0, combo: 0, inventory: {}, dex: {}, net: { level: 0, lastClaim: Date.now() }, lastDaily: 0, dailyStreak: 0, prestige: 0, stats: { totalCaught: 0, totalEarned: 0 } };
+        await set(ref(db, "users/" + u), defaultState);
         location.reload();
     }
 };
@@ -448,10 +478,9 @@ function updateUI() {
     let mins = Math.floor(timeLeft / 60000); let secs = Math.floor((timeLeft % 60000) / 1000);
     document.getElementById("eventDisplay").innerHTML = `${evt.name} <span class="tooltiptext"><b>${evt.desc}</b><br>Endet in: ${mins}m ${secs}s</span>`;
     
-    // Wetter und Hai Event FX
     let wLayer = document.getElementById("weather-layer");
     let activeFx = evt.type;
-    if(evt.target === "Hai") activeFx = "hai"; // Extra FX für Haie
+    if(evt.target === "Hai") activeFx = "hai";
 
     if(wLayer.getAttribute("data-weather") !== activeFx) {
         if(activeFx === "sun") wLayer.innerHTML = `<div class="sun-fx"></div>`;
@@ -473,7 +502,6 @@ function updateUI() {
         gameState.eqBait = "none"; document.getElementById("ui-eq-bait").innerText = `🪱 Köder: Keine`;
     }
 
-    // Combo Bar Small (unter Angeln Button)
     let comboBarSmall = document.getElementById("combo-bar-small");
     if(gameState.combo > 1) { 
         comboBarSmall.style.display = "inline-block"; 
@@ -482,8 +510,36 @@ function updateUI() {
     else { comboBarSmall.style.display = "none"; }
 }
 
-// ⚡ 1ms LIVE UI UPDATE (Rasend schnell)
-setInterval(() => { if(gameState) { updateUI(); } }, 1); 
+// UI 10-20ms Update
+setInterval(() => { if(gameState) { updateUI(); } }, 20); 
+
+// --- DYNAMISCHES ANGEL SEIL (Animiert) ---
+function renderFishingLine() {
+    let scene = document.getElementById('fishing-scene');
+    let boat = document.querySelector('.fisher-emoji');
+    let bobber = document.getElementById('bobber');
+    let line = document.getElementById('line-element');
+    
+    if(scene && boat && bobber && line) {
+        let sRect = scene.getBoundingClientRect();
+        let bRect = boat.getBoundingClientRect();
+        let bobRect = bobber.getBoundingClientRect();
+        
+        // Die Spitze der Angel ist ungefähr oben rechts am Boot
+        let startX = (bRect.left - sRect.left) + bRect.width * 0.85;
+        let startY = (bRect.top - sRect.top) + bRect.height * 0.2;
+        
+        let endX = (bobRect.left - sRect.left) + bobRect.width / 2;
+        let endY = (bobRect.top - sRect.top) + bobRect.height / 2;
+        
+        line.setAttribute('x1', startX);
+        line.setAttribute('y1', startY);
+        line.setAttribute('x2', endX);
+        line.setAttribute('y2', endY);
+    }
+    requestAnimationFrame(renderFishingLine);
+}
+requestAnimationFrame(renderFishingLine);
 
 // 🔥 HARDCORE COMBO TIMER (Verfällt nach 3s Inaktivität. OHNE LOG)
 setInterval(() => {
@@ -494,10 +550,11 @@ setInterval(() => {
     }
 }, 100);
 
+// Log ist jetzt größer (Slice 20)
 function log(t) { 
     let l = document.getElementById("log"); 
     let prefix = t.startsWith("Willkommen") || t.startsWith("✅") || t.startsWith("💰") || t.startsWith("🕸️") || t.startsWith("🧬") || t.startsWith("❌") ? "" : "🎣 ";
-    l.innerHTML = prefix + t + "<br>" + l.innerHTML.split("<br>").slice(0, 8).join("<br>"); 
+    l.innerHTML = prefix + t + "<br>" + l.innerHTML.split("<br>").slice(0, 20).join("<br>"); 
 }
 
 window.closeModal = function() { document.getElementById('modal-overlay').style.display = 'none'; };
@@ -510,7 +567,14 @@ function openModal(t, b, f='') {
 window.equipRod = function(r) { gameState.eqRod = r; saveData(); updateUI(); window.handleInvMenu(); }
 window.equipBait = function(b) { gameState.eqBait = b; saveData(); updateUI(); window.handleInvMenu(); }
 window.unequipBait = function() { gameState.eqBait = "none"; saveData(); updateUI(); window.handleInvMenu(); }
-window.changeZone = function(i) { gameState.zone = i; saveData(); updateUI(); closeModal(); }
+
+// --- FREIE ZONEN WAHL ---
+window.changeZone = function(i) { 
+    gameState.zone = i; saveData(); updateUI(); 
+    log(`🗺️ Du bist nach "${zones[i].name}" gereist.`);
+    window.handleZoneMenu(); // Aktualisiert das Popup in-place
+}
+
 window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameState.level=1; gameState.combo=0; gameState.inventory={}; saveData(); location.reload(); }
 
 // --- AKTIONEN ---
@@ -522,7 +586,7 @@ window.handleFish = function() {
     setTimeout(() => {
         try {
             let i = roll(gameState.zone);
-            gameState.lastCatchTime = Date.now() + 3000; // 3 Sekunden Zeitfenster
+            gameState.lastCatchTime = Date.now() + 3000; 
             
             if (i.baseName === "Müll" || i.baseName === "Schuh" || i.baseName === "Alge") {
                 gameState.combo = 0;
@@ -702,11 +766,15 @@ window.showFishDetails = function(name) {
     } catch(e) { log("❌ Konnte Fisch-Akte nicht laden."); }
 }
 
+// FREIE ZONEN WAHL
 window.handleZoneMenu = function() { 
     let html=`<p style="font-size: 14px; color: #94a3b8; margin-top:0;">Bestimmte Fische leben nur in bestimmten Zonen!</p>`; 
     zones.forEach((z,i)=>{ 
         let l=gameState.prestige<z.reqPrestige; 
-        html+=`<div class="item-row ${l?'locked':''}" style="align-items: center;"><b>${z.name}</b> ${gameState.zone===i?'<span style="color:#10b981; font-weight: bold;">📍 Aktiv</span>':(l?`<span style="color:#ef4444; font-size: 13px;">🔒 Prestige ${z.reqPrestige}</span>`:`<button class="success-btn" style="padding: 8px 15px;" onclick="changeZone(${i})">Reisen</button>`)}</div>`; 
+        html+=`<div class="item-row ${l?'locked':''}" style="align-items: center;">
+            <b>${z.name}</b> 
+            ${gameState.zone===i?'<button disabled style="padding: 8px 15px; font-weight:bold; background: transparent; border: 1px solid #10b981; color: #10b981;">📍 Aktiv</button>':(l?`<span style="color:#ef4444; font-size: 13px;">🔒 Prestige ${z.reqPrestige}</span>`:`<button class="success-btn" style="padding: 8px 15px;" onclick="changeZone(${i})">Reisen</button>`)}
+        </div>`; 
     }); openModal("🗺️ Weltkarte", html); 
 }
 
@@ -736,6 +804,8 @@ window.showPlayerProfile = async function(pName) {
                     <div class="profile-stats-grid">
                         <div class="stat-box"><div class="stat-lbl">Kapital</div><div class="stat-val" style="color:#10b981;">${u.money.toLocaleString()}$</div></div>
                         <div class="stat-box"><div class="stat-lbl">Gefangen</div><div class="stat-val">${u.stats.totalCaught.toLocaleString()}</div></div>
+                        <div class="stat-box"><div class="stat-lbl">Verdient</div><div class="stat-val">${u.stats.totalEarned.toLocaleString()}$</div></div>
+                        <div class="stat-box"><div class="stat-lbl">Streak</div><div class="stat-val" style="color:#fcd34d;">${u.dailyStreak || 0} 🔥</div></div>
                     </div>
                 </div>
                 <button class="update-btn" style="width: 100%;" onclick="handleLeaderboard()">⬅ Zurück zum Leaderboard</button>
@@ -769,43 +839,18 @@ window.handleUpdateMenu = function() {
     let html = `
         <div style="text-align: left;">
             <div class="update-log-item">
-                <div class="update-title update-latest">v2.1 - Responsive Design, Shark Event & Auto-Login</div>
+                <div class="update-title update-latest">v2.2 - Das Meister-Update</div>
                 <ul class="update-list">
-                    <li>📱 <b>Responsive Design:</b> Das UI passt sich jetzt perfekt an dein Handy an. Die Buttons verkleinern sich automatisch und der Container nutzt die volle Breite deines Screens.</li>
-                    <li>💾 <b>Auto-Login (Local Storage):</b> Du musst deinen Namen nicht mehr ständig eingeben. Das Spiel speichert dein Login auf deinem Gerät. Wenn du die Seite aktualisierst, bist du sofort drin!</li>
-                    <li>🔥 <b>Neuer Combo-Zähler:</b> Der große Combo-Balken wurde entfernt. Stattdessen gibt es jetzt ein sauberes, kompaktes Combo-Badge direkt unter dem Angel-Button.</li>
-                    <li>🦈 <b>Hai Animation:</b> Wenn das "Hai-Woche" Event aktiv ist, schwimmen im Hintergrund animierte Haie durch das Wasser!</li>
-                    <li>⚡ <b>1ms Live-Takt:</b> Das Spiel rendert jetzt in Echtzeit. Alle Buttons, Geld, Combo und Menüs reagieren augenblicklich (ohne Ruckeln)!</li>
-                    <li>📜 <b>Alle Logs sichtbar:</b> Das Update-Menü zeigt jetzt die vollständige Historie an.</li>
+                    <li>🧵 <b>Dynamische Angelschnur:</b> Eine leuchtende, animierte Leine verbindet nun die Angel des Bootes punktgenau mit dem Schwimmer!</li>
+                    <li>💀 <b>Echter Bankrott (-150k):</b> Wenn dein Guthaben auf -150.000$ fällt, wird dein Account ab sofort knallhart und unumkehrbar aus Firebase gelöscht.</li>
+                    <li>📜 <b>Quest-System Fix:</b> Ein kritischer Fehler, der das Öffnen des Quest-Menüs bei fehlenden Variablen blockierte, wurde automatisch repariert.</li>
+                    <li>🗺️ <b>Zonen-System:</b> Es ist nun glasklar, welche Zone aktiv ist. Man kann frei zwischen freigeschalteten Zonen reisen, ohne das Fenster zu schließen.</li>
+                    <li>👑 <b>Leaderboard Full Profiles:</b> Wenn du auf einen Spieler klickst, siehst du jetzt absolut alle seine Profil-Details (wie Streak und Verdient).</li>
+                    <li>📖 <b>Mega-Log:</b> Der Log unten ist nun fast doppelt so groß. Man kann scrollen und die letzten 20 Aktionen nachvollziehen!</li>
+                    <li>🛶 <b>Logik:</b> Boot guckt in die richtige Richtung. Combo-Log (verloren) endgültig aus der Konsole verbannt.</li>
                 </ul>
             </div>
-            <div class="update-log-item">
-                <div class="update-title">v2.0 - Realtime Database & Bugfixes</div>
-                <ul class="update-list">
-                    <li>📡 <b>Echtzeit-Synchronisation:</b> Das Spiel ist jetzt LIVE mit Firebase verbunden. Wenn ein Admin dein Geld ändert, siehst du das im selben Moment im Spiel!</li>
-                    <li>💸 <b>Bankrott-System:</b> Neu eingeführt. Erreichst du -150.000$, verlierst du alles und das Spiel startet von vorn.</li>
-                </ul>
-            </div>
-            <div class="update-log-item">
-                <div class="update-title">v1.9 - Live-UI & Performance</div>
-                <ul class="update-list">
-                    <li>🖥️ <b>100ms Live-Takt:</b> Das Spiel rendert jetzt in Echtzeit.</li>
-                    <li>🕸️ <b>Netz-Animation:</b> Wenn dein Auto-Netz aktiv ist, treibt jetzt permanent ein Netz im Wasser.</li>
-                </ul>
-            </div>
-            <div class="update-log-item">
-                <div class="update-title">v1.8 - Performance & Animationen</div>
-                <ul class="update-list">
-                    <li>🚤 <b>Flüssiges Boot:</b> Die Boot- und Wasser-Animation ist nun nahtlos ("seamless") in CSS integriert und stottert nicht mehr.</li>
-                </ul>
-            </div>
-            <div class="update-log-item">
-                <div class="update-title">v1.7 - Shop, Inventar & Profil Rework</div>
-                <ul class="update-list">
-                    <li>🎒 <b>Shop & Inventar System:</b> Ruten und Köder kaufst du nun im Shop und rüstest sie im Inventar manuell aus.</li>
-                    <li>📊 <b>Profil-Redesign:</b> Neues ID-Card Layout für Statistiken.</li>
-                </ul>
-            </div>
+            <div class="update-log-item"><div class="update-title">v2.1 - Responsive Design & Haie</div></div>
         </div>
     `; openModal("📝 Update Logs", html);
 }
@@ -824,17 +869,11 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
     let u = document.getElementById('username').value.trim(); let p = document.getElementById('password').value;
     if (validAccounts[u] === p) { 
         document.getElementById('login-error').style.display='none'; 
-        currentUser=u; 
-        localStorage.setItem('vFisher_user', u); // Speichern für Auto-Login
-        await loadData(); 
-    } 
-    else { document.getElementById('login-error').style.display='block'; }
+        currentUser=u; localStorage.setItem('vFisher_user', u); await loadData(); 
+    } else { document.getElementById('login-error').style.display='block'; }
 });
 
-document.getElementById('btnLogout').addEventListener('click', () => {
-    localStorage.removeItem('vFisher_user');
-    location.reload();
-});
+document.getElementById('btnLogout').addEventListener('click', () => { localStorage.removeItem('vFisher_user'); location.reload(); });
 
 document.getElementById('btnFish').addEventListener('click', handleFish); document.getElementById('btnSell').addEventListener('click', handleSellMenu);
 document.getElementById('btnShop').addEventListener('click', handleShopMenu); document.getElementById('btnInv').addEventListener('click', handleInvMenu);
