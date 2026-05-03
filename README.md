@@ -1,1 +1,1 @@
-index.html    -   Stopuhr
+index.html - Stopuhr
