@@ -1,55 +1,102 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GTA V Map Viewer</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body, html, #map { 
-            margin: 0; 
-            padding: 0; 
-            height: 100%; 
-            width: 100%; 
-            background-color: #0fa8d2; /* Wasserfarbe */
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Stopuhr</title>
+<style>
+    body {
+        margin: 0;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        font-family: 'Courier New', monospace;
+    }
+
+    .container {
+        text-align: center;
+        color: orange;
+    }
+
+    .time {
+        font-size: 80px;
+        letter-spacing: 5px;
+        margin-bottom: 20px;
+    }
+
+    button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .start {
+        background: #3cb371;
+        color: white;
+    }
+
+    .reset {
+        background: #b8860b;
+        color: white;
+    }
+</style>
 </head>
 <body>
 
-    <div id="map"></div>
+<div class="container">
+    <div class="time" id="display">00:00.00</div>
+    <button class="reset" onclick="reset()">Reset</button>
+    <button class="start" onclick="startStop()" id="startBtn">Start</button>
+</div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        // 1. Karte initialisieren mit Simple CRS (für Bilder statt Weltkugeln)
-        const map = L.map('map', {
-            crs: L.CRS.Simple,
-            minZoom: -2,
-            maxZoom: 2
-        });
+<script>
+let startTime = 0;
+let elapsed = 0;
+let interval = null;
+let running = false;
 
-        // 2. Deine Bild-URL definieren
-        const imageUrl = 'https://user2859.na.imgto.link/public/20260501/img-0104.avif';
-        
-        // 3. Die Abmessungen festlegen (Breite/Höhe in Leaflet-Einheiten)
-        // Du kannst diese Zahlen ändern, um das Seitenverhältnis anzupassen
-        const bounds = [[0, 0], [1000, 1000]]; 
+function formatTime(ms) {
+    let minutes = Math.floor(ms / 60000);
+    let seconds = Math.floor((ms % 60000) / 1000);
+    let centiseconds = Math.floor((ms % 1000) / 10);
 
-        // 4. Das Bild auf die Karte legen
-        const image = L.imageOverlay(imageUrl, bounds).addTo(map);
+    return (
+        String(minutes).padStart(2, '0') + ":" +
+        String(seconds).padStart(2, '0') + "." +
+        String(centiseconds).padStart(2, '0')
+    );
+}
 
-        // 5. Die Ansicht auf das Bild zentrieren
-        map.fitBounds(bounds);
+function update() {
+    let now = Date.now();
+    elapsed = now - startTime;
+    document.getElementById("display").textContent = formatTime(elapsed);
+}
 
-        // 6. Beispiel-Marker (Koordinaten zwischen 0 und 1000)
-        // Syntax: [Y, X]
-        const marker = L.marker([500, 500]).addTo(map);
-        marker.bindPopup("<b>Mitte der Karte</b>").openPopup();
+function startStop() {
+    if (!running) {
+        startTime = Date.now() - elapsed;
+        interval = setInterval(update, 10);
+        running = true;
+        document.getElementById("startBtn").textContent = "Stop";
+    } else {
+        clearInterval(interval);
+        running = false;
+        document.getElementById("startBtn").textContent = "Start";
+    }
+}
 
-        // Bonus: Klicke auf die Karte, um Koordinaten in der Konsole zu sehen
-        map.on('click', function(e) {
-            console.log("Koordinaten: " + e.latlng);
-        });
-    </script>
+function reset() {
+    clearInterval(interval);
+    running = false;
+    elapsed = 0;
+    document.getElementById("display").textContent = "00:00.00";
+    document.getElementById("startBtn").textContent = "Start";
+}
+</script>
+
 </body>
 </html>
