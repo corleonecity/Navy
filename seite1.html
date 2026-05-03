@@ -1,140 +1,3 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Virtual Fisher PRO</title>
-
-<style>
-body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(180deg, #020617, #0a192f);
-    color: #e6f0ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    overflow: hidden;
-}
-
-.container {
-    width: 450px;
-    background: rgba(15, 23, 42, 0.8);
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
-    position: relative;
-}
-
-/* 🎣 Animation Area */
-#fishing-scene {
-    height: 120px;
-    position: relative;
-    margin-bottom: 20px;
-    border-bottom: 2px solid #3b82f6;
-    overflow: hidden;
-    border-radius: 10px 10px 0 0;
-}
-
-.rod-anim {
-    font-size: 50px;
-    position: absolute;
-    bottom: -10px;
-    left: 40%;
-    transform-origin: bottom right;
-    transition: 0.3s;
-    display: none;
-}
-
-@keyframes cast {
-    0% { transform: rotate(0deg); }
-    30% { transform: rotate(-40deg); }
-    100% { transform: rotate(10deg); }
-}
-
-.animate-rod {
-    display: block;
-    animation: cast 0.8s ease-in-out;
-}
-
-.water-effect {
-    position: absolute;
-    bottom: 0;
-    width: 100%;
-    height: 20px;
-    background: rgba(59, 130, 246, 0.3);
-    animation: waves 2s infinite alternate;
-}
-
-@keyframes waves {
-    from { transform: translateX(-10px); }
-    to { transform: translateX(10px); }
-}
-
-/* UI Elements */
-input {
-    padding: 12px;
-    width: 90%;
-    margin: 8px 0;
-    border-radius: 8px;
-    border: 1px solid #334155;
-    background: #1e293b;
-    color: white;
-    box-sizing: border-box;
-}
-
-button {
-    padding: 10px 15px;
-    margin: 5px;
-    border: none;
-    border-radius: 8px;
-    background: #2563eb;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.1s, background 0.2s, opacity 0.2s;
-}
-
-button:hover:not(:disabled) { background: #3b82f6; transform: scale(1.05); }
-button:active:not(:disabled) { transform: scale(0.95); }
-button:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
-
-.danger-btn { background: #ef4444; }
-.danger-btn:hover:not(:disabled) { background: #f87171; }
-
-#stats-bar {
-    display: flex;
-    justify-content: space-between;
-    background: rgba(0,0,0,0.3);
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    font-size: 14px;
-    font-weight: bold;
-}
-
-#log {
-    margin-top: 15px;
-    height: 120px;
-    overflow: auto;
-    background: rgba(0,0,0,0.4);
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 14px;
-    text-align: left;
-    border-left: 3px solid #3b82f6;
-    line-height: 1.4;
-}
-
-hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0; }
-</style>
-</head>
-
-<body>
-
 <div class="container">
     
     <!-- Animation Visuals -->
@@ -146,7 +9,8 @@ hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0; }
     <!-- LOGIN -->
     <div id="authBox">
         <h3>🔐 Virtual Fisher Login</h3>
-        <input id="email" placeholder="Email" autocomplete="email">
+        <!-- Aus "email" wurde "username" -->
+        <input id="username" placeholder="Spielername" autocomplete="username">
         <input id="password" type="password" placeholder="Passwort" autocomplete="current-password">
         <br>
         <button id="btnRegister">Registrieren</button>
@@ -173,7 +37,7 @@ hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0; }
         <button id="btnPrestige">🔁 Prestige</button>
         <button id="btnProfile">📊 Profil</button>
 
-        <div id="log">Willkommen zurück, Angler!</div>
+        <div id="log">Willkommen zurück!</div>
     </div>
 </div>
 
@@ -182,7 +46,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// 🔥 CONFIG (Denk dran, deine echten Keys hier einzufügen)
+// 🔥 CONFIG (Deine Keys hier einfügen)
 const app = initializeApp({
   apiKey: "AIzaSy...", 
   authDomain: "khusland-b7d13.firebaseapp.com",
@@ -192,9 +56,8 @@ const app = initializeApp({
 const db = getDatabase(app);
 const auth = getAuth(app);
 let uid = null;
-
-// 🎮 GAME STATE (Lokaler Speicher für Performance)
 let gameState = null;
+let tempNameForRegister = ""; // Speichert den Namen kurz für neue Accounts
 
 const zones = ["See", "Meer", "Tiefsee"];
 const items = [
@@ -208,19 +71,9 @@ const items = [
  {n: "Leviathan", v: 400, c: 0.5, z: 2}
 ];
 
-// --- CORE LOGIK ---
-
 function roll(zone, rodLevel) {
-    // Filtere Items für aktuelle Zone
     let pool = items.filter(i => i.z <= zone);
-    
-    // Berechne die modifizierten Gewichte (Rute verbessert Chance)
-    let modifiedPool = pool.map(item => ({
-        ...item,
-        weight: item.c * (1 + rodLevel * 0.1)
-    }));
-
-    // Gesamtgewicht mit den modifizierten Werten berechnen
+    let modifiedPool = pool.map(item => ({ ...item, weight: item.c * (1 + rodLevel * 0.1) }));
     let total = modifiedPool.reduce((sum, item) => sum + item.weight, 0);
     let r = Math.random() * total;
     
@@ -228,7 +81,7 @@ function roll(zone, rodLevel) {
         if (r < item.weight) return item;
         r -= item.weight;
     }
-    return pool[0]; // Fallback
+    return pool[0];
 }
 
 async function loadData() {
@@ -237,36 +90,29 @@ async function loadData() {
         const snapshot = await get(ref(db, "users/" + uid));
         if (snapshot.exists()) {
             gameState = snapshot.val();
-            // Fallback für fehlende Werte bei alten Accounts
             gameState.inventory = gameState.inventory || {};
             gameState.quest = gameState.quest || 0;
             gameState.prestige = gameState.prestige || 0;
+            gameState.name = gameState.name || "Angler";
         } else {
-            // Neuer Spieler
-            gameState = { money: 0, xp: 0, level: 1, rod: 0, zone: 0, inventory: {}, lastDaily: 0, prestige: 0, quest: 0 };
+            // Neuer Spieler: Nutze den gespeicherten Namen
+            let playerName = tempNameForRegister || "Angler";
+            gameState = { name: playerName, money: 0, xp: 0, level: 1, rod: 0, zone: 0, inventory: {}, lastDaily: 0, prestige: 0, quest: 0 };
         }
         updateUI();
     } catch (e) {
-        log("❌ Fehler beim Laden der Daten aus der Cloud.");
-        console.error(e);
+        log("❌ Fehler beim Laden der Daten.");
     }
 }
 
 async function saveData() {
     if (!uid || !gameState) return;
-    try {
-        await set(ref(db, "users/" + uid), gameState);
-    } catch (e) {
-        log("❌ Fehler beim Speichern in der Cloud.");
-        console.error(e);
-    }
+    try { await set(ref(db, "users/" + uid), gameState); } 
+    catch (e) { console.error(e); }
 }
-
-// --- UI UPDATES ---
 
 function updateUI() {
     if(!gameState) return;
-    
     const xpNeeded = gameState.level * 50;
     document.getElementById("ui-money").innerText = `💰 ${gameState.money}$`;
     document.getElementById("ui-level").innerText = `⭐ Lvl ${gameState.level} (${gameState.xp}/${xpNeeded} XP)`;
@@ -275,17 +121,17 @@ function updateUI() {
 
 function log(text) {
     const logDiv = document.getElementById("log");
-    logDiv.innerText = text + "\n" + logDiv.innerText.split("\n").slice(0, 5).join("\n"); // Behalte nur die letzten 6 Einträge
+    logDiv.innerText = text + "\n" + logDiv.innerText.split("\n").slice(0, 5).join("\n");
 }
 
 function triggerRodAnimation() {
     const rod = document.getElementById('rod');
     rod.classList.remove('animate-rod');
-    void rod.offsetWidth; // Trigger reflow (startet Animation neu)
+    void rod.offsetWidth;
     rod.classList.add('animate-rod');
 }
 
-// --- ACTIONS ---
+// --- GAME ACTIONS ---
 
 async function handleFish() {
     const btn = document.getElementById('btnFish');
@@ -294,14 +140,11 @@ async function handleFish() {
 
     setTimeout(async () => {
         let item = roll(gameState.zone, gameState.rod);
-        
-        // Inventar & XP aktualisieren
         gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1;
         gameState.xp += 5;
         
         let message = `🎣 Gefangen: ${item.n} (${item.v}$)`;
 
-        // Quest Fortschritt (Automatisch)
         gameState.quest++;
         if(gameState.quest >= 5) {
             gameState.money += 200;
@@ -309,125 +152,107 @@ async function handleFish() {
             message += `\n📜 Quest erfüllt! +200$`;
         }
 
-        // Level Up Logik
         let xpNeeded = gameState.level * 50;
         if (gameState.xp >= xpNeeded) {
             gameState.level++;
-            gameState.xp -= xpNeeded; // Behalte überschüssige XP
+            gameState.xp -= xpNeeded;
             message += `\n⭐ LEVEL UP! Du bist jetzt Level ${gameState.level}!`;
         }
 
         updateUI();
         log(message);
-        saveData(); // Im Hintergrund speichern
+        saveData();
         btn.disabled = false;
     }, 800);
 }
 
 function handleSell() {
-    let total = 0;
-    let itemsSold = 0;
-    
+    let total = 0; let itemsSold = 0;
     for (let k in gameState.inventory) {
         let itemDef = items.find(x => x.n === k);
-        if(itemDef) {
-            total += itemDef.v * gameState.inventory[k];
-            itemsSold += gameState.inventory[k];
-        }
+        if(itemDef) { total += itemDef.v * gameState.inventory[k]; itemsSold += gameState.inventory[k]; }
     }
-    
     if (itemsSold === 0) return log("🎒 Dein Rucksack ist leer!");
-
-    gameState.money += total;
-    gameState.inventory = {};
-    
-    updateUI();
-    log(`💰 ${itemsSold} Items verkauft für ${total}$`);
-    saveData();
+    gameState.money += total; gameState.inventory = {};
+    updateUI(); log(`💰 ${itemsSold} Items verkauft für ${total}$`); saveData();
 }
 
 function handleDaily() {
     const now = Date.now();
-    if (now - gameState.lastDaily < 86400000) {
-        const hoursLeft = Math.ceil((86400000 - (now - gameState.lastDaily)) / 3600000);
-        return log(`⏳ Daily noch nicht bereit! Komm in ${hoursLeft} Stunden wieder.`);
-    }
-    
+    if (now - gameState.lastDaily < 86400000) return log(`⏳ Komm morgen wieder!`);
     let reward = 100 + (gameState.prestige * 50);
-    gameState.money += reward;
-    gameState.lastDaily = now;
-    
-    updateUI();
-    log(`🎁 Daily abgeholt: +${reward}$`);
-    saveData();
+    gameState.money += reward; gameState.lastDaily = now;
+    updateUI(); log(`🎁 Daily abgeholt: +${reward}$`); saveData();
 }
 
 function handleBuyRod() {
     let cost = (gameState.rod + 1) * 500;
-    if (gameState.money < cost) {
-        return log(`❌ Zu teuer! Eine neue Rute kostet ${cost}$.`);
-    }
-    
-    gameState.money -= cost;
-    gameState.rod++;
-    
-    updateUI();
-    log(`🛒 Rute verbessert! Du hast jetzt Rute Level ${gameState.rod}.`);
-    saveData();
+    if (gameState.money < cost) return log(`❌ Zu teuer! Kostet ${cost}$.`);
+    gameState.money -= cost; gameState.rod++;
+    updateUI(); log(`🛒 Rute Level ${gameState.rod}!`); saveData();
 }
 
 function handleZone() {
     gameState.zone = (gameState.zone + 1) % zones.length;
-    updateUI();
-    log(`🌊 Du bist zur Zone '${zones[gameState.zone]}' gereist.`);
-    saveData();
+    updateUI(); log(`🌊 Du bist nun in: ${zones[gameState.zone]}`); saveData();
 }
 
 function handlePrestige() {
-    if (gameState.level < 20 || gameState.money < 5000) {
-        return log("❌ Für Prestige brauchst du Level 20 und 5000$.");
-    }
-    
-    // Reset Stats, aber behalte Prestige
-    gameState.money = 0;
-    gameState.level = 1;
-    gameState.xp = 0;
-    gameState.rod = 0;
-    gameState.zone = 0;
-    gameState.inventory = {};
-    gameState.prestige++;
-    
-    updateUI();
-    log(`🔁 PRESTIGE! Du beginnst von vorn, erhältst aber bessere Dailys. Prestige: ${gameState.prestige}`);
-    saveData();
+    if (gameState.level < 20 || gameState.money < 5000) return log("❌ Brauchst Level 20 und 5000$.");
+    let oldName = gameState.name;
+    gameState = { name: oldName, money: 0, xp: 0, level: 1, rod: 0, zone: 0, inventory: {}, lastDaily: gameState.lastDaily, prestige: gameState.prestige + 1, quest: 0 };
+    updateUI(); log(`🔁 PRESTIGE ${gameState.prestige}!`); saveData();
 }
 
 function showProfile() {
     let inv = "";
     for (let i in gameState.inventory) inv += `• ${i}: ${gameState.inventory[i]}\n`;
-    
-    log(`👤 PROFIL\n💰 Geld: ${gameState.money}$\n⭐ Level: ${gameState.level}\n🎣 Rute: Lvl ${gameState.rod}\n🔁 Prestige: ${gameState.prestige}\n\n🎒 Rucksack:\n${inv || 'Leer'}`);
+    log(`👤 ${gameState.name.toUpperCase()}\n💰 Geld: ${gameState.money}$\n⭐ Level: ${gameState.level}\n🎣 Rute: Lvl ${gameState.rod}\n🔁 Prestige: ${gameState.prestige}\n\n🎒 Rucksack:\n${inv || 'Leer'}`);
 }
 
-// --- AUTH & INITIALISIERUNG ---
+// --- AUTH (NUR NAME & PASSWORT) ---
 
 document.getElementById('btnRegister').addEventListener('click', async () => {
+    const username = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value;
+    
+    if(username.length < 3 || pass.length < 6) {
+        return log("❌ Name mind. 3 Zeichen, Passwort mind. 6 Zeichen!");
+    }
+
+    // Der Trick: Aus dem Namen wird im Hintergrund eine Fake-Email
+    const dummyEmail = username.toLowerCase() + "@vfisher.local";
+    tempNameForRegister = username; // Merken für die Datenbank
+
     try { 
-        await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); 
-    } catch(e) { log(`❌ Registrierung fehlgeschlagen: ${e.message}`); }
+        await createUserWithEmailAndPassword(auth, dummyEmail, pass); 
+    } catch(e) { 
+        if(e.code === 'auth/email-already-in-use') {
+            log("❌ Dieser Spielername existiert bereits!");
+        } else {
+            log(`❌ Fehler: ${e.message}`); 
+        }
+    }
 });
 
 document.getElementById('btnLogin').addEventListener('click', async () => {
+    const username = document.getElementById('username').value.trim().toLowerCase();
+    const pass = document.getElementById('password').value;
+    
+    if(!username || !pass) return log("❌ Bitte Name und Passwort eingeben!");
+
+    // Gleicher Trick fürs Login
+    const dummyEmail = username + "@vfisher.local";
+
     try { 
-        await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); 
-    } catch(e) { log("❌ Login falsch"); }
+        await signInWithEmailAndPassword(auth, dummyEmail, pass); 
+    } catch(e) { 
+        log("❌ Name oder Passwort falsch!"); 
+    }
 });
 
-document.getElementById('btnLogout').addEventListener('click', async () => {
-    await signOut(auth);
-});
+document.getElementById('btnLogout').addEventListener('click', async () => { await signOut(auth); });
 
-// Event Listener für In-Game Buttons
 document.getElementById('btnFish').addEventListener('click', handleFish);
 document.getElementById('btnSell').addEventListener('click', handleSell);
 document.getElementById('btnDaily').addEventListener('click', handleDaily);
@@ -446,7 +271,7 @@ onAuthStateChanged(auth, async (user) => {
         gameBox.style.display = "block";
         document.getElementById("log").innerText = "Daten werden geladen...";
         await loadData();
-        log("✅ Petri Heil! Spiel geladen.");
+        log(`✅ Willkommen zurück, ${gameState.name}!`);
     } else {
         uid = null;
         gameState = null;
@@ -455,6 +280,3 @@ onAuthStateChanged(auth, async (user) => {
     }
 });
 </script>
-
-</body>
-</html>
