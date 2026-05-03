@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Fisher PRO v1.8</title>
+    <title>Virtual Fisher PRO v1.9</title>
     <style>
         /* --- GRUNDDESIGN & HINTERGRUND --- */
         body {
@@ -16,17 +16,18 @@
         .bg-bubbles { position: fixed; bottom: -50px; background: rgba(59,130,246,0.05); border-radius: 50%; animation: floatUp linear infinite; z-index: -1; }
         @keyframes floatUp { to { transform: translateY(-120vh) scale(1.5); opacity: 0; } }
 
-        /* --- HAUPT-CONTAINER --- */
+        /* --- HAUPT-CONTAINER (BREITER GEMACHT) --- */
         .container {
-            width: 440px; background: #161b22; padding: 20px; border-radius: 16px;
+            width: 600px; /* Breite deutlich erhöht */
+            background: #161b22; padding: 25px; border-radius: 16px;
             box-shadow: 0 15px 50px rgba(0,0,0,0.9); border: 1px solid rgba(59, 130, 246, 0.2);
             text-align: center; position: relative; animation: fadeIn 0.4s ease-out;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- ANGEL-ANIMATION (BOOT) --- */
+        /* --- ANGEL-ANIMATION --- */
         #fishing-scene {
-            height: 110px; position: relative; margin-bottom: 15px; border-bottom: 3px solid #3b82f6;
+            height: 120px; position: relative; margin-bottom: 20px; border-bottom: 3px solid #3b82f6;
             overflow: hidden; border-radius: 12px 12px 0 0; background: linear-gradient(180deg, rgba(2, 6, 23, 0.8) 0%, rgba(30, 64, 175, 0.5) 100%);
         }
 
@@ -36,7 +37,7 @@
         }
         @keyframes bobbingBoat { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-3px) rotate(2deg); } }
 
-        .fisher-emoji { font-size: 34px; transform: scaleX(-1); display: inline-block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+        .fisher-emoji { font-size: 38px; transform: scaleX(-1); display: inline-block; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
         
         .bobber {
             position: absolute; bottom: 15px; left: 50%;
@@ -46,7 +47,14 @@
         .fishing-active .bobber { animation: bobbing 0.8s ease-in-out; }
         @keyframes bobbing { 0% { bottom: 15px; } 20% { bottom: 12px; } 40% { bottom: -2px; opacity: 0.4; } 80% { bottom: -2px; opacity: 0.4; } 100% { bottom: 15px; } }
 
-        /* Wasser Layer */
+        /* --- AUTO NETZ ANIMATION --- */
+        .net-anim {
+            position: absolute; bottom: 5px; right: 20%; font-size: 30px;
+            animation: bobbingBoat 4s ease-in-out infinite reverse; z-index: 3;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); display: none;
+        }
+
+        /* Nahtloses Wasser */
         .water-layer-1 { position: absolute; bottom: 0; width: 200%; height: 20px; background: linear-gradient(90deg, rgba(59,130,246,0.3) 0%, rgba(59,130,246,0.5) 25%, rgba(59,130,246,0.3) 50%, rgba(59,130,246,0.5) 75%, rgba(59,130,246,0.3) 100%); animation: waves 4s linear infinite; z-index: 4; }
         .water-layer-2 { position: absolute; bottom: 5px; width: 200%; height: 20px; background: linear-gradient(90deg, rgba(29,78,216,0.3) 0%, rgba(29,78,216,0.5) 25%, rgba(29,78,216,0.3) 50%, rgba(29,78,216,0.5) 75%, rgba(29,78,216,0.3) 100%); animation: waves 5s linear infinite reverse; z-index: 2; }
         @keyframes waves { from { transform: translateX(0); } to { transform: translateX(-50%); } }
@@ -59,77 +67,76 @@
         .algae-container { position: absolute; bottom: -5px; width: 200%; display: flex; justify-content: space-around; font-size: 16px; animation: waves 6s linear infinite; z-index: 5; opacity: 0.8; }
 
         /* --- UI --- */
-        #top-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; font-weight: bold; }
+        #top-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 14px; font-weight: bold; }
         .tooltip { position: relative; cursor: help; border-bottom: 1px dotted #fff; }
         .tooltip .tooltiptext { visibility: hidden; width: 220px; background-color: #0f172a; color: #fff; text-align: center; border-radius: 8px; padding: 10px; position: absolute; z-index: 10; bottom: 150%; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.2s; border: 1px solid #3b82f6; font-size: 12px; font-weight: normal; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;}
         .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
 
-        #stats-bar { display: flex; justify-content: space-between; align-items: center; background: #0d1117; padding: 12px 15px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); }
-        
-        #combo-bar { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.5); color: #fcd34d; font-size: 12px; font-weight: bold; padding: 6px; border-radius: 6px; margin-bottom: 12px; display: none; transition: 0.1s; }
-        .equip-bar { display: flex; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 10px; }
+        #stats-bar { display: flex; justify-content: space-between; align-items: center; background: #0d1117; padding: 12px 15px; border-radius: 8px; margin-bottom: 8px; font-size: 15px; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); }
+        #combo-bar { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.5); color: #fcd34d; font-size: 13px; font-weight: bold; padding: 6px; border-radius: 6px; margin-bottom: 12px; display: none; transition: 0.1s; }
+        .equip-bar { display: flex; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; }
 
-        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
-        .btn-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+        .btn-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
 
-        button { padding: 10px; border: none; border-radius: 8px; background: #2563eb; color: white; font-weight: bold; cursor: pointer; transition: 0.15s; font-size: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+        button { padding: 12px; border: none; border-radius: 8px; background: #2563eb; color: white; font-weight: bold; cursor: pointer; transition: 0.15s; font-size: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
         button:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-2px); }
         button:active:not(:disabled) { transform: translateY(1px); }
         button:disabled { background: #334155; cursor: not-allowed; opacity: 0.7; transform: none;}
 
-        .danger-btn { background: #ef4444; padding: 6px 10px; font-size: 11px; flex-direction: row; }
+        .danger-btn { background: #ef4444; padding: 8px 12px; font-size: 12px; flex-direction: row; }
         .prestige-btn { background: #8b5cf6; flex-direction: row; } 
         .success-btn { background: #10b981; flex-direction: row; }
         .update-btn { background: #0ea5e9; flex-direction: row; }
 
         input { padding: 12px; width: 90%; margin: 8px 0; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box; }
 
-        #log { height: 110px; overflow-y: auto; background: #0d1117; padding: 10px; border-radius: 8px; font-size: 13px; text-align: left; border-left: 3px solid #3b82f6; line-height: 1.6; margin-top: 10px; }
+        #log { height: 130px; overflow-y: auto; background: #0d1117; padding: 12px; border-radius: 8px; font-size: 14px; text-align: left; border-left: 3px solid #3b82f6; line-height: 1.6; margin-top: 15px; }
         #log::-webkit-scrollbar { width: 6px; } #log::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 
         /* --- MODAL / POPUP SYSTEM --- */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); animation: fadeIn 0.2s; }
-        .modal-content { background: #161b22; width: 440px; max-height: 85vh; border-radius: 14px; border: 1px solid #30363d; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .modal-header { background: #0d1117; padding: 15px 20px; font-size: 16px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; }
-        .modal-body { padding: 20px; overflow-y: auto; font-size: 14px; text-align: left; }
+        .modal-content { background: #161b22; width: 550px; max-height: 85vh; border-radius: 14px; border: 1px solid #30363d; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        .modal-header { background: #0d1117; padding: 15px 20px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; }
+        .modal-body { padding: 20px; overflow-y: auto; font-size: 15px; text-align: left; }
         .modal-body::-webkit-scrollbar { width: 6px; } .modal-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
         .modal-footer { padding: 15px 20px; background: #0d1117; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #30363d; }
-        .close-btn { background: none; color: #8b949e; font-size: 20px; cursor: pointer; padding: 0; transition: 0.2s; } .close-btn:hover { color: #f87171; transform: scale(1.2); }
+        .close-btn { background: none; color: #8b949e; font-size: 24px; cursor: pointer; padding: 0; transition: 0.2s; } .close-btn:hover { color: #f87171; transform: scale(1.2); }
         
-        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .quest-row { background: #0d1117; padding: 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d; }
         
         .dex-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .dex-tab { flex: 1; padding: 10px; background: #0d1117; text-align: center; border-radius: 8px; cursor: pointer; border: 1px solid #30363d; transition: 0.2s; font-weight: bold;}
+        .dex-tab { flex: 1; padding: 12px; background: #0d1117; text-align: center; border-radius: 8px; cursor: pointer; border: 1px solid #30363d; transition: 0.2s; font-weight: bold;}
         .dex-tab.active { background: #2563eb; border-color: #3b82f6; }
         .fish-dex-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .dex-card { background: #0d1117; padding: 12px; border-radius: 10px; border: 1px solid #30363d; text-align: center; cursor: pointer; transition: 0.2s; }
         .dex-card:hover:not(.locked) { transform: translateY(-2px); border-color: #3b82f6; background: rgba(59,130,246,0.1); }
         .dex-card.locked { opacity: 0.3; filter: grayscale(100%); cursor: not-allowed; }
-        .dex-emoji { font-size: 28px; margin-bottom: 5px; }
-        .shiny-badge { font-size: 11px; background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fcd34d; padding: 2px 5px; border-radius: 4px; display: inline-block; margin-top: 5px;}
+        .dex-emoji { font-size: 32px; margin-bottom: 5px; }
+        .shiny-badge { font-size: 12px; background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fcd34d; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 5px;}
 
         /* Daily Progress Grid */
         .daily-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px;}
-        .daily-card { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 12px 5px; text-align: center; transition: 0.2s; }
-        .daily-card.day7 { grid-column: span 3; background: rgba(245, 158, 11, 0.05); border-color: #fcd34d; padding: 15px;}
+        .daily-card { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 15px 5px; text-align: center; transition: 0.2s; }
+        .daily-card.day7 { grid-column: span 3; background: rgba(245, 158, 11, 0.05); border-color: #fcd34d; padding: 20px;}
         .daily-card.active { background: rgba(59,130,246,0.2); border-color: #3b82f6; transform: scale(1.05); box-shadow: 0 0 15px rgba(59,130,246,0.3); }
         .daily-card.missed { opacity: 0.4; }
 
-        .leader-row { background: #0d1117; padding: 12px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; border: 1px solid #30363d; cursor: pointer; transition: 0.2s;}
+        .leader-row { background: #0d1117; padding: 15px; border-radius: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; border: 1px solid #30363d; cursor: pointer; transition: 0.2s; font-size: 15px;}
         .leader-row:hover { border-color: #60a5fa; background: rgba(96,165,250,0.1); transform: translateX(5px); }
 
         .profile-card { background: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 20px; margin-bottom: 15px; }
         .profile-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #30363d; padding-bottom: 15px; margin-bottom: 15px;}
-        .profile-avatar { font-size: 40px; background: #1e293b; width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #60a5fa;}
+        .profile-avatar { font-size: 40px; background: #1e293b; width: 75px; height: 75px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #60a5fa;}
         .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .stat-box { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; text-align: center; }
-        .stat-val { font-size: 16px; font-weight: bold; color: #60a5fa; }
-        .stat-lbl { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+        .stat-box { background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; text-align: center; }
+        .stat-val { font-size: 18px; font-weight: bold; color: #60a5fa; }
+        .stat-lbl { font-size: 12px; color: #94a3b8; text-transform: uppercase; }
 
         .update-log-item { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #30363d; }
         .update-title { color: #60a5fa; font-weight: bold; margin-bottom: 8px; font-size: 16px; }
-        .update-list { font-size: 13px; color: #94a3b8; padding-left: 20px; margin: 0; line-height: 1.6; }
+        .update-list { font-size: 14px; color: #94a3b8; padding-left: 20px; margin: 0; line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -154,7 +161,8 @@
 <div class="container">
     <!-- Angel Szene -->
     <div id="fishing-scene">
-        <div id="weather-layer"></div>
+        <div id="weather-layer" data-weather="none"></div>
+        <div id="netAnim" class="net-anim">🕸️</div>
         <div class="boat-container"><div class="fisher-emoji">🚣</div></div>
         <div class="bobber" id="bobber"></div>
         <div class="water-layer-2"></div>
@@ -164,7 +172,7 @@
     <!-- Login -->
     <div id="authBox">
         <h3>🔐 Virtual Fisher Login</h3>
-        <p style="font-size: 12px; color: #8b949e;">Test-Accounts: Spieler1 bis Spieler5</p>
+        <p style="font-size: 13px; color: #8b949e;">Test-Accounts: Spieler1 bis Spieler5</p>
         <input id="username" placeholder="Spielername" autocomplete="off">
         <input id="password" type="password" placeholder="Passwort" autocomplete="off"><br>
         <button id="btnLogin" style="width: 90%; margin: 15px auto; flex-direction: row;">Login</button>
@@ -191,27 +199,27 @@
             <span id="ui-eq-bait">🪱 Köder: Keine (0)</span>
         </div>
 
-        <button id="btnFish" style="width: 100%; margin-bottom: 15px; padding: 18px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; flex-direction: row;">🎣 Angeln</button>
+        <button id="btnFish" style="width: 100%; margin-bottom: 15px; padding: 20px; font-size: 20px; text-transform: uppercase; letter-spacing: 1.5px; flex-direction: row;">🎣 Angeln</button>
         
         <div class="btn-grid">
-            <button id="btnSell"><span style="font-size: 18px;">💰</span> Verkaufen</button>
-            <button id="btnShop"><span style="font-size: 18px;">🛒</span> Shop</button>
-            <button id="btnInv"><span style="font-size: 18px;">🎒</span> Inventar</button>
+            <button id="btnSell"><span style="font-size: 20px;">💰</span> Verkaufen</button>
+            <button id="btnShop"><span style="font-size: 20px;">🛒</span> Shop</button>
+            <button id="btnInv"><span style="font-size: 20px;">🎒</span> Inventar</button>
             
-            <button id="btnNet"><span style="font-size: 18px;">⚙️</span> Auto-Netz</button>
-            <button id="btnDex"><span style="font-size: 18px;">📖</span> Fisch-Dex</button>
-            <button id="btnQuest"><span style="font-size: 18px;">📜</span> Quest</button>
+            <button id="btnNet"><span style="font-size: 20px;">⚙️</span> Auto-Netz</button>
+            <button id="btnDex"><span style="font-size: 20px;">📖</span> Fisch-Dex</button>
+            <button id="btnQuest"><span style="font-size: 20px;">📜</span> Quest</button>
             
-            <button id="btnDaily"><span style="font-size: 18px;">🎁</span> Daily</button>
-            <button id="btnLeader"><span style="font-size: 18px;">🏆</span> Leaderboard</button>
-            <button id="btnZone"><span style="font-size: 18px;">🗺️</span> Zone</button>
+            <button id="btnDaily"><span style="font-size: 20px;">🎁</span> Daily</button>
+            <button id="btnLeader"><span style="font-size: 20px;">🏆</span> Leaderboard</button>
+            <button id="btnZone"><span style="font-size: 20px;">🗺️</span> Zone</button>
         </div>
         
         <div class="btn-grid-2">
-            <button id="btnProfile" style="flex-direction: row;">📊 Profil</button>
-            <button id="btnUpdates" class="update-btn">📝 Updates</button>
+            <button id="btnProfile" style="flex-direction: row; font-size: 15px;">📊 Profil</button>
+            <button id="btnUpdates" class="update-btn" style="font-size: 15px;">📝 Updates</button>
         </div>
-        <button id="btnPrestige" class="prestige-btn" style="width: 100%;">🔁 Prestige Aufstieg</button>
+        <button id="btnPrestige" class="prestige-btn" style="width: 100%; font-size: 15px;">🔁 Prestige Aufstieg</button>
 
         <div id="log">Lade Spielstand...</div>
     </div>
@@ -221,9 +229,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+// 🔥 DEINE NEUE FIREBASE
 const firebaseConfig = {
-    apiKey: "AIzaSyCw4nadHCIRcouTJJoQ3ElToiVVFr5Rufo", authDomain: "khusland-b7d13.firebaseapp.com",
-    databaseURL: "https://khusland-b7d13-default-rtdb.firebaseio.com", projectId: "khusland-b7d13", storageBucket: "khusland-b7d13.firebasestorage.app"
+    apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
+    authDomain: "cc-shop-36c3b.firebaseapp.com",
+    databaseURL: "https://cc-shop-36c3b-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cc-shop-36c3b",
+    storageBucket: "cc-shop-36c3b.firebasestorage.app",
+    messagingSenderId: "376170741825",
+    appId: "1:376170741825:web:bc6102e277da5ad7cbc6c0",
+    measurementId: "G-FJVHHQWZFW"
 };
 const app = initializeApp(firebaseConfig); const db = getDatabase(app);
 
@@ -248,23 +263,23 @@ function getRarity(c) {
 }
 
 const rodsDB = { "r1": { name: "Holzrute", e: "🪵", cost: 0, boost: 0, desc: "Standard" }, "r2": { name: "Fiberglas-Rute", e: "🎣", cost: 5000, boost: 0.1, desc: "+10% Seltene" }, "r3": { name: "Carbon-Rute", e: "🦾", cost: 25000, boost: 0.2, desc: "+20% Seltene" }, "r4": { name: "Meister-Rute", e: "🔱", cost: 100000, boost: 0.4, desc: "+40% Seltene" } };
-const baitsDB = { "b1": { name: "Brot", e: "🍞", cost: 100, amt: 20, desc: "+5% allgemeine Chance", type: "boost" }, "b2": { name: "Wurm", e: "🪱", cost: 500, amt: 20, desc: "Blockiert Müll komplett", type: "clean" }, "b3": { name: "Gold-Köder", e: "✨", cost: 2500, amt: 10, desc: "3x höhere Mutation-Chance", type: "shiny" } };
+const baitsDB = { "b1": { name: "Brot", e: "🍞", cost: 100, amt: 20, desc: "+5% allg. Chance", type: "boost" }, "b2": { name: "Wurm", e: "🪱", cost: 500, amt: 20, desc: "Blockt Müll", type: "clean" }, "b3": { name: "Gold-Köder", e: "✨", cost: 2500, amt: 10, desc: "3x Mutation", type: "shiny" } };
 const autoLevels = [ { cost: 0, time: 0, cap: 0 }, { cost: 5000, time: 300, cap: 12 }, { cost: 25000, time: 270, cap: 16 }, { cost: 100000, time: 240, cap: 24 }, { cost: 500000, time: 210, cap: 32 }, { cost: 2500000, time: 180, cap: 48 }, { cost: 10000000, time: 120, cap: 60 } ];
 
 const specialEvents = [
     { name: "☀️ Goldene Sonne", type: "sun", boost: 3, target: "Shiny", desc: "+300% Chance auf Mutation!" },
-    { name: "🌧️ Monsun", type: "rain", boost: 2, target: "Speed", desc: "Angeln geht schneller!" },
+    { name: "🌧️ Monsun", type: "rain", boost: 2, target: "Speed", desc: "Angeln geht doppelt so schnell!" },
     { name: "🦈 Hai-Woche", type: "normal", boost: 5, target: "Hai", desc: "5x Chance auf Haie!" },
     { name: "💎 Schatzsuche", type: "normal", boost: 10, target: "Atlantis-Kristall", desc: "10x Chance auf Kristalle!" },
     { name: "🌿 Algenblüte", type: "algae", boost: 5, target: "Alge", desc: "Überall Algen... pass auf!" }
 ];
 
-// --- ⏲️ LOKALES EVENT SYSTEM ---
 function checkEvents() {
     let now = Date.now();
     if(!gameState.ev || now > gameState.ev.exp) {
-        let dur = Math.floor(Math.random() * (15 - 5 + 1) + 5) * 60000;
-        let evtDef = specialEvents[Math.floor(Math.random() * specialEvents.length)];
+        let dur = Math.floor(Math.random() * (15 - 5 + 1) + 5) * 60000; 
+        let avail = specialEvents.filter(e => !gameState.ev || e.name !== gameState.ev.name); 
+        let evtDef = avail[Math.floor(Math.random() * avail.length)];
         gameState.ev = { ...evtDef, exp: now + dur };
         saveData();
     }
@@ -282,7 +297,6 @@ const questDB = {
     monthly: [ {id:'m1',desc:'Fange 500 Fische',t:'c',req:500,rew:2500}, {id:'m2',desc:'Fange 1000 Fische',t:'c',req:1000,rew:5000}, {id:'m3',desc:'Fange 2500 Fische',t:'c',req:2500,rew:10000}, {id:'m4',desc:'Fange 5000 Fische',t:'c',req:5000,rew:20000}, {id:'m5',desc:'Fange 10000 Fische',t:'c',req:10000,rew:50000}, {id:'m6',desc:'Verdiene 5000$',t:'e',req:5000,rew:2000}, {id:'m7',desc:'Verdiene 15000$',t:'e',req:15000,rew:5000}, {id:'m8',desc:'Verdiene 50000$',t:'e',req:50000,rew:15000}, {id:'m9',desc:'Verdiene 150000$',t:'e',req:150000,rew:50000}, {id:'m10',desc:'Verdiene 500000$',t:'e',req:500000,rew:150000} ]
 };
 
-// BUG FIX: Ensure all nested properties exist correctly
 function checkQuestResets() {
     let k = getResetKeys(); 
     if(!gameState.qs || typeof gameState.qs.d !== 'string' || !gameState.qs.p || !gameState.qs.c) {
@@ -341,12 +355,15 @@ function roll(zIdx) {
     return finalItem;
 }
 
-// BUG FIX: Ensure old boolean format updates properly
 function updateDex(item) {
-    if(typeof gameState.dex[item.baseName] !== 'object') {
+    if(!gameState.dex[item.baseName] || typeof gameState.dex[item.baseName] !== 'object') {
         gameState.dex[item.baseName] = { normal: false, shiny: false, count: 0 };
     }
-    if(item.isShiny) gameState.dex[item.baseName].shiny = true; else gameState.dex[item.baseName].normal = true;
+    if(typeof gameState.dex[item.baseName].count !== 'number') gameState.dex[item.baseName].count = 0;
+    
+    if(item.isShiny) gameState.dex[item.baseName].shiny = true; 
+    else gameState.dex[item.baseName].normal = true;
+    
     gameState.dex[item.baseName].count++;
 }
 
@@ -363,7 +380,7 @@ async function loadData() {
         if(!gameState.baits) { gameState.baits = {}; gameState.eqBait = "none"; }
         if(!gameState.eqBait) gameState.eqBait = "none";
         
-        // Fix old Dex format (booleans to objects)
+        // Fix alte Booleans im Dex
         for(let k in gameState.dex) {
             if(typeof gameState.dex[k] === 'boolean') {
                 gameState.dex[k] = { normal: gameState.dex[k], shiny: false, count: 1 };
@@ -371,7 +388,6 @@ async function loadData() {
         }
         
         gameState.combo = 0; gameState.lastCatchTime = 0;
-        
         checkEvents(); checkQuestResets(); updateUI();
         document.getElementById("authBox").style.display = "none"; document.getElementById("game").style.display = "block"; 
         log(`✅ Willkommen zurück, ${currentUser}!`);
@@ -380,9 +396,19 @@ async function loadData() {
 
 function saveData() { if (currentUser && gameState) set(ref(db, "users/" + currentUser), gameState); }
 
+window.checkBankruptcy = async function() {
+    if (gameState && gameState.money <= -150000) {
+        let u = currentUser;
+        currentUser = null; gameState = null;
+        await set(ref(db, "users/" + u), null);
+        alert("💸 BANKROTT! Dein Schuldenberg hat -150.000$ erreicht. Dein Spielstand wurde soeben vernichtet.");
+        location.reload();
+    }
+};
+
 function updateUI() {
     if(!gameState) return;
-    checkEvents(); 
+    checkEvents(); checkBankruptcy();
     
     document.getElementById("ui-money").innerText = `💰 ${gameState.money.toLocaleString()}$`;
     document.getElementById("ui-level").innerText = `⭐ Lvl ${gameState.level} (${gameState.xp}/${gameState.level * 50})`;
@@ -392,11 +418,20 @@ function updateUI() {
     let mins = Math.floor(timeLeft / 60000); let secs = Math.floor((timeLeft % 60000) / 1000);
     document.getElementById("eventDisplay").innerHTML = `${evt.name} <span class="tooltiptext"><b>${evt.desc}</b><br>Endet in: ${mins}m ${secs}s</span>`;
     
+    // Vermeide Re-Render Flackern bei Wetter
     let wLayer = document.getElementById("weather-layer");
-    if(evt.type === "sun") wLayer.innerHTML = `<div class="sun-fx"></div>`;
-    else if(evt.type === "rain") wLayer.innerHTML = `<div class="rain-fx"></div>`;
-    else if(evt.type === "algae") wLayer.innerHTML = `<div class="algae-container"><span>🌿</span><span>🌿</span><span>🌿</span><span>🌿</span><span>🌿</span></div>`;
-    else wLayer.innerHTML = "";
+    if(wLayer.getAttribute("data-weather") !== evt.type) {
+        if(evt.type === "sun") wLayer.innerHTML = `<div class="sun-fx"></div>`;
+        else if(evt.type === "rain") wLayer.innerHTML = `<div class="rain-fx"></div>`;
+        else if(evt.type === "algae") wLayer.innerHTML = `<div class="algae-container"><span>🌿</span><span>🌿</span><span>🌿</span><span>🌿</span><span>🌿</span></div>`;
+        else wLayer.innerHTML = "";
+        wLayer.setAttribute("data-weather", evt.type);
+    }
+
+    // Auto Netz Animation
+    let netAnim = document.getElementById("netAnim");
+    if (gameState.net && gameState.net.level > 0) netAnim.style.display = "block";
+    else netAnim.style.display = "none";
 
     document.getElementById("ui-eq-rod").innerText = `${rodsDB[gameState.eqRod].e} Rute: ${rodsDB[gameState.eqRod].name}`;
     if(gameState.eqBait !== "none" && gameState.baits[gameState.eqBait] > 0) {
@@ -409,9 +444,10 @@ function updateUI() {
     if(gameState.combo > 1) { comboBar.style.display = "block"; comboBar.innerText = `🔥 Combo: x${(1 + (Math.min(gameState.combo, 50) * 0.02)).toFixed(2)} (${gameState.combo} Fänge)`; } 
     else { comboBar.style.display = "none"; }
 }
-setInterval(() => { if(gameState) updateUI(); }, 1000); 
+// 100ms LIVE UI UPDATE
+setInterval(() => { if(gameState) { updateUI(); } }, 100); 
 
-// 🔥 HARDCORE COMBO TIMER (Verfällt nach 3s Inaktivität. Log entfernt.)
+// 🔥 HARDCORE COMBO TIMER (Verfällt nach 3s Inaktivität. OHNE LOG)
 setInterval(() => {
     if(gameState && gameState.combo > 0) {
         if(Date.now() > (gameState.lastCatchTime || 0)) {
@@ -433,6 +469,7 @@ function openModal(t, b, f='') {
     document.getElementById('modal-overlay').style.display = 'flex'; 
 }
 
+// Global Funktionen für HTML Buttons
 window.equipRod = function(r) { gameState.eqRod = r; saveData(); updateUI(); window.handleInvMenu(); }
 window.equipBait = function(b) { gameState.eqBait = b; saveData(); updateUI(); window.handleInvMenu(); }
 window.unequipBait = function() { gameState.eqBait = "none"; saveData(); updateUI(); window.handleInvMenu(); }
@@ -448,7 +485,7 @@ window.handleFish = function() {
     setTimeout(() => {
         try {
             let i = roll(gameState.zone);
-            gameState.lastCatchTime = Date.now() + 3000; // Combo-Zeitfenster: 3.0s
+            gameState.lastCatchTime = Date.now() + 3000; // 3 Sekunden Zeitfenster
             
             if (i.baseName === "Müll" || i.baseName === "Schuh" || i.baseName === "Alge") {
                 gameState.combo = 0;
@@ -470,6 +507,8 @@ window.handleFish = function() {
             if (gameState.xp >= gameState.level * 50) { gameState.xp -= gameState.level * 50; gameState.level++; msg += `<br>⭐ LEVEL UP! Level ${gameState.level}!`; }
             
             updateUI(); log(msg); saveData();
+        } catch (err) {
+            console.error(err); log("❌ Fehler beim Angeln.");
         } finally {
             scene.classList.remove('fishing-active'); btn.disabled = false;
         }
@@ -493,14 +532,13 @@ window.handleSellMenu = function() {
     openModal("💰 Verkauf", html, `<button class="success-btn" onclick="executeSell(${finalTotal})">Alles Verkaufen</button>`);
 }
 
-// BUG FIX: Prevent Double Click Selling and Auto-Refresh
+// IN-PLACE UPDATE BEIM VERKAUFEN
 window.executeSell = function(val) { 
     let hasItems = false; for(let k in gameState.inventory) { if(gameState.inventory[k] > 0) hasItems = true; }
-    if(!hasItems) return; // Prevent double trigger
-    
+    if(!hasItems) return; 
     gameState.money += val; if(val>0){ gameState.stats.totalEarned += val; addQuestProgress('e', val); } 
     gameState.inventory = {}; updateUI(); log(`💰 Alles verkauft für ${val.toLocaleString()}$`); saveData(); 
-    handleSellMenu(); // Direktes in-place Update (leert das Popup)
+    handleSellMenu(); 
 }
 
 window.handleShopMenu = function() {
@@ -508,25 +546,23 @@ window.handleShopMenu = function() {
     for(let r in rodsDB) {
         if(!gameState.ownedRods.includes(r)) {
             let rd = rodsDB[r];
-            html += `<div class="item-row" style="align-items: center;"><div><b>${rd.e} ${rd.name}</b><br><span style="font-size: 11px; color: #94a3b8;">${rd.desc}</span></div><button class="success-btn" ${gameState.money<rd.cost?'disabled':''} onclick="buyRod('${r}')">${rd.cost.toLocaleString()}$</button></div>`;
+            html += `<div class="item-row" style="align-items: center;"><div><b>${rd.e} ${rd.name}</b><br><span style="font-size: 12px; color: #94a3b8;">${rd.desc}</span></div><button class="success-btn" ${gameState.money<rd.cost?'disabled':''} onclick="buyRod('${r}')">${rd.cost.toLocaleString()}$</button></div>`;
         }
     }
-    
     html += `<h4 style="color:#60a5fa; margin-top:20px;">🪱 Köder Kaufen</h4>`;
     for(let b in baitsDB) {
         let bd = baitsDB[b];
-        html += `<div class="item-row" style="align-items: center;"><div><b>${bd.e} ${bd.name} (${bd.amt}x)</b><br><span style="font-size: 11px; color: #94a3b8;">${bd.desc}</span></div><button class="success-btn" ${gameState.money<bd.cost?'disabled':''} onclick="buyBait('${b}')">${bd.cost.toLocaleString()}$</button></div>`;
+        html += `<div class="item-row" style="align-items: center;"><div><b>${bd.e} ${bd.name} (${bd.amt}x)</b><br><span style="font-size: 12px; color: #94a3b8;">${bd.desc}</span></div><button class="success-btn" ${gameState.money<bd.cost?'disabled':''} onclick="buyBait('${b}')">${bd.cost.toLocaleString()}$</button></div>`;
     }
-
     let n = gameState.net; let nextLvl = n.level + 1;
     if (nextLvl < autoLevels.length) {
         let nextInfo = autoLevels[nextLvl];
-        html += `<h4 style="color:#60a5fa; margin-top:20px;">⚙️ Auto-Netz Upgrades</h4><div class="item-row" style="align-items: center;"><div><b>Stufe ${nextLvl}</b><br><span style="font-size: 11px; color: #94a3b8;">Max ${nextInfo.cap} Fische (${nextInfo.time/60}m Takt)</span></div><button class="success-btn" ${gameState.money<nextInfo.cost?'disabled':''} onclick="buyNet(${nextInfo.cost})">${nextInfo.cost.toLocaleString()}$</button></div>`;
+        html += `<h4 style="color:#60a5fa; margin-top:20px;">⚙️ Auto-Netz Upgrades</h4><div class="item-row" style="align-items: center;"><div><b>Stufe ${nextLvl}</b><br><span style="font-size: 12px; color: #94a3b8;">Max ${nextInfo.cap} Fische (${nextInfo.time/60}m Takt)</span></div><button class="success-btn" ${gameState.money<nextInfo.cost?'disabled':''} onclick="buyNet(${nextInfo.cost})">${nextInfo.cost.toLocaleString()}$</button></div>`;
     }
-    
-    // BUG FIX: Shop money title update directly
     openModal(`🛒 Shop | 💰 ${gameState.money.toLocaleString()}$`, html);
 }
+
+// IN-PLACE SHOP UPDATES
 window.buyRod = function(id) { gameState.money-=rodsDB[id].cost; gameState.ownedRods.push(id); saveData(); updateUI(); handleShopMenu(); }
 window.buyBait = function(id) { gameState.money-=baitsDB[id].cost; gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); updateUI(); handleShopMenu(); }
 window.buyNet = function(cost) { gameState.money-=cost; gameState.net.level++; gameState.net.lastClaim=Date.now(); saveData(); updateUI(); handleShopMenu(); }
@@ -549,10 +585,9 @@ window.handleNetMenu = function() {
     let n = gameState.net;
     if (n.level === 0) return openModal("⚙️ Auto-Angeln", "<p>Du besitzt noch kein Netz. Kaufe eins im Shop!</p>");
     let curInfo = autoLevels[n.level]; let minsPassed = Math.floor((Date.now() - n.lastClaim) / 60000); let fishPerMin = 1 / (curInfo.time / 60); let cnt = Math.floor(Math.min(minsPassed * fishPerMin, curInfo.cap));
-    let html = `<div style="text-align:center;"><p>Maschine lief im Hintergrund.</p><h2 style="color:#10b981; margin:10px 0;">${cnt} / ${curInfo.cap} Fische</h2><p style="font-size:12px; color:#94a3b8;">(1 Fisch / ${curInfo.time/60} Min)</p></div>`;
+    let html = `<div style="text-align:center;"><p>Maschine lief im Hintergrund.</p><h2 style="color:#10b981; margin:10px 0;">${cnt} / ${curInfo.cap} Fische</h2><p style="font-size:13px; color:#94a3b8;">(1 Fisch / ${curInfo.time/60} Min)</p></div>`;
     openModal("⚙️ Maschine Lvl " + n.level, html, cnt>0?`<button class="success-btn" onclick="claimNet(${cnt})">Leeren</button>`:`<button disabled>Leer</button>`);
 }
-// BUG FIX: Dynamic Update for Netz
 window.claimNet = function(c) { 
     if(c <= 0) return;
     for(let i=0;i<c;i++){ let r=roll(gameState.zone); gameState.inventory[r.n]=(gameState.inventory[r.n]||0)+1; updateDex(r); } 
@@ -567,12 +602,11 @@ window.handleQuestMenu = function() {
         cat.l.forEach(q => {
             let prog = (q.t === 'c' ? qs.p[cat.c] : qs.p[cat.e]) || 0; let done = prog >= q.req; let claimed = qs.c[q.id]; let dProg = Math.min(prog, q.req);
             html += `<div class="quest-row"><div><b>${q.desc}</b><br><span style="font-size:12px;color:#94a3b8;">${dProg.toLocaleString()} / ${q.req.toLocaleString()}</span></div><div>`;
-            if (claimed) html += `✅`; else if (done) html += `<button class="success-btn" style="padding: 6px 10px; font-size: 12px;" onclick="claimQuest('${q.id}', ${q.rew})">${q.rew}$</button>`; else html += `<span style="font-size: 12px; color: #94a3b8;">🔒 ${q.rew}$</span>`;
+            if (claimed) html += `✅`; else if (done) html += `<button class="success-btn" style="padding: 8px 12px; font-size: 13px;" onclick="claimQuest('${q.id}', ${q.rew})">${q.rew}$</button>`; else html += `<span style="font-size: 13px; color: #94a3b8;">🔒 ${q.rew}$</span>`;
             html += `</div></div>`;
         });
     }); openModal("📜 Missionen", html);
 }
-// BUG FIX: Quest In-Place Refresh
 window.claimQuest = function(id, rew) { gameState.qs.c[id]=true; gameState.money+=rew; gameState.stats.totalEarned+=rew; updateUI(); saveData(); handleQuestMenu(); }
 
 window.handleDailyMenu = function() {
@@ -583,12 +617,11 @@ window.handleDailyMenu = function() {
         let rew = i * 100 + (gameState.prestige * 50); let cl = "daily-card"; let ic = "⏳";
         if (i < nStr || (!can && i <= nStr)) { cl+=" missed"; ic="✅"; } else if (i === nStr && can) { cl+=" active"; ic="🎁"; cur=rew; }
         if (i === 7) cl += " day7";
-        html += `<div class="${cl}"><span style="display:block; font-size:12px; color:#94a3b8;">Tag ${i}</span><span style="font-size:16px;">${ic}</span><br><b style="color:#10b981;">${rew}$</b></div>`;
+        html += `<div class="${cl}"><span style="display:block; font-size:13px; color:#94a3b8; margin-bottom:5px;">Tag ${i}</span><span style="font-size:20px;">${ic}</span><br><b style="color:#10b981; font-size:16px;">${rew}$</b></div>`;
     }
     html += `</div>`; if(!can) html += `<p style="color:#fcd34d; text-align: center;">⏳ Komm in ${Math.ceil((DAY-(now-gameState.lastDaily))/3600000)}h wieder.</p>`;
     openModal("🎁 Daily Belohnung", html, can ? `<button class="success-btn" onclick="claimDaily(${cur},${nStr})">Abholen (${cur}$)</button>` : "");
 }
-// BUG FIX: Prevent Double Claim Daily
 window.claimDaily = function(rew, str) { 
     if (gameState.lastDaily > 0 && Date.now() - gameState.lastDaily < 86400000 && gameState.dailyStreak === str) return;
     gameState.money+=rew; gameState.stats.totalEarned+=rew; gameState.lastDaily=Date.now(); gameState.dailyStreak=str; updateUI(); saveData(); handleDailyMenu(); 
@@ -610,7 +643,6 @@ window.handleDexMenu = function(tab = window.currentDexTab) {
     openModal("📖 Fisch-Lexikon", html+`</div><p style="text-align: center; margin-top: 15px;"><b>Gesammelt: ${c} / ${items.length}</b></p>`); 
 }
 
-// BUG FIX: Accurate counts and crash prevention
 window.showFishDetails = function(name) {
     try {
         let item = items.find(x => x.n === name); 
@@ -636,17 +668,17 @@ window.showFishDetails = function(name) {
 }
 
 window.handleZoneMenu = function() { 
-    let html=`<p style="font-size: 13px; color: #94a3b8; margin-top:0;">Bestimmte Fische leben nur in bestimmten Zonen!</p>`; 
+    let html=`<p style="font-size: 14px; color: #94a3b8; margin-top:0;">Bestimmte Fische leben nur in bestimmten Zonen!</p>`; 
     zones.forEach((z,i)=>{ 
         let l=gameState.prestige<z.reqPrestige; 
-        html+=`<div class="item-row ${l?'locked':''}" style="align-items: center;"><b>${z.name}</b> ${gameState.zone===i?'<span style="color:#10b981; font-weight: bold;">📍 Aktiv</span>':(l?`<span style="color:#ef4444; font-size: 12px;">🔒 Prestige ${z.reqPrestige}</span>`:`<button class="success-btn" style="padding: 6px 12px;" onclick="changeZone(${i})">Reisen</button>`)}</div>`; 
+        html+=`<div class="item-row ${l?'locked':''}" style="align-items: center;"><b>${z.name}</b> ${gameState.zone===i?'<span style="color:#10b981; font-weight: bold;">📍 Aktiv</span>':(l?`<span style="color:#ef4444; font-size: 13px;">🔒 Prestige ${z.reqPrestige}</span>`:`<button class="success-btn" style="padding: 8px 15px;" onclick="changeZone(${i})">Reisen</button>`)}</div>`; 
     }); openModal("🗺️ Weltkarte", html); 
 }
 
 window.handleProfileMenu = function() { 
     let html = `
         <div class="profile-card">
-            <div class="profile-header"><div class="profile-avatar">${gameState.prestige > 0 ? '👑' : '🎣'}</div><div style="text-align: left;"><h2 style="margin:0; color:#60a5fa;">${gameState.name.toUpperCase()}</h2><div style="color:#94a3b8; font-size:12px;">Level ${gameState.level} • Prestige ${gameState.prestige}</div></div></div>
+            <div class="profile-header"><div class="profile-avatar">${gameState.prestige > 0 ? '👑' : '🎣'}</div><div style="text-align: left;"><h2 style="margin:0; color:#60a5fa;">${gameState.name.toUpperCase()}</h2><div style="color:#94a3b8; font-size:13px;">Level ${gameState.level} • Prestige ${gameState.prestige}</div></div></div>
             <div class="profile-stats-grid">
                 <div class="stat-box"><div class="stat-lbl">Kapital</div><div class="stat-val" style="color:#10b981;">${gameState.money.toLocaleString()}$</div></div>
                 <div class="stat-box"><div class="stat-lbl">Gefangen</div><div class="stat-val">${gameState.stats.totalCaught.toLocaleString()}</div></div>
@@ -665,7 +697,7 @@ window.showPlayerProfile = async function(pName) {
             let u = snap.val();
             let html = `
                 <div class="profile-card">
-                    <div class="profile-header"><div class="profile-avatar">${u.prestige > 0 ? '👑' : '🎣'}</div><div style="text-align: left;"><h2 style="margin:0; color:#60a5fa;">${u.name.toUpperCase()}</h2><div style="color:#94a3b8; font-size:12px;">Level ${u.level} • Prestige ${u.prestige}</div></div></div>
+                    <div class="profile-header"><div class="profile-avatar">${u.prestige > 0 ? '👑' : '🎣'}</div><div style="text-align: left;"><h2 style="margin:0; color:#60a5fa;">${u.name.toUpperCase()}</h2><div style="color:#94a3b8; font-size:13px;">Level ${u.level} • Prestige ${u.prestige}</div></div></div>
                     <div class="profile-stats-grid">
                         <div class="stat-box"><div class="stat-lbl">Kapital</div><div class="stat-val" style="color:#10b981;">${u.money.toLocaleString()}$</div></div>
                         <div class="stat-box"><div class="stat-lbl">Gefangen</div><div class="stat-val">${u.stats.totalCaught.toLocaleString()}</div></div>
@@ -678,8 +710,8 @@ window.showPlayerProfile = async function(pName) {
 }
 
 window.handlePrestigeMenu = function() { 
-    let html = `<div style="text-align: center;"><p style="color: #ef4444; font-weight: bold;">Reset von Level, Geld, und Inventar!</p><p>Gibt +1% Bonus pro Prestige und schaltet Zonen frei.<br><i>(Deine gekauften Ruten, Netze und der Dex bleiben erhalten)</i></p><hr style="border-color: #30363d;"><p>Voraussetzung: <b>Level 20</b> und <b>5.000$</b></p></div>`;
-    openModal("🔁 Prestige", html, gameState.level>=20&&gameState.money>=5000?`<button class="danger-btn" style="font-size: 14px; padding: 10px;" onclick="doPrestige()">⚠️ Prestige durchführen!</button>`:`<button disabled style="padding: 10px;">Nicht bereit</button>`); 
+    let html = `<div style="text-align: center;"><p style="color: #ef4444; font-weight: bold; font-size:16px;">Reset von Level, Geld, und Inventar!</p><p>Gibt +1% Bonus pro Prestige und schaltet Zonen frei.<br><i>(Deine gekauften Ruten, Netze und der Dex bleiben erhalten)</i></p><hr style="border-color: #30363d;"><p>Voraussetzung: <b>Level 20</b> und <b>5.000$</b></p></div>`;
+    openModal("🔁 Prestige", html, gameState.level>=20&&gameState.money>=5000?`<button class="danger-btn" style="font-size: 16px; padding: 12px;" onclick="doPrestige()">⚠️ Prestige durchführen!</button>`:`<button disabled style="padding: 12px; font-size:16px;">Nicht bereit</button>`); 
 }
 
 window.handleLeaderboard = async function() {
@@ -692,7 +724,7 @@ window.handleLeaderboard = async function() {
             let html=``; 
             usrs.forEach((u,i)=> {
                 let medal = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : `<b>${i+1}.</b>`;
-                html+=`<div class="leader-row" onclick="showPlayerProfile('${u.name}')" style="${u.name===currentUser?'border:1px solid #10b981;':''}"><span>${medal} ${u.name}</span> <span style="text-align: right; font-size: 12px; color: #94a3b8;">Prestige ${u.prestige} | Lvl ${u.level}<br><span style="color:#10b981;">${u.money.toLocaleString()}$</span></span></div>`;
+                html+=`<div class="leader-row" onclick="showPlayerProfile('${u.name}')" style="${u.name===currentUser?'border:1px solid #10b981;':''}"><span>${medal} ${u.name}</span> <span style="text-align: right; font-size: 13px; color: #94a3b8;">Prestige ${u.prestige} | Lvl ${u.level}<br><span style="color:#10b981;">${u.money.toLocaleString()}$</span></span></div>`;
             }); openModal("🏆 Globales Leaderboard", html); 
         } 
     } catch(e){ openModal("🏆 Leaderboard", "<p>Fehler beim Laden.</p>"); }
@@ -702,16 +734,17 @@ window.handleUpdateMenu = function() {
     let html = `
         <div style="text-align: left;">
             <div class="update-log-item">
-                <div class="update-title update-latest">v1.8 - Performance & Live-UI Patch</div>
+                <div class="update-title update-latest">v1.9 - Massive Bugfixes & Live-UI</div>
                 <ul class="update-list">
-                    <li>🚤 <b>Flüssiges Boot:</b> Die Boot- und Wasser-Animation ist nun nahtlos ("seamless") in CSS integriert und stottert nicht mehr.</li>
-                    <li>💰 <b>Live Popups:</b> Shop-Geld aktualisiert sich sofort nach dem Kauf im Header! Kein nerviges Schließen mehr nötig.</li>
-                    <li>🐛 <b>Verkaufs-Exploit Fix:</b> Du kannst nicht mehr auf "Verkaufen" spammen und Geld doppelt bekommen. Der Rucksack leert sich live im Menü.</li>
-                    <li>📖 <b>Quest & Dex Bugfixes:</b> Die Quests öffnen sich wieder problemlos. Die Fisch-Anzahl im Dex wurde für alte Accounts gerettet und fehlerfrei neu eingebunden.</li>
-                    <li>⏱️ <b>Faire Combos:</b> Du hast jetzt 3.0 Sekunden Zeit für den nächsten Fang, bevor die Combo bricht. "Combo verloren" Log wurde gelöscht.</li>
+                    <li>🖥️ <b>100ms Live-Takt:</b> Das Spiel rendert jetzt in Echtzeit. Alle Buttons, Geld, Combo und Menüs reagieren augenblicklich (ohne Ruckeln)!</li>
+                    <li>💸 <b>Bankrott-System:</b> Neu eingeführt. Erreichst du -150.000$, verlierst du alles und das Spiel startet von vorn.</li>
+                    <li>🕸️ <b>Netz-Animation:</b> Wenn dein Auto-Netz aktiv ist, treibt jetzt permanent ein Netz im Wasser.</li>
+                    <li>🐛 <b>Dex & Quest Fix:</b> Kaputte alte Accounts wurden abgefangen. Das Anklicken der Fische und das Öffnen der Quests funktioniert jetzt für jeden 100%.</li>
+                    <li>❌ <b>Clean Log:</b> Die nervigen Combo-Log-Spams wurden komplett entfernt. Du hast faire 3.0s Zeit, um die Combo aufrechtzuerhalten.</li>
+                    <li>🛒 <b>Live Menüs:</b> Shop, Inventar und Verkauf erneuern sich sofort im Popup. Keine Schließ-Zwang mehr!</li>
                 </ul>
             </div>
-            <div class="update-log-item"><div class="update-title">v1.7 - Shop, Inventar & Profil Rework</div></div>
+            <div class="update-log-item"><div class="update-title">v1.8 - Performance & Animationen</div></div>
         </div>
     `; openModal("📝 Update Logs", html);
 }
