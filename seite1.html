@@ -217,11 +217,12 @@ button:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
     <!-- LOGIN -->
     <div id="authBox">
         <h3>🔐 Virtual Fisher Login</h3>
+        <p style="font-size: 12px; color: #94a3b8;">Verwende einen der 5 zugelassenen Accounts.</p>
         <input id="username" placeholder="Spielername" autocomplete="off">
         <input id="password" type="password" placeholder="Passwort" autocomplete="off">
         <br>
-        <button id="btnRegister">Registrieren</button>
-        <button id="btnLogin">Login</button>
+        <button id="btnLogin" style="width: 90%; margin-top: 10px;">Login</button>
+        <div id="login-error" style="color: #ef4444; font-size: 13px; margin-top: 10px; display: none;">Falscher Name oder Passwort!</div>
     </div>
 
     <!-- GAME -->
@@ -245,14 +246,14 @@ button:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
         <button id="btnPrestige">🔁 Prestige</button>
         <button id="btnProfile">📊 Profil</button>
 
-        <div id="log">Willkommen zurück, Angler!</div>
+        <div id="log">Willkommen zurück!</div>
     </div>
 </div>
 
 <script type="module">
+// Wir importieren NUR die Datenbank, keine anfällige Auth mehr!
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 // 🔥 DEINE FIREBASE CONFIG
 const firebaseConfig = {
@@ -268,10 +269,18 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-const auth = getAuth(app);
-let uid = null;
+
+// 🔒 DIE 5 FESTEN ACCOUNTS
+const validAccounts = {
+    "Spieler1": "Fisch01",
+    "Spieler2": "Fisch02",
+    "Spieler3": "Fisch03",
+    "Spieler4": "Fisch04",
+    "Spieler5": "Fisch05"
+};
+
+let currentUser = null;
 let gameState = null;
-let tempNameForRegister = "";
 
 // 🌊 ZONEN MIT PRESTIGE-ANFORDERUNG
 const zones = [
@@ -327,31 +336,41 @@ function roll(zoneIndex, rodLevel) {
 }
 
 async function loadData() {
-    if (!uid) return;
+    if (!currentUser) return;
     try {
-        const snapshot = await get(ref(db, "users/" + uid));
+        // Lädt den Spielstand direkt über den Namen des Spielers
+        const snapshot = await get(ref(db, "users/" + currentUser));
         if (snapshot.exists()) {
             gameState = snapshot.val();
-            // Fallbacks für neue Features bei alten Accounts
+            // Fallbacks
             gameState.inventory = gameState.inventory || {};
-            gameState.name = gameState.name || "Angler";
             gameState.dailyStreak = gameState.dailyStreak || 0;
             gameState.stats = gameState.stats || { totalCaught: 0, totalEarned: 0 };
         } else {
-            let playerName = tempNameForRegister || "Angler";
+            // Neuer Spielstand für diesen Account
             gameState = { 
-                name: playerName, money: 0, xp: 0, level: 1, rod: 0, zone: 0, 
+                name: currentUser, money: 0, xp: 0, level: 1, rod: 0, zone: 0, 
                 inventory: {}, lastDaily: 0, dailyStreak: 0, prestige: 0, quest: 0,
                 stats: { totalCaught: 0, totalEarned: 0 }
             };
         }
         updateUI();
-    } catch (e) { log("❌ Fehler beim Laden."); }
+        document.getElementById("authBox").style.display = "none";
+        document.getElementById("game").style.display = "block";
+        log(`✅ Willkommen zurück, ${currentUser}!`);
+    } catch (e) { 
+        log("❌ Fehler beim Laden aus der Datenbank."); 
+        console.error(e);
+    }
 }
 
 async function saveData() {
-    if (!uid || !gameState) return;
-    try { await set(ref(db, "users/" + uid), gameState); } catch (e) { console.error(e); }
+    if (!currentUser || !gameState) return;
+    try { 
+        await set(ref(db, "users/" + currentUser), gameState); 
+    } catch (e) { 
+        console.error("Fehler beim Speichern:", e); 
+    }
 }
 
 function updateUI() {
@@ -368,7 +387,6 @@ function log(text) {
 }
 
 // --- SPIEL AKTIONEN ---
-
 window.handleFish = function() {
     const btn = document.getElementById('btnFish');
     btn.disabled = true;
@@ -382,7 +400,7 @@ window.handleFish = function() {
         let item = roll(gameState.zone, gameState.rod);
         gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1;
         gameState.xp += 5;
-        gameState.stats.totalCaught++; // Statistik Update
+        gameState.stats.totalCaught++;
         
         let message = `🎣 Gefangen: ${item.n} (${item.v}$)`;
 
@@ -456,16 +474,12 @@ window.handleDailyMenu = function() {
     let canClaim = false;
     let nextStreak = gameState.dailyStreak;
 
-    // Check Streak Logic
     if (gameState.lastDaily === 0) {
-        canClaim = true;
-        nextStreak = 1;
+        canClaim = true; nextStreak = 1;
     } else if (now - gameState.lastDaily >= oneDay * 2) {
-        canClaim = true;
-        nextStreak = 1; // Streak verloren
+        canClaim = true; nextStreak = 1; 
     } else if (now - gameState.lastDaily >= oneDay) {
-        canClaim = true;
-        nextStreak = Math.min(gameState.dailyStreak + 1, 7); // Max 7 Tage
+        canClaim = true; nextStreak = Math.min(gameState.dailyStreak + 1, 7); 
     }
 
     let html = `<p style="color: #94a3b8; font-size: 12px;">Logge dich täglich ein, um bessere Belohnungen zu erhalten!</p>`;
@@ -477,7 +491,7 @@ window.handleDailyMenu = function() {
         let icon = "⏳";
 
         if (i < nextStreak || (!canClaim && i <= gameState.dailyStreak)) {
-            statusClass = "missed"; icon = "✅"; // Schon abgeholt
+            statusClass = "missed"; icon = "✅";
         } else if (i === nextStreak && canClaim) {
             statusClass = "active"; icon = "🎁"; currentReward = baseReward;
         }
@@ -600,30 +614,31 @@ window.handlePrestige = function() {
     updateUI(); log(`🔁 PRESTIGE ${gameState.prestige}! Neue Zonen verfügbar!`); saveData();
 }
 
-// --- AUTH LOGIK ---
-document.getElementById('btnRegister').addEventListener('click', async () => {
+// --- EIGENES LOGIN SYSTEM (OHNE FIREBASE AUTH) ---
+document.getElementById('btnLogin').addEventListener('click', async () => {
     const user = document.getElementById('username').value.trim();
     const pass = document.getElementById('password').value;
-    if(user.length < 3 || pass.length < 6) return log("❌ Name mind. 3 Zeichen, PW mind. 6");
-    
-    tempNameForRegister = user;
-    const dummyEmail = user.toLowerCase() + "@vfisher.local";
-    
-    try { 
-        await createUserWithEmailAndPassword(auth, dummyEmail, pass); 
-    } catch(e) { log(e.code === 'auth/email-already-in-use' ? "❌ Name existiert schon!" : "❌ Fehler"); }
+    const errorMsg = document.getElementById('login-error');
+
+    // Prüfe, ob die Eingabe mit einem der 5 Accounts übereinstimmt
+    if (validAccounts[user] && validAccounts[user] === pass) {
+        errorMsg.style.display = 'none';
+        currentUser = user;
+        document.getElementById("log").innerText = "Lade Spielstand aus der Cloud...";
+        await loadData();
+    } else {
+        errorMsg.style.display = 'block';
+    }
 });
 
-document.getElementById('btnLogin').addEventListener('click', async () => {
-    const user = document.getElementById('username').value.trim().toLowerCase();
-    const pass = document.getElementById('password').value;
-    if(!user || !pass) return log("❌ Bitte ausfüllen!");
-
-    try { await signInWithEmailAndPassword(auth, user + "@vfisher.local", pass); } 
-    catch(e) { log("❌ Falsche Daten!"); }
+document.getElementById('btnLogout').addEventListener('click', () => {
+    currentUser = null;
+    gameState = null;
+    document.getElementById('username').value = "";
+    document.getElementById('password').value = "";
+    document.getElementById("authBox").style.display = "block";
+    document.getElementById("game").style.display = "none";
 });
-
-document.getElementById('btnLogout').addEventListener('click', async () => { await signOut(auth); });
 
 // EVENT LISTENER BUTTONS
 document.getElementById('btnFish').addEventListener('click', handleFish);
@@ -634,21 +649,6 @@ document.getElementById('btnZone').addEventListener('click', handleZoneMenu);
 document.getElementById('btnPrestige').addEventListener('click', handlePrestige);
 document.getElementById('btnProfile').addEventListener('click', handleProfileMenu);
 
-// AUTH STATE LISTENER
-onAuthStateChanged(auth, async (user) => {
-    if (user) {
-        uid = user.uid;
-        document.getElementById("authBox").style.display = "none";
-        document.getElementById("game").style.display = "block";
-        document.getElementById("log").innerText = "Daten werden geladen...";
-        await loadData();
-        log(`✅ Willkommen zurück, ${gameState.name}!`);
-    } else {
-        uid = null; gameState = null;
-        document.getElementById("authBox").style.display = "block";
-        document.getElementById("game").style.display = "none";
-    }
-});
 </script>
 </body>
 </html>
