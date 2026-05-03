@@ -23,7 +23,7 @@
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: url('https://cdn.corleonecity.de/api/raw/4c9a9333-d321-4faa-ac7e-4f210465d911') center/cover no-repeat;
-            opacity: 0.60; /* Deckkraft auf 60% gesetzt */
+            opacity: 0.60; /* Deckkraft exakt auf 60% */
             z-index: -1;
         }
 
@@ -105,6 +105,7 @@
         .danger-btn { background: #f04444; padding: 6px 10px; font-size: 11px; }
         .prestige-btn { background: #7367f0; } 
         .success-btn { background: #10b981; }
+        .update-btn { background: #0ea5e9; } /* Cyan Blau für Updates */
 
         input {
             padding: 12px; width: 90%; margin: 8px 0; border-radius: 8px;
@@ -144,6 +145,12 @@
         .dex-card { background: #11141a; padding: 10px; border-radius: 8px; text-align: center; font-weight: bold; font-size: 13px;}
         .dex-card.locked { opacity: 0.4; filter: grayscale(100%); }
         .shiny-badge { font-size: 12px; background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fcd34d; padding: 2px 5px; border-radius: 4px; display: inline-block; margin-top: 5px;}
+        
+        .update-log-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .update-log-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+        .update-title { color: #60a5fa; font-weight: bold; margin-bottom: 5px; font-size: 15px; }
+        .update-latest { color: #10b981; }
+        .update-list { font-size: 13px; color: #94a3b8; padding-left: 20px; margin: 0; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -203,9 +210,10 @@
             <button id="btnZone">🗺️ Zone</button>
         </div>
         
-        <div class="btn-grid" style="margin-top: 0;">
-            <button id="btnPrestige" class="prestige-btn">🔁 Prestige</button>
-            <button id="btnProfile">📊 Profil</button>
+        <div style="display: flex; gap: 8px; margin-top: 5px;">
+            <button id="btnPrestige" class="prestige-btn" style="flex: 1;">🔁 Prestige</button>
+            <button id="btnProfile" style="flex: 1;">📊 Profil</button>
+            <button id="btnUpdates" class="update-btn" style="flex: 1;">📝 Updates</button>
         </div>
 
         <div id="log">Willkommen zurück!</div>
@@ -269,7 +277,7 @@ const specialEvents = [
 function getCurrentWeather() { return weathers[Math.floor(Date.now() / 180000) % 3]; }
 function getCurrentEvent() { return specialEvents[Math.floor(Date.now() / (1000 * 60 * 60 * 2)) % specialEvents.length]; }
 
-// 📜 QUESTS EXAKT WIE GEWÜNSCHT (5 Dailys, 5 Weeklys, 10 Monthlys)
+// 📜 QUESTS EXAKT WIE GEWÜNSCHT
 const questDB = {
     daily: [
         {id:'d1',desc:'Fange 15 Fische',t:'c',req:15,rew:50}, {id:'d2',desc:'Fange 30 Fische',t:'c',req:30,rew:100},
@@ -293,7 +301,6 @@ function getResetKeys() {
     let d = new Date();
     let daily = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
     let monthly = `${d.getFullYear()}-${d.getMonth()}`;
-    // Berechnung der Kalenderwoche
     let d0 = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
     let dayNum = d0.getUTCDay() || 7; d0.setUTCDate(d0.getUTCDate() + 4 - dayNum);
     let yStart = new Date(Date.UTC(d0.getUTCFullYear(),0,1));
@@ -314,6 +321,12 @@ function checkQuestResets() {
     if(qs.m !== keys.monthly) { qs.m = keys.monthly; qs.p.mc=0; qs.p.me=0; for(let k in qs.c) if(k.startsWith('m')) delete qs.c[k]; save=true; }
     
     if(save) saveData();
+}
+
+function addQuestProgress(t, amt) {
+    let p = gameState.qs.p;
+    if(t === 'c') { p.dc+=amt; p.wc+=amt; p.mc+=amt; }
+    if(t === 'e') { p.de+=amt; p.we+=amt; p.me+=amt; }
 }
 
 function roll(zIdx, rodLvl) {
@@ -339,7 +352,7 @@ function roll(zIdx, rodLvl) {
     let isShiny = Math.random() < 0.01;
     let finalItem = { baseName: baseItem.n, n: baseItem.n, v: baseItem.v, isShiny: false };
     
-    if (isShiny && baseItem.v >= 0) { // Müll wird nicht Shiny
+    if (isShiny && baseItem.v >= 0) {
         finalItem.n = "🧬 " + baseItem.n + " (Mutation)";
         finalItem.v *= 5;
         finalItem.isShiny = true;
@@ -469,8 +482,6 @@ window.handleSellMenu = function() {
     for (let k in gameState.inventory) {
         if (gameState.inventory[k] > 0) { 
             has = true; 
-            // Finde Wert (Mutationen sind extra im Array nicht drin, Wert muss rekonstruiert werden oder wir speichern Werte im Inventar.
-            // Besser: Items Array durchsuchen. Wenn "🧬" drin, finden wir Base.
             let isMutant = k.startsWith("🧬 ");
             let baseN = isMutant ? k.replace("🧬 ", "").replace(" (Mutation)", "") : k;
             let baseVal = items.find(x=>x.n===baseN).v;
@@ -648,6 +659,48 @@ window.handleLeaderboard = async function() {
     } catch(e){ openModal("👑 Top 5", "<p>Fehler beim Laden.</p>"); }
 }
 
+// --- UPDATE LOGS ---
+window.handleUpdateMenu = function() {
+    let html = `
+        <div style="text-align: left;">
+            <div class="update-log-item">
+                <div class="update-title update-latest">v1.3 - Mutationen & Hardcore Idle</div>
+                <ul class="update-list">
+                    <li>🧬 <b>Mutationen:</b> Jeder Fisch hat eine 1% Chance, als Shiny/Mutant aufzutauchen (5x Wert & XP).</li>
+                    <li>🔥 <b>Combo-System:</b> Perfekte Fänge bauen eine Combo auf (bis zu x2 Multiplikator). Müll bricht die Combo!</li>
+                    <li>🌍 <b>Live-Events:</b> Alle 2 Stunden wechselnde Events (z.B. Hai-Woche).</li>
+                    <li>⚙️ <b>Auto-Angeln:</b> Neues Hardcore-Upgrade-System. Stufe 1 fängt alle 5 Minuten einen Fisch. Sehr teuer zu maxen!</li>
+                    <li>🕰️ <b>Quest-System:</b> Echtes 00:00 Uhr Reset-System für Daily, Weekly & Monthly Missionen eingebaut.</li>
+                </ul>
+            </div>
+            <div class="update-log-item">
+                <div class="update-title">v1.2 - Wetter & Leaderboard</div>
+                <ul class="update-list">
+                    <li>🌦️ Live-Wetter-Effekte beeinflussen globale Fangchancen.</li>
+                    <li>👑 Globale Top 5 Bestenliste live über die Cloud eingebunden.</li>
+                    <li>🏆 Fisch-Dex im Pokémon-Style hinzugefügt.</li>
+                </ul>
+            </div>
+            <div class="update-log-item">
+                <div class="update-title">v1.1 - Missionen & Belohnungen</div>
+                <ul class="update-list">
+                    <li>📜 Missionen-System für Langzeitmotivation eingebaut.</li>
+                    <li>🎁 7-Tage Daily Login Bonus hinzugefügt.</li>
+                    <li>🔁 Prestige System (gibt nun +1% permanenten Verkaufsbonus pro Level).</li>
+                </ul>
+            </div>
+            <div class="update-log-item">
+                <div class="update-title">v1.0 - Release</div>
+                <ul class="update-list">
+                    <li>🎣 Basis-Spiel mit 4 Zonen & 30+ Fischen.</li>
+                    <li>🛒 Shop für Ruten-Upgrades und Köder etabliert.</li>
+                </ul>
+            </div>
+        </div>
+    `;
+    openModal("📝 Update Logs", html);
+}
+
 // --- EVENT LISTENER ---
 document.getElementById('btnLogin').addEventListener('click', async () => {
     let u = document.getElementById('username').value.trim(); 
@@ -668,6 +721,7 @@ document.getElementById('btnLeader').addEventListener('click', handleLeaderboard
 document.getElementById('btnZone').addEventListener('click', handleZoneMenu); 
 document.getElementById('btnPrestige').addEventListener('click', handlePrestigeMenu);
 document.getElementById('btnProfile').addEventListener('click', handleProfileMenu);
+document.getElementById('btnUpdates').addEventListener('click', handleUpdateMenu);
 
 </script>
 </body>
