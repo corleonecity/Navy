@@ -2,14 +2,14 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Virtual Fisher Pro</title>
+<title>Virtual Fisher PRO</title>
 
 <style>
 body {
-    margin: 0;
-    font-family: Arial;
-    background: linear-gradient(180deg,#020617,#0a192f);
-    color: #e6f0ff;
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(180deg,#020617,#0a192f);
+    color:#e6f0ff;
     display:flex;
     justify-content:center;
     align-items:center;
@@ -17,29 +17,35 @@ body {
 }
 
 .container {
-    width: 480px;
-    background: rgba(10,20,40,0.6);
-    padding: 30px;
-    border-radius: 16px;
+    width:500px;
+    background:rgba(10,20,40,0.6);
+    padding:25px;
+    border-radius:14px;
+}
+
+input {
+    padding:8px;
+    width:90%;
+    margin:5px 0;
 }
 
 button {
-    margin:4px;
-    padding:10px;
+    padding:8px;
+    margin:3px;
     border:none;
     border-radius:6px;
     background:#1e3a8a;
     color:white;
     cursor:pointer;
 }
-button:hover { background:#3b82f6; }
+button:hover {background:#3b82f6;}
 
 #log {
-    height:120px;
+    margin-top:10px;
+    height:140px;
     overflow:auto;
     background:#00000060;
     padding:10px;
-    margin-top:10px;
     font-size:13px;
 }
 </style>
@@ -48,31 +54,59 @@ button:hover { background:#3b82f6; }
 <body>
 
 <div class="container">
-<h2>🎣 Virtual Fisher PRO</h2>
+
+<!-- LOGIN -->
+<div id="authBox">
+<h3>🔐 Login</h3>
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Passwort">
+
+<button onclick="register()">Registrieren</button>
+<button onclick="login()">Login</button>
+</div>
+
+<!-- GAME -->
+<div id="game" style="display:none;">
+<button onclick="logout()">🚪 Logout</button>
+<hr>
 
 <button onclick="fish()">🎣 Angeln</button>
 <button onclick="sell()">💰 Verkaufen</button>
 <button onclick="daily()">🎁 Daily</button>
 <button onclick="quest()">📜 Quest</button>
 <button onclick="prestige()">🔁 Prestige</button>
-<button onclick="buyRod()">🛒 Bessere Rute</button>
-<button onclick="changeZone()">🌊 Zone wechseln</button>
+<button onclick="buyRod()">🛒 Rute</button>
+<button onclick="zone()">🌊 Zone</button>
 <button onclick="profile()">📊 Profil</button>
 
 <div id="log"></div>
+</div>
+
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// 🔥 CONFIG
 const app = initializeApp({
   apiKey: "AIzaSy...",
+  authDomain: "khusland-b7d13.firebaseapp.com",
   databaseURL: "https://khusland-b7d13-default-rtdb.firebaseio.com"
 });
-const db = getDatabase(app);
 
-const uid = "player1";
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+let uid = null;
 
 // 🌊 Zonen
 const zones = ["See","Meer","Tiefsee"];
@@ -81,31 +115,30 @@ const zones = ["See","Meer","Tiefsee"];
 const items = [
  {n:"Müll",v:-10,c:25,z:0},
  {n:"Schuh",v:-5,c:15,z:0},
-
  {n:"Karpfen",v:5,c:20,z:0},
  {n:"Forelle",v:10,c:15,z:0},
-
  {n:"Lachs",v:25,c:10,z:1},
  {n:"Thunfisch",v:40,c:8,z:1},
-
  {n:"Hai",v:80,c:3,z:2},
  {n:"Leviathan",v:400,c:0.5,z:2}
 ];
 
-// 🎯 Get weighted item
+// 🎲 Drop
 function roll(zone, rod){
  let pool = items.filter(i=>i.z<=zone);
  let total = pool.reduce((s,i)=>s+i.c,0);
  let r = Math.random()*total;
 
  for(let i of pool){
-   if(r < i.c * (1+rod*0.1)) return i;
+   if(r < i.c*(1+rod*0.1)) return i;
    r -= i.c;
  }
 }
 
-// 🧱 Load user
+// 📦 Load
 async function load(){
+ if(!uid) return;
+
  let s = await get(ref(db,"users/"+uid));
  return s.exists()?s.val():{
   money:0,xp:0,level:1,rod:0,zone:0,
@@ -118,73 +151,110 @@ async function save(d){
  await set(ref(db,"users/"+uid),d);
 }
 
-// 🎣 Fish
+// 🔐 AUTH
+window.register = async ()=>{
+ await createUserWithEmailAndPassword(
+  auth,
+  email.value,
+  password.value
+ );
+};
+
+window.login = async ()=>{
+ await signInWithEmailAndPassword(
+  auth,
+  email.value,
+  password.value
+ );
+};
+
+window.logout = async ()=>{
+ await signOut(auth);
+};
+
+onAuthStateChanged(auth,(user)=>{
+ if(user){
+  uid = user.uid;
+  authBox.style.display="none";
+  game.style.display="block";
+  log("✅ Eingeloggt");
+ } else {
+  uid = null;
+  authBox.style.display="block";
+  game.style.display="none";
+ }
+});
+
+// 🎣 FISH
 window.fish = async ()=>{
  let d = await load();
-
  let item = roll(d.zone,d.rod);
 
  d.inventory[item.n]=(d.inventory[item.n]||0)+1;
- d.xp += 5;
+ d.xp+=5;
 
  if(d.xp > d.level*50){
-   d.xp=0;
-   d.level++;
-   log("⭐ Level Up!");
+  d.level++;
+  d.xp=0;
+  log("⭐ Level Up!");
  }
 
  await save(d);
  log("🎣 "+item.n+" ("+item.v+"$)");
 };
 
-// 💰 Sell
+// 💰 SELL
 window.sell = async ()=>{
  let d = await load();
  let total=0;
 
  for(let k in d.inventory){
-   let i = items.find(x=>x.n===k);
-   total += i.v * d.inventory[k];
+  let i = items.find(x=>x.n===k);
+  total += i.v * d.inventory[k];
  }
 
  d.money += total;
  d.inventory={};
 
  await save(d);
- log("💰 "+total+"$ verkauft");
+ log("💰 "+total+"$");
 };
 
-// 🎁 Daily
+// 🎁 DAILY
 window.daily = async ()=>{
  let d = await load();
- if(Date.now()-d.lastDaily<86400000) return log("⏳ Daily schon benutzt");
+
+ if(Date.now()-d.lastDaily<86400000)
+  return log("⏳ Schon geholt");
 
  let reward = 100 + d.prestige*50;
- d.money += reward;
- d.lastDaily = Date.now();
+ d.money+=reward;
+ d.lastDaily=Date.now();
 
  await save(d);
  log("🎁 "+reward+"$");
 };
 
-// 📜 Quest
+// 📜 QUEST
 window.quest = async ()=>{
  let d = await load();
  d.quest++;
 
  if(d.quest>=5){
-   d.money+=200;
-   d.quest=0;
-   log("📜 Quest fertig +200$");
+  d.money+=200;
+  d.quest=0;
+  log("📜 Quest fertig!");
  }
 
  await save(d);
 };
 
-// 🔁 Prestige
+// 🔁 PRESTIGE
 window.prestige = async ()=>{
  let d = await load();
- if(d.money<2000) return log("❌ 2000$ nötig");
+
+ if(d.money<2000)
+  return log("❌ 2000$ nötig");
 
  d.money=0;
  d.level=1;
@@ -195,45 +265,53 @@ window.prestige = async ()=>{
  log("🔁 Prestige "+d.prestige);
 };
 
-// 🛒 Rod
+// 🛒 ROD
 window.buyRod = async ()=>{
  let d = await load();
  let cost = (d.rod+1)*500;
 
- if(d.money<cost) return log("❌ Zu teuer");
+ if(d.money<cost)
+  return log("❌ Zu teuer");
 
  d.money-=cost;
  d.rod++;
 
  await save(d);
- log("🛒 Rute verbessert");
+ log("🛒 Rute "+d.rod);
 };
 
-// 🌊 Zone
-window.changeZone = async ()=>{
+// 🌊 ZONE
+window.zone = async ()=>{
  let d = await load();
- d.zone = (d.zone+1)%zones.length;
+ d.zone=(d.zone+1)%zones.length;
 
  await save(d);
  log("🌊 "+zones[d.zone]);
 };
 
-// 📊 Profile
+// 📊 PROFILE
 window.profile = async ()=>{
  let d = await load();
 
- log(`
-💰 ${d.money}
+ let inv="";
+ for(let i in d.inventory)
+  inv+=i+": "+d.inventory[i]+"\n";
+
+ log(
+`💰 ${d.money}
 ⭐ Level ${d.level}
 🎣 Rod ${d.rod}
 🌊 ${zones[d.zone]}
 🔁 Prestige ${d.prestige}
-`);
+
+🎒 Inventar:
+${inv}`
+ );
 };
 
 // UI
 function log(t){
- document.getElementById("log").innerText = t;
+ document.getElementById("log").innerText=t;
 }
 </script>
 
