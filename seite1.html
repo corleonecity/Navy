@@ -6,6 +6,7 @@
 <title>Virtual Fisher PRO</title>
 
 <style>
+/* --- GRUNDDESIGN --- */
 body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -21,7 +22,7 @@ body {
 .container {
     width: 450px;
     background: rgba(15, 23, 42, 0.8);
-    padding: 30px;
+    padding: 25px;
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -29,11 +30,11 @@ body {
     position: relative;
 }
 
-/* 🎣 Animation Area */
+/* --- ANIMATION & GRAFIK --- */
 #fishing-scene {
     height: 120px;
     position: relative;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     border-bottom: 2px solid #3b82f6;
     overflow: hidden;
     border-radius: 10px 10px 0 0;
@@ -55,10 +56,7 @@ body {
     100% { transform: rotate(10deg); }
 }
 
-.animate-rod {
-    display: block;
-    animation: cast 0.8s ease-in-out;
-}
+.animate-rod { display: block; animation: cast 0.8s ease-in-out; }
 
 .water-effect {
     position: absolute;
@@ -74,7 +72,7 @@ body {
     to { transform: translateX(10px); }
 }
 
-/* UI Elements */
+/* --- UI ELEMENTE --- */
 input {
     padding: 12px;
     width: 90%;
@@ -95,7 +93,7 @@ button {
     color: white;
     font-weight: bold;
     cursor: pointer;
-    transition: transform 0.1s, background 0.2s, opacity 0.2s;
+    transition: transform 0.1s, background 0.2s;
 }
 
 button:hover:not(:disabled) { background: #3b82f6; transform: scale(1.05); }
@@ -104,6 +102,8 @@ button:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
 
 .danger-btn { background: #ef4444; }
 .danger-btn:hover:not(:disabled) { background: #f87171; }
+.success-btn { background: #10b981; }
+.success-btn:hover:not(:disabled) { background: #34d399; }
 
 #stats-bar {
     display: flex;
@@ -118,7 +118,7 @@ button:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
 
 #log {
     margin-top: 15px;
-    height: 120px;
+    height: 100px;
     overflow: auto;
     background: rgba(0,0,0,0.4);
     padding: 15px;
@@ -129,15 +129,86 @@ button:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
     line-height: 1.4;
 }
 
-hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0; }
+/* --- MODAL / POPUP SYSTEM --- */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(3px);
+}
+
+.modal-content {
+    background: #0f172a;
+    width: 380px;
+    max-height: 80vh;
+    border-radius: 15px;
+    border: 1px solid #3b82f6;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
+}
+
+.modal-header {
+    background: #1e293b;
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 20px;
+    overflow-y: auto;
+    font-size: 14px;
+    text-align: left;
+}
+
+.modal-footer {
+    padding: 15px;
+    background: #1e293b;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.close-btn { background: none; color: #94a3b8; font-size: 20px; cursor: pointer; border: none; padding: 0; margin: 0; }
+.close-btn:hover { color: white; transform: none; }
+
+/* Spezifische Modal-Inhalte */
+.item-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.daily-day { padding: 10px; margin: 5px 0; border-radius: 8px; background: #1e293b; display: flex; justify-content: space-between;}
+.daily-day.active { background: #2563eb; font-weight: bold; }
+.daily-day.missed { background: #475569; opacity: 0.5; }
+.zone-row { padding: 10px; margin: 5px 0; border-radius: 8px; background: #1e293b; cursor: pointer; transition: 0.2s;}
+.zone-row:hover:not(.locked) { background: #3b82f6; }
+.zone-row.locked { opacity: 0.5; cursor: not-allowed; }
+.zone-row.current { border: 2px solid #10b981; }
+
 </style>
 </head>
 
 <body>
 
+<!-- POPUP OVERLAY -->
+<div id="modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span id="modal-title">Titel</span>
+            <button class="close-btn" onclick="closeModal()">✖</button>
+        </div>
+        <div id="modal-body" class="modal-body">Inhalt</div>
+        <div id="modal-footer" class="modal-footer"></div>
+    </div>
+</div>
+
 <div class="container">
-    
-    <!-- Animation Visuals -->
     <div id="fishing-scene">
         <div id="rod" class="rod-anim">🎣</div>
         <div class="water-effect"></div>
@@ -146,18 +217,18 @@ hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0; }
     <!-- LOGIN -->
     <div id="authBox">
         <h3>🔐 Virtual Fisher Login</h3>
-        <p style="font-size: 12px; color: #94a3b8;">Login mit: Angler / Start123</p>
         <input id="username" placeholder="Spielername" autocomplete="off">
         <input id="password" type="password" placeholder="Passwort" autocomplete="off">
         <br>
-        <button id="btnLogin" style="width: 90%; margin-top: 10px;">Login</button>
+        <button id="btnRegister">Registrieren</button>
+        <button id="btnLogin">Login</button>
     </div>
 
     <!-- GAME -->
     <div id="game" style="display:none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <span id="zoneDisplay" style="font-weight: bold; color: #60a5fa;">🌊 See</span>
-            <button id="btnLogout" class="danger-btn" style="padding: 5px 10px;">🚪 Logout</button>
+            <button id="btnLogout" class="danger-btn" style="padding: 5px 10px; margin: 0;">🚪 Logout</button>
         </div>
         
         <div id="stats-bar">
@@ -168,25 +239,48 @@ hr { border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 0; }
         <button id="btnFish">🎣 Angeln</button>
         <button id="btnSell">💰 Verkaufen</button>
         <button id="btnDaily">🎁 Daily</button>
-        <button id="btnRod">🛒 Rute kaufen</button>
-        <button id="btnZone">🌊 Zone wechseln</button>
+        <br>
+        <button id="btnRod">🛒 Rute</button>
+        <button id="btnZone">🌊 Zone</button>
         <button id="btnPrestige">🔁 Prestige</button>
         <button id="btnProfile">📊 Profil</button>
 
-        <div id="log">Willkommen zurück!</div>
+        <div id="log">Willkommen zurück, Angler!</div>
     </div>
 </div>
 
-<script>
-// --- SPIEL VARIABLEN ---
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// 🔥 DEINE FIREBASE CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyCw4nadHCIRcouTJJoQ3ElToiVVFr5Rufo",
+  authDomain: "khusland-b7d13.firebaseapp.com",
+  databaseURL: "https://khusland-b7d13-default-rtdb.firebaseio.com",
+  projectId: "khusland-b7d13",
+  storageBucket: "khusland-b7d13.firebasestorage.app",
+  messagingSenderId: "69573193613",
+  appId: "1:69573193613:web:86c4d839281b1e343cd7c4",
+  measurementId: "G-JSCWR4207G"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+let uid = null;
 let gameState = null;
-const SAVE_KEY = "vfisher_save_data"; // Schlüssel für den lokalen Speicher
+let tempNameForRegister = "";
 
-// Die festen Zugangsdaten
-const VALID_USER = "Angler";
-const VALID_PASS = "Start123";
+// 🌊 ZONEN MIT PRESTIGE-ANFORDERUNG
+const zones = [
+    { name: "See", reqPrestige: 0 },
+    { name: "Meer", reqPrestige: 1 },
+    { name: "Tiefsee", reqPrestige: 3 },
+    { name: "Verlorener Ozean", reqPrestige: 5 }
+];
 
-const zones = ["See", "Meer", "Tiefsee"];
 const items = [
  {n: "Müll", v: -10, c: 25, z: 0},
  {n: "Schuh", v: -5, c: 15, z: 0},
@@ -195,13 +289,32 @@ const items = [
  {n: "Lachs", v: 25, c: 10, z: 1},
  {n: "Thunfisch", v: 40, c: 8, z: 1},
  {n: "Hai", v: 80, c: 3, z: 2},
- {n: "Leviathan", v: 400, c: 0.5, z: 2}
+ {n: "Leviathan", v: 400, c: 0.5, z: 2},
+ {n: "Kraken-Tentakel", v: 1000, c: 0.2, z: 3}
 ];
 
-// --- CORE LOGIK ---
+// --- MODAL LOGIK ---
+window.closeModal = function() {
+    document.getElementById('modal-overlay').style.display = 'none';
+};
 
-function roll(zone, rodLevel) {
-    let pool = items.filter(i => i.z <= zone);
+function openModal(title, bodyHTML, footerHTML = '') {
+    document.getElementById('modal-title').innerText = title;
+    document.getElementById('modal-body').innerHTML = bodyHTML;
+    
+    const footer = document.getElementById('modal-footer');
+    if(footerHTML) {
+        footer.style.display = 'flex';
+        footer.innerHTML = footerHTML;
+    } else {
+        footer.style.display = 'none';
+    }
+    document.getElementById('modal-overlay').style.display = 'flex';
+}
+
+// --- CORE LOGIK ---
+function roll(zoneIndex, rodLevel) {
+    let pool = items.filter(i => i.z <= zoneIndex);
     let modifiedPool = pool.map(item => ({ ...item, weight: item.c * (1 + rodLevel * 0.1) }));
     let total = modifiedPool.reduce((sum, item) => sum + item.weight, 0);
     let r = Math.random() * total;
@@ -213,36 +326,40 @@ function roll(zone, rodLevel) {
     return pool[0];
 }
 
-function loadData() {
-    let savedData = localStorage.getItem(SAVE_KEY);
-    if (savedData) {
-        gameState = JSON.parse(savedData);
-        // Fallbacks, falls alte Werte fehlen
-        gameState.inventory = gameState.inventory || {};
-        gameState.quest = gameState.quest || 0;
-        gameState.prestige = gameState.prestige || 0;
-    } else {
-        // Neuer Spielstand
-        gameState = { name: VALID_USER, money: 0, xp: 0, level: 1, rod: 0, zone: 0, inventory: {}, lastDaily: 0, prestige: 0, quest: 0 };
-    }
-    updateUI();
-    log(`✅ Eingeloggt als ${VALID_USER}!`);
+async function loadData() {
+    if (!uid) return;
+    try {
+        const snapshot = await get(ref(db, "users/" + uid));
+        if (snapshot.exists()) {
+            gameState = snapshot.val();
+            // Fallbacks für neue Features bei alten Accounts
+            gameState.inventory = gameState.inventory || {};
+            gameState.name = gameState.name || "Angler";
+            gameState.dailyStreak = gameState.dailyStreak || 0;
+            gameState.stats = gameState.stats || { totalCaught: 0, totalEarned: 0 };
+        } else {
+            let playerName = tempNameForRegister || "Angler";
+            gameState = { 
+                name: playerName, money: 0, xp: 0, level: 1, rod: 0, zone: 0, 
+                inventory: {}, lastDaily: 0, dailyStreak: 0, prestige: 0, quest: 0,
+                stats: { totalCaught: 0, totalEarned: 0 }
+            };
+        }
+        updateUI();
+    } catch (e) { log("❌ Fehler beim Laden."); }
 }
 
-function saveData() {
-    if (gameState) {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(gameState));
-    }
+async function saveData() {
+    if (!uid || !gameState) return;
+    try { await set(ref(db, "users/" + uid), gameState); } catch (e) { console.error(e); }
 }
-
-// --- UI UPDATES ---
 
 function updateUI() {
     if(!gameState) return;
     const xpNeeded = gameState.level * 50;
     document.getElementById("ui-money").innerText = `💰 ${gameState.money}$`;
     document.getElementById("ui-level").innerText = `⭐ Lvl ${gameState.level} (${gameState.xp}/${xpNeeded} XP)`;
-    document.getElementById("zoneDisplay").innerText = `🌊 ${zones[gameState.zone]}`;
+    document.getElementById("zoneDisplay").innerText = `🌊 ${zones[gameState.zone].name}`;
 }
 
 function log(text) {
@@ -250,24 +367,22 @@ function log(text) {
     logDiv.innerText = text + "\n" + logDiv.innerText.split("\n").slice(0, 5).join("\n");
 }
 
-function triggerRodAnimation() {
+// --- SPIEL AKTIONEN ---
+
+window.handleFish = function() {
+    const btn = document.getElementById('btnFish');
+    btn.disabled = true;
+    
     const rod = document.getElementById('rod');
     rod.classList.remove('animate-rod');
     void rod.offsetWidth;
     rod.classList.add('animate-rod');
-}
-
-// --- GAME ACTIONS ---
-
-function handleFish() {
-    const btn = document.getElementById('btnFish');
-    btn.disabled = true;
-    triggerRodAnimation();
 
     setTimeout(() => {
         let item = roll(gameState.zone, gameState.rod);
         gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1;
         gameState.xp += 5;
+        gameState.stats.totalCaught++; // Statistik Update
         
         let message = `🎣 Gefangen: ${item.n} (${item.v}$)`;
 
@@ -275,6 +390,7 @@ function handleFish() {
         if(gameState.quest >= 5) {
             gameState.money += 200;
             gameState.quest = 0;
+            gameState.stats.totalEarned += 200;
             message += `\n📜 Quest erfüllt! +200$`;
         }
 
@@ -285,91 +401,254 @@ function handleFish() {
             message += `\n⭐ LEVEL UP! Du bist jetzt Level ${gameState.level}!`;
         }
 
-        updateUI();
-        log(message);
-        saveData();
+        updateUI(); log(message); saveData();
         btn.disabled = false;
     }, 800);
 }
 
-function handleSell() {
-    let total = 0; let itemsSold = 0;
+// 💰 VERKAUFEN POPUP
+window.handleSellMenu = function() {
+    let total = 0;
+    let html = `<h3>Dein Rucksack</h3>`;
+    let hasItems = false;
+
     for (let k in gameState.inventory) {
-        let itemDef = items.find(x => x.n === k);
-        if(itemDef) { total += itemDef.v * gameState.inventory[k]; itemsSold += gameState.inventory[k]; }
+        let count = gameState.inventory[k];
+        if (count > 0) {
+            hasItems = true;
+            let itemDef = items.find(x => x.n === k);
+            let itemTotal = itemDef.v * count;
+            total += itemTotal;
+            html += `<div class="item-row">
+                        <span>${count}x ${k}</span>
+                        <span style="color: ${itemTotal >= 0 ? '#10b981' : '#ef4444'}">${itemTotal}$</span>
+                     </div>`;
+        }
     }
-    if (itemsSold === 0) return log("🎒 Dein Rucksack ist leer!");
-    gameState.money += total; gameState.inventory = {};
-    updateUI(); log(`💰 ${itemsSold} Items verkauft für ${total}$`); saveData();
+
+    if (!hasItems) {
+        openModal("💰 Verkauf", "<p>Dein Rucksack ist leer. Geh erst angeln!</p>");
+        return;
+    }
+
+    html += `<hr><div class="item-row" style="font-weight:bold; font-size: 16px;">
+                <span>Gesamtwert:</span>
+                <span style="color: ${total >= 0 ? '#10b981' : '#ef4444'}">${total}$</span>
+             </div>`;
+
+    openModal("💰 Verkauf", html, `<button class="success-btn" onclick="executeSell(${total})">Alles Verkaufen</button>`);
 }
 
-function handleDaily() {
+window.executeSell = function(totalValue) {
+    gameState.money += totalValue;
+    if(totalValue > 0) gameState.stats.totalEarned += totalValue;
+    gameState.inventory = {};
+    updateUI();
+    log(`💰 Alles verkauft für ${totalValue}$`);
+    saveData();
+    closeModal();
+}
+
+// 🎁 DAILY POPUP (7 TAGE STREAK)
+window.handleDailyMenu = function() {
     const now = Date.now();
-    if (now - gameState.lastDaily < 86400000) {
-        const hoursLeft = Math.ceil((86400000 - (now - gameState.lastDaily)) / 3600000);
-        return log(`⏳ Daily noch nicht bereit! Komm in ${hoursLeft} Stunden wieder.`);
+    const oneDay = 86400000;
+    let canClaim = false;
+    let nextStreak = gameState.dailyStreak;
+
+    // Check Streak Logic
+    if (gameState.lastDaily === 0) {
+        canClaim = true;
+        nextStreak = 1;
+    } else if (now - gameState.lastDaily >= oneDay * 2) {
+        canClaim = true;
+        nextStreak = 1; // Streak verloren
+    } else if (now - gameState.lastDaily >= oneDay) {
+        canClaim = true;
+        nextStreak = Math.min(gameState.dailyStreak + 1, 7); // Max 7 Tage
     }
-    let reward = 100 + (gameState.prestige * 50);
-    gameState.money += reward; gameState.lastDaily = now;
-    updateUI(); log(`🎁 Daily abgeholt: +${reward}$`); saveData();
+
+    let html = `<p style="color: #94a3b8; font-size: 12px;">Logge dich täglich ein, um bessere Belohnungen zu erhalten!</p>`;
+    let currentReward = 0;
+
+    for (let i = 1; i <= 7; i++) {
+        let baseReward = i * 100 + (gameState.prestige * 50);
+        let statusClass = "";
+        let icon = "⏳";
+
+        if (i < nextStreak || (!canClaim && i <= gameState.dailyStreak)) {
+            statusClass = "missed"; icon = "✅"; // Schon abgeholt
+        } else if (i === nextStreak && canClaim) {
+            statusClass = "active"; icon = "🎁"; currentReward = baseReward;
+        }
+
+        html += `<div class="daily-day ${statusClass}">
+                    <span>Tag ${i}</span>
+                    <span>${icon} ${baseReward}$</span>
+                 </div>`;
+    }
+
+    if (!canClaim) {
+        const hoursLeft = Math.ceil((oneDay - (now - gameState.lastDaily)) / 3600000);
+        html += `<p style="text-align:center; margin-top:15px; color:#f59e0b;">⏳ Komm in ${hoursLeft} Stunden wieder.</p>`;
+        openModal("🎁 Daily Belohnung", html);
+    } else {
+        openModal("🎁 Daily Belohnung", html, `<button class="success-btn" onclick="executeDaily(${currentReward}, ${nextStreak})">Abholen (${currentReward}$)</button>`);
+    }
 }
 
-function handleBuyRod() {
-    let cost = (gameState.rod + 1) * 500;
-    if (gameState.money < cost) return log(`❌ Zu teuer! Kostet ${cost}$.`);
-    gameState.money -= cost; gameState.rod++;
-    updateUI(); log(`🛒 Rute Level ${gameState.rod}!`); saveData();
+window.executeDaily = function(reward, newStreak) {
+    gameState.money += reward;
+    gameState.stats.totalEarned += reward;
+    gameState.lastDaily = Date.now();
+    gameState.dailyStreak = newStreak;
+    updateUI();
+    log(`🎁 Tag ${newStreak} Daily abgeholt: +${reward}$`);
+    saveData();
+    closeModal();
 }
 
-function handleZone() {
-    gameState.zone = (gameState.zone + 1) % zones.length;
-    updateUI(); log(`🌊 Du bist nun in: ${zones[gameState.zone]}`); saveData();
+// 🛒 RUTE KAUFEN POPUP
+window.handleRodMenu = function() {
+    let currentRod = gameState.rod;
+    let nextCost = (currentRod + 1) * 500;
+    
+    let html = `
+        <div style="text-align: center; padding: 10px;">
+            <div style="font-size: 40px; margin-bottom: 10px;">🎣</div>
+            <p>Aktuelle Rute: <b>Level ${currentRod}</b></p>
+            <p style="color: #94a3b8; font-size: 12px;">Jedes Level erhöht deine Chance auf seltene Fische um 10%.</p>
+            <hr>
+            <p>Nächstes Upgrade: <b>Level ${currentRod + 1}</b></p>
+            <p>Kosten: <b style="color: #ef4444;">${nextCost}$</b></p>
+        </div>
+    `;
+
+    let btnHtml = gameState.money >= nextCost 
+        ? `<button class="success-btn" onclick="executeRodBuy(${nextCost})">Kaufen</button>`
+        : `<button disabled>Zu wenig Geld</button>`;
+
+    openModal("🛒 Angelschop", html, btnHtml);
 }
 
-function handlePrestige() {
+window.executeRodBuy = function(cost) {
+    gameState.money -= cost;
+    gameState.rod++;
+    updateUI();
+    log(`🛒 Rute auf Level ${gameState.rod} verbessert!`);
+    saveData();
+    closeModal();
+}
+
+// 🌊 ZONE WECHSELN POPUP
+window.handleZoneMenu = function() {
+    let html = `<p style="font-size: 13px; color: #94a3b8;">Höhere Zonen bieten wertvollere Fische, benötigen aber Prestige.</p>`;
+    
+    zones.forEach((z, index) => {
+        let isLocked = gameState.prestige < z.reqPrestige;
+        let isCurrent = gameState.zone === index;
+        
+        let rowClass = "zone-row";
+        if(isLocked) rowClass += " locked";
+        if(isCurrent) rowClass += " current";
+
+        let onclick = isLocked || isCurrent ? "" : `onclick="executeZoneChange(${index})"`;
+        let status = isCurrent ? "📍 Aktiv" : (isLocked ? `🔒 Braucht Prestige ${z.reqPrestige}` : "🌊 Reisen");
+
+        html += `<div class="${rowClass}" ${onclick}>
+                    <div style="font-weight: bold;">${z.name}</div>
+                    <div style="font-size: 12px; color: ${isLocked ? '#ef4444' : '#10b981'};">${status}</div>
+                 </div>`;
+    });
+
+    openModal("🗺️ Weltkarte", html);
+}
+
+window.executeZoneChange = function(index) {
+    gameState.zone = index;
+    updateUI();
+    log(`🌊 Du bist zur Zone '${zones[index].name}' gereist.`);
+    saveData();
+    closeModal();
+}
+
+// 📊 PROFIL & STATISTIK POPUP
+window.handleProfileMenu = function() {
+    let html = `
+        <h3 style="margin-top:0; color: #60a5fa;">${gameState.name.toUpperCase()}</h3>
+        <div class="item-row"><span>Geld:</span> <span>${gameState.money}$</span></div>
+        <div class="item-row"><span>Level:</span> <span>${gameState.level}</span></div>
+        <div class="item-row"><span>Rute:</span> <span>Level ${gameState.rod}</span></div>
+        <div class="item-row"><span>Prestige:</span> <span>${gameState.prestige}</span></div>
+        
+        <h4 style="margin-bottom: 5px; margin-top: 20px;">📈 Statistiken</h4>
+        <div class="item-row" style="font-size: 12px;"><span>Fische gefangen:</span> <span>${gameState.stats.totalCaught}</span></div>
+        <div class="item-row" style="font-size: 12px;"><span>Geld verdient:</span> <span>${gameState.stats.totalEarned}$</span></div>
+        <div class="item-row" style="font-size: 12px;"><span>Aktueller Streak:</span> <span>${gameState.dailyStreak} Tage</span></div>
+    `;
+    openModal("👤 Spieler Profil", html);
+}
+
+window.handlePrestige = function() {
     if (gameState.level < 20 || gameState.money < 5000) return log("❌ Brauchst Level 20 und 5000$.");
-    gameState = { name: VALID_USER, money: 0, xp: 0, level: 1, rod: 0, zone: 0, inventory: {}, lastDaily: gameState.lastDaily, prestige: gameState.prestige + 1, quest: 0 };
-    updateUI(); log(`🔁 PRESTIGE ${gameState.prestige}!`); saveData();
+    
+    // Alles resetten außer Name, Prestige und Stats
+    gameState.money = 0; gameState.level = 1; gameState.xp = 0; gameState.rod = 0; 
+    gameState.zone = 0; gameState.inventory = {}; gameState.quest = 0;
+    gameState.prestige++;
+    
+    updateUI(); log(`🔁 PRESTIGE ${gameState.prestige}! Neue Zonen verfügbar!`); saveData();
 }
 
-function showProfile() {
-    let inv = "";
-    for (let i in gameState.inventory) inv += `• ${i}: ${gameState.inventory[i]}\n`;
-    log(`👤 ${gameState.name.toUpperCase()}\n💰 Geld: ${gameState.money}$\n⭐ Level: ${gameState.level}\n🎣 Rute: Lvl ${gameState.rod}\n🔁 Prestige: ${gameState.prestige}\n\n🎒 Rucksack:\n${inv || 'Leer'}`);
-}
-
-// --- AUTH / LOGIN LOGIK ---
-
-document.getElementById('btnLogin').addEventListener('click', () => {
+// --- AUTH LOGIK ---
+document.getElementById('btnRegister').addEventListener('click', async () => {
     const user = document.getElementById('username').value.trim();
     const pass = document.getElementById('password').value;
+    if(user.length < 3 || pass.length < 6) return log("❌ Name mind. 3 Zeichen, PW mind. 6");
+    
+    tempNameForRegister = user;
+    const dummyEmail = user.toLowerCase() + "@vfisher.local";
+    
+    try { 
+        await createUserWithEmailAndPassword(auth, dummyEmail, pass); 
+    } catch(e) { log(e.code === 'auth/email-already-in-use' ? "❌ Name existiert schon!" : "❌ Fehler"); }
+});
 
-    if (user === VALID_USER && pass === VALID_PASS) {
-        document.getElementById('authBox').style.display = 'none';
-        document.getElementById('game').style.display = 'block';
-        loadData(); // Läd den Spielstand
+document.getElementById('btnLogin').addEventListener('click', async () => {
+    const user = document.getElementById('username').value.trim().toLowerCase();
+    const pass = document.getElementById('password').value;
+    if(!user || !pass) return log("❌ Bitte ausfüllen!");
+
+    try { await signInWithEmailAndPassword(auth, user + "@vfisher.local", pass); } 
+    catch(e) { log("❌ Falsche Daten!"); }
+});
+
+document.getElementById('btnLogout').addEventListener('click', async () => { await signOut(auth); });
+
+// EVENT LISTENER BUTTONS
+document.getElementById('btnFish').addEventListener('click', handleFish);
+document.getElementById('btnSell').addEventListener('click', handleSellMenu);
+document.getElementById('btnDaily').addEventListener('click', handleDailyMenu);
+document.getElementById('btnRod').addEventListener('click', handleRodMenu);
+document.getElementById('btnZone').addEventListener('click', handleZoneMenu);
+document.getElementById('btnPrestige').addEventListener('click', handlePrestige);
+document.getElementById('btnProfile').addEventListener('click', handleProfileMenu);
+
+// AUTH STATE LISTENER
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        uid = user.uid;
+        document.getElementById("authBox").style.display = "none";
+        document.getElementById("game").style.display = "block";
+        document.getElementById("log").innerText = "Daten werden geladen...";
+        await loadData();
+        log(`✅ Willkommen zurück, ${gameState.name}!`);
     } else {
-        alert("❌ Falscher Benutzername oder Passwort! Nutze 'Angler' und 'Start123'");
+        uid = null; gameState = null;
+        document.getElementById("authBox").style.display = "block";
+        document.getElementById("game").style.display = "none";
     }
 });
-
-document.getElementById('btnLogout').addEventListener('click', () => {
-    document.getElementById('authBox').style.display = 'block';
-    document.getElementById('game').style.display = 'none';
-    gameState = null; // Spielstand aus dem Arbeitsspeicher werfen
-    document.getElementById('username').value = "";
-    document.getElementById('password').value = "";
-});
-
-// Event Listener für In-Game Buttons
-document.getElementById('btnFish').addEventListener('click', handleFish);
-document.getElementById('btnSell').addEventListener('click', handleSell);
-document.getElementById('btnDaily').addEventListener('click', handleDaily);
-document.getElementById('btnRod').addEventListener('click', handleBuyRod);
-document.getElementById('btnZone').addEventListener('click', handleZone);
-document.getElementById('btnPrestige').addEventListener('click', handlePrestige);
-document.getElementById('btnProfile').addEventListener('click', showProfile);
-
 </script>
 </body>
 </html>
