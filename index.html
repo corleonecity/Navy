@@ -2,16 +2,26 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Stopuhr</title>
+<title>U.S. Navy Marine Stopuhr</title>
+
 <style>
     body {
         margin: 0;
         background: #000;
+        font-family: 'Courier New', monospace;
+        height: 100vh;
         display: flex;
         justify-content: center;
         align-items: center;
-        height: 100vh;
-        font-family: 'Courier New', monospace;
+    }
+
+    .top-left {
+        position: absolute;
+        top: 15px;
+        left: 20px;
+        color: orange;
+        font-size: 18px;
+        letter-spacing: 1px;
     }
 
     .container {
@@ -20,13 +30,13 @@
     }
 
     .time {
-        font-size: 80px;
-        letter-spacing: 5px;
-        margin-bottom: 20px;
+        font-size: 90px;
+        letter-spacing: 6px;
+        margin-bottom: 25px;
     }
 
     button {
-        padding: 10px 20px;
+        padding: 12px 25px;
         margin: 5px;
         border: none;
         font-size: 16px;
@@ -44,7 +54,10 @@
     }
 </style>
 </head>
+
 <body>
+
+<div class="top-left">U.S. Navy Marine Stopuhr</div>
 
 <div class="container">
     <div class="time" id="display">00:00.00</div>
