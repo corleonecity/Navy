@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Virtual Fisher PRO v1.9</title>
+    <title>Virtual Fisher PRO v2.0</title>
     <style>
         /* --- GRUNDDESIGN & HINTERGRUND --- */
         body {
@@ -16,10 +16,9 @@
         .bg-bubbles { position: fixed; bottom: -50px; background: rgba(59,130,246,0.05); border-radius: 50%; animation: floatUp linear infinite; z-index: -1; }
         @keyframes floatUp { to { transform: translateY(-120vh) scale(1.5); opacity: 0; } }
 
-        /* --- HAUPT-CONTAINER (BREITER GEMACHT) --- */
+        /* --- HAUPT-CONTAINER --- */
         .container {
-            width: 600px; /* Breite deutlich erhöht */
-            background: #161b22; padding: 25px; border-radius: 16px;
+            width: 600px; background: #161b22; padding: 25px; border-radius: 16px;
             box-shadow: 0 15px 50px rgba(0,0,0,0.9); border: 1px solid rgba(59, 130, 246, 0.2);
             text-align: center; position: relative; animation: fadeIn 0.4s ease-out;
         }
@@ -47,7 +46,6 @@
         .fishing-active .bobber { animation: bobbing 0.8s ease-in-out; }
         @keyframes bobbing { 0% { bottom: 15px; } 20% { bottom: 12px; } 40% { bottom: -2px; opacity: 0.4; } 80% { bottom: -2px; opacity: 0.4; } 100% { bottom: 15px; } }
 
-        /* --- AUTO NETZ ANIMATION --- */
         .net-anim {
             position: absolute; bottom: 5px; right: 20%; font-size: 30px;
             animation: bobbingBoat 4s ease-in-out infinite reverse; z-index: 3;
@@ -84,7 +82,7 @@
         button:active:not(:disabled) { transform: translateY(1px); }
         button:disabled { background: #334155; cursor: not-allowed; opacity: 0.7; transform: none;}
 
-        .danger-btn { background: #ef4444; padding: 8px 12px; font-size: 12px; flex-direction: row; }
+        .danger-btn { background: #ef4444; padding: 6px 10px; font-size: 11px; flex-direction: row; }
         .prestige-btn { background: #8b5cf6; flex-direction: row; } 
         .success-btn { background: #10b981; flex-direction: row; }
         .update-btn { background: #0ea5e9; flex-direction: row; }
@@ -227,9 +225,9 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// 🔥 DEINE NEUE FIREBASE
+// 🔥 ECHTE FIREBASE MIT LIVE-ANBINDUNG
 const firebaseConfig = {
     apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
     authDomain: "cc-shop-36c3b.firebaseapp.com",
@@ -291,6 +289,7 @@ function getResetKeys() {
     let weekNo = Math.ceil((((d0 - yStart) / 86400000) + 1)/7); let weekly = `${d0.getUTCFullYear()}-W${weekNo}`;
     return { daily, weekly, monthly };
 }
+
 const questDB = {
     daily: [ {id:'d1',desc:'Fange 15 Fische',t:'c',req:15,rew:50}, {id:'d2',desc:'Fange 30 Fische',t:'c',req:30,rew:100}, {id:'d3',desc:'Fange 50 Fische',t:'c',req:50,rew:200}, {id:'d4',desc:'Verdiene 250$',t:'e',req:250,rew:100}, {id:'d5',desc:'Verdiene 1000$',t:'e',req:1000,rew:300} ],
     weekly: [ {id:'w1',desc:'Fange 150 Fische',t:'c',req:150,rew:500}, {id:'w2',desc:'Fange 300 Fische',t:'c',req:300,rew:1000}, {id:'w3',desc:'Fange 500 Fische',t:'c',req:500,rew:2000}, {id:'w4',desc:'Verdiene 3000$',t:'e',req:3000,rew:1000}, {id:'w5',desc:'Verdiene 10000$',t:'e',req:10000,rew:3000} ],
@@ -367,39 +366,55 @@ function updateDex(item) {
     gameState.dex[item.baseName].count++;
 }
 
+// 🔥 ECHTE LIVE DATENBANK ANBINDUNG (onValue)
 async function loadData() {
     if (!currentUser) return;
-    try {
-        const snap = await get(ref(db, "users/" + currentUser));
-        if (snap.exists()) { gameState = snap.val(); } 
-        else { gameState = { name: currentUser, money: 0, xp: 0, level: 1, zone: 0, combo: 0, inventory: {}, dex: {}, net: { level: 0, lastClaim: Date.now() }, lastDaily: 0, dailyStreak: 0, prestige: 0, stats: { totalCaught: 0, totalEarned: 0 } }; }
-        
-        if(!gameState.inventory) gameState.inventory={}; if(!gameState.dex) gameState.dex={}; if(!gameState.net) gameState.net={level:0, lastClaim:Date.now()}; if(!gameState.stats) gameState.stats={totalCaught:0,totalEarned:0};
-        if(!gameState.ownedRods) { gameState.ownedRods = ["r1"]; gameState.eqRod = "r1"; } 
-        if(!gameState.eqRod) gameState.eqRod = "r1";
-        if(!gameState.baits) { gameState.baits = {}; gameState.eqBait = "none"; }
-        if(!gameState.eqBait) gameState.eqBait = "none";
-        
-        // Fix alte Booleans im Dex
-        for(let k in gameState.dex) {
-            if(typeof gameState.dex[k] === 'boolean') {
-                gameState.dex[k] = { normal: gameState.dex[k], shiny: false, count: 1 };
+    const userRef = ref(db, "users/" + currentUser);
+    
+    onValue(userRef, (snap) => {
+        if (snap.exists()) { 
+            gameState = snap.val(); 
+        } else { 
+            if (!gameState) {
+                gameState = { name: currentUser, money: 0, xp: 0, level: 1, zone: 0, combo: 0, inventory: {}, dex: {}, net: { level: 0, lastClaim: Date.now() }, lastDaily: 0, dailyStreak: 0, prestige: 0, stats: { totalCaught: 0, totalEarned: 0 } }; 
+                saveData(); 
             }
         }
         
-        gameState.combo = 0; gameState.lastCatchTime = 0;
-        checkEvents(); checkQuestResets(); updateUI();
-        document.getElementById("authBox").style.display = "none"; document.getElementById("game").style.display = "block"; 
-        log(`✅ Willkommen zurück, ${currentUser}!`);
-    } catch (e) { console.error(e); }
+        if(gameState) {
+            if(!gameState.inventory) gameState.inventory={}; if(!gameState.dex) gameState.dex={}; if(!gameState.net) gameState.net={level:0, lastClaim:Date.now()}; if(!gameState.stats) gameState.stats={totalCaught:0,totalEarned:0};
+            if(!gameState.ownedRods) { gameState.ownedRods = ["r1"]; gameState.eqRod = "r1"; } 
+            if(!gameState.eqRod) gameState.eqRod = "r1";
+            if(!gameState.baits) { gameState.baits = {}; gameState.eqBait = "none"; }
+            if(!gameState.eqBait) gameState.eqBait = "none";
+            
+            // Fix alte Booleans im Dex
+            for(let k in gameState.dex) {
+                if(typeof gameState.dex[k] === 'boolean') {
+                    gameState.dex[k] = { normal: gameState.dex[k], shiny: false, count: 1 };
+                }
+            }
+            
+            if(typeof gameState.combo === 'undefined') gameState.combo = 0; 
+            if(typeof gameState.lastCatchTime === 'undefined') gameState.lastCatchTime = 0;
+            
+            checkEvents(); checkQuestResets(); updateUI();
+            
+            if(document.getElementById("authBox").style.display !== "none") {
+                document.getElementById("authBox").style.display = "none"; 
+                document.getElementById("game").style.display = "block"; 
+                document.getElementById("log").innerHTML = ""; // Log leeren
+                log(`Willkommen zurück, ${currentUser}!`); // Sauberer Log-Eintrag ohne Icon
+            }
+        }
+    });
 }
 
 function saveData() { if (currentUser && gameState) set(ref(db, "users/" + currentUser), gameState); }
 
 window.checkBankruptcy = async function() {
     if (gameState && gameState.money <= -150000) {
-        let u = currentUser;
-        currentUser = null; gameState = null;
+        let u = currentUser; currentUser = null; gameState = null;
         await set(ref(db, "users/" + u), null);
         alert("💸 BANKROTT! Dein Schuldenberg hat -150.000$ erreicht. Dein Spielstand wurde soeben vernichtet.");
         location.reload();
@@ -418,7 +433,6 @@ function updateUI() {
     let mins = Math.floor(timeLeft / 60000); let secs = Math.floor((timeLeft % 60000) / 1000);
     document.getElementById("eventDisplay").innerHTML = `${evt.name} <span class="tooltiptext"><b>${evt.desc}</b><br>Endet in: ${mins}m ${secs}s</span>`;
     
-    // Vermeide Re-Render Flackern bei Wetter
     let wLayer = document.getElementById("weather-layer");
     if(wLayer.getAttribute("data-weather") !== evt.type) {
         if(evt.type === "sun") wLayer.innerHTML = `<div class="sun-fx"></div>`;
@@ -428,7 +442,6 @@ function updateUI() {
         wLayer.setAttribute("data-weather", evt.type);
     }
 
-    // Auto Netz Animation
     let netAnim = document.getElementById("netAnim");
     if (gameState.net && gameState.net.level > 0) netAnim.style.display = "block";
     else netAnim.style.display = "none";
@@ -456,9 +469,10 @@ setInterval(() => {
     }
 }, 100);
 
+// Log System angepasst: "Willkommen zurück" wird nicht mehr mit 🎣 prefixed
 function log(t) { 
     let l = document.getElementById("log"); 
-    let prefix = t.startsWith("✅") || t.startsWith("💰") || t.startsWith("🕸️") || t.startsWith("🧬") || t.startsWith("❌") ? "" : "🎣 ";
+    let prefix = t.startsWith("Willkommen") || t.startsWith("✅") || t.startsWith("💰") || t.startsWith("🕸️") || t.startsWith("🧬") || t.startsWith("❌") ? "" : "🎣 ";
     l.innerHTML = prefix + t + "<br>" + l.innerHTML.split("<br>").slice(0, 8).join("<br>"); 
 }
 
@@ -469,7 +483,6 @@ function openModal(t, b, f='') {
     document.getElementById('modal-overlay').style.display = 'flex'; 
 }
 
-// Global Funktionen für HTML Buttons
 window.equipRod = function(r) { gameState.eqRod = r; saveData(); updateUI(); window.handleInvMenu(); }
 window.equipBait = function(b) { gameState.eqBait = b; saveData(); updateUI(); window.handleInvMenu(); }
 window.unequipBait = function() { gameState.eqBait = "none"; saveData(); updateUI(); window.handleInvMenu(); }
@@ -532,7 +545,6 @@ window.handleSellMenu = function() {
     openModal("💰 Verkauf", html, `<button class="success-btn" onclick="executeSell(${finalTotal})">Alles Verkaufen</button>`);
 }
 
-// IN-PLACE UPDATE BEIM VERKAUFEN
 window.executeSell = function(val) { 
     let hasItems = false; for(let k in gameState.inventory) { if(gameState.inventory[k] > 0) hasItems = true; }
     if(!hasItems) return; 
@@ -542,27 +554,27 @@ window.executeSell = function(val) {
 }
 
 window.handleShopMenu = function() {
-    let html = `<h4 style="color:#60a5fa; margin-top:0;">🎣 Ruten Kaufen</h4>`;
+    let html = `<h3>🛒 Shop <span style="font-size:14px; float:right; color:#10b981;">💰 ${gameState.money.toLocaleString()}$</span></h3>`;
+    html += `<h4 style="color:#60a5fa; margin-top:0;">🎣 Ruten Kaufen</h4>`;
     for(let r in rodsDB) {
         if(!gameState.ownedRods.includes(r)) {
             let rd = rodsDB[r];
-            html += `<div class="item-row" style="align-items: center;"><div><b>${rd.e} ${rd.name}</b><br><span style="font-size: 12px; color: #94a3b8;">${rd.desc}</span></div><button class="success-btn" ${gameState.money<rd.cost?'disabled':''} onclick="buyRod('${r}')">${rd.cost.toLocaleString()}$</button></div>`;
+            html += `<div class="item-row" style="align-items: center;"><div><b>${rd.e} ${rd.name}</b><br><span style="font-size: 11px; color: #94a3b8;">${rd.desc}</span></div><button class="success-btn" ${gameState.money<rd.cost?'disabled':''} onclick="buyRod('${r}')">${rd.cost.toLocaleString()}$</button></div>`;
         }
     }
     html += `<h4 style="color:#60a5fa; margin-top:20px;">🪱 Köder Kaufen</h4>`;
     for(let b in baitsDB) {
         let bd = baitsDB[b];
-        html += `<div class="item-row" style="align-items: center;"><div><b>${bd.e} ${bd.name} (${bd.amt}x)</b><br><span style="font-size: 12px; color: #94a3b8;">${bd.desc}</span></div><button class="success-btn" ${gameState.money<bd.cost?'disabled':''} onclick="buyBait('${b}')">${bd.cost.toLocaleString()}$</button></div>`;
+        html += `<div class="item-row" style="align-items: center;"><div><b>${bd.e} ${bd.name} (${bd.amt}x)</b><br><span style="font-size: 11px; color: #94a3b8;">${bd.desc}</span></div><button class="success-btn" ${gameState.money<bd.cost?'disabled':''} onclick="buyBait('${b}')">${bd.cost.toLocaleString()}$</button></div>`;
     }
     let n = gameState.net; let nextLvl = n.level + 1;
     if (nextLvl < autoLevels.length) {
         let nextInfo = autoLevels[nextLvl];
-        html += `<h4 style="color:#60a5fa; margin-top:20px;">⚙️ Auto-Netz Upgrades</h4><div class="item-row" style="align-items: center;"><div><b>Stufe ${nextLvl}</b><br><span style="font-size: 12px; color: #94a3b8;">Max ${nextInfo.cap} Fische (${nextInfo.time/60}m Takt)</span></div><button class="success-btn" ${gameState.money<nextInfo.cost?'disabled':''} onclick="buyNet(${nextInfo.cost})">${nextInfo.cost.toLocaleString()}$</button></div>`;
+        html += `<h4 style="color:#60a5fa; margin-top:20px;">⚙️ Auto-Netz Upgrades</h4><div class="item-row" style="align-items: center;"><div><b>Stufe ${nextLvl}</b><br><span style="font-size: 11px; color: #94a3b8;">Max ${nextInfo.cap} Fische (${nextInfo.time/60}m Takt)</span></div><button class="success-btn" ${gameState.money<nextInfo.cost?'disabled':''} onclick="buyNet(${nextInfo.cost})">${nextInfo.cost.toLocaleString()}$</button></div>`;
     }
     openModal(`🛒 Shop | 💰 ${gameState.money.toLocaleString()}$`, html);
 }
 
-// IN-PLACE SHOP UPDATES
 window.buyRod = function(id) { gameState.money-=rodsDB[id].cost; gameState.ownedRods.push(id); saveData(); updateUI(); handleShopMenu(); }
 window.buyBait = function(id) { gameState.money-=baitsDB[id].cost; gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); updateUI(); handleShopMenu(); }
 window.buyNet = function(cost) { gameState.money-=cost; gameState.net.level++; gameState.net.lastClaim=Date.now(); saveData(); updateUI(); handleShopMenu(); }
@@ -585,7 +597,7 @@ window.handleNetMenu = function() {
     let n = gameState.net;
     if (n.level === 0) return openModal("⚙️ Auto-Angeln", "<p>Du besitzt noch kein Netz. Kaufe eins im Shop!</p>");
     let curInfo = autoLevels[n.level]; let minsPassed = Math.floor((Date.now() - n.lastClaim) / 60000); let fishPerMin = 1 / (curInfo.time / 60); let cnt = Math.floor(Math.min(minsPassed * fishPerMin, curInfo.cap));
-    let html = `<div style="text-align:center;"><p>Maschine lief im Hintergrund.</p><h2 style="color:#10b981; margin:10px 0;">${cnt} / ${curInfo.cap} Fische</h2><p style="font-size:13px; color:#94a3b8;">(1 Fisch / ${curInfo.time/60} Min)</p></div>`;
+    let html = `<div style="text-align:center;"><p>Maschine lief im Hintergrund.</p><h2 style="color:#10b981; margin:10px 0;">${cnt} / ${curInfo.cap} Fische</h2><p style="font-size:12px; color:#94a3b8;">(1 Fisch / ${curInfo.time/60} Min)</p></div>`;
     openModal("⚙️ Maschine Lvl " + n.level, html, cnt>0?`<button class="success-btn" onclick="claimNet(${cnt})">Leeren</button>`:`<button disabled>Leer</button>`);
 }
 window.claimNet = function(c) { 
@@ -734,17 +746,15 @@ window.handleUpdateMenu = function() {
     let html = `
         <div style="text-align: left;">
             <div class="update-log-item">
-                <div class="update-title update-latest">v1.9 - Massive Bugfixes & Live-UI</div>
+                <div class="update-title update-latest">v2.0 - Realtime Database & Bugfixes</div>
                 <ul class="update-list">
-                    <li>🖥️ <b>100ms Live-Takt:</b> Das Spiel rendert jetzt in Echtzeit. Alle Buttons, Geld, Combo und Menüs reagieren augenblicklich (ohne Ruckeln)!</li>
-                    <li>💸 <b>Bankrott-System:</b> Neu eingeführt. Erreichst du -150.000$, verlierst du alles und das Spiel startet von vorn.</li>
-                    <li>🕸️ <b>Netz-Animation:</b> Wenn dein Auto-Netz aktiv ist, treibt jetzt permanent ein Netz im Wasser.</li>
-                    <li>🐛 <b>Dex & Quest Fix:</b> Kaputte alte Accounts wurden abgefangen. Das Anklicken der Fische und das Öffnen der Quests funktioniert jetzt für jeden 100%.</li>
-                    <li>❌ <b>Clean Log:</b> Die nervigen Combo-Log-Spams wurden komplett entfernt. Du hast faire 3.0s Zeit, um die Combo aufrechtzuerhalten.</li>
-                    <li>🛒 <b>Live Menüs:</b> Shop, Inventar und Verkauf erneuern sich sofort im Popup. Keine Schließ-Zwang mehr!</li>
+                    <li>📡 <b>Echtzeit-Synchronisation:</b> Das Spiel ist jetzt LIVE mit Firebase verbunden. Wenn ein Admin dein Geld ändert, siehst du das im selben Moment im Spiel!</li>
+                    <li>🗣️ <b>Cleaner Log:</b> Die Willkommens-Nachricht taucht nur noch sauber mit dem Usernamen auf, ohne komische 🎣-Icons oder doppelte Logs.</li>
+                    <li>🖥️ <b>Breiteres Design:</b> Das gesamte Interface wurde exakt an deinen Screenshot angepasst und ist nun breiter und übersichtlicher.</li>
+                    <li>💸 <b>Bankrott-Sicherheit:</b> Das -150k System löscht deinen Spielstand in Echtzeit aus der Datenbank, falls du dich extrem verschuldest.</li>
                 </ul>
             </div>
-            <div class="update-log-item"><div class="update-title">v1.8 - Performance & Animationen</div></div>
+            <div class="update-log-item"><div class="update-title">v1.9 - Live-UI & Performance</div></div>
         </div>
     `; openModal("📝 Update Logs", html);
 }
