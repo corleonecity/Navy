@@ -2,67 +2,45 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>Virtual Fisher Web</title>
+<title>Virtual Fisher Pro</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial;
-    background: linear-gradient(180deg, #020617, #0a192f);
+    background: linear-gradient(180deg,#020617,#0a192f);
     color: #e6f0ff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
 
-/* Container */
 .container {
-    text-align: center;
-    background: rgba(10,20,40,0.5);
-    padding: 40px;
+    width: 480px;
+    background: rgba(10,20,40,0.6);
+    padding: 30px;
     border-radius: 16px;
-    backdrop-filter: blur(10px);
-    width: 420px;
 }
 
-/* Title */
-h1 {
-    margin-bottom: 10px;
-    color: #7fb3ff;
-}
-
-/* Buttons */
 button {
-    padding: 12px 20px;
-    margin: 6px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    background: #1e3a8a;
-    color: white;
-    transition: 0.2s;
+    margin:4px;
+    padding:10px;
+    border:none;
+    border-radius:6px;
+    background:#1e3a8a;
+    color:white;
+    cursor:pointer;
 }
+button:hover { background:#3b82f6; }
 
-button:hover {
-    background: #3b82f6;
-}
-
-/* Output */
-#result {
-    margin-top: 15px;
-    min-height: 40px;
-}
-
-#profile {
-    margin-top: 15px;
-    text-align: left;
-    font-size: 14px;
-    background: rgba(0,0,0,0.4);
-    padding: 10px;
-    border-radius: 8px;
-    max-height: 150px;
-    overflow-y: auto;
+#log {
+    height:120px;
+    overflow:auto;
+    background:#00000060;
+    padding:10px;
+    margin-top:10px;
+    font-size:13px;
 }
 </style>
 </head>
@@ -70,114 +48,193 @@ button:hover {
 <body>
 
 <div class="container">
-    <h1>🎣 Virtual Fisher</h1>
+<h2>🎣 Virtual Fisher PRO</h2>
 
-    <button onclick="fish()">🎣 Angeln</button>
-    <button onclick="loadProfile()">📊 Profil</button>
+<button onclick="fish()">🎣 Angeln</button>
+<button onclick="sell()">💰 Verkaufen</button>
+<button onclick="daily()">🎁 Daily</button>
+<button onclick="quest()">📜 Quest</button>
+<button onclick="prestige()">🔁 Prestige</button>
+<button onclick="buyRod()">🛒 Bessere Rute</button>
+<button onclick="changeZone()">🌊 Zone wechseln</button>
+<button onclick="profile()">📊 Profil</button>
 
-    <div id="result"></div>
-    <div id="profile"></div>
+<div id="log"></div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// 🔥 Firebase Config
-const firebaseConfig = {
+const app = initializeApp({
   apiKey: "AIzaSy...",
-  authDomain: "khusland-b7d13.firebaseapp.com",
-  databaseURL: "https://khusland-b7d13-default-rtdb.firebaseio.com",
-  projectId: "khusland-b7d13",
-  storageBucket: "khusland-b7d13.firebasestorage.app",
-  messagingSenderId: "69573193613",
-  appId: "1:69573193613:web:86c4d839281b1e343cd7c4"
-};
-
-const app = initializeApp(firebaseConfig);
+  databaseURL: "https://khusland-b7d13-default-rtdb.firebaseio.com"
+});
 const db = getDatabase(app);
 
-// USER (für GitHub Demo fix)
-const userId = "player1";
+const uid = "player1";
 
-// 🎣 FISCH LISTE (viele + rarity)
-const fishList = [
-    { name: "Karpfen", value: 5, chance: 30 },
-    { name: "Forelle", value: 8, chance: 25 },
-    { name: "Barsch", value: 10, chance: 20 },
-    { name: "Hecht", value: 20, chance: 10 },
-    { name: "Lachs", value: 25, chance: 8 },
-    { name: "Thunfisch", value: 40, chance: 5 },
-    { name: "Hai", value: 80, chance: 1 },
-    { name: "Goldfisch", value: 60, chance: 3 },
-    { name: "Perlenfisch", value: 100, chance: 1 },
-    { name: "Tiefsee-Anglerfisch", value: 120, chance: 0.8 },
-    { name: "Blauer Marlin", value: 150, chance: 0.5 },
-    { name: "Elektrischer Aal", value: 90, chance: 2 },
-    { name: "Feuerfisch", value: 70, chance: 2 },
-    { name: "Kristallfisch", value: 200, chance: 0.3 },
-    { name: "Phantomfisch", value: 250, chance: 0.2 },
-    { name: "Legendärer Leviathan", value: 500, chance: 0.05 }
+// 🌊 Zonen
+const zones = ["See","Meer","Tiefsee"];
+
+// 🎣 Items
+const items = [
+ {n:"Müll",v:-10,c:25,z:0},
+ {n:"Schuh",v:-5,c:15,z:0},
+
+ {n:"Karpfen",v:5,c:20,z:0},
+ {n:"Forelle",v:10,c:15,z:0},
+
+ {n:"Lachs",v:25,c:10,z:1},
+ {n:"Thunfisch",v:40,c:8,z:1},
+
+ {n:"Hai",v:80,c:3,z:2},
+ {n:"Leviathan",v:400,c:0.5,z:2}
 ];
 
-// 🎲 Weighted Random
-function getFish() {
-    const total = fishList.reduce((sum, f) => sum + f.chance, 0);
-    let rand = Math.random() * total;
+// 🎯 Get weighted item
+function roll(zone, rod){
+ let pool = items.filter(i=>i.z<=zone);
+ let total = pool.reduce((s,i)=>s+i.c,0);
+ let r = Math.random()*total;
 
-    for (let fish of fishList) {
-        if (rand < fish.chance) return fish;
-        rand -= fish.chance;
-    }
+ for(let i of pool){
+   if(r < i.c * (1+rod*0.1)) return i;
+   r -= i.c;
+ }
 }
 
-// ⏳ Cooldown
-let lastFish = 0;
-const cooldown = 3000;
+// 🧱 Load user
+async function load(){
+ let s = await get(ref(db,"users/"+uid));
+ return s.exists()?s.val():{
+  money:0,xp:0,level:1,rod:0,zone:0,
+  inventory:{},lastDaily:0,prestige:0,quest:0
+ };
+}
 
-window.fish = async function() {
-    const now = Date.now();
+// 💾 Save
+async function save(d){
+ await set(ref(db,"users/"+uid),d);
+}
 
-    if (now - lastFish < cooldown) {
-        document.getElementById("result").innerText = "⏳ Warte kurz...";
-        return;
-    }
+// 🎣 Fish
+window.fish = async ()=>{
+ let d = await load();
 
-    lastFish = now;
+ let item = roll(d.zone,d.rod);
 
-    const caught = getFish();
+ d.inventory[item.n]=(d.inventory[item.n]||0)+1;
+ d.xp += 5;
 
-    const userRef = ref(db, "users/" + userId);
-    const snap = await get(userRef);
+ if(d.xp > d.level*50){
+   d.xp=0;
+   d.level++;
+   log("⭐ Level Up!");
+ }
 
-    let data = snap.exists() ? snap.val() : { money: 0, inventory: [] };
-
-    data.money += caught.value;
-    data.inventory.push(caught.name);
-
-    await set(userRef, data);
-
-    document.getElementById("result").innerText =
-        `🎣 ${caught.name} gefangen! (+${caught.value}$)`;
+ await save(d);
+ log("🎣 "+item.n+" ("+item.v+"$)");
 };
 
-// 📊 Profil
-window.loadProfile = async function() {
-    const snap = await get(ref(db, "users/" + userId));
+// 💰 Sell
+window.sell = async ()=>{
+ let d = await load();
+ let total=0;
 
-    if (!snap.exists()) {
-        document.getElementById("profile").innerText = "Kein Profil";
-        return;
-    }
+ for(let k in d.inventory){
+   let i = items.find(x=>x.n===k);
+   total += i.v * d.inventory[k];
+ }
 
-    const data = snap.val();
+ d.money += total;
+ d.inventory={};
 
-    let list = "";
-    data.inventory.slice(-10).forEach(f => list += "• " + f + "\n");
-
-    document.getElementById("profile").innerText =
-        `💰 Geld: ${data.money}\n\n🐟 Letzte Fische:\n${list}`;
+ await save(d);
+ log("💰 "+total+"$ verkauft");
 };
+
+// 🎁 Daily
+window.daily = async ()=>{
+ let d = await load();
+ if(Date.now()-d.lastDaily<86400000) return log("⏳ Daily schon benutzt");
+
+ let reward = 100 + d.prestige*50;
+ d.money += reward;
+ d.lastDaily = Date.now();
+
+ await save(d);
+ log("🎁 "+reward+"$");
+};
+
+// 📜 Quest
+window.quest = async ()=>{
+ let d = await load();
+ d.quest++;
+
+ if(d.quest>=5){
+   d.money+=200;
+   d.quest=0;
+   log("📜 Quest fertig +200$");
+ }
+
+ await save(d);
+};
+
+// 🔁 Prestige
+window.prestige = async ()=>{
+ let d = await load();
+ if(d.money<2000) return log("❌ 2000$ nötig");
+
+ d.money=0;
+ d.level=1;
+ d.inventory={};
+ d.prestige++;
+
+ await save(d);
+ log("🔁 Prestige "+d.prestige);
+};
+
+// 🛒 Rod
+window.buyRod = async ()=>{
+ let d = await load();
+ let cost = (d.rod+1)*500;
+
+ if(d.money<cost) return log("❌ Zu teuer");
+
+ d.money-=cost;
+ d.rod++;
+
+ await save(d);
+ log("🛒 Rute verbessert");
+};
+
+// 🌊 Zone
+window.changeZone = async ()=>{
+ let d = await load();
+ d.zone = (d.zone+1)%zones.length;
+
+ await save(d);
+ log("🌊 "+zones[d.zone]);
+};
+
+// 📊 Profile
+window.profile = async ()=>{
+ let d = await load();
+
+ log(`
+💰 ${d.money}
+⭐ Level ${d.level}
+🎣 Rod ${d.rod}
+🌊 ${zones[d.zone]}
+🔁 Prestige ${d.prestige}
+`);
+};
+
+// UI
+function log(t){
+ document.getElementById("log").innerText = t;
+}
 </script>
 
 </body>
