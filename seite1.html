@@ -6,7 +6,7 @@
     <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
     <meta name="google" content="notranslate">
     
-    <title>Virtual Fisher PRO v5.9</title>
+    <title>Virtual Fisher PRO v6.0</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -67,7 +67,8 @@
             border: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 10; max-height: 95vh; overflow-y: auto;
         }
 
-        #broadcast-banner { display:none; position:fixed; top:0; left:0; width:100%; background:linear-gradient(90deg, #ef4444, #b91c1c); color:white; text-align:center; padding:15px; font-weight:bold; z-index:100000; box-shadow:0 4px 15px rgba(0,0,0,0.6); font-size:15px; border-bottom: 2px solid #fca5a5;}
+        /* Broadcast Banner überarbeitet */
+        #broadcast-banner { display:none; position:fixed; top:0; left:0; width:100%; background:linear-gradient(90deg, #ef4444, #b91c1c); color:white; text-align:center; padding:15px; font-weight:bold; z-index:100000; box-shadow:0 4px 15px rgba(0,0,0,0.6); font-size:15px; border-bottom: 2px solid #fca5a5; transition: opacity 0.5s ease;}
         #broadcast-banner button { position:absolute; right:15px; top:12px; background:none; border:none; color:white; font-size:20px; cursor:pointer; font-weight:bold; padding:0; line-height:1;}
         
         #fishing-scene { height: 110px; position: relative; margin-bottom: 12px; border-bottom: 3px solid #3b82f6; overflow: hidden; border-radius: 16px 16px 0 0; background: rgba(0,0,0,0.2); }
@@ -335,7 +336,7 @@ window.currentDexTab = 'normal';
 let fishInterval = null;
 let wasMaintenance = false;
 
-// Caches for the Leaderboard
+// Global Leaderboard Cache
 let lbUpdateCooldown = 0;
 let lastLeaderboardUsers = [];
 
@@ -573,10 +574,28 @@ function addQuestProgress(t, amt) {
     if(t === 'e') { gameState.qs.p.de += amt; gameState.qs.p.we += amt; gameState.qs.p.me += amt; }
 }
 
+// ==== SYNC LEADERBOARD LOGIK ====
+// Aktualisiert den eigenen Score im GLOBALEN Leaderboard-Eintrag auf der Datenbank
+async function syncGlobalLeaderboard() {
+    if(!currentUser || !gameState) return;
+    
+    let playerData = {
+        name: currentUser,
+        prestige: gameState.prestige || 0,
+        level: gameState.level || 1,
+        money: gameState.money || 0,
+        stats: { totalCaught: gameState.stats.totalCaught || 0 }
+    };
+    
+    await set(ref(db, "global/leaderboard/" + currentUser), playerData);
+}
+
+// ==== BROADCAST BANNER SCHLIEßEN ====
 window.closeBroadcast = function() {
     document.getElementById("broadcast-banner").style.display = "none";
     if(globalState && globalState.broadcast) {
         if(!gameState) gameState = {};
+        // Wir merken uns, dass DIESER User DIESEN Timestamp weggedrückt hat
         gameState.lastBroadcast = globalState.broadcast.timestamp;
         saveData();
     }
@@ -594,6 +613,29 @@ async function loadData() {
         }
     });
     
+    // Horcht auf das globale Leaderboard und speichert es in den Cache
+    onValue(ref(db, "global/leaderboard"), (snap) => {
+        if(snap.exists()) {
+            let data = snap.val();
+            let usersArray = [];
+            for (let key in data) {
+                usersArray.push(data[key]);
+            }
+            // Sortierung immer sofort anwenden
+            usersArray.sort((a,b) => {
+                let caughtA = a.stats?.totalCaught || 0;
+                let caughtB = b.stats?.totalCaught || 0;
+                return caughtB - caughtA;
+            });
+            lastLeaderboardUsers = usersArray;
+            
+            // Wenn das Menü gerade offen ist, sofort neu zeichnen
+            if(window.currentOpenMenu === 'leaderboard') {
+                window.handleLeaderboard();
+            }
+        }
+    });
+
     onValue(ref(db, "global"), (snap) => {
         globalState = snap.exists() ? snap.val() : null;
         
@@ -611,8 +653,8 @@ async function loadData() {
         // Live Broadcast System prüfen
         if (globalState && globalState.broadcast) {
             let bc = globalState.broadcast;
-            // Banner anzeigen, wenn Nachricht nicht älter als 60 Min ist und vom User noch nicht weggedrückt wurde
-            if (Date.now() - bc.timestamp < 3600000 && (!gameState || gameState.lastBroadcast !== bc.timestamp)) {
+            // Nach 5 Minuten wird das Banner für ALLE automatisch gelöscht, selbst wenn sie nicht geklickt haben (5 * 60 * 1000 = 300000ms)
+            if (Date.now() - bc.timestamp < 300000 && (!gameState || gameState.lastBroadcast !== bc.timestamp)) {
                 document.getElementById('broadcast-text').innerText = bc.text;
                 document.getElementById('broadcast-banner').style.display = 'block';
             } else {
@@ -697,6 +739,8 @@ async function loadData() {
             
             checkQuestResets();
             renderAquarium();
+            // Stellt sicher, dass man selbst auch im globalen Leaderboard steht
+            syncGlobalLeaderboard();
             
             if(document.getElementById("authBox").style.display !== "none") {
                 document.getElementById("authBox").style.display = "none";
@@ -708,6 +752,7 @@ async function loadData() {
                 startWeatherEffects();
             }
             
+            // Sofortige Updates aller Menüs ohne zu flackern
             if(window.currentOpenMenu === 'sell') window.handleSellMenu();
             if(window.currentOpenMenu === 'shop') window.handleShopMenu();
             if(window.currentOpenMenu === 'inv') window.handleInvMenu();
@@ -726,12 +771,17 @@ async function loadData() {
                 gameState.money += income;
                 log(`🐟 Aquarium: +${income}$ passiv`);
                 saveData();
+                syncGlobalLeaderboard();
             }
         }
     }, 60000);
 }
 
-function saveData() { if(currentUser && gameState) set(ref(db, "users/" + currentUser), gameState); }
+function saveData() { 
+    if(currentUser && gameState) {
+        set(ref(db, "users/" + currentUser), gameState); 
+    }
+}
 
 setInterval(() => { if(gameState) updateUI(); }, 50);
 
@@ -907,6 +957,7 @@ function finishMinigame(won) {
             log(`⭐ LEVEL UP! Level ${gameState.level}!`);
         }
         saveData();
+        syncGlobalLeaderboard();
     } else {
         let lossXp = Math.floor(Math.abs(mgFishItem.xp) * 2);
         gameState.xp = Math.max(0, gameState.xp - lossXp);
@@ -1028,6 +1079,7 @@ function executeFishCatch(btn, scene) {
         }
         log(msg);
         saveData();
+        syncGlobalLeaderboard();
         scene.classList.remove('fishing-active');
         btn.disabled = false;
         btn.innerHTML = `🎣 Angeln`;
@@ -1141,6 +1193,7 @@ window.executeSell = function(val) {
     else log(`💰 Rucksack verkauft für ${finalVal.toLocaleString()}$`);
     
     saveData();
+    syncGlobalLeaderboard();
     window.handleSellMenu(); 
 }
 
@@ -1247,8 +1300,8 @@ window.handleShopMenu = function() {
     document.getElementById('modal-title').innerText = titleStr;
     openModal(titleStr, html, "", true);
 }
-window.buyRod = function(id) { gameState.money -= rodsDB[id].cost; if(!gameState.ownedRods) gameState.ownedRods=[]; gameState.ownedRods.push(id); saveData(); window.handleShopMenu(); }
-window.buyBait = function(id) { gameState.money -= baitsDB[id].cost; if(!gameState.baits) gameState.baits={}; gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); window.handleShopMenu(); }
+window.buyRod = function(id) { gameState.money -= rodsDB[id].cost; if(!gameState.ownedRods) gameState.ownedRods=[]; gameState.ownedRods.push(id); saveData(); syncGlobalLeaderboard(); window.handleShopMenu(); }
+window.buyBait = function(id) { gameState.money -= baitsDB[id].cost; if(!gameState.baits) gameState.baits={}; gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); syncGlobalLeaderboard(); window.handleShopMenu(); }
 
 window.handleInvMenu = function() {
     window.currentOpenMenu = 'inv';
@@ -1364,19 +1417,6 @@ setInterval(() => {
         if(w) w.innerText = getResetCountdown('weekly');
         if(m) m.innerText = getResetCountdown('monthly');
     }
-    if(window.currentOpenMenu === 'leaderboard') {
-        let l = document.getElementById('lb-countdown');
-        if(l) {
-            let left = Math.ceil((lbUpdateCooldown - Date.now()) / 1000);
-            if(left <= 0) {
-                l.innerText = "Jetzt verfügbar!";
-                l.style.color = "#10b981";
-            } else {
-                l.innerText = left + "s";
-                l.style.color = "#facc15";
-            }
-        }
-    }
 }, 1000);
 
 window.handleQuestMenu = function() {
@@ -1420,7 +1460,15 @@ window.handleQuestMenu = function() {
         openModal("📜 Quests", "<p style='color:#ef4444;'>Fehler beim Laden der Quests. (" + e.message + ")</p>");
     }
 }
-window.claimQuest = function(id, rew) { if(!gameState.qs.c) gameState.qs.c={}; gameState.qs.c[id]=true; gameState.money += rew; gameState.stats.totalEarned += rew; saveData(); window.handleQuestMenu(); }
+window.claimQuest = function(id, rew) { 
+    if(!gameState.qs.c) gameState.qs.c={}; 
+    gameState.qs.c[id]=true; 
+    gameState.money += rew; 
+    gameState.stats.totalEarned += rew; 
+    saveData(); 
+    syncGlobalLeaderboard();
+    window.handleQuestMenu(); 
+}
 
 window.handleDexMenu = function() {
     window.currentOpenMenu = 'dex';
@@ -1532,27 +1580,9 @@ window.handleProfileMenu = function() {
     openModal("📊 Dein Profil", html);
 }
 
-window.handleLeaderboard = async function() {
+// ==== NEUES GLOBALES LEADERBOARD ====
+window.handleLeaderboard = function() {
     window.currentOpenMenu = 'leaderboard';
-    
-    let now = Date.now();
-    let left = Math.ceil((lbUpdateCooldown - now) / 1000);
-    
-    if (lastLeaderboardUsers.length > 0 && gameState && currentUser) {
-        let me = lastLeaderboardUsers.find(u => u.name === currentUser);
-        if (me) {
-            if(!me.stats) me.stats = {};
-            me.stats.totalCaught = gameState.stats.totalCaught;
-            me.money = gameState.money;
-            me.level = gameState.level;
-            me.prestige = gameState.prestige;
-        }
-        lastLeaderboardUsers.sort((a,b) => {
-            let cA = a.stats?.totalCaught || 0;
-            let cB = b.stats?.totalCaught || 0;
-            return cB - cA;
-        });
-    }
 
     let renderUsers = (users) => {
         return users.map((u,i) => {
@@ -1572,51 +1602,10 @@ window.handleLeaderboard = async function() {
         }).join('');
     };
 
-    let timerHtml = `<div style="text-align:center; margin-bottom:10px; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px; border:1px solid #3b82f6;">🔄 Nächstes Update in: <b id="lb-countdown" style="color:#facc15;">${left > 0 ? left+'s' : 'Jetzt verfügbar!'}</b></div>`;
-
-    if(now < lbUpdateCooldown && lastLeaderboardUsers.length > 0) {
-        let html = timerHtml + renderUsers(lastLeaderboardUsers);
-        return openModal("🏆 Leaderboard", html);
-    }
-
     if(lastLeaderboardUsers.length === 0) {
-        openModal("🏆 Leaderboard", timerHtml + "<p style='text-align:center;'>Lade Daten...</p>");
+        openModal("🏆 Leaderboard", "<p style='text-align:center;'>Warte auf Server-Daten...</p>");
     } else {
-        openModal("🏆 Leaderboard", timerHtml + renderUsers(lastLeaderboardUsers));
-    }
-
-    let [usersSnap, accountsSnap] = await Promise.all([
-        get(ref(db, "users")),
-        get(ref(db, "accounts"))
-    ]);
-
-    lbUpdateCooldown = Date.now() + 60000; 
-    left = 60;
-    timerHtml = `<div style="text-align:center; margin-bottom:10px; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px; border:1px solid #3b82f6;">🔄 Nächstes Update in: <b id="lb-countdown" style="color:#facc15;">${left}s</b></div>`;
-
-    if(usersSnap.exists() && accountsSnap.exists()) {
-        let validAccounts = accountsSnap.val();
-        let users = [];
-
-        usersSnap.forEach(c => {
-            let u = c.val();
-            if(u && u.name && validAccounts[u.name]) {
-                users.push(u);
-            }
-        });
-
-        users.sort((a,b) => {
-            let caughtA = a.stats && a.stats.totalCaught ? a.stats.totalCaught : 0;
-            let caughtB = b.stats && b.stats.totalCaught ? b.stats.totalCaught : 0;
-            return caughtB - caughtA;
-        });
-
-        lastLeaderboardUsers = users; 
-        
-        if(window.currentOpenMenu === 'leaderboard') {
-            let html = timerHtml + renderUsers(users);
-            openModal("🏆 Leaderboard", html);
-        }
+        openModal("🏆 Leaderboard", renderUsers(lastLeaderboardUsers));
     }
 }
 
@@ -1699,7 +1688,15 @@ window.handleDailyMenu = function() {
     openModal("🎁 Daily Bonus", html, can ? `<button class="success-btn" onclick="window.claimDaily(${streak*100 + gameState.prestige*50},${streak})">Abholen</button>` : '');
 }
 
-window.claimDaily = function(rew, streak) { gameState.money += rew; gameState.stats.totalEarned += rew; gameState.lastDaily=Date.now(); gameState.dailyStreak=streak; saveData(); window.handleDailyMenu(); }
+window.claimDaily = function(rew, streak) { 
+    gameState.money += rew; 
+    gameState.stats.totalEarned += rew; 
+    gameState.lastDaily=Date.now(); 
+    gameState.dailyStreak=streak; 
+    saveData(); 
+    syncGlobalLeaderboard();
+    window.handleDailyMenu(); 
+}
 
 window.handlePrestigeMenu = function() {
     let reqLvl = 20 + gameState.prestige*5;
@@ -1707,7 +1704,16 @@ window.handlePrestigeMenu = function() {
     let can = gameState.level >= reqLvl && gameState.money >= reqMoney;
     openModal("🔁 Prestige", `<p>Mache Prestige, um einen <b>dauerhaften Verkaufs-Bonus</b> zu erhalten!</p><p>Reset: Level, Geld, Inventar<br>Bonus: <b>+1% Verkaufswert pro Prestige</b><br>Voraussetzung: Level ${reqLvl}, ${reqMoney.toLocaleString()}$</p>`, can ? `<button class="danger-btn" onclick="window.doPrestige()">PRESTIGE AUSFÜHREN</button>` : '');
 }
-window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameState.level=1; gameState.xp=0; gameState.inventory=[]; saveData(); location.reload(); }
+window.doPrestige = function() { 
+    gameState.prestige++; 
+    gameState.money=0; 
+    gameState.level=1; 
+    gameState.xp=0; 
+    gameState.inventory=[]; 
+    saveData(); 
+    syncGlobalLeaderboard();
+    location.reload(); 
+}
 
 // ===== PROMO CODES (USER) =====
 document.getElementById('btnPromo')?.addEventListener('click', () => {
@@ -1763,6 +1769,7 @@ window.redeemPromoCode = async function() {
         if(!gameState.usedCodes) gameState.usedCodes = {};
         gameState.usedCodes[code] = true;
         saveData();
+        syncGlobalLeaderboard();
         window.closeModal();
         alert(`✅ Code eingelöst! Belohnung: ${rewMsg.join(', ')}`);
         log(`🎫 Promo-Code ${code} eingelöst! Belohnung: ${rewMsg.join(', ')}`);
@@ -1790,6 +1797,51 @@ window.submitFeedback = function() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({ embeds: [{ title: "💬 Neues Spieler-Feedback", description: text, color: 3447003, fields: [ { name: "Spieler", value: currentUser || "Unbekannt", inline: true }, { name: "Zeit", value: new Date().toLocaleString("de-DE"), inline: true } ] }] })
     }).then(() => { alert("✅ Dein Feedback wurde erfolgreich gesendet!"); window.closeModal(); }).catch(e => { alert("❌ Fehler beim Senden des Feedbacks."); });
+}
+
+window.adminSendUpdateToDiscord = function() {
+    if(!confirm("Möchtest du das aktuelle Update-Log in Discord posten?")) return;
+    
+    let webhookUrl = "https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd";
+    
+    fetch(webhookUrl, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            embeds: [{
+                title: "🚀 Update v6.0 ist online!",
+                description: "Das Spiel wurde soeben aktualisiert. Bitte ladet die Seite neu (bzw. schließt die Wartung), um die Änderungen zu sehen!",
+                color: 11027200,
+                fields: [
+                    { name: "🏆 Globales Leaderboard", value: "Das Leaderboard ist ab sofort 100% live und synchron. Alle Spieler sehen absolut die gleichen Ergebnisse, ohne Ladezeiten." },
+                    { name: "🎫 Neues Code-System", value: "Du kannst jetzt Promo-Codes für Geschenke einlösen! Es gibt dort bald Geld, XP und seltene Items." },
+                    { name: "⚡ Instant UI & Live Events", value: "Menüs laden noch schneller und Server-Events (Doppel XP etc.) greifen sofort live ins Spiel ein." }
+                ],
+                footer: { text: "Virtual Fisher PRO" }
+            }]
+        })
+    }).then(() => {
+        alert("✅ Update erfolgreich an Discord gesendet!");
+    }).catch(e => {
+        alert("❌ Fehler beim Senden an Discord.");
+    });
+}
+
+window.handleUpdateMenu = function() {
+    let html = `
+    <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.0 - Global Sync & Promo-Codes</h3>
+        <ul style="padding-left:20px;">
+            <li><b>Live Leaderboard:</b> Das Ranking ist ab sofort komplett global synchronisiert. Jeder sieht das Gleiche – ohne lästige Cooldowns.</li>
+            <li><b>Promo-Codes:</b> Es gibt einen neuen 🎫 Code-Button. Hiermit kannst du demnächst Belohnungen (Geld, XP, Items) vom Discord einlösen.</li>
+            <li><b>Instant UI:</b> Alle Rucksack-Aktionen und Item-Ausstattungen sind jetzt komplett verzögerungsfrei.</li>
+        </ul>
+        <hr style="border-color:#30363d;">
+        <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
+        <p><b>v5.8</b> - Mobile Fixes & Discord Server Integration.</p>
+        <p><b>v5.7</b> - 30 neue Quests, Live-Timer & Leaderboard Cooldowns.</p>
+    </div>`;
+    openModal("📝 Updates", html);
 }
 
 // ===== ADMIN BEREICH =====
@@ -2025,11 +2077,9 @@ window.adminSetEvent = async function() {
     let mins = Number(document.getElementById('adminEventTime').value) || 30;
     
     let evtName = "";
-    // Die klassischen Events ignorieren die Mult-Eingabe und nutzen ihre vordefinierten starken Boosts
     if(evtType === 'sun') { evtName = "☀️ Goldene Sonne (3x Shiny)"; mult = 3; }
     else if(evtType === 'rain') { evtName = "🌧️ Monsun (2x Speed)"; mult = 2; }
     else if(evtType === 'hai') { evtName = "🦈 Raubfisch-Woche (5x Zander)"; mult = 5; }
-    // Custom Events
     else if(evtType === 'xp') { evtName = `⭐ Custom XP-Boost (x${mult})`; }
     else if(evtType === 'money') { evtName = `💰 Custom Geld-Boost (x${mult})`; }
 
@@ -2087,6 +2137,10 @@ window.adminQuickDelete = async function(user) {
     if(confirm(`⚠️ Willst du den Account '${user}' wirklich permanent löschen?`)) {
         await remove(ref(db, "accounts/"+user));
         await remove(ref(db, "users/"+user));
+        
+        // Lösche den Account auch direkt aus dem globalen Leaderboard
+        await remove(ref(db, "global/leaderboard/" + user));
+        
         alert(`🗑️ Account ${user} gelöscht!`);
         window.adminShowAccounts(); 
     }
@@ -2189,6 +2243,12 @@ window.adminResetAccount = async function() {
     if(!user) return alert("Username eingeben!");
     if(confirm(`⚠️ Spielstand von ${user} wirklich komplett zurücksetzen? (Login bleibt erhalten)`)) {
         await remove(ref(db, "users/" + user));
+        
+        // Setze den Spieler auch im globalen Leaderboard zurück, anstatt ihn zu löschen
+        await set(ref(db, "global/leaderboard/" + user), {
+            name: user, prestige: 0, level: 1, money: 0, stats: { totalCaught: 0 }
+        });
+        
         alert(`✅ Spielstand von ${user} wurde gelöscht und wird beim nächsten Login neu erstellt.`);
     }
 }
