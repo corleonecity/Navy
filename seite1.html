@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Virtual Fisher PRO v5.5</title>
+    <title>Virtual Fisher PRO v5.6</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -39,7 +39,6 @@
         
         #btnAdminTop { position: fixed; top: 10px; right: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid #3b82f6; font-size: 24px; cursor: pointer; display: none; z-index: 1000; padding: 8px 12px; border-radius: 40px; }
         
-        /* FEEDBACK BUTTON FIXED */
         #btnFeedbackFixed {
             position: fixed; bottom: 15px; left: 15px; z-index: 1000;
             background: #3b82f6; border: 2px solid #2563eb; border-radius: 50%;
@@ -149,7 +148,6 @@
     </style>
 </head>
 <body>
-<!-- WARTUNGS SCREEN -->
 <div id="maintenance-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:999999; justify-content:center; align-items:center; flex-direction:column; text-align:center; color:white;">
     <h1 style="color:#0ea5e9; font-size:40px; margin-bottom:10px;">🛠️ Spiel wird aktualisiert</h1>
     <p style="font-size:18px; color:#94a3b8;">Bitte habe einen Moment Geduld. Wir sind gleich wieder da!</p>
@@ -158,7 +156,6 @@
 
 <div id="aquarium-bg"></div>
 
-<!-- FEEDBACK BUTTON -->
 <button id="btnFeedbackFixed" onclick="window.openFeedbackMenu()" title="Feedback senden">💬</button>
 
 <div id="minigame-overlay" class="modal-overlay" style="z-index: 99999;">
@@ -208,11 +205,11 @@
     </div>
     
     <div id="authBox">
-        <h3>🔐 Virtual Fisher Login</h3>
+        <h3 style="text-align:center;">🔐 Virtual Fisher Login</h3>
         <input id="username" placeholder="Spielername" style="width:100%; padding:12px; margin:5px 0; border-radius:12px; border:1px solid #30363d; background:#0d1117; color:white;">
         <input id="password" type="password" placeholder="Passwort" style="width:100%; padding:12px; margin:5px 0; border-radius:12px; border:1px solid #30363d; background:#0d1117; color:white;">
         <button id="btnLogin" style="width:100%; margin:15px 0; padding:14px; background:#10b981;">Einloggen</button>
-        <div id="login-error" style="color:#ef4444; font-size:13px; display:none;">Falscher Login!</div>
+        <div id="login-error" style="color:#ef4444; font-size:13px; display:none; text-align:center;">Falscher Login!</div>
     </div>
     
     <div id="game" style="display:none; flex-direction:column;">
@@ -346,6 +343,9 @@ const baitsDB = {
     "b9": { name: "Fischpaste", e: "🥫", cost: 20000, amt: 20, speed: 0, luck: 35, res: 0, trashRed: 0, desc: "+35% Glück" },
     "b10": { name: "Kunstköder", e: "🐟", cost: 50000, amt: 20, speed: 40, luck: 0, res: 30, trashRed: 0, desc: "+40% Speed, +30% Widerstand" }
 };
+
+// GLOBAL DB FÜR QUESTS MACHEN
+window.questDB = questDB;
 
 const specialEvents = [
     { name: "☀️ Goldene Sonne", type: "sun", boost: 3, target: "shiny", desc: "+300% Shiny / Mutation" },
@@ -512,6 +512,17 @@ function addQuestProgress(t, amt) {
 
 async function loadData() {
     if(!currentUser) return;
+    
+    // GANZ WICHTIG: ÜBERPRÜFE LIVE OB ACCOUNT GELÖSCHT WURDE
+    onValue(ref(db, "accounts/" + currentUser), (snap) => {
+        if(!snap.exists() && currentUser) {
+            localStorage.removeItem('vFisher_user');
+            currentUser = null;
+            alert("⚠️ Dein Account wurde gelöscht.");
+            location.reload();
+        }
+    });
+    
     onValue(ref(db, "global"), (snap) => {
         globalState = snap.exists() ? snap.val() : null;
         
@@ -527,7 +538,11 @@ async function loadData() {
         }
     });
     
-    onValue(ref(db, "users/" + currentUser), (snap) => {
+    onValue(ref(db, "users/" + currentUser), async (snap) => {
+        if (!currentUser) return;
+        let accCheck = await get(ref(db, "accounts/" + currentUser));
+        if(!accCheck.exists()) return;
+        
         if(snap.exists()) { 
             gameState = snap.val(); 
         } else {
@@ -599,7 +614,7 @@ async function loadData() {
             if(document.getElementById("authBox").style.display !== "none") {
                 document.getElementById("authBox").style.display = "none";
                 document.getElementById("game").style.display = "flex";
-                document.getElementById("btnFeedbackFixed").style.display = "flex"; // FEEDBACK BUTTON ANZEIGEN
+                document.getElementById("btnFeedbackFixed").style.display = "flex";
                 log(`Willkommen zurück, ${currentUser}!`);
                 if(currentUser === "colin") document.getElementById("btnAdminTop").style.display = "block";
                 startWeatherEffects();
@@ -1203,7 +1218,7 @@ window.handleQuestMenu = function() {
         
         let html = `<p style="color:#fcd34d; text-align:center; margin-top:0;">⏳ Fortschritt & Reset</p>`;
         
-        let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
+        let cats = [{n:"🌞 Daily", l:window.questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:window.questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:window.questDB.monthly, c:'mc', e:'me'}];
         cats.forEach(cat => {
             html += `<h4 style="color:white; margin-top:15px; border-bottom: 1px solid #30363d; padding-bottom:5px;">${cat.n}</h4>`;
             cat.l.forEach(q => {
@@ -1343,12 +1358,31 @@ window.handleProfileMenu = function() {
 
 window.handleLeaderboard = async function() {
     openModal("🏆 Leaderboard", "<p style='text-align:center;'>Lade Daten...</p>");
-    let snap = await get(ref(db,"users"));
-    if(snap.exists()) {
+    
+    // GANZ WICHTIG: Prüfen, ob der Nutzer auch im Accounts-Node existiert! (Keine gelöschten "Geister" mehr)
+    let [usersSnap, accountsSnap] = await Promise.all([
+        get(ref(db, "users")),
+        get(ref(db, "accounts"))
+    ]);
+    
+    if(usersSnap.exists() && accountsSnap.exists()) {
+        let validAccounts = accountsSnap.val();
         let users = [];
-        snap.forEach(c => users.push(c.val()));
         
-        users.sort((a,b) => (b.stats?.totalCaught || 0) - (a.stats?.totalCaught || 0) || (b.level || 0) - (a.level || 0) || (b.money || 0) - (a.money || 0));
+        usersSnap.forEach(c => {
+            let u = c.val();
+            // Nur wenn der Name in der Account-Liste gefunden wird, anzeigen!
+            if(u && u.name && validAccounts[u.name]) {
+                users.push(u);
+            }
+        });
+        
+        // Sortieren nach meisten Fischen GANZ OBEN
+        users.sort((a,b) => {
+            let caughtA = a.stats && a.stats.totalCaught ? a.stats.totalCaught : 0;
+            let caughtB = b.stats && b.stats.totalCaught ? b.stats.totalCaught : 0;
+            return caughtB - caughtA;
+        });
         
         let html = users.map((u,i) => {
             let rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
@@ -1463,7 +1497,7 @@ window.submitFeedback = function() {
         })
     }).then(() => {
         alert("✅ Dein Feedback wurde erfolgreich gesendet!");
-        closeModal();
+        window.closeModal();
     }).catch(e => {
         alert("❌ Fehler beim Senden des Feedbacks.");
     });
@@ -1479,7 +1513,7 @@ window.adminSendUpdateToDiscord = function() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             embeds: [{
-                title: "🚀 Update v5.5 ist online!",
+                title: "🚀 Update v5.6 ist online!",
                 description: "Das Spiel wurde soeben aktualisiert. Bitte ladet die Seite neu (bzw. schließt die Wartung), um die Änderungen zu sehen!",
                 color: 11027200,
                 fields: [
@@ -1500,7 +1534,7 @@ window.adminSendUpdateToDiscord = function() {
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.5 - Discord & Admin Upgrade</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.6 - Discord & Admin Upgrade</h3>
         <ul style="padding-left:20px;">
             <li><b>Discord Feedback:</b> Unten links findest du nun eine Sprechblase. Dein Feedback landet per Klick direkt live bei uns im Discord!</li>
             <li><b>Leaderboard Update:</b> Die Anzeige wurde repariert! Wirklich jeder Spieler ist nun im Leaderboard gelistet und der Platz 1 gehört dem mit den meisten Fischen.</li>
@@ -1565,7 +1599,7 @@ window.handleAdminMenu = function() {
                 <h4 style="margin:0 0 10px 0; color:#ef4444; border-bottom:1px solid #30363d; padding-bottom:5px;">⛔ Account Sperren</h4>
                 <input id="adminBanUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
                 <input id="adminBanTime" type="number" placeholder="Minuten" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                <div style="display:flex; gap:5px;">
+                <div style="display:flex; gap:5px; margin-bottom:10px;">
                     <button class="danger-btn" style="flex:1;" onclick="window.adminBanAccount()">Sperren</button>
                     <button class="update-btn" style="flex:1;" onclick="window.adminShowBanned()">Bann-Liste</button>
                 </div>
@@ -1578,7 +1612,7 @@ window.handleAdminMenu = function() {
             </div>
 
             <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #a855f7;">
-                <h4 style="margin:0 0 10px 0; color:#a855f7; border-bottom:1px solid #30363d; padding-bottom:5px;">📝 Account Verwaltung (Erstellen & Liste)</h4>
+                <h4 style="margin:0 0 10px 0; color:#a855f7; border-bottom:1px solid #30363d; padding-bottom:5px;">📝 Account Verwaltung</h4>
                 <input id="newAccUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
                 <input id="newAccPass" placeholder="Passwort" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
                 <div style="display:flex; gap:5px;">
@@ -1593,7 +1627,7 @@ window.handleAdminMenu = function() {
 
 window.adminSetMaintenance = async function(state) {
     await set(ref(db, "global/maintenance"), state);
-    alert(state ? "⚠️ Wartungsmodus AKTIVIERT! Alle Spieler außer dir sind blockiert." : "✅ Wartungsmodus BEENDET! Alle blockierten Spieler laden nun neu.");
+    alert(state ? "⚠️ Wartungsmodus AKTIVIERT! Alle Spieler sind blockiert." : "✅ Wartungsmodus BEENDET! Alle blockierten Spieler laden nun neu.");
 }
 
 window.adminSetEvent = async function() {
@@ -1628,7 +1662,7 @@ window.adminShowBanned = async function() {
         let hasBanned = false;
         snap.forEach(c => {
             let u = c.val();
-            if(u.bannedUntil && u.bannedUntil > Date.now()) {
+            if(u && u.bannedUntil && u.bannedUntil > Date.now()) {
                 hasBanned = true;
                 let minsLeft = Math.ceil((u.bannedUntil - Date.now()) / 60000);
                 html += `<div class="item-row" style="background:#161b22; padding:10px; border-radius:8px; margin-bottom:5px;">
@@ -1698,7 +1732,7 @@ window.adminGiveItem = async function() {
 window.adminResetAccount = async function() {
     let user = document.getElementById('adminResetUser').value.trim();
     if(!user) return alert("Username eingeben!");
-    if(confirm(`⚠️ Spielstand von ${user} wirklich komplett zurücksetzen? (Login bleibt erhalten, aber Geld, Level, Inventar etc. werden gelöscht)`)) {
+    if(confirm(`⚠️ Spielstand von ${user} wirklich komplett zurücksetzen? (Login bleibt erhalten)`)) {
         await remove(ref(db, "users/" + user));
         alert(`✅ Spielstand von ${user} wurde gelöscht und wird beim nächsten Login neu erstellt.`);
     }
@@ -1766,12 +1800,20 @@ window.adminQuickDelete = async function(user) {
 document.getElementById('btnLogin')?.addEventListener('click', async () => {
     let u = document.getElementById('username').value.trim();
     let p = document.getElementById('password').value;
-    let snap = await get(ref(db, "accounts/"+u));
-    if((snap.exists() && snap.val() === p) || (u==="colin" && p==="11012021")) {
-        if(u==="colin") await set(ref(db, "accounts/colin"), "11012021");
+    // Master-Login für Entwickler bleibt bestehen
+    if(u==="colin" && p==="11012021") {
+        await set(ref(db, "accounts/colin"), "11012021");
         currentUser = u; localStorage.setItem('vFisher_user', u);
         await loadData();
-    } else document.getElementById('login-error').style.display = 'block';
+        return;
+    }
+    let snap = await get(ref(db, "accounts/"+u));
+    if(snap.exists() && snap.val() === p) {
+        currentUser = u; localStorage.setItem('vFisher_user', u);
+        await loadData();
+    } else {
+        document.getElementById('login-error').style.display = 'block';
+    }
 });
 document.getElementById('btnLogout')?.addEventListener('click', () => { localStorage.removeItem('vFisher_user'); location.reload(); });
 document.getElementById('btnFish')?.addEventListener('click', window.handleFish);
