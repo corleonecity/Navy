@@ -1,9 +1,13 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" translate="no">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Virtual Fisher PRO v5.6</title>
+    <!-- Verhindert, dass Handys die Zahlen auseinanderziehen (Telefonnummern-Formatierung) -->
+    <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
+    <meta name="google" content="notranslate">
+    
+    <title>Virtual Fisher PRO v5.8</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -12,7 +16,8 @@
             --water-2-dark: rgba(29,78,216,0.6);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; letter-spacing: normal; word-spacing: normal; }
+        
         body {
             margin: 0; font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', Tahoma, sans-serif;
             color: #e6f0ff; display: flex; justify-content: center; align-items: center;
@@ -47,6 +52,15 @@
             box-shadow: 0 0 15px rgba(59,130,246,0.6); transition: 0.2s;
         }
         #btnFeedbackFixed:hover { transform: scale(1.1); background: #2563eb; }
+
+        #btnDiscordFixed {
+            position: fixed; bottom: 15px; left: 80px; z-index: 1000;
+            background: #5865F2; border: 2px solid #4752C4; border-radius: 50%;
+            width: 55px; height: 55px; font-size: 24px; display: none;
+            justify-content: center; align-items: center; cursor: pointer;
+            box-shadow: 0 0 15px rgba(88,101,242,0.6); transition: 0.2s;
+        }
+        #btnDiscordFixed:hover { transform: scale(1.1); background: #4752C4; }
 
         .container {
             width: 100%; max-width: 550px; background: rgba(22, 27, 34, 0.9); backdrop-filter: blur(12px);
@@ -157,6 +171,7 @@
 <div id="aquarium-bg"></div>
 
 <button id="btnFeedbackFixed" onclick="window.openFeedbackMenu()" title="Feedback senden">💬</button>
+<button id="btnDiscordFixed" onclick="window.open('https://discord.gg/C38hGU9eXq', '_blank')" title="Zum Discord Server">🎮</button>
 
 <div id="minigame-overlay" class="modal-overlay" style="z-index: 99999;">
     <div id="minigame-container">
@@ -655,6 +670,7 @@ async function loadData() {
                 document.getElementById("authBox").style.display = "none";
                 document.getElementById("game").style.display = "flex";
                 document.getElementById("btnFeedbackFixed").style.display = "flex";
+                document.getElementById("btnDiscordFixed").style.display = "flex";
                 log(`Willkommen zurück, ${currentUser}!`);
                 if(currentUser === "colin") document.getElementById("btnAdminTop").style.display = "block";
                 startWeatherEffects();
@@ -762,6 +778,8 @@ window.closeModal = function() {
 function openModal(title, body, footer='', wide=false) {
     let modalBody = document.getElementById('modal-body');
     let modalContent = document.getElementById('modal-content');
+    
+    // Verhindert das lästige Flackern und Hochscrollen bei Instant-Updates
     let scrollPos = modalBody.scrollTop;
     let isAlreadyOpen = document.getElementById('modal-overlay').style.display === 'flex';
     
@@ -1244,7 +1262,7 @@ window.handleInvMenu = function() {
     openModal("🎒 Ausrüstung", html, "", true);
 }
 
-// UPDATE: Ausrüsten triggert nun auch ein sichtbares Log und lädt das Menü sofort ohne es zu schließen
+// Sofortige Updates bei Ausrüstungs-Änderungen!
 window.equipRod = function(id) { 
     gameState.eqRod = id; 
     saveData(); 
@@ -1551,13 +1569,20 @@ window.handleLeaderboard = async function() {
     }
 }
 
-// UPDATE: Komplettes Profil anzeigen, wenn man jemanden im Leaderboard anklickt
+// UPDATE: Sofortiger und fehlerfreier Abruf des Profils, inkl. eigener Live-Daten
 window.showPlayerProfile = async function(name) {
-    let snap = await get(ref(db,"users/"+name));
-    if(snap.exists()) {
-        let u = snap.val();
-        
-        // Werte sicher abrufen, falls bei neuen Accounts etwas fehlt
+    let u;
+    
+    // Wenn es das eigene Profil ist, lade es direkt live aus dem lokalen Spielstand!
+    if(name === currentUser && gameState) {
+        u = gameState;
+    } else {
+        // Ansonsten lade es aus der Datenbank
+        let snap = await get(ref(db,"users/"+name));
+        if(snap.exists()) u = snap.val();
+    }
+
+    if(u) {
         let totalCaught = u.stats?.totalCaught || 0;
         let totalEarned = u.stats?.totalEarned || 0;
         let streak = u.dailyStreak || 0;
@@ -1683,13 +1708,13 @@ window.adminSendUpdateToDiscord = function() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             embeds: [{
-                title: "🚀 Update v5.7 ist online!",
+                title: "🚀 Update v5.8 ist online!",
                 description: "Das Spiel wurde soeben aktualisiert. Bitte ladet die Seite neu (bzw. schließt die Wartung), um die Änderungen zu sehen!",
                 color: 11027200,
                 fields: [
-                    { name: "📜 Quests Update", value: "Es gibt nun 5 tägliche, 10 wöchentliche und 15 monatliche Quests inkl. Live-Countdown!" },
-                    { name: "🏆 Leaderboard Cooldown", value: "Das Leaderboard aktualisiert sich nun jede Minute und zeigt einen eigenen Timer an." },
-                    { name: "🔧 System Fixes", value: "Alle Menüs wie Shop, Rucksack und Fische sind jetzt wieder mit dem kompletten Code verknüpft." }
+                    { name: "📱 Mobile Fixes", value: "Safari Text-Bugs und Zeilenabstände repariert." },
+                    { name: "🎮 Discord", value: "Neuer Button hinzugefügt, um direkt dem Server beizutreten." },
+                    { name: "⚡ Instant UI", value: "Alle Aktionen wie Items ausrüsten laden jetzt sofort und fehlerfrei." }
                 ],
                 footer: { text: "Virtual Fisher PRO" }
             }]
@@ -1704,17 +1729,16 @@ window.adminSendUpdateToDiscord = function() {
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.7 - Mega Quests & Timer</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.8 - UI & Discord Update</h3>
         <ul style="padding-left:20px;">
-            <li><b>Neue Quests:</b> Insgesamt 30 Quests! (5 Daily, 10 Weekly, 15 Monthly).</li>
-            <li><b>Countdowns:</b> Im Quest-Menü siehst du ab sofort Live-Timer für den Reset jeder Kategorie.</li>
-            <li><b>Leaderboard Cooldown:</b> Das Leaderboard besitzt einen 60-Sekunden-Schutz inklusive Live-Sekunden-Timer, um flüssiger zu laufen.</li>
+            <li><b>Discord:</b> Ein direkter Link zum Community-Server wurde links unten hinzugefügt.</li>
+            <li><b>Instant-Updates:</b> Items rüsten sich jetzt komplett ruckelfrei sofort aus!</li>
+            <li><b>Mobile Fixes:</b> Fehlerhafte Abstände zwischen den Zahlen bei mobilen Browsern wurden behoben.</li>
         </ul>
         <hr style="border-color:#30363d;">
         <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
+        <p><b>v5.7</b> - 30 neue Quests, Live-Timer & Leaderboard Cooldowns.</p>
         <p><b>v5.6</b> - Discord Feedback Tool & erweiterte Admin-Funktionen.</p>
-        <p><b>v5.4</b> - Wartungsmodus hinzugefügt. Live Zonen-Switch repariert.</p>
-        <p><b>v5.1</b> - Rucksack Redesign & Müll Gewicht Updates.</p>
     </div>`;
     openModal("📝 Updates", html);
 }
