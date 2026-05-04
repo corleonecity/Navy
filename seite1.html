@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Virtual Fisher PRO v5.1</title>
+    <title>Virtual Fisher PRO v5.2</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -95,14 +95,12 @@
         
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px; }
         
-        /* QUEST DESIGN */
         .quest-card { background: rgba(0,0,0,0.3); border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
         .quest-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
         .quest-bar-bg { width: 100%; background: #1e293b; height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid #334155; }
         .quest-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); transition: width 0.3s ease; }
         .quest-footer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #94a3b8; }
 
-        /* RUCKSACK NEUES DESIGN */
         .inv-group-card { background: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
         .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
@@ -110,6 +108,8 @@
         .inv-card h4 { margin: 0 0 5px 0; color: #60a5fa; border-bottom: 1px solid #30363d; padding-bottom: 5px; }
         .inv-stat { display: flex; justify-content: space-between; font-size: 12px; color: #94a3b8; }
         .inv-stat span:last-child { font-weight: bold; color: #e2e8f0; }
+
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 
         .summary-box { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; margin-top: 15px; border: 1px solid #30363d; }
         .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
@@ -127,7 +127,7 @@
         @keyframes bossShake { 0%,100%{ transform: translate(0,0); } 25%{ transform: translate(2px,2px); } 50%{ transform: translate(-2px,-1px); } 75%{ transform: translate(1px,-2px); } }
         .boss-active { animation: bossShake 0.3s infinite; }
         
-        @media (max-width: 768px) { .inv-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .inv-grid { grid-template-columns: 1fr; } .admin-grid { grid-template-columns: 1fr; } }
         @media (max-width: 550px) {
             .container { padding: 12px; }
             .btn-grid { grid-template-columns: repeat(2, 1fr); }
@@ -162,7 +162,7 @@
         <div id="modal-footer" class="modal-footer"></div>
     </div>
 </div>
-<button id="btnAdminTop" onclick="handleAdminMenu()">⚙️</button>
+<button id="btnAdminTop" onclick="window.handleAdminMenu()">⚙️</button>
 <div class="container">
     <div id="fishing-scene">
         <div id="deco-zone-0" style="display:none;">
@@ -192,7 +192,7 @@
     <div id="game" style="display:none; flex-direction:column;">
         <div id="top-info">
             <span id="zoneDisplay" style="color:#60a5fa;">🍃 Naturteich</span>
-            <span id="eventDisplay" style="color:#facc15; font-size:11px; cursor:help;"></span>
+            <span id="eventDisplay" style="color:#facc15; font-size:11px; cursor:help; font-weight:bold;"></span>
             <button id="btnLogout" class="danger-btn" style="padding:6px 12px;">🚪 Logout</button>
         </div>
         <div id="stats-bar">
@@ -243,8 +243,8 @@ const db = getDatabase(app);
 let currentUser = null;
 let gameState = null;
 let globalState = null;
-let currentOpenMenu = null;
-let currentDexTab = 'normal';
+window.currentOpenMenu = null;
+window.currentDexTab = 'normal';
 let fishInterval = null;
 
 const zones = [
@@ -253,7 +253,6 @@ const zones = [
 ];
 
 const items = [
-    // ZONE 0 : TEICH MÜLL
     {n:"Laub / Blätter", v:-1, xp:-1, c:12.0, z:0, e:"🍂", isTrash: true, minW: 5, maxW: 50},
     {n:"Entenfeder", v:-2, xp:-1, c:8.0, z:0, e:"🪶", isTrash: true, minW: 1, maxW: 10},
     {n:"Algen", v:-3, xp:-2, c:6.0, z:0, e:"🌿", isTrash: true, minW: 10, maxW: 500},
@@ -263,7 +262,6 @@ const items = [
     {n:"Gummistiefel", v:-8, xp:-4, c:2.0, z:0, e:"👢", isTrash: true, minW: 500, maxW: 2500},
     {n:"Plastikflasche", v:-10, xp:-5, c:1.5, z:0, e:"🧴", isTrash: true, minW: 20, maxW: 150},
     {n:"Scherbe", v:-12, xp:-6, c:1.0, z:0, e:"🔪", isTrash: true, minW: 10, maxW: 100},
-    // ZONE 0 : TEICH FISCHE
     {n:"Stichling", v:2, xp:2, c:15.0, z:0, e:"🐟", minW: 5, maxW: 15},
     {n:"Moderlieschen", v:3, xp:2, c:14.0, z:0, e:"🐠", minW: 10, maxW: 30},
     {n:"Elritze", v:3, xp:3, c:13.0, z:0, e:"🐟", minW: 15, maxW: 40},
@@ -279,14 +277,12 @@ const items = [
     {n:"Karpfen", v:45, xp:22, c:1.0, z:0, e:"🐟", minW: 1000, maxW: 15000},
     {n:"Zander", v:55, xp:28, c:0.5, z:0, e:"🐟", minW: 800, maxW: 8000},
 
-    // ZONE 1 : BACH MÜLL
     {n:"Nasses Laub", v:-2, xp:-2, c:7.3, z:1, e:"🍂", isTrash: true, minW: 5, maxW: 60},
     {n:"Angelschnur", v:-5, xp:-3, c:5.5, z:1, e:"🧵", isTrash: true, minW: 2, maxW: 20},
     {n:"Bleischrot", v:-8, xp:-4, c:4.5, z:1, e:"⚫", isTrash: true, minW: 5, maxW: 50},
     {n:"Plastikbecher", v:-10, xp:-5, c:3.6, z:1, e:"🥤", isTrash: true, minW: 10, maxW: 50},
     {n:"Fischreuse (kaputt)", v:-15, xp:-8, c:1.8, z:1, e:"🪤", isTrash: true, minW: 500, maxW: 3000},
     {n:"Gummiwurm", v:-6, xp:-3, c:1.8, z:1, e:"🪱", isTrash: true, minW: 5, maxW: 20},
-    // ZONE 1 : BACH FISCHE
     {n:"Groppe", v:5, xp:4, c:14.0, z:1, e:"🐟", minW: 10, maxW: 50},
     {n:"Elritze (Bach)", v:6, xp:4, c:13.0, z:1, e:"🐠", minW: 15, maxW: 60},
     {n:"Bachneunauge", v:10, xp:6, c:12.0, z:1, e:"🐍", minW: 20, maxW: 100},
@@ -466,25 +462,78 @@ function updateDex(item) {
     }
 }
 
-function checkQuestResets() {
+const questDB = {
+    daily: [
+        {id:'d1',desc:'Fange 15 Fische',t:'c',req:15,rew:50},
+        {id:'d2',desc:'Verdiene 250$',t:'e',req:250,rew:100},
+        {id:'d3',desc:'Fange 30 Fische',t:'c',req:30,rew:150},
+        {id:'d4',desc:'Verdiene 500$',t:'e',req:500,rew:200},
+        {id:'d5',desc:'Fange 50 Fische',t:'c',req:50,rew:300}
+    ],
+    weekly: [
+        {id:'w1',desc:'Fange 150 Fische',t:'c',req:150,rew:500},
+        {id:'w2',desc:'Verdiene 2500$',t:'e',req:2500,rew:800},
+        {id:'w3',desc:'Fange 300 Fische',t:'c',req:300,rew:1200},
+        {id:'w4',desc:'Verdiene 5000$',t:'e',req:5000,rew:1500},
+        {id:'w5',desc:'Fange 500 Fische',t:'c',req:500,rew:2000},
+        {id:'w6',desc:'Verdiene 10000$',t:'e',req:10000,rew:3000},
+        {id:'w7',desc:'Fange 750 Fische',t:'c',req:750,rew:4000},
+        {id:'w8',desc:'Verdiene 20000$',t:'e',req:20000,rew:5000},
+        {id:'w9',desc:'Fange 1000 Fische',t:'c',req:1000,rew:6000},
+        {id:'w10',desc:'Verdiene 50000$',t:'e',req:50000,rew:10000}
+    ],
+    monthly: [
+        {id:'m1',desc:'Fange 500 Fische',t:'c',req:500,rew:2500},
+        {id:'m2',desc:'Verdiene 10000$',t:'e',req:10000,rew:3000},
+        {id:'m3',desc:'Fange 1000 Fische',t:'c',req:1000,rew:4000},
+        {id:'m4',desc:'Verdiene 25000$',t:'e',req:25000,rew:5000},
+        {id:'m5',desc:'Fange 1500 Fische',t:'c',req:1500,rew:6000},
+        {id:'m6',desc:'Verdiene 50000$',t:'e',req:50000,rew:7500},
+        {id:'m7',desc:'Fange 2000 Fische',t:'c',req:2000,rew:9000},
+        {id:'m8',desc:'Verdiene 100000$',t:'e',req:100000,rew:12000},
+        {id:'m9',desc:'Fange 2500 Fische',t:'c',req:2500,rew:15000},
+        {id:'m10',desc:'Verdiene 200000$',t:'e',req:200000,rew:20000},
+        {id:'m11',desc:'Fange 3000 Fische',t:'c',req:3000,rew:25000},
+        {id:'m12',desc:'Verdiene 350000$',t:'e',req:350000,rew:30000},
+        {id:'m13',desc:'Fange 4000 Fische',t:'c',req:4000,rew:35000},
+        {id:'m14',desc:'Verdiene 500000$',t:'e',req:500000,rew:45000},
+        {id:'m15',desc:'Fange 5000 Fische',t:'c',req:5000,rew:60000}
+    ]
+};
+
+function getResetKeys() {
     let d = new Date();
     let daily = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    let monthly = `${d.getFullYear()}-${d.getMonth()}`;
+    let d0 = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    let dayNum = d0.getUTCDay() || 7;
+    d0.setUTCDate(d0.getUTCDate() + 4 - dayNum);
+    let yStart = new Date(Date.UTC(d0.getUTCFullYear(),0,1));
+    let weekNo = Math.ceil((((d0 - yStart) / 86400000) + 1)/7);
+    let weekly = `${d0.getUTCFullYear()}-W${weekNo}`;
+    return { daily, weekly, monthly };
+}
+
+function checkQuestResets() {
+    let k = getResetKeys();
     if(!gameState.qs || typeof gameState.qs !== 'object' || Array.isArray(gameState.qs)) {
         gameState.qs = { p: {dc:0,de:0,wc:0,we:0,mc:0,me:0}, c: {}, d: "", w: "", m: "" };
     }
-    if(!gameState.qs.p || typeof gameState.qs.p !== 'object') gameState.qs.p = { dc:0, de:0, wc:0, we:0, mc:0, me:0 };
+    if(!gameState.qs.p) gameState.qs.p = { dc:0, de:0, wc:0, we:0, mc:0, me:0 };
     if(!gameState.qs.c) gameState.qs.c = {};
     
     let qs = gameState.qs;
     let save = false;
-    if(qs.d !== daily) { qs.d = daily; qs.p.dc=0; qs.p.de=0; for(let c in qs.c) if(c.startsWith('d')) delete qs.c[c]; save=true; }
+    if(qs.d !== k.daily) { qs.d = k.daily; qs.p.dc=0; qs.p.de=0; for(let c in qs.c) if(c.startsWith('d')) delete qs.c[c]; save=true; }
+    if(qs.w !== k.weekly) { qs.w = k.weekly; qs.p.wc=0; qs.p.we=0; for(let c in qs.c) if(c.startsWith('w')) delete qs.c[c]; save=true; }
+    if(qs.m !== k.monthly) { qs.m = k.monthly; qs.p.mc=0; qs.p.me=0; for(let c in qs.c) if(c.startsWith('m')) delete qs.c[c]; save=true; }
     if(save) saveData();
 }
 
 function addQuestProgress(t, amt) {
     if(!gameState?.qs?.p) return;
-    if(t === 'c') { gameState.qs.p.dc += amt; }
-    if(t === 'e') { gameState.qs.p.de += amt; }
+    if(t === 'c') { gameState.qs.p.dc += amt; gameState.qs.p.wc += amt; gameState.qs.p.mc += amt; }
+    if(t === 'e') { gameState.qs.p.de += amt; gameState.qs.p.we += amt; gameState.qs.p.me += amt; }
 }
 
 async function loadData() {
@@ -518,7 +567,6 @@ async function loadData() {
         }
         
         if(gameState) {
-            // SICHERHEIT: ALTE OBJEKT-INVENTARE IN ARRAY UMWANDELN
             if(!gameState.inventory) {
                 gameState.inventory = [];
             } else if (!Array.isArray(gameState.inventory)) {
@@ -570,15 +618,15 @@ async function loadData() {
                 startWeatherEffects();
             }
             
-            if(currentOpenMenu === 'sell') handleSellMenu();
-            if(currentOpenMenu === 'shop') handleShopMenu();
-            if(currentOpenMenu === 'inv') handleInvMenu();
-            if(currentOpenMenu === 'aqua') handleAquaMenu();
-            if(currentOpenMenu === 'quest') handleQuestMenu();
-            if(currentOpenMenu === 'profile') handleProfileMenu();
-            if(currentOpenMenu === 'daily') handleDailyMenu();
-            if(currentOpenMenu === 'zone') handleZoneMenu();
-            if(currentOpenMenu === 'dex') window.showDexTab(currentDexTab);
+            if(window.currentOpenMenu === 'sell') handleSellMenu();
+            if(window.currentOpenMenu === 'shop') handleShopMenu();
+            if(window.currentOpenMenu === 'inv') handleInvMenu();
+            if(window.currentOpenMenu === 'aqua') handleAquaMenu();
+            if(window.currentOpenMenu === 'quest') handleQuestMenu();
+            if(window.currentOpenMenu === 'profile') handleProfileMenu();
+            if(window.currentOpenMenu === 'daily') handleDailyMenu();
+            if(window.currentOpenMenu === 'zone') handleZoneMenu();
+            if(window.currentOpenMenu === 'dex') window.showDexTab(window.currentDexTab);
         }
     });
     setInterval(() => {
@@ -666,7 +714,7 @@ window.closeModal = function() {
     document.getElementById('modal-overlay').style.display = 'none';
     document.getElementById('minigame-overlay').style.display = 'none';
     document.getElementById('modal-content').classList.remove('wide');
-    currentOpenMenu = null;
+    window.currentOpenMenu = null;
 };
 
 function openModal(title, body, footer='', wide=false) {
@@ -749,9 +797,11 @@ function finishMinigame(won) {
     btn.innerHTML = `🎣 Angeln`;
     
     if(won) {
+        let finalXp = Math.floor(mgFishItem.xp * (mgFishItem.isShiny ? 5 : 2));
+        
         gameState.inventory.push({...mgFishItem});
         updateDex(mgFishItem);
-        gameState.xp += mgFishItem.xp;
+        gameState.xp += finalXp;
         gameState.stats.totalCaught++;
         gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod] || 0) + 1;
         addQuestProgress('c', 1);
@@ -889,7 +939,7 @@ function executeFishCatch(btn, scene) {
 }
 
 window.handleSellMenu = function() {
-    currentOpenMenu = 'sell';
+    window.currentOpenMenu = 'sell';
     if(!gameState.inventory) gameState.inventory = [];
     if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
     
@@ -988,7 +1038,7 @@ window.executeSell = function(val) {
 }
 
 window.handleAquaMenu = function() {
-    currentOpenMenu = 'aqua';
+    window.currentOpenMenu = 'aqua';
     if(!gameState) return;
     if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
     if(!gameState.aquarium.fishes) gameState.aquarium.fishes = [];
@@ -1046,7 +1096,7 @@ window.removeFromAquarium = function(idx) {
 }
 
 window.handleShopMenu = function() {
-    currentOpenMenu = 'shop';
+    window.currentOpenMenu = 'shop';
     let titleStr = `🛒 Shop (💰 ${Math.floor(gameState.money).toLocaleString()}$)`;
     
     let html = `<div class="inv-grid"><div><h4 style="color:white; margin-top:0;">🎣 Angelruten</h4>`;
@@ -1094,7 +1144,7 @@ window.buyRod = function(id) { gameState.money -= rodsDB[id].cost; if(!gameState
 window.buyBait = function(id) { gameState.money -= baitsDB[id].cost; if(!gameState.baits) gameState.baits={}; gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); handleShopMenu(); }
 
 window.handleInvMenu = function() {
-    currentOpenMenu = 'inv';
+    window.currentOpenMenu = 'inv';
     if(!gameState.rodStats) gameState.rodStats = {};
     
     let html = `<div class="inv-grid">`;
@@ -1162,21 +1212,19 @@ window.equipBait = function(id) { gameState.eqBait = id; saveData(); handleInvMe
 window.unequipBait = function() { gameState.eqBait = "none"; saveData(); handleInvMenu(); }
 
 window.handleQuestMenu = function() {
-    currentOpenMenu = 'quest';
+    window.currentOpenMenu = 'quest';
     checkQuestResets();
     try {
-        let qs = gameState.qs || { p: {}, c: {} };
-        let qsP = qs.p || {};
-        if(typeof qsP !== 'object') qsP = {};
-        let html = `<p style="color:#fcd34d; text-align:center; margin-top:0;">⏳ Täglich um 0 Uhr reset</p>`;
+        let qsP = gameState.qs.p;
+        let html = `<p style="color:#fcd34d; text-align:center; margin-top:0;">⏳ Fortschritt & Reset</p>`;
         
         let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
         cats.forEach(cat => {
-            html += `<h4 style="color:white; margin-top:15px;">${cat.n}</h4>`;
+            html += `<h4 style="color:white; margin-top:15px; border-bottom: 1px solid #30363d; padding-bottom:5px;">${cat.n}</h4>`;
             cat.l.forEach(q => {
                 let prog = (q.t === 'c' ? qsP[cat.c] : qsP[cat.e]) || 0;
                 let done = prog >= q.req;
-                let claimed = qs.c && qs.c[q.id];
+                let claimed = gameState.qs.c && gameState.qs.c[q.id];
                 let pct = Math.min(100, Math.floor((prog / q.req) * 100));
                 
                 html += `
@@ -1185,7 +1233,7 @@ window.handleQuestMenu = function() {
                     <div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div>
                     <div class="quest-footer">
                         <span>${Math.min(prog, q.req)} / ${q.req}</span>
-                        ${claimed ? '<span style="color:#10b981; font-weight:bold;">✅ Abgeschlossen</span>' : (done ? `<button class="success-btn" style="padding:4px 10px; font-size:12px; border-radius:6px;" onclick="claimQuest('${q.id}',${q.rew})">Abholen</button>` : `<span style="color:#ef4444;">🔒 Gesperrt</span>`)}
+                        ${claimed ? '<span style="color:#10b981; font-weight:bold;">✅ Abgeschlossen</span>' : (done ? `<button class="success-btn" style="padding:4px 10px; font-size:12px; border-radius:6px;" onclick="claimQuest('${q.id}',${q.rew})">Abholen</button>` : `<span style="color:#ef4444;">🔒 Ausstehend</span>`)}
                     </div>
                 </div>`;
             });
@@ -1193,16 +1241,16 @@ window.handleQuestMenu = function() {
         openModal("📜 Quests", html);
     } catch(e) {
         console.error(e);
-        openModal("📜 Quests", "<p>Fehler beim Laden der Quests.</p>");
+        openModal("📜 Quests", "<p style='color:#ef4444;'>Fehler beim Laden der Quests. Bitte lade das Spiel neu.</p>");
     }
 }
 window.claimQuest = function(id, rew) { if(!gameState.qs.c) gameState.qs.c={}; gameState.qs.c[id]=true; gameState.money += rew; gameState.stats.totalEarned += rew; saveData(); handleQuestMenu(); }
 
 window.handleDexMenu = function() {
-    currentOpenMenu = 'dex';
+    window.currentOpenMenu = 'dex';
     let html = `
     <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:10px;">
-        <select id="dexZoneFilter" onchange="window.showDexTab(currentDexTab)" style="padding:10px; border-radius:12px; background:#1e293b; color:white; border:1px solid #30363d; flex:1; font-weight:bold; outline:none;">
+        <select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px; border-radius:12px; background:#1e293b; color:white; border:1px solid #30363d; flex:1; font-weight:bold; outline:none;">
             <option value="all">🌍 Alle Zonen</option>
             ${zones.map((z, i) => `<option value="${i}">${z.name}</option>`).join('')}
         </select>
@@ -1213,18 +1261,17 @@ window.handleDexMenu = function() {
     </div>
     <div id="dexGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px;"></div>`;
     
-    // Komplettes HTML setzen und erst dann die Grid-Funktion rufen
     document.getElementById('modal-title').innerText = "📖 Fisch-Dex";
     document.getElementById('modal-body').innerHTML = html;
     document.getElementById('modal-footer').style.display = 'none';
     document.getElementById('modal-content').classList.remove('wide');
     document.getElementById('modal-overlay').style.display = 'flex';
     
-    window.showDexTab(currentDexTab);
+    window.showDexTab(window.currentDexTab);
 }
 
 window.showDexTab = function(tab) {
-    currentDexTab = tab;
+    window.currentDexTab = tab;
     let grid = document.getElementById('dexGrid');
     let filterEl = document.getElementById('dexZoneFilter');
     let zoneFilter = filterEl ? filterEl.value : 'all';
@@ -1240,7 +1287,7 @@ window.showDexTab = function(tab) {
     
     items.forEach(item => {
         if(zF !== 'all' && item.z !== zF) return; 
-        if(tab === 'shiny' && item.isTrash) return; // Müll hat keine Shinys in der DB-Anzeige
+        if(tab === 'shiny' && item.isTrash) return; 
         
         total++;
         let d = gameState.dex ? gameState.dex[item.n] : null;
@@ -1289,14 +1336,14 @@ window.showFishInfo = function(name, tab) {
 }
 
 window.handleZoneMenu = function() {
-    currentOpenMenu = 'zone';
+    window.currentOpenMenu = 'zone';
     let html = zones.map((z,i) => `<div class="item-row"><b>${z.name}</b>${gameState.zone===i ? '<span style="color:#10b981;">📍 Aktiv</span>' : (gameState.prestige<z.reqPrestige ? `<span style="color:#ef4444;">🔒 Prestige ${z.reqPrestige}</span>` : `<button class="success-btn" onclick="changeZone(${i})">Reisen</button>`)}</div>`).join('');
     openModal("🗺️ Weltkarte", html);
 }
 window.changeZone = function(i) { gameState.zone = i; saveData(); log(`🗺️ Reise nach ${zones[i].name}`); window.handleZoneMenu(); }
 
 window.handleProfileMenu = function() {
-    currentOpenMenu = 'profile';
+    window.currentOpenMenu = 'profile';
     let html = `
     <div class="profile-card">
         <div class="profile-header">
@@ -1354,7 +1401,7 @@ window.showPlayerProfile = async function(name) {
 }
 
 window.handleDailyMenu = function() {
-    currentOpenMenu = 'daily';
+    window.currentOpenMenu = 'daily';
     let now = Date.now(), DAY=86400000;
     let can = false, streak = gameState.dailyStreak||0;
     let timeDiff = now - gameState.lastDaily;
@@ -1403,16 +1450,14 @@ window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameSt
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.1 - Bugfixes & Quality of Life</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.2 - UI & Quest Update</h3>
         <ul style="padding-left:20px;">
-            <li><b>Rucksack Gruppierung:</b> Der Rucksack fasst nun gleiche Fische intelligent zusammen, was das Design 100x sauberer macht!</li>
-            <li><b>Geld Bug gefixt:</b> Das Problem, dass der Rucksack beim Verkauf das Geld auf 0 setzt, wurde behoben.</li>
-            <li><b>Keine Combos mehr:</b> Das Combo-System wurde entfernt.</li>
-            <li><b>Angel Timer Fix:</b> Der Button bleibt nicht mehr bei "1s" hängen.</li>
-            <li><b>Shop Updates:</b> Gekaufte Ruten verschwinden. Der Kontostand geht beim Kaufen sofort live runter!</li>
-            <li><b>Quests Redesign:</b> Wunderschöne, fehlerfreie Fortschrittsbalken.</li>
-            <li><b>Event Hover:</b> Geh mit der Maus über das aktive Event, um Restzeit und Bonus zu sehen!</li>
-            <li><b>Admin:</b> "Spielstand komplett zurücksetzen" hinzugefügt.</li>
+            <li><b>Rucksack Gruppierung:</b> Der Rucksack fasst nun gleiche Fische intelligent zusammen! Keine ewigen Listen mehr, sondern saubere Boxen inkl. Gesamtgewicht und Einzel-Ins-Aqua Button.</li>
+            <li><b>Quests Redesign:</b> Wunderschöne, fehlerfreie Fortschrittsbalken. Quests wurden exakt auf 5 Daily, 10 Weekly und 15 Monthly angepasst. Keine Abstürze mehr!</li>
+            <li><b>Event Hover:</b> Geh mit der Maus über das aktive Event (z.B. ✨ Goldene Sonne), um die genaue Restzeit und den Bonus zu sehen!</li>
+            <li><b>Fisch-Dex Fix:</b> Das Dropdown reagiert nun komplett live. Außerdem siehst du nun dein persönliches Rekord-Gewicht für jeden Fisch!</li>
+            <li><b>Admin Redesign:</b> Das Admin-Panel erstrahlt im 2-Spalten-Gitter Design. Ein "Hard Reset" Button wurde für einzelne Spielstände hinzugefügt!</li>
+            <li><b>Müll System Update:</b> Müll hat nun ein realistisches Gewicht und kann beim Verkauf den Rucksack nicht mehr auf 0$ buggen.</li>
         </ul>
         <hr style="border-color:#30363d;">
         <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
@@ -1424,62 +1469,66 @@ window.handleUpdateMenu = function() {
 
 window.handleAdminMenu = function() {
     let html = `
-    <div style="display:flex; flex-direction:column; gap:10px;">
-        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
-            <h4 style="margin:0 0 10px 0; color:#3b82f6;">🌦️ Globales Event Starten</h4>
-            <select id="adminEventSelect" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                ${specialEvents.map(e => `<option value="${e.type}">${e.name}</option>`).join('')}
-            </select>
-            <input id="adminEventTime" type="number" placeholder="Dauer in Minuten" value="30" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <div style="display:flex; gap:5px;">
-                <button class="success-btn" style="flex:1;" onclick="adminSetEvent()">Starten</button>
-                <button class="danger-btn" style="flex:1;" onclick="adminStopEvent()">Alle Beenden</button>
+    <div class="admin-grid">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #3b82f6;">
+                <h4 style="margin:0 0 10px 0; color:#3b82f6; border-bottom:1px solid #30363d; padding-bottom:5px;">🎁 Spieler pushen</h4>
+                <input id="adminTarget" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <select id="adminType" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                    <option value="money">💰 Geld</option><option value="level">⭐ Level</option><option value="prestige">👑 Prestige</option>
+                </select>
+                <input id="adminAmount" type="number" placeholder="Menge" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <button class="success-btn" style="width:100%;" onclick="window.adminGive()">Hinzufügen</button>
+            </div>
+            
+            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #10b981;">
+                <h4 style="margin:0 0 10px 0; color:#10b981; border-bottom:1px solid #30363d; padding-bottom:5px;">🎒 Item Giver</h4>
+                <select id="adminItem" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                    ${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}
+                </select>
+                <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <button class="update-btn" style="width:100%;" onclick="window.adminGiveItem()">Item geben</button>
+            </div>
+
+            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #facc15;">
+                <h4 style="margin:0 0 10px 0; color:#facc15; border-bottom:1px solid #30363d; padding-bottom:5px;">🌦️ Globales Event</h4>
+                <select id="adminEventSelect" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                    ${specialEvents.map(e => `<option value="${e.type}">${e.name}</option>`).join('')}
+                </select>
+                <input id="adminEventTime" type="number" placeholder="Dauer in Minuten" value="30" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <div style="display:flex; gap:5px;">
+                    <button class="success-btn" style="flex:1;" onclick="window.adminSetEvent()">Starten</button>
+                    <button class="danger-btn" style="flex:1;" onclick="window.adminStopEvent()">Alle Beenden</button>
+                </div>
             </div>
         </div>
-        
-        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
-            <h4 style="margin:0 0 10px 0; color:#3b82f6;">Geld / Level / Prestige</h4>
-            <input id="adminTarget" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <select id="adminType" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                <option value="money">💰 Geld</option><option value="level">⭐ Level</option><option value="prestige">👑 Prestige</option>
-            </select>
-            <input id="adminAmount" type="number" placeholder="Menge" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <button class="success-btn" onclick="adminGive()">Hinzufügen</button>
-        </div>
 
-        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
-            <h4 style="margin:0 0 10px 0; color:#10b981;">Item Giver</h4>
-            <select id="adminItem" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                ${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}
-            </select>
-            <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <button class="update-btn" onclick="adminGiveItem()">Item geben</button>
-        </div>
-
-        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
-            <h4 style="margin:0 0 10px 0; color:#ef4444;">⚠️ Spielstand Zurücksetzen</h4>
-            <input id="adminResetUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <button class="danger-btn" onclick="adminResetAccount()">Komplett Zurücksetzen</button>
-        </div>
-
-        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
-            <h4 style="margin:0 0 10px 0; color:#ef4444;">⛔ Account Sperren</h4>
-            <input id="adminBanUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <input id="adminBanTime" type="number" placeholder="Dauer in Minuten" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <div style="display:flex; gap:5px; margin-bottom:10px;">
-                <button class="danger-btn" style="flex:1;" onclick="adminBanAccount()">Sperren</button>
-                <button class="update-btn" style="flex:1;" onclick="adminShowBanned()">Bann-Liste</button>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #ef4444;">
+                <h4 style="margin:0 0 10px 0; color:#ef4444; border-bottom:1px solid #30363d; padding-bottom:5px;">⛔ Account Sperren</h4>
+                <input id="adminBanUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <input id="adminBanTime" type="number" placeholder="Minuten" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <div style="display:flex; gap:5px;">
+                    <button class="danger-btn" style="flex:1;" onclick="window.adminBanAccount()">Sperren</button>
+                    <button class="update-btn" style="flex:1;" onclick="window.adminShowBanned()">Bann-Liste</button>
+                </div>
             </div>
-            <hr style="border-color:#30363d; margin:10px 0;">
-            <input id="adminDelUser" placeholder="Username zum Löschen" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <button class="danger-btn" onclick="adminDeleteAccount()">Löschen</button>
-        </div>
-        
-        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
-            <h4 style="margin:0 0 10px 0; color:#facc15;">📝 Account Erstellen</h4>
-            <input id="newAccUser" placeholder="Neuer Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <input id="newAccPass" placeholder="Passwort" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <button class="success-btn" onclick="window.adminCreateAccount()">Erstellen</button>
+
+            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #f97316;">
+                <h4 style="margin:0 0 10px 0; color:#f97316; border-bottom:1px solid #30363d; padding-bottom:5px;">⚠️ Hard Reset & Löschen</h4>
+                <input id="adminResetUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <div style="display:flex; gap:5px;">
+                    <button class="danger-btn" style="flex:1; background:#f97316;" onclick="window.adminResetAccount()">Reset</button>
+                    <button class="danger-btn" style="flex:1; background:#991b1b;" onclick="window.adminDeleteAccount()">Löschen</button>
+                </div>
+            </div>
+
+            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #a855f7;">
+                <h4 style="margin:0 0 10px 0; color:#a855f7; border-bottom:1px solid #30363d; padding-bottom:5px;">📝 Account Erstellen</h4>
+                <input id="newAccUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <input id="newAccPass" placeholder="Passwort" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <button class="success-btn" style="width:100%; background:#a855f7;" onclick="window.adminCreateAccount()">Erstellen</button>
+            </div>
         </div>
     </div>`;
     openModal("👑 Admin Panel", html, "", true);
@@ -1522,12 +1571,12 @@ window.adminShowBanned = async function() {
                 let minsLeft = Math.ceil((u.bannedUntil - Date.now()) / 60000);
                 html += `<div class="item-row" style="background:#161b22; padding:10px; border-radius:8px; margin-bottom:5px;">
                     <div><b style="color:#ef4444;">${u.name}</b><br><small>Noch ${minsLeft} Min</small></div>
-                    <button class="success-btn" style="padding:8px;" onclick="adminUnban('${u.name}')">Entbannen</button>
+                    <button class="success-btn" style="padding:8px;" onclick="window.adminUnban('${u.name}')">Entbannen</button>
                 </div>`;
             }
         });
         if(!hasBanned) html += `<p>Aktuell sind keine Accounts gesperrt.</p>`;
-        html += `</div><button class="update-btn" style="width:100%;" onclick="handleAdminMenu()">Zurück zum Panel</button>`;
+        html += `</div><button class="update-btn" style="width:100%;" onclick="window.handleAdminMenu()">Zurück zum Panel</button>`;
         openModal("Bann-Liste", html);
     }
 }
@@ -1539,7 +1588,7 @@ window.adminUnban = async function(user) {
         data.bannedUntil = 0;
         await set(ref(db, "users/"+user), data);
         alert(`✅ ${user} wurde erfolgreich entbannt.`);
-        adminShowBanned();
+        window.adminShowBanned();
     }
 }
 
