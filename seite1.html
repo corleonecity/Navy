@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Virtual Fisher PRO v3.6</title>
+    <title>Virtual Fisher PRO v3.7</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
@@ -75,12 +75,10 @@
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px; }
         .quest-row { background: #0d1117; padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
         
-        /* Neues Design für Rucksack-Abrechnung */
         .summary-box { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; margin-top: 15px; border: 1px solid #30363d; }
         .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
         .summary-total { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 10px; font-size: 16px; font-weight: bold; }
         
-        /* Leaderboard & Profile Cards */
         .leader-card, .profile-card { background: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 10px; transition: 0.2s; cursor: pointer; }
         .leader-card:hover { border-color: #3b82f6; transform: translateY(-2px); }
         .profile-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #30363d; padding-bottom: 12px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -325,16 +323,46 @@ function roll(zIdx) {
 }
 
 function updateDex(item) {
+    if(!gameState.dex) gameState.dex = {};
     if(!gameState.dex[item.baseName]) gameState.dex[item.baseName] = { normal: false, shiny: false, count: 0 };
     if(item.isShiny) gameState.dex[item.baseName].shiny = true;
     else gameState.dex[item.baseName].normal = true;
     gameState.dex[item.baseName].count++;
 }
 
+// 5 Daily, 5 Weekly, 15 Monthly
 const questDB = {
-    daily: [{id:'d1',desc:'Fange 15 Fische',t:'c',req:15,rew:50},{id:'d2',desc:'Verdiene 250$',t:'e',req:250,rew:100}],
-    weekly: [{id:'w1',desc:'Fange 150 Fische',t:'c',req:150,rew:500}],
-    monthly: [{id:'m1',desc:'Fange 500 Fische',t:'c',req:500,rew:2500}]
+    daily: [
+        {id:'d1',desc:'Fange 15 Fische',t:'c',req:15,rew:50},
+        {id:'d2',desc:'Verdiene 250$',t:'e',req:250,rew:100},
+        {id:'d3',desc:'Fange 30 Fische',t:'c',req:30,rew:150},
+        {id:'d4',desc:'Verdiene 500$',t:'e',req:500,rew:200},
+        {id:'d5',desc:'Fange 50 Fische',t:'c',req:50,rew:300}
+    ],
+    weekly: [
+        {id:'w1',desc:'Fange 150 Fische',t:'c',req:150,rew:500},
+        {id:'w2',desc:'Verdiene 2500$',t:'e',req:2500,rew:800},
+        {id:'w3',desc:'Fange 300 Fische',t:'c',req:300,rew:1200},
+        {id:'w4',desc:'Verdiene 5000$',t:'e',req:5000,rew:1500},
+        {id:'w5',desc:'Fange 500 Fische',t:'c',req:500,rew:2000}
+    ],
+    monthly: [
+        {id:'m1',desc:'Fange 500 Fische',t:'c',req:500,rew:2500},
+        {id:'m2',desc:'Verdiene 10000$',t:'e',req:10000,rew:3000},
+        {id:'m3',desc:'Fange 1000 Fische',t:'c',req:1000,rew:4000},
+        {id:'m4',desc:'Verdiene 25000$',t:'e',req:25000,rew:5000},
+        {id:'m5',desc:'Fange 1500 Fische',t:'c',req:1500,rew:6000},
+        {id:'m6',desc:'Verdiene 50000$',t:'e',req:50000,rew:7500},
+        {id:'m7',desc:'Fange 2000 Fische',t:'c',req:2000,rew:9000},
+        {id:'m8',desc:'Verdiene 100000$',t:'e',req:100000,rew:12000},
+        {id:'m9',desc:'Fange 2500 Fische',t:'c',req:2500,rew:15000},
+        {id:'m10',desc:'Verdiene 200000$',t:'e',req:200000,rew:20000},
+        {id:'m11',desc:'Fange 3000 Fische',t:'c',req:3000,rew:25000},
+        {id:'m12',desc:'Verdiene 350000$',t:'e',req:350000,rew:30000},
+        {id:'m13',desc:'Fange 4000 Fische',t:'c',req:4000,rew:35000},
+        {id:'m14',desc:'Verdiene 500000$',t:'e',req:500000,rew:45000},
+        {id:'m15',desc:'Fange 5000 Fische',t:'c',req:5000,rew:60000}
+    ]
 };
 
 function getResetKeys() {
@@ -352,11 +380,10 @@ function getResetKeys() {
 
 function checkQuestResets() {
     let k = getResetKeys();
-    if(!gameState.qs) {
-        gameState.qs = { d: k.daily, w: k.weekly, m: k.monthly, p: { dc:0, de:0, wc:0, we:0, mc:0, me:0 }, c: {} };
-    }
-    if(!gameState.qs.p) gameState.qs.p = { dc:0, de:0, wc:0, we:0, mc:0, me:0 }; // Sicherheits-Check
+    if(!gameState.qs) gameState.qs = { p: {}, c: {} };
+    if(!gameState.qs.p) gameState.qs.p = { dc:0, de:0, wc:0, we:0, mc:0, me:0 };
     if(!gameState.qs.c) gameState.qs.c = {};
+    
     let qs = gameState.qs;
     let save = false;
     if(qs.d !== k.daily) { qs.d = k.daily; qs.p.dc=0; qs.p.de=0; for(let c in qs.c) if(c.startsWith('d')) delete qs.c[c]; save=true; }
@@ -376,11 +403,11 @@ async function loadData() {
     if(!currentUser) return;
     onValue(ref(db, "global"), (snap) => {
         globalState = snap.exists() ? snap.val() : null;
-        updateUI();
     });
     onValue(ref(db, "users/" + currentUser), (snap) => {
-        if(snap.exists()) { gameState = snap.val(); }
-        else {
+        if(snap.exists()) { 
+            gameState = snap.val(); 
+        } else {
             gameState = {
                 name: currentUser, money: 0, xp: 0, level: 1, zone: 0, combo: 0,
                 inventory: {}, dex: {}, aquarium: { unlocked: false, fishes: [] },
@@ -391,15 +418,22 @@ async function loadData() {
             saveData();
         }
         if(gameState) {
+            // SICHERHEITSABFRAGEN, damit nichts mehr crasht, wenn Firebase leere Objekte löscht!
+            if(!gameState.inventory) gameState.inventory = {};
+            if(!gameState.dex) gameState.dex = {};
+            if(!gameState.qs) gameState.qs = { p: {}, c: {} };
+            if(!gameState.qs.p) gameState.qs.p = { dc:0, de:0, wc:0, we:0, mc:0, me:0 };
+            if(!gameState.qs.c) gameState.qs.c = {};
             if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
             if(!gameState.aquarium.fishes) gameState.aquarium.fishes = [];
             if(!gameState.ownedRods) { gameState.ownedRods = ["r1"]; gameState.eqRod = "r1"; }
             if(!gameState.baits) { gameState.baits = {}; gameState.eqBait = "none"; }
             if(!gameState.stats) gameState.stats = { totalCaught: 0, totalEarned: 0 };
             if(!gameState.prestige) gameState.prestige = 0;
+            
             checkQuestResets();
-            updateUI();
             renderAquarium();
+            
             if(document.getElementById("authBox").style.display !== "none") {
                 document.getElementById("authBox").style.display = "none";
                 document.getElementById("game").style.display = "flex";
@@ -416,13 +450,15 @@ async function loadData() {
                 gameState.money += income;
                 log(`🐟 Aquarium: +${income}$ passiv`);
                 saveData();
-                updateUI();
             }
         }
     }, 60000);
 }
 
 function saveData() { if(currentUser && gameState) set(ref(db, "users/" + currentUser), gameState); }
+
+// UI AKUTALISIERUNG AUF "1ms" (10ms im Browser) um maximale Performance zu haben
+setInterval(() => { if(gameState) updateUI(); }, 10);
 
 function updateUI() {
     if(!gameState) return;
@@ -431,29 +467,32 @@ function updateUI() {
     let xpNeeded = gameState.level * 50;
     document.getElementById("ui-level").innerHTML = `⭐ Lvl ${gameState.level} (${Math.min(gameState.xp, xpNeeded)}/${xpNeeded})`;
     document.getElementById("zoneDisplay").innerHTML = `🌊 ${zones[gameState.zone].name}`;
+    
     let { event } = getCurrentEventInfo();
     if(event && event.name && event.type !== "normal") {
         document.getElementById("eventDisplay").innerHTML = `✨ ${event.name} (${event.desc})`;
     } else {
         document.getElementById("eventDisplay").innerHTML = ``;
     }
+    
     document.body.className = "zone-bg-" + gameState.zone;
     document.getElementById("ui-eq-rod").innerHTML = `${rodsDB[gameState.eqRod]?.e || '🎣'} Rute: ${rodsDB[gameState.eqRod]?.name || 'Holzrute'}`;
-    if(gameState.eqBait !== "none" && gameState.baits[gameState.eqBait] > 0) {
+    
+    if(gameState.eqBait !== "none" && gameState.baits && gameState.baits[gameState.eqBait] > 0) {
         document.getElementById("ui-eq-bait").innerHTML = `${baitsDB[gameState.eqBait]?.e || '🪱'} Köder: ${baitsDB[gameState.eqBait]?.name} (${gameState.baits[gameState.eqBait]})`;
     } else {
         gameState.eqBait = "none";
         document.getElementById("ui-eq-bait").innerHTML = `🪱 Köder: Keine`;
     }
+    
     let btnFish = document.getElementById('btnFish');
     if(btnFish && !btnFish.disabled && gameState.combo > 1) {
         let mult = (1 + Math.min(gameState.combo, 50) * 0.02).toFixed(2);
         btnFish.innerHTML = `🎣 Angeln 🔥 Combo: x${mult} (${gameState.combo})`;
-    } else if(btnFish) {
+    } else if(btnFish && btnFish.innerHTML !== `🎣 Angeln`) {
         btnFish.innerHTML = `🎣 Angeln`;
     }
 }
-setInterval(() => { if(gameState) updateUI(); }, 500);
 
 function renderFishingLine() {
     let scene = document.getElementById('fishing-scene');
@@ -500,6 +539,7 @@ function openModal(title, body, footer='') {
 
 let minigameActive = false, mgPlayerPower = 0, mgFishPower = 50, mgFishItem = null, mgTimer = null, mgClicksNeeded = 15, mgLastClick = 0;
 function triggerMinigame(item) {
+    if(!gameState.inventory) gameState.inventory = {};
     minigameActive = true;
     mgFishItem = item;
     mgPlayerPower = 0;
@@ -511,14 +551,19 @@ function triggerMinigame(item) {
     document.getElementById('mg-fish-name').innerHTML = `${item.e} ${item.n.toUpperCase()}`;
     document.getElementById('mg-fish-emoji').innerHTML = item.e;
     updateMinigameUI();
+    
     if(mgTimer) clearInterval(mgTimer);
     mgTimer = setInterval(() => {
         if(!minigameActive) return clearInterval(mgTimer);
-        if(Date.now() - mgLastClick > 1000) finishMinigame(false);
+        
+        // 5 SEKUNDEN ZEIT, bevor der Boss flüchtet!
+        if(Date.now() - mgLastClick > 5000) finishMinigame(false);
+        
         mgFishPower = Math.max(0, mgFishPower - 0.5);
         updateMinigameUI();
     }, 100);
 }
+
 document.getElementById('btnSpamClick')?.addEventListener('click', () => {
     if(!minigameActive) return;
     mgLastClick = Date.now();
@@ -527,6 +572,7 @@ document.getElementById('btnSpamClick')?.addEventListener('click', () => {
     if(mgClicksNeeded <= 0) finishMinigame(true);
     updateMinigameUI();
 });
+
 function updateMinigameUI() {
     document.getElementById('mg-player-val').innerText = Math.floor(mgPlayerPower);
     document.getElementById('mg-player-bar').style.width = mgPlayerPower + "%";
@@ -534,11 +580,14 @@ function updateMinigameUI() {
     document.getElementById('mg-fish-bar').style.width = mgFishPower + "%";
     document.getElementById('mg-clicks-left').innerHTML = `Noch ${mgClicksNeeded} Klicks!`;
 }
+
 function finishMinigame(won) {
+    if(!gameState.inventory) gameState.inventory = {};
     minigameActive = false;
     clearInterval(mgTimer);
     document.getElementById('minigame-overlay').style.display = 'none';
     document.getElementById('minigame-container').classList.remove('boss-active');
+    
     if(won) {
         let comboMult = 1 + Math.min(gameState.combo, 50) * 0.02;
         let finalValue = Math.floor(mgFishItem.v * comboMult);
@@ -554,14 +603,13 @@ function finishMinigame(won) {
             gameState.level++;
             log(`⭐ LEVEL UP! Level ${gameState.level}!`);
         }
-        updateUI();
         saveData();
     } else {
-        let loss = Math.min(Math.floor(Math.abs(mgFishItem.v) * 0.3), Math.floor(gameState.money * 0.03));
-        if(loss > 0) gameState.money -= loss;
+        // Boss Verlust zieht jetzt XP ab (2x der Basiswert des Fisches als XP Verlust)
+        let lossXp = Math.floor(Math.abs(mgFishItem.v) * 2);
+        gameState.xp = Math.max(0, gameState.xp - lossXp);
         gameState.combo = 0;
-        log(`❌ Boss entkommen! Verlust: ${loss}$`);
-        updateUI();
+        log(`❌ Boss entkommen! Verlust: ${lossXp} XP`);
         saveData();
     }
     document.getElementById('btnFish').disabled = false;
@@ -576,9 +624,13 @@ window.handleFish = function() {
     let fishTime = 800;
     let { event } = getCurrentEventInfo();
     if(event.type === "rain") fishTime = 400;
+    
     setTimeout(() => {
+        // Sicherstellen, dass das Inventory da ist! (Wichtig!)
+        if(!gameState.inventory) gameState.inventory = {};
+        
         let item = roll(gameState.zone);
-        if(gameState.eqBait !== "none") {
+        if(gameState.eqBait !== "none" && gameState.baits) {
             gameState.baits[gameState.eqBait]--;
             if(gameState.baits[gameState.eqBait] <= 0) {
                 log(`❌ Köder aufgebraucht!`);
@@ -592,7 +644,6 @@ window.handleFish = function() {
             gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1;
             gameState.combo = 0;
             log(`🗑️ ${item.e} ${item.baseName} gefangen! -${penalty} XP`);
-            updateUI();
             saveData();
             scene.classList.remove('fishing-active');
             btn.disabled = false;
@@ -606,14 +657,17 @@ window.handleFish = function() {
             btn.disabled = true;
             return;
         }
+        
         let comboMult = 1 + Math.min(gameState.combo, 50) * 0.02;
         let finalValue = Math.floor(item.v * comboMult);
         let finalXp = Math.floor(5 * (item.isShiny ? 5 : 1) * comboMult);
+        
         gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1;
         updateDex(item);
         gameState.xp += finalXp;
         gameState.stats.totalCaught++;
         addQuestProgress('c', 1);
+        
         let msg = item.isShiny ? `🧬 MUTATION: ${item.e} ${item.baseName} (${finalValue}$)` : `${item.e} Gefangen: ${item.baseName} (${finalValue}$)`;
         if(gameState.xp >= gameState.level * 50) {
             gameState.xp -= gameState.level * 50;
@@ -621,7 +675,6 @@ window.handleFish = function() {
             msg += ` ⭐ LEVEL UP! Level ${gameState.level}!`;
         }
         log(msg);
-        updateUI();
         saveData();
         scene.classList.remove('fishing-active');
         btn.disabled = false;
@@ -629,6 +682,7 @@ window.handleFish = function() {
 }
 
 window.handleSellMenu = function() {
+    if(!gameState.inventory) gameState.inventory = {};
     if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
     
     let baseValue = 0;
@@ -688,6 +742,7 @@ window.handleSellMenu = function() {
 }
 
 window.executeSell = function(val) {
+    if(!gameState.inventory) gameState.inventory = {};
     let hasItems = Object.values(gameState.inventory).some(v => v > 0);
     if(!hasItems) return;
     
@@ -695,14 +750,16 @@ window.executeSell = function(val) {
     if(gameState.money < 0) gameState.money = 0; 
     
     if(val > 0) { gameState.stats.totalEarned += val; addQuestProgress('e', val); }
+    
+    // Rucksack leeren!
     gameState.inventory = {};
-    updateUI();
     
     if(val < 0) log(`💸 Müll entsorgt. Das hat dich ${Math.abs(val).toLocaleString()}$ gekostet.`);
     else log(`💰 Rucksack verkauft für ${val.toLocaleString()}$`);
     
     saveData();
-    handleSellMenu();
+    // Modal schließen, damit das Update sofort sichtbar ist!
+    closeModal();
 }
 
 window.handleAquaMenu = function() {
@@ -736,6 +793,7 @@ window.sendToAquarium = function(itemName) {
     if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
     if(!gameState.aquarium.unlocked) return alert("Aquarium nicht freigeschaltet!");
     if(gameState.aquarium.fishes.length >= 5) return alert("Maximal 5 Fische!");
+    if(!gameState.inventory) gameState.inventory = {};
     
     let count = gameState.inventory[itemName];
     if(!count) return;
@@ -757,6 +815,7 @@ window.sendToAquarium = function(itemName) {
 
 window.removeFromAquarium = function(idx) {
     let fish = gameState.aquarium.fishes.splice(idx, 1)[0];
+    if(!gameState.inventory) gameState.inventory = {};
     gameState.inventory[fish.n] = (gameState.inventory[fish.n] || 0) + 1;
     saveData();
     renderAquarium();
@@ -801,9 +860,9 @@ window.handleInvMenu = function() {
     }
     openModal("🎒 Ausrüstung", html);
 }
-window.equipRod = function(id) { gameState.eqRod = id; saveData(); updateUI(); handleInvMenu(); }
-window.equipBait = function(id) { gameState.eqBait = id; saveData(); updateUI(); handleInvMenu(); }
-window.unequipBait = function() { gameState.eqBait = "none"; saveData(); updateUI(); handleInvMenu(); }
+window.equipRod = function(id) { gameState.eqRod = id; saveData(); handleInvMenu(); }
+window.equipBait = function(id) { gameState.eqBait = id; saveData(); handleInvMenu(); }
+window.unequipBait = function() { gameState.eqBait = "none"; saveData(); handleInvMenu(); }
 
 window.handleQuestMenu = function() {
     checkQuestResets();
@@ -822,7 +881,7 @@ window.handleQuestMenu = function() {
     });
     openModal("📜 Quests", html);
 }
-window.claimQuest = function(id, rew) { if(!gameState.qs.c) gameState.qs.c={}; gameState.qs.c[id]=true; gameState.money += rew; gameState.stats.totalEarned += rew; saveData(); updateUI(); handleQuestMenu(); }
+window.claimQuest = function(id, rew) { if(!gameState.qs.c) gameState.qs.c={}; gameState.qs.c[id]=true; gameState.money += rew; gameState.stats.totalEarned += rew; saveData(); handleQuestMenu(); }
 
 window.handleDexMenu = function() {
     let html = `<div style="display:flex; gap:10px; margin-bottom:15px;"><button onclick="showDexTab('normal')" id="dexTabNormal" style="flex:1; background:#3b82f6;">Normal</button><button onclick="showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Mutationen</button></div><div id="dexGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px;"></div>`;
@@ -851,7 +910,7 @@ window.showDexTab = function(tab) {
     let info = document.getElementById('dexInfo') || document.createElement('div');
     info.id = 'dexInfo';
     info.style.cssText = 'text-align:center; margin-top:15px; padding:10px; background:#0d1117; border-radius:12px;';
-    info.innerHTML = `<b>Gesammelt: ${collected}/${total}</b><br><small style="color:#8b949e;">(Hinweis: Es gibt aktuell genau ${total} Fische im Code)</small>`;
+    info.innerHTML = `<b>Gesammelt: ${collected}/${total}</b>`;
     if(!document.getElementById('dexInfo')) grid.parentNode.appendChild(info);
 }
 window.showFishInfo = function(name, tab) {
@@ -867,7 +926,7 @@ window.handleZoneMenu = function() {
     let html = zones.map((z,i) => `<div class="item-row"><b>${z.name}</b>${gameState.zone===i ? '<span style="color:#10b981;">📍 Aktiv</span>' : (gameState.prestige<z.reqPrestige ? `<span style="color:#ef4444;">🔒 Prestige ${z.reqPrestige}</span>` : `<button class="success-btn" onclick="changeZone(${i})">Reisen</button>`)}</div>`).join('');
     openModal("🗺️ Weltkarte", html);
 }
-window.changeZone = function(i) { gameState.zone = i; saveData(); updateUI(); log(`🗺️ Reise nach ${zones[i].name}`); closeModal(); }
+window.changeZone = function(i) { gameState.zone = i; saveData(); log(`🗺️ Reise nach ${zones[i].name}`); closeModal(); }
 
 window.handleProfileMenu = function() {
     let html = `
@@ -951,7 +1010,7 @@ window.handleDailyMenu = function() {
     openModal("🎁 Daily Bonus", html, can ? `<button class="success-btn" onclick="claimDaily(${streak*100 + gameState.prestige*50},${streak})">Abholen</button>` : '');
 }
 
-window.claimDaily = function(rew, streak) { gameState.money += rew; gameState.stats.totalEarned += rew; gameState.lastDaily=Date.now(); gameState.dailyStreak=streak; updateUI(); saveData(); handleDailyMenu(); }
+window.claimDaily = function(rew, streak) { gameState.money += rew; gameState.stats.totalEarned += rew; gameState.lastDaily=Date.now(); gameState.dailyStreak=streak; saveData(); handleDailyMenu(); }
 
 window.handlePrestigeMenu = function() {
     let reqLvl = 20 + gameState.prestige*5;
@@ -964,32 +1023,53 @@ window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameSt
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #0ea5e9; text-align:left; line-height:1.6;">
-        <h3 style="margin-top:0; color:#0ea5e9;">🚀 Version 3.6</h3>
+        <h3 style="margin-top:0; color:#0ea5e9;">🚀 Version 3.7</h3>
         <ul style="padding-left:20px; margin-bottom:0;">
-            <li><b>GUI:</b> Rucksack komplett überarbeitet inkl. genauer Kassenbon-Abrechnung.</li>
-            <li><b>Stats:</b> Prestige-Bonus nun dauerhaft in der Stats-Leiste sichtbar.</li>
-            <li><b>Profile & Ranglisten:</b> Neues, detailliertes Karten-Design.</li>
-            <li><b>Tagesbelohnung:</b> Cooldown-Timer hinzugefügt.</li>
-            <li><b>Shop:</b> Zeigt nun auch bereits gekaufte Angeln an.</li>
-            <li><b>Fixes:</b> Ausrüstung und Quest-Menü Bugs behoben. Prestige Button gefixed.</li>
+            <li><b>Performance:</b> Gui Updatetaste auf extrem flüssige Rate gestellt.</li>
+            <li><b>Bosskampf:</b> Du hast nun faire <b>5 Sekunden</b> Zeit für den Boss! Entkommt er, kostet es dich XP.</li>
+            <li><b>Quests:</b> Massiv erhöht: Jetzt 5 Dailys, 5 Weeklys, 15 Monthlys.</li>
+            <li><b>Admin Panel:</b> Komplett neues und funktionierendes Design.</li>
+            <li><b>Bugfix (Kritisch):</b> Rucksack-Fehler / Angeln Crash behoben. Firebase hatte leere Rucksäcke permanent gelöscht, dieses Verhalten wird nun blockiert.</li>
         </ul>
     </div>`;
     openModal("📝 Updates", html);
 }
 
 window.handleAdminMenu = function() {
-    let html = `<h3>👑 Admin</h3>
-    <input id="adminTarget" placeholder="Username" style="width:100%; padding:10px; margin:5px 0; border-radius:10px;">
-    <select id="adminType" style="width:100%; padding:10px; margin:5px 0;"><option value="money">💰 Geld</option><option value="level">⭐ Level</option><option value="prestige">👑 Prestige</option></select>
-    <input id="adminAmount" placeholder="Menge" style="width:100%; padding:10px; margin:5px 0;">
-    <button class="success-btn" onclick="adminGive()">Geben</button>
-    <hr><h4>📦 Item Giver</h4><select id="adminItem" style="width:100%; padding:10px;">${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}</select>
-    <input id="adminItemCount" placeholder="Anzahl" style="width:100%; padding:10px; margin:5px 0;">
-    <button class="update-btn" onclick="adminGiveItem()">Item geben</button>
-    <hr><h4>⚠️ Account löschen</h4><input id="adminDelUser" placeholder="Username" style="width:100%; padding:10px;"><button class="danger-btn" style="margin-top:5px;" onclick="adminDeleteAccount()">Löschen</button>
-    <hr><h4>📝 Account erstellen</h4><input id="newAccUser" placeholder="Username" style="width:48%;"><input id="newAccPass" placeholder="Passwort" style="width:48%;"><button class="success-btn" style="margin-top:5px;" onclick="adminCreateAccount()">Erstellen</button>`;
-    openModal("Admin Panel", html);
+    let html = `
+    <div style="display:flex; flex-direction:column; gap:10px;">
+        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
+            <h4 style="margin:0 0 10px 0; color:#3b82f6;">Geld / Level / Prestige</h4>
+            <input id="adminTarget" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <select id="adminType" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <option value="money">💰 Geld</option><option value="level">⭐ Level</option><option value="prestige">👑 Prestige</option>
+            </select>
+            <input id="adminAmount" type="number" placeholder="Menge" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <button class="success-btn" onclick="adminGive()">Hinzufügen</button>
+        </div>
+        
+        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
+            <h4 style="margin:0 0 10px 0; color:#10b981;">Item Giver</h4>
+            <select id="adminItem" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                ${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}
+            </select>
+            <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <button class="update-btn" onclick="adminGiveItem()">Item geben</button>
+        </div>
+
+        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
+            <h4 style="margin:0 0 10px 0; color:#ef4444;">Account Verwaltung</h4>
+            <input id="adminDelUser" placeholder="Username zum Löschen" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <button class="danger-btn" onclick="adminDeleteAccount()">Löschen</button>
+            <hr style="border-color:#30363d; margin:10px 0;">
+            <input id="newAccUser" placeholder="Neuer Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <input id="newAccPass" placeholder="Passwort" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <button class="success-btn" onclick="adminCreateAccount()">Erstellen</button>
+        </div>
+    </div>`;
+    openModal("👑 Admin Panel", html);
 }
+
 window.adminGive = async function() {
     let target = document.getElementById('adminTarget').value.trim();
     let type = document.getElementById('adminType').value;
