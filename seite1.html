@@ -264,7 +264,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// NEU: questDB für das Quest-System definieren
 const questDB = {
     daily: [
         { id: "d1", desc: "Fange 5 Fische", t: "c", req: 5, rew: 50 },
@@ -311,6 +310,10 @@ window.currentOpenMenu = null;
 window.currentDexTab = 'normal';
 let fishInterval = null;
 let wasMaintenance = false;
+
+// Caches for the Leaderboard
+let lbUpdateCooldown = 0;
+let lastLeaderboardUsers = [];
 
 const zones = [
     { name: "🍃 Naturteich", reqPrestige: 0 },
@@ -1306,7 +1309,8 @@ window.handleQuestMenu = function() {
             <p style="margin:2px; font-size:13px; color:#facc15;">🏆 Monthly Reset in: <b id="monthly-countdown">${getResetCountdown('monthly')}</b></p>
         </div>`;
         
-        let cats = [{n:"🌞 Daily", l:window.questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:window.questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:window.questDB.monthly, c:'mc', e:'me'}];
+        // BUG FIX: Removed 'window.' from questDB references
+        let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
         cats.forEach(cat => {
             html += `<h4 style="color:white; margin-top:15px; border-bottom: 1px solid #30363d; padding-bottom:5px;">${cat.n}</h4>`;
             cat.l.forEach(q => {
@@ -1444,50 +1448,33 @@ window.handleProfileMenu = function() {
     openModal("📊 Dein Profil", html);
 }
 
-let lbUpdateCooldown = 0;
-
+// BUG FIX: Updated Leaderboard to always show players & locally cache the stats
 window.handleLeaderboard = async function() {
     window.currentOpenMenu = 'leaderboard';
     
     let now = Date.now();
     let left = Math.ceil((lbUpdateCooldown - now) / 1000);
-    let timerHtml = `<div style="text-align:center; margin-bottom:10px; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px; border:1px solid #3b82f6;">🔄 Nächstes Update in: <b id="lb-countdown" style="color:#facc15;">${left > 0 ? left+'s' : 'Jetzt verfügbar!'}</b></div>`;
     
-    if(now < lbUpdateCooldown) {
-        let html = timerHtml + `<p style="text-align:center; color:#94a3b8;">Bitte warte, bevor du das Leaderboard neu lädst, um die Server zu schonen.</p>`;
-        return openModal("🏆 Leaderboard", html);
+    // Lokales Update des eigenen Spielers im Cache, damit die Fische sofort stimmen (falls man gerade geangelt hat)
+    if (lastLeaderboardUsers.length > 0 && gameState && currentUser) {
+        let me = lastLeaderboardUsers.find(u => u.name === currentUser);
+        if (me) {
+            if(!me.stats) me.stats = {};
+            me.stats.totalCaught = gameState.stats.totalCaught;
+            me.money = gameState.money;
+            me.level = gameState.level;
+            me.prestige = gameState.prestige;
+        }
+        // Neu sortieren, falls man einen Platz aufgestiegen ist
+        lastLeaderboardUsers.sort((a,b) => {
+            let cA = a.stats?.totalCaught || 0;
+            let cB = b.stats?.totalCaught || 0;
+            return cB - cA;
+        });
     }
-    
-    openModal("🏆 Leaderboard", "<p style='text-align:center;'>Lade Daten...</p>");
-    
-    // Ganz wichtig: Prüfen, ob der Nutzer auch im Accounts-Node existiert!
-    let [usersSnap, accountsSnap] = await Promise.all([
-        get(ref(db, "users")),
-        get(ref(db, "accounts"))
-    ]);
-    
-    lbUpdateCooldown = Date.now() + 60000; // 60 Sekunden Cooldown setzen
-    
-    if(usersSnap.exists() && accountsSnap.exists()) {
-        let validAccounts = accountsSnap.val();
-        let users = [];
-        
-        usersSnap.forEach(c => {
-            let u = c.val();
-            if(u && u.name && validAccounts[u.name]) {
-                users.push(u);
-            }
-        });
-        
-        users.sort((a,b) => {
-            let caughtA = a.stats && a.stats.totalCaught ? a.stats.totalCaught : 0;
-            let caughtB = b.stats && b.stats.totalCaught ? b.stats.totalCaught : 0;
-            return caughtB - caughtA;
-        });
-        
-        timerHtml = `<div style="text-align:center; margin-bottom:10px; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px; border:1px solid #3b82f6;">🔄 Nächstes Update in: <b id="lb-countdown" style="color:#facc15;">60s</b></div>`;
-        
-        let html = timerHtml + users.map((u,i) => {
+
+    let renderUsers = (users) => {
+        return users.map((u,i) => {
             let rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
             let caught = u.stats?.totalCaught || 0;
             return `
@@ -1502,7 +1489,55 @@ window.handleLeaderboard = async function() {
                 </div>
             </div>`;
         }).join('');
-        openModal("🏆 Leaderboard", html);
+    };
+
+    let timerHtml = `<div style="text-align:center; margin-bottom:10px; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px; border:1px solid #3b82f6;">🔄 Nächstes Update in: <b id="lb-countdown" style="color:#facc15;">${left > 0 ? left+'s' : 'Jetzt verfügbar!'}</b></div>`;
+
+    // Wenn Cooldown noch aktiv ist und wir gecachte Daten haben, zeige diese direkt an
+    if(now < lbUpdateCooldown && lastLeaderboardUsers.length > 0) {
+        let html = timerHtml + renderUsers(lastLeaderboardUsers);
+        return openModal("🏆 Leaderboard", html);
+    }
+
+    // Initiale Ladeanzeige oder gecachte Anzeige während des globalen DB Ladens
+    if(lastLeaderboardUsers.length === 0) {
+        openModal("🏆 Leaderboard", timerHtml + "<p style='text-align:center;'>Lade Daten...</p>");
+    } else {
+        openModal("🏆 Leaderboard", timerHtml + renderUsers(lastLeaderboardUsers));
+    }
+
+    let [usersSnap, accountsSnap] = await Promise.all([
+        get(ref(db, "users")),
+        get(ref(db, "accounts"))
+    ]);
+
+    lbUpdateCooldown = Date.now() + 60000; // 60 Sekunden Cooldown setzen
+    left = 60;
+    timerHtml = `<div style="text-align:center; margin-bottom:10px; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px; border:1px solid #3b82f6;">🔄 Nächstes Update in: <b id="lb-countdown" style="color:#facc15;">${left}s</b></div>`;
+
+    if(usersSnap.exists() && accountsSnap.exists()) {
+        let validAccounts = accountsSnap.val();
+        let users = [];
+
+        usersSnap.forEach(c => {
+            let u = c.val();
+            if(u && u.name && validAccounts[u.name]) {
+                users.push(u);
+            }
+        });
+
+        users.sort((a,b) => {
+            let caughtA = a.stats && a.stats.totalCaught ? a.stats.totalCaught : 0;
+            let caughtB = b.stats && b.stats.totalCaught ? b.stats.totalCaught : 0;
+            return caughtB - caughtA;
+        });
+
+        lastLeaderboardUsers = users; // Cache updaten
+        
+        if(window.currentOpenMenu === 'leaderboard') {
+            let html = timerHtml + renderUsers(users);
+            openModal("🏆 Leaderboard", html);
+        }
     }
 }
 
