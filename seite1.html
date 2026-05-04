@@ -264,6 +264,20 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// NEU: questDB für das Quest-System definieren
+const questDB = {
+    daily: [
+        { id: "d1", desc: "Fange 10 Fische", t: "c", req: 10, rew: 500 },
+        { id: "d2", desc: "Verdiene 1000$", t: "e", req: 1000, rew: 1000 }
+    ],
+    weekly: [
+        { id: "w1", desc: "Fange 100 Fische", t: "c", req: 100, rew: 5000 }
+    ],
+    monthly: [
+        { id: "m1", desc: "Verdiene 50000$", t: "e", req: 50000, rew: 20000 }
+    ]
+};
+
 let currentUser = null;
 let gameState = null;
 let globalState = null;
@@ -344,7 +358,7 @@ const baitsDB = {
     "b10": { name: "Kunstköder", e: "🐟", cost: 50000, amt: 20, speed: 40, luck: 0, res: 30, trashRed: 0, desc: "+40% Speed, +30% Widerstand" }
 };
 
-// GLOBAL DB FÜR QUESTS MACHEN
+// Global DB für Quests machen
 window.questDB = questDB;
 
 const specialEvents = [
@@ -513,7 +527,7 @@ function addQuestProgress(t, amt) {
 async function loadData() {
     if(!currentUser) return;
     
-    // GANZ WICHTIG: ÜBERPRÜFE LIVE OB ACCOUNT GELÖSCHT WURDE
+    // Ganz wichtig: Live prüfen ob Account gelöscht wurde
     onValue(ref(db, "accounts/" + currentUser), (snap) => {
         if(!snap.exists() && currentUser) {
             localStorage.removeItem('vFisher_user');
@@ -1359,7 +1373,7 @@ window.handleProfileMenu = function() {
 window.handleLeaderboard = async function() {
     openModal("🏆 Leaderboard", "<p style='text-align:center;'>Lade Daten...</p>");
     
-    // GANZ WICHTIG: Prüfen, ob der Nutzer auch im Accounts-Node existiert! (Keine gelöschten "Geister" mehr)
+    // Ganz wichtig: Prüfen, ob der Nutzer auch im Accounts-Node existiert!
     let [usersSnap, accountsSnap] = await Promise.all([
         get(ref(db, "users")),
         get(ref(db, "accounts"))
@@ -1371,13 +1385,11 @@ window.handleLeaderboard = async function() {
         
         usersSnap.forEach(c => {
             let u = c.val();
-            // Nur wenn der Name in der Account-Liste gefunden wird, anzeigen!
             if(u && u.name && validAccounts[u.name]) {
                 users.push(u);
             }
         });
         
-        // Sortieren nach meisten Fischen GANZ OBEN
         users.sort((a,b) => {
             let caughtA = a.stats && a.stats.totalCaught ? a.stats.totalCaught : 0;
             let caughtB = b.stats && b.stats.totalCaught ? b.stats.totalCaught : 0;
