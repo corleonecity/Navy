@@ -21,18 +21,26 @@
             margin: 0; font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', Tahoma, sans-serif;
             color: #e6f0ff; display: flex; justify-content: center; align-items: center;
             min-height: 100vh; transition: background 1s ease-in-out;
-            background: radial-gradient(circle at center, #0f172a 0%, #010409 100%); padding: 10px;
+            padding: 10px;
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
         }
         
         body.zone-bg-0 { 
-            background: radial-gradient(circle at top, #2d6a4f 0%, #1a3f2a 100%); 
+            background-image: linear-gradient(135deg, #1a3f2a, #2d6a4f, #0f2b1c, #1e4d35); 
             --water-1: rgba(45,106,79,0.5); --water-1-dark: rgba(30,80,55,0.7);
             --water-2: rgba(26,63,42,0.6); --water-2-dark: rgba(18,50,30,0.8);
         }
         body.zone-bg-1 { 
-            background: radial-gradient(circle at top, #1e3a8a 0%, #020617 100%); 
+            background-image: linear-gradient(135deg, #020617, #1e3a8a, #0f172a, #2563eb); 
             --water-1: rgba(59,130,246,0.5); --water-1-dark: rgba(30,64,175,0.7);
             --water-2: rgba(37,99,235,0.6); --water-2-dark: rgba(30,58,138,0.8);
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         #aquarium-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: hidden; }
@@ -710,27 +718,36 @@ async function loadData() {
         }
         
         if(gameState) {
+            // FIREBASE ARRAY BUG FIX: Inventar korrekt auslesen, falls Firebase es als Objekt zurückgibt
             if(!gameState.inventory) {
                 gameState.inventory = [];
             } else if (!Array.isArray(gameState.inventory)) {
                 let newInv = [];
-                for(let [name, data] of Object.entries(gameState.inventory)) {
-                    if(data.count > 0) {
-                        let isMutant = name.startsWith("🧬 ");
-                        let baseName = isMutant ? name.replace("🧬 ", "") : name;
-                        let baseItem = items.find(i => i.n === baseName);
-                        if(baseItem) {
-                            for(let i=0; i<data.count; i++) {
-                                let v = baseItem.v;
-                                if(isMutant) v = Math.abs(v) * 5;
-                                newInv.push({
-                                    id: Math.random().toString(36).substr(2,9),
-                                    n: name, baseName: baseName, v: v,
-                                    xp: isMutant ? Math.abs(baseItem.xp)*5 : baseItem.xp,
-                                    e: baseItem.e, isShiny: isMutant,
-                                    isTrash: baseItem.isTrash && !isMutant,
-                                    weightG: baseItem.minW ? baseItem.minW + Math.random()*(baseItem.maxW - baseItem.minW) : 0
-                                });
+                let objVals = Object.values(gameState.inventory);
+                
+                if (objVals.length > 0 && objVals[0].count === undefined) {
+                    // Firebase hat das Array in ein sparse Object verwandelt -> Wir lesen nur die Values aus
+                    newInv = objVals;
+                } else {
+                    // Altes Format Migration (v5 -> v6)
+                    for(let [name, data] of Object.entries(gameState.inventory)) {
+                        if(data.count > 0) {
+                            let isMutant = name.startsWith("🧬 ");
+                            let baseName = isMutant ? name.replace("🧬 ", "") : name;
+                            let baseItem = items.find(i => i.n === baseName);
+                            if(baseItem) {
+                                for(let i=0; i<data.count; i++) {
+                                    let v = baseItem.v;
+                                    if(isMutant) v = Math.abs(v) * 5;
+                                    newInv.push({
+                                        id: Math.random().toString(36).substr(2,9),
+                                        n: name, baseName: baseName, v: v,
+                                        xp: isMutant ? Math.abs(baseItem.xp)*5 : baseItem.xp,
+                                        e: baseItem.e, isShiny: isMutant,
+                                        isTrash: baseItem.isTrash && !isMutant,
+                                        weightG: baseItem.minW ? baseItem.minW + Math.random()*(baseItem.maxW - baseItem.minW) : 0
+                                    });
+                                }
                             }
                         }
                     }
@@ -743,9 +760,15 @@ async function loadData() {
             if(!gameState.qs || typeof gameState.qs !== 'object') gameState.qs = { p: {dc:0,de:0,wc:0,we:0,mc:0,me:0}, c: {}, d: "", w: "", m: "" };
             if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
             if(!gameState.aquarium.fishes) gameState.aquarium.fishes = [];
-            if(!gameState.ownedRods || gameState.ownedRods.includes("r1")) { gameState.ownedRods = ["rod1"]; gameState.eqRod = "rod1"; }
+            
+            // AUSRÜSTUNG SPEICHER FIX: Prüfe korrekt, ob Ruten vorhanden sind
+            if(!gameState.ownedRods || gameState.ownedRods.length === 0) { gameState.ownedRods = ["rod1"]; }
+            if(!gameState.eqRod) { gameState.eqRod = "rod1"; }
+            
             if(!gameState.rodStats) gameState.rodStats = {};
-            if(!gameState.baits) { gameState.baits = {}; gameState.eqBait = "none"; }
+            if(!gameState.baits) { gameState.baits = {}; }
+            if(!gameState.eqBait) { gameState.eqBait = "none"; }
+            
             if(!gameState.stats) gameState.stats = { totalCaught: 0, totalEarned: 0 };
             if(!gameState.prestige) gameState.prestige = 0;
             if(!gameState.usedCodes) gameState.usedCodes = {};
@@ -1598,66 +1621,97 @@ window.handleGuildDonateMenu = function() {
     if(!gameState.guild || !guildsCache[gameState.guild]) return alert("Du bist in keiner Gilde!");
     if(!gameState.inventory) gameState.inventory = [];
 
-    let pointsToGet = 0;
-    let fishCount = 0;
-
-    gameState.inventory.forEach(item => {
-        if(item.isTrash) return;
-        fishCount++;
-        if(item.isShiny) pointsToGet += 50;
-        else if(item.c <= 5) pointsToGet += 5;
-        else pointsToGet += 1;
+    let grouped = {};
+    gameState.inventory.forEach((item, idx) => {
+        if(item.isTrash) return; // Müll kann man nicht spenden
+        let key = (item.isShiny ? "shiny_" : "norm_") + item.n;
+        if(!grouped[key]) {
+            grouped[key] = {
+                n: item.n, e: item.e, isShiny: item.isShiny, c: item.c,
+                count: 0
+            };
+        }
+        grouped[key].count++;
     });
 
+    let hasItems = Object.keys(grouped).length > 0;
+    
     let html = `
     <div style="text-align:center;">
-        <p style="color:#94a3b8; font-size:14px; margin-top:0;">Spende deine gefangenen Fische an die Gilde, um sie im Leaderboard nach oben zu bringen! (Müll wird dabei ignoriert und bleibt im Rucksack)</p>
+        <p style="color:#94a3b8; font-size:14px; margin-top:0;">Wähle aus, welche Fische du der Gilde spenden möchtest.</p>
         
-        <div style="background:#0d1117; padding:15px; border-radius:12px; border:1px solid #eab308; margin-bottom:15px;">
-            <div style="font-size:28px; margin-bottom:5px; color:#eab308; font-weight:bold;">+${pointsToGet} Punkte</div>
-            <div style="color:#60a5fa;">Aus ${fishCount} Fischen im Rucksack</div>
-        </div>
+        <div style="max-height:45vh; overflow-y:auto; padding-right:5px; text-align:left;">`;
 
-        <ul style="text-align:left; font-size:12px; color:#94a3b8; padding-left:20px; background:#161b22; padding:10px 10px 10px 30px; border-radius:8px;">
+    if(!hasItems) {
+        html += `<p style="text-align:center; color:#ef4444;">Nichts zum Spenden im Rucksack!</p>`;
+    } else {
+        for(let [key, data] of Object.entries(grouped)) {
+            let ptsPerFish = data.isShiny ? 50 : (data.c <= 5 ? 5 : 1);
+            html += `
+            <div class="inv-group-card" style="display:flex; flex-direction:column; gap:8px;">
+                <div style="display:flex; justify-content:space-between; width:100%;">
+                    <div><b style="font-size:15px;">${data.e} ${data.isShiny ? '🧬 ' : ''}${data.n}</b><br><small style="color:#eab308;">${ptsPerFish} Pkt / Stück</small></div>
+                    <div style="font-weight:bold; color:#60a5fa;">${data.count} im Rucksack</div>
+                </div>
+                <div style="display:flex; gap:10px; width:100%;">
+                    <input id="donate_amt_${key}" type="number" min="1" max="${data.count}" value="${data.count}" style="width:60px; padding:5px; border-radius:6px; border:1px solid #30363d; background:#161b22; color:white; text-align:center;">
+                    <button class="success-btn" style="flex:1; padding:6px; font-size:12px; background:#eab308;" onclick="window.executeGuildDonateGroup('${key}', ${ptsPerFish})">Spenden</button>
+                </div>
+            </div>`;
+        }
+    }
+
+    html += `
+        </div>
+        <ul style="text-align:left; font-size:12px; color:#94a3b8; padding-left:20px; background:#161b22; padding:10px 10px 10px 30px; border-radius:8px; margin-top:15px;">
             <li><b>1 Punkt:</b> Gewöhnliche Fische (>5%)</li>
             <li><b style="color:#fcd34d;">5 Punkte:</b> Seltene Fische (<=5%)</li>
             <li><b style="color:#a855f7;">50 Punkte:</b> Mutationen (Shinys)</li>
         </ul>
     </div>`;
 
-    let btn = fishCount > 0 
-        ? `<button class="success-btn" style="width:100%; background:#eab308;" onclick="window.executeGuildDonate()">Alle Fische Spenden</button>` 
-        : `<button disabled style="width:100%;">Nichts zum Spenden im Rucksack</button>`;
-
-    openModal("🛡️ Gilden-Spende", html, btn);
+    openModal("🛡️ Gilden-Spende", html);
 }
 
-window.executeGuildDonate = async function() {
+window.executeGuildDonateGroup = async function(key, ptsPerFish) {
     if(!gameState.guild || !guildsCache[gameState.guild] || !gameState.inventory) return;
 
-    let points = 0;
+    let inputEl = document.getElementById("donate_amt_" + key);
+    if(!inputEl) return;
+    let amtToDonate = parseInt(inputEl.value);
+    if(isNaN(amtToDonate) || amtToDonate <= 0) return alert("Ungültige Anzahl!");
+
+    let isShiny = key.startsWith("shiny_");
+    let name = key.replace("shiny_", "").replace("norm_", "");
+
     let newInv = [];
+    let donatedCount = 0;
+    let totalPoints = 0;
 
-    gameState.inventory.forEach(item => {
-        if(item.isTrash) {
-            newInv.push(item);
+    for(let i = 0; i < gameState.inventory.length; i++) {
+        let item = gameState.inventory[i];
+        if(donatedCount < amtToDonate && item.n === name && !!item.isShiny === isShiny && !item.isTrash) {
+            donatedCount++;
+            totalPoints += ptsPerFish;
+            // Wird gespendet, also nicht in neues Array pushen
         } else {
-            if(item.isShiny) points += 50;
-            else if(item.c <= 5) points += 5;
-            else points += 1;
+            newInv.push(item);
         }
-    });
+    }
 
-    if(points > 0) {
+    if(donatedCount > 0) {
         gameState.inventory = newInv;
         saveData();
 
         let guildRef = ref(db, "global/guilds/" + gameState.guild + "/points");
         let snap = await get(guildRef);
         let currentPoints = snap.exists() ? snap.val() : 0;
-        await set(guildRef, currentPoints + points);
+        await set(guildRef, currentPoints + totalPoints);
 
-        window.handleGuildMenu();
+        alert(`✅ ${donatedCount} Fische gespendet (+${totalPoints} Punkte)!`);
+        window.handleGuildDonateMenu();
+    } else {
+        alert("Fehler beim Spenden! (Fische nicht gefunden)");
     }
 }
 
@@ -2240,11 +2294,16 @@ window.handleAdminMenu = function() {
                 <button class="success-btn" style="width:100%; margin-bottom:10px;" onclick="window.adminGive()">Werte Hinzufügen</button>
                 <div style="display:flex; gap:5px; margin-bottom:5px;">
                     <select id="adminItem" style="width:60%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                        ${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}
+                        <optgroup label="Fische & Müll">
+                            ${items.map(i=>`<option value="fish_${i.n}">${i.e} ${i.n}</option>`).join('')}
+                        </optgroup>
+                        <optgroup label="Köder">
+                            ${Object.entries(baitsDB).map(([id, b])=>`<option value="bait_${id}">${b.e} ${b.name}</option>`).join('')}
+                        </optgroup>
                     </select>
                     <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:40%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
                 </div>
-                <button class="update-btn" style="width:100%;" onclick="window.adminGiveItem()">Item geben</button>
+                <button class="update-btn" style="width:100%;" onclick="window.adminGiveItem()">Item / Köder geben</button>
             </div>
 
             <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #a855f7;">
@@ -2567,25 +2626,45 @@ window.adminGive = async function() {
 
 window.adminGiveItem = async function() {
     let target = document.getElementById('adminTarget').value.trim();
-    let item = document.getElementById('adminItem').value;
+    let itemVal = document.getElementById('adminItem').value;
     let count = Number(document.getElementById('adminItemCount').value);
-    if(!target || isNaN(count)) return alert("Username und Anzahl!");
+    if(!target || isNaN(count) || count <= 0) return alert("Username und gültige Anzahl angeben!");
+    
     let snap = await get(ref(db, "users/"+target));
     if(snap.exists()) {
         let data = snap.val();
-        if(!data.inventory || !Array.isArray(data.inventory)) data.inventory = [];
-        let baseItem = items.find(i => i.n === item);
-        if(baseItem) {
-            for(let i=0; i<count; i++) {
-                data.inventory.push({
-                    id: Math.random().toString(36).substr(2,9),
-                    n: baseItem.n, baseName: baseItem.n, v: baseItem.v, xp: baseItem.xp,
-                    e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: baseItem.minW || 0
-                });
+        
+        // FISCHE UND ITEMS VERGEBEN
+        if(itemVal.startsWith("fish_")) {
+            let item = itemVal.replace("fish_", "");
+            
+            // Fix falls das Inventar beim User in der DB aktuell ein Sparse Array Object ist
+            if(!data.inventory || !Array.isArray(data.inventory)) {
+                data.inventory = Array.isArray(data.inventory) ? data.inventory : (data.inventory ? Object.values(data.inventory) : []);
             }
+            
+            let baseItem = items.find(i => i.n === item);
+            if(baseItem) {
+                for(let i=0; i<count; i++) {
+                    data.inventory.push({
+                        id: Math.random().toString(36).substr(2,9),
+                        n: baseItem.n, baseName: baseItem.n, v: baseItem.v, xp: baseItem.xp,
+                        e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: baseItem.minW || 0
+                    });
+                }
+                await set(ref(db, "users/"+target), data);
+                alert(`✅ ${count}x ${item} an ${target} gegeben`);
+            }
+        // KÖDER VERGEBEN
+        } else if (itemVal.startsWith("bait_")) {
+            let baitId = itemVal.replace("bait_", "");
+            if(!data.baits) data.baits = {};
+            data.baits[baitId] = (data.baits[baitId] || 0) + count;
+            
             await set(ref(db, "users/"+target), data);
-            alert(`✅ ${count}x ${item} an ${target}`);
+            alert(`✅ ${count}x ${baitsDB[baitId].name} an ${target} gegeben`);
         }
+        
     } else alert("Spieler nicht gefunden!");
 }
 
