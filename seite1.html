@@ -6,7 +6,7 @@
     <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
     <meta name="google" content="notranslate">
     
-    <title>Virtual Fisher PRO v6.1</title>
+    <title>Virtual Fisher PRO v6.2</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -42,6 +42,19 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+
+        /* Neue animierte Bläschen für lebendigeren Hintergrund */
+        .bubbles-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; overflow: hidden; }
+        .bubble { 
+            position: absolute; bottom: -50px; background: rgba(255, 255, 255, 0.15); 
+            border-radius: 50%; animation: floatUp linear infinite; backdrop-filter: blur(2px);
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(1); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-110vh) scale(1.5); opacity: 0; }
+        }
         
         #aquarium-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: hidden; }
         .aqua-fish-entity { 
@@ -70,7 +83,7 @@
         #btnDiscordFixed:hover { transform: scale(1.1); background: #4752C4; }
 
         .container {
-            width: 100%; max-width: 550px; background: rgba(22, 27, 34, 0.9); backdrop-filter: blur(12px);
+            width: 100%; max-width: 550px; background: rgba(22, 27, 34, 0.85); backdrop-filter: blur(16px);
             padding: 15px; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.8);
             border: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 10; max-height: 95vh; overflow-y: auto;
         }
@@ -172,6 +185,8 @@
     </style>
 </head>
 <body>
+
+<div class="bubbles-container" id="bubblesContainer"></div>
 
 <div id="broadcast-banner">
     📢 <span id="broadcast-text"></span>
@@ -298,6 +313,22 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// Bubbles Hintergrund Animation Generator
+function initBubbles() {
+    const container = document.getElementById('bubblesContainer');
+    if(!container) return;
+    for(let i = 0; i < 20; i++) {
+        let b = document.createElement('div');
+        b.className = 'bubble';
+        b.style.left = Math.random() * 100 + 'vw';
+        b.style.width = b.style.height = (Math.random() * 30 + 10) + 'px';
+        b.style.animationDuration = (Math.random() * 15 + 8) + 's';
+        b.style.animationDelay = (Math.random() * 10) + 's';
+        container.appendChild(b);
+    }
+}
+initBubbles();
+
 const questDB = {
     daily: [
         { id: "d1", desc: "Fange 5 Fische", t: "c", req: 5, rew: 50 },
@@ -355,6 +386,7 @@ const zones = [
     { name: "🏞️ Bach", reqPrestige: 1 }
 ];
 
+// REBALANCED WIRTSCHAFT: Zone 0 leicht angehoben, Zone 1 massiv angehoben für spürbaren Unterschied.
 const items = [
     {n:"Laub / Blätter", v:-1, xp:-1, c:12.0, z:0, e:"🍂", isTrash: true, minW: 5, maxW: 50},
     {n:"Entenfeder", v:-2, xp:-1, c:8.0, z:0, e:"🪶", isTrash: true, minW: 1, maxW: 10},
@@ -365,20 +397,20 @@ const items = [
     {n:"Gummistiefel", v:-8, xp:-4, c:2.0, z:0, e:"👢", isTrash: true, minW: 500, maxW: 2500},
     {n:"Plastikflasche", v:-10, xp:-5, c:1.5, z:0, e:"🧴", isTrash: true, minW: 20, maxW: 150},
     {n:"Scherbe", v:-12, xp:-6, c:1.0, z:0, e:"🔪", isTrash: true, minW: 10, maxW: 100},
-    {n:"Stichling", v:2, xp:2, c:15.0, z:0, e:"🐟", minW: 5, maxW: 15},
-    {n:"Moderlieschen", v:3, xp:2, c:14.0, z:0, e:"🐠", minW: 10, maxW: 30},
-    {n:"Elritze", v:3, xp:3, c:13.0, z:0, e:"🐟", minW: 15, maxW: 40},
-    {n:"Rotauge", v:5, xp:4, c:10.0, z:0, e:"🐟", minW: 100, maxW: 2000},
-    {n:"Ukelei", v:6, xp:4, c:9.0, z:0, e:"🐟", minW: 50, maxW: 300},
-    {n:"Gründling", v:7, xp:5, c:8.0, z:0, e:"🐡", minW: 30, maxW: 150},
-    {n:"Giebel", v:10, xp:6, c:6.0, z:0, e:"🐠", minW: 200, maxW: 3000},
-    {n:"Karausche", v:12, xp:7, c:5.0, z:0, e:"🐟", minW: 150, maxW: 2500},
-    {n:"Schleie", v:15, xp:9, c:4.0, z:0, e:"🐡", minW: 300, maxW: 4000},
-    {n:"Barbe", v:18, xp:10, c:3.0, z:0, e:"🐟", minW: 500, maxW: 6000},
-    {n:"Aal", v:25, xp:14, c:2.0, z:0, e:"🐍", minW: 200, maxW: 3000},
-    {n:"Hecht (jung)", v:35, xp:18, c:1.5, z:0, e:"🐊", minW: 500, maxW: 5000},
-    {n:"Karpfen", v:45, xp:22, c:1.0, z:0, e:"🐟", minW: 1000, maxW: 15000},
-    {n:"Zander", v:55, xp:28, c:0.5, z:0, e:"🐟", minW: 800, maxW: 8000},
+    {n:"Stichling", v:8, xp:4, c:15.0, z:0, e:"🐟", minW: 5, maxW: 15},
+    {n:"Moderlieschen", v:12, xp:6, c:14.0, z:0, e:"🐠", minW: 10, maxW: 30},
+    {n:"Elritze", v:15, xp:8, c:13.0, z:0, e:"🐟", minW: 15, maxW: 40},
+    {n:"Rotauge", v:20, xp:10, c:10.0, z:0, e:"🐟", minW: 100, maxW: 2000},
+    {n:"Ukelei", v:25, xp:12, c:9.0, z:0, e:"🐟", minW: 50, maxW: 300},
+    {n:"Gründling", v:30, xp:15, c:8.0, z:0, e:"🐡", minW: 30, maxW: 150},
+    {n:"Giebel", v:40, xp:20, c:6.0, z:0, e:"🐠", minW: 200, maxW: 3000},
+    {n:"Karausche", v:50, xp:25, c:5.0, z:0, e:"🐟", minW: 150, maxW: 2500},
+    {n:"Schleie", v:60, xp:30, c:4.0, z:0, e:"🐡", minW: 300, maxW: 4000},
+    {n:"Barbe", v:80, xp:35, c:3.0, z:0, e:"🐟", minW: 500, maxW: 6000},
+    {n:"Aal", v:100, xp:45, c:2.0, z:0, e:"🐍", minW: 200, maxW: 3000},
+    {n:"Hecht (jung)", v:150, xp:60, c:1.5, z:0, e:"🐊", minW: 500, maxW: 5000},
+    {n:"Karpfen", v:200, xp:80, c:1.0, z:0, e:"🐟", minW: 1000, maxW: 15000},
+    {n:"Zander", v:300, xp:100, c:0.5, z:0, e:"🐟", minW: 800, maxW: 8000},
 
     {n:"Nasses Laub", v:-2, xp:-2, c:7.3, z:1, e:"🍂", isTrash: true, minW: 5, maxW: 60},
     {n:"Angelschnur", v:-5, xp:-3, c:5.5, z:1, e:"🧵", isTrash: true, minW: 2, maxW: 20},
@@ -386,40 +418,43 @@ const items = [
     {n:"Plastikbecher", v:-10, xp:-5, c:3.6, z:1, e:"🥤", isTrash: true, minW: 10, maxW: 50},
     {n:"Fischreuse (kaputt)", v:-15, xp:-8, c:1.8, z:1, e:"🪤", isTrash: true, minW: 500, maxW: 3000},
     {n:"Gummiwurm", v:-6, xp:-3, c:1.8, z:1, e:"🪱", isTrash: true, minW: 5, maxW: 20},
-    {n:"Groppe", v:5, xp:4, c:14.0, z:1, e:"🐟", minW: 10, maxW: 50},
-    {n:"Elritze (Bach)", v:6, xp:4, c:13.0, z:1, e:"🐠", minW: 15, maxW: 60},
-    {n:"Bachneunauge", v:10, xp:6, c:12.0, z:1, e:"🐍", minW: 20, maxW: 100},
-    {n:"Mühlkoppe", v:12, xp:7, c:11.0, z:1, e:"🐡", minW: 30, maxW: 120},
-    {n:"Hasel", v:15, xp:8, c:9.0, z:1, e:"🐟", minW: 50, maxW: 400},
-    {n:"Döbel", v:20, xp:10, c:8.0, z:1, e:"🐟", minW: 100, maxW: 800},
-    {n:"Bachforelle", v:35, xp:15, c:5.0, z:1, e:"🐟", minW: 150, maxW: 1500},
-    {n:"Äsche", v:40, xp:18, c:4.0, z:1, e:"🐟", minW: 200, maxW: 1200},
-    {n:"Regenbogenforelle", v:50, xp:22, c:3.0, z:1, e:"🌈", minW: 200, maxW: 2000},
-    {n:"Saibling", v:65, xp:28, c:2.0, z:1, e:"🐟", minW: 250, maxW: 2500},
-    {n:"Huchen (jung)", v:90, xp:40, c:1.0, z:1, e:"🐊", minW: 500, maxW: 5000},
-    {n:"Rapfen", v:120, xp:50, c:0.6, z:1, e:"🐟", minW: 300, maxW: 3000},
-    {n:"Waller (jung)", v:180, xp:75, c:0.4, z:1, e:"🐋", minW: 500, maxW: 8000}
+    {n:"Groppe", v:40, xp:20, c:14.0, z:1, e:"🐟", minW: 10, maxW: 50},
+    {n:"Elritze (Bach)", v:50, xp:25, c:13.0, z:1, e:"🐠", minW: 15, maxW: 60},
+    {n:"Bachneunauge", v:75, xp:35, c:12.0, z:1, e:"🐍", minW: 20, maxW: 100},
+    {n:"Mühlkoppe", v:90, xp:40, c:11.0, z:1, e:"🐡", minW: 30, maxW: 120},
+    {n:"Hasel", v:110, xp:50, c:9.0, z:1, e:"🐟", minW: 50, maxW: 400},
+    {n:"Döbel", v:150, xp:65, c:8.0, z:1, e:"🐟", minW: 100, maxW: 800},
+    {n:"Bachforelle", v:200, xp:85, c:5.0, z:1, e:"🐟", minW: 150, maxW: 1500},
+    {n:"Äsche", v:250, xp:100, c:4.0, z:1, e:"🐟", minW: 200, maxW: 1200},
+    {n:"Regenbogenforelle", v:350, xp:130, c:3.0, z:1, e:"🌈", minW: 200, maxW: 2000},
+    {n:"Saibling", v:450, xp:160, c:2.0, z:1, e:"🐟", minW: 250, maxW: 2500},
+    {n:"Huchen (jung)", v:600, xp:200, c:1.0, z:1, e:"🐊", minW: 500, maxW: 5000},
+    {n:"Rapfen", v:850, xp:280, c:0.6, z:1, e:"🐟", minW: 300, maxW: 3000},
+    {n:"Waller (jung)", v:1500, xp:450, c:0.4, z:1, e:"🐋", minW: 500, maxW: 8000}
 ];
 
+// REBALANCED RUTEN: Günstiger, aber Stats reduziert für fairere Progression.
 const rodsDB = {
     "rod1": { name: "Steckrute", e: "🎋", cost: 0, maxKg: 2, speed: 0, luck: 0, res: 10, desc: "Standard, schwach" },
-    "rod2": { name: "Teleskoprute", e: "🎣", cost: 500, maxKg: 5, speed: 10, luck: 5, res: 20, desc: "Etwas stabiler, 10% Speed" },
-    "rod3": { name: "Matchrute", e: "🎯", cost: 2000, maxKg: 8, speed: 20, luck: 10, res: 30, desc: "Gute Allround-Rute" },
-    "rod4": { name: "Feeder-Rute", e: "🥢", cost: 7500, maxKg: 12, speed: 30, luck: 15, res: 40, desc: "Sehr stabil, lockt gut an" },
-    "rod5": { name: "Karpfenrute", e: "🎏", cost: 15000, maxKg: 20, speed: 40, luck: 20, res: 60, desc: "Für die richtig Dicken" },
-    "rod6": { name: "Naturrute (Handgebaut)", e: "✨", cost: 35000, maxKg: 50, speed: 50, luck: 30, res: 80, desc: "Ultimative Meister-Rute" }
+    "rod2": { name: "Teleskoprute", e: "🎣", cost: 250, maxKg: 5, speed: 5, luck: 2, res: 15, desc: "Etwas stabiler, 5% Speed" },
+    "rod3": { name: "Matchrute", e: "🎯", cost: 800, maxKg: 8, speed: 10, luck: 5, res: 20, desc: "Gute Allround-Rute" },
+    "rod4": { name: "Feeder-Rute", e: "🥢", cost: 2500, maxKg: 12, speed: 15, luck: 8, res: 30, desc: "Sehr stabil, lockt gut an" },
+    "rod5": { name: "Karpfenrute", e: "🎏", cost: 6000, maxKg: 20, speed: 20, luck: 12, res: 40, desc: "Für die richtig Dicken" },
+    "rod6": { name: "Naturrute (Handgebaut)", e: "✨", cost: 15000, maxKg: 50, speed: 25, luck: 18, res: 50, desc: "Ultimative Meister-Rute" }
 };
+
+// REBALANCED KÖDER: Günstiger, Stats angepasst.
 const baitsDB = {
-    "b1": { name: "Brot", e: "🍞", cost: 50, amt: 20, speed: 0, luck: 5, res: 0, trashRed: 0, desc: "+5% Glück" },
-    "b2": { name: "Mais", e: "🌽", cost: 150, amt: 20, speed: 0, luck: 10, res: 0, trashRed: 0, desc: "+10% Glück" },
-    "b3": { name: "Wurm", e: "🪱", cost: 300, amt: 20, speed: 5, luck: 0, res: 0, trashRed: 0, desc: "+5% Speed" },
-    "b4": { name: "Made", e: "🐛", cost: 500, amt: 20, speed: 10, luck: 5, res: 0, trashRed: 0, desc: "+10% Speed, +5% Glück" },
-    "b5": { name: "Teig", e: "🥟", cost: 1000, amt: 20, speed: 0, luck: 0, res: 0, trashRed: 20, desc: "20% weniger Müll" },
-    "b6": { name: "Caster", e: "🪺", cost: 2500, amt: 20, speed: 0, luck: 15, res: 10, trashRed: 0, desc: "+15% Glück, +10% Widerstand" },
-    "b7": { name: "Pellets", e: "🧆", cost: 5000, amt: 20, speed: 20, luck: 0, res: 0, trashRed: 30, desc: "+20% Speed, 30% weniger Müll" },
-    "b8": { name: "Boilie", e: "🔴", cost: 10000, amt: 20, speed: 0, luck: 25, res: 20, trashRed: 0, desc: "+25% Glück, +20% Widerstand" },
-    "b9": { name: "Fischpaste", e: "🥫", cost: 20000, amt: 20, speed: 0, luck: 35, res: 0, trashRed: 0, desc: "+35% Glück" },
-    "b10": { name: "Kunstköder", e: "🐟", cost: 50000, amt: 20, speed: 40, luck: 0, res: 30, trashRed: 0, desc: "+40% Speed, +30% Widerstand" }
+    "b1": { name: "Brot", e: "🍞", cost: 20, amt: 20, speed: 0, luck: 2, res: 0, trashRed: 0, desc: "+2% Glück" },
+    "b2": { name: "Mais", e: "🌽", cost: 60, amt: 20, speed: 0, luck: 4, res: 0, trashRed: 0, desc: "+4% Glück" },
+    "b3": { name: "Wurm", e: "🪱", cost: 120, amt: 20, speed: 3, luck: 0, res: 0, trashRed: 0, desc: "+3% Speed" },
+    "b4": { name: "Made", e: "🐛", cost: 250, amt: 20, speed: 5, luck: 2, res: 0, trashRed: 0, desc: "+5% Speed, +2% Glück" },
+    "b5": { name: "Teig", e: "🥟", cost: 500, amt: 20, speed: 0, luck: 0, res: 0, trashRed: 15, desc: "15% weniger Müll" },
+    "b6": { name: "Caster", e: "🪺", cost: 1000, amt: 20, speed: 0, luck: 6, res: 5, trashRed: 0, desc: "+6% Glück, +5% Widerstand" },
+    "b7": { name: "Pellets", e: "🧆", cost: 2500, amt: 20, speed: 10, luck: 0, res: 0, trashRed: 20, desc: "+10% Speed, 20% weniger Müll" },
+    "b8": { name: "Boilie", e: "🔴", cost: 5000, amt: 20, speed: 0, luck: 10, res: 10, trashRed: 0, desc: "+10% Glück, +10% Widerstand" },
+    "b9": { name: "Fischpaste", e: "🥫", cost: 10000, amt: 20, speed: 0, luck: 15, res: 0, trashRed: 0, desc: "+15% Glück" },
+    "b10": { name: "Kunstköder", e: "🐟", cost: 25000, amt: 20, speed: 15, luck: 0, res: 15, trashRed: 0, desc: "+15% Speed, +15% Widerstand" }
 };
 
 // Globaler Live-Refresh für offene Popups
@@ -797,7 +832,8 @@ async function loadData() {
 
     setInterval(() => {
         if(gameState?.aquarium?.fishes?.length > 0) {
-            let aquaMult = 1 + ((gameState.skills?.aqua || 0) * 0.025);
+            // BUGFIX: Aquarium Multiplier nun korrekt berechnet (+0.025% per point)
+            let aquaMult = 1 + ((gameState.skills?.aqua || 0) * 0.00025);
             let income = gameState.aquarium.fishes.reduce((s,f) => s + Math.floor(f.v * 0.1 * aquaMult), 0);
             if(income > 0) {
                 gameState.money += income;
@@ -812,9 +848,14 @@ async function loadData() {
 
 function saveData() { 
     if(currentUser && gameState) {
-        set(ref(db, "users/" + currentUser), gameState); 
+        set(ref(db, "users/" + currentUser), gameState).catch(e => console.error("Save Error:", e)); 
     }
 }
+
+// GARANTIERTE BACKGROUND-SAVES ALLE 5 SEKUNDEN
+setInterval(() => {
+    if(gameState && currentUser) saveData();
+}, 5000);
 
 setInterval(() => { if(gameState) updateUI(); }, 50);
 
@@ -1244,7 +1285,7 @@ window.handleAquaMenu = function() {
     let html = `<h3>🐠 Dein Aquarium (${gameState.aquarium.fishes.length}/5)</h3>`;
     if(gameState.aquarium.fishes.length === 0) html += "<p>Leer – Fische aus Rucksack einsetzen!</p>";
     gameState.aquarium.fishes.forEach((f, i) => {
-        let aquaMult = 1 + ((gameState.skills?.aqua || 0) * 0.025);
+        let aquaMult = 1 + ((gameState.skills?.aqua || 0) * 0.00025);
         let income = Math.floor(f.v * 0.1 * aquaMult);
         html += `<div class="item-row"><div>${f.e} ${f.n} <small style="color:#10b981; font-weight:bold;">(+${income}$/min)</small></div><button class="danger-btn" onclick="window.removeFromAquarium(${i})">Entfernen</button></div>`;
     });
@@ -1313,9 +1354,9 @@ window.handleSkillsMenu = function() {
 
         <div class="inv-card">
             <h4 style="color:#3b82f6;">🐟 Aquarium-Meister</h4>
-            <p style="font-size:13px; color:#94a3b8; flex:1;">Erhöht das passive Einkommen der Aquarium-Fische um +2.5% pro Punkt.</p>
+            <p style="font-size:13px; color:#94a3b8; flex:1;">Erhöht das passive Einkommen der Aquarium-Fische um +0.025% pro Punkt.</p>
             <div class="inv-stat" style="margin-bottom:10px;"><span>Aktuelles Level:</span> <span style="color:#e2e8f0; font-weight:bold;">${gameState.skills.aqua} / 100</span></div>
-            <div class="inv-stat" style="margin-bottom:10px;"><span>Bonus:</span> <span style="color:#10b981;">+${(gameState.skills.aqua * 2.5).toFixed(1)}% Einkommen</span></div>
+            <div class="inv-stat" style="margin-bottom:10px;"><span>Bonus:</span> <span style="color:#10b981;">+${(gameState.skills.aqua * 0.025).toFixed(3)}% Einkommen</span></div>
             <button class="success-btn" style="width:100%;" ${available > 0 && gameState.skills.aqua < 100 ? '' : 'disabled'} onclick="window.upgradeSkill('aqua')">⭐ Verbessern</button>
         </div>
     </div>`;
@@ -2223,14 +2264,14 @@ window.adminSendUpdateToDiscord = function() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             embeds: [{
-                title: "🚀 Update v6.1 ist online!",
-                description: "Das Spiel wurde soeben aktualisiert. Bitte ladet die Seite neu (bzw. schließt die Wartung), um die Änderungen zu sehen!",
+                title: "🚀 Update v6.2 ist online!",
+                description: "Großes Rebalancing & Fixes. Bitte ladet die Seite neu, um die Änderungen zu sehen!",
                 color: 11027200,
                 fields: [
-                    { name: "🛡️ Gilden-System", value: "Gründe mit 250.000$ eine eigene Gilde oder tritt einer bei (Max 10 Spieler pro Gilde)." },
-                    { name: "🐟 Fische Spenden", value: "Sammle gemeinsam mit deiner Gilde Punkte, indem du Fische im Gilden-Menü spendest anstatt sie zu verkaufen." },
-                    { name: "🏆 Top Gilden", value: "Ein neues Leaderboard nur für Gilden ist integriert. Kämpft euch an die Spitze!" },
-                    { name: "🧠 Skill-Baum", value: "Ab sofort erhältst du 1 Skill-Punkt pro Level-Up, um passive Boni freizuschalten!" }
+                    { name: "⚖️ Wirtschafts-Balancing", value: "Fische in Zone 1 sind nun deutlich mehr wert! Auch Ruten und Köder wurden angepasst." },
+                    { name: "🧠 Skill-Baum Fixes", value: "Der Aquarium-Meister gibt nun exakt die angegebenen Boni. Bugs wurden behoben." },
+                    { name: "💾 Auto-Save Loop", value: "Das Spiel sichert deinen Stand nun garantiert alle 5 Sekunden im Hintergrund. Nie wieder verlorene Fische!" },
+                    { name: "✨ Grafik & Animationen", value: "Der Hintergrund wurde mit schönen aufsteigenden Wasserbläschen lebendiger gestaltet." }
                 ],
                 footer: { text: "Virtual Fisher PRO" }
             }]
@@ -2245,17 +2286,17 @@ window.adminSendUpdateToDiscord = function() {
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.1 - Skills & Gilden Update</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.2 - Balancing & Quality of Life</h3>
         <ul style="padding-left:20px;">
-            <li><b>Skill-Baum:</b> Verdiene pro Level-Up 1 Skill-Punkt und verbessere Shiny-Raten oder dein Aquarium!</li>
-            <li><b>Neue Gilden:</b> Gründe eine Gilde oder trete einer bei. (Max. 10 Mitglieder)</li>
-            <li><b>Fische Spenden:</b> Verkaufe deine Fische nicht nur für Geld, sondern spende sie für deine Gilde, um im Rang aufzusteigen! (Shinys = 50 Punkte!)</li>
-            <li><b>Gilden Rangliste:</b> Miss dich mit anderen Gilden auf dem Server.</li>
-            <li><b>Bug-Fixes:</b> Logs für Müll/Entkommen, sofortige Updates und korrekte Statistiken hinzugefügt.</li>
+            <li><b>⚖️ Balancing Anpassungen:</b> Zone 1 Fische bringen nun deutlich mehr Geld. Ruten und Köder wurden angepasst.</li>
+            <li><b>🧠 Skill-Bug behoben:</b> Aquarium-Meister gibt nun exakt +0.025% Einkommen pro Level.</li>
+            <li><b>💾 Autosave-System:</b> Es gehen keine Daten mehr verloren! Das Spiel speichert absolut zuverlässig alle 5 Sekunden im Hintergrund.</li>
+            <li><b>✨ Neue Effekte:</b> Aufsteigende Wasserbläschen für eine bessere Unterwasser-Atmosphäre.</li>
         </ul>
         <hr style="border-color:#30363d;">
         <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
-        <p><b>v6.0</b> - Globales Leaderboard, Promo-Codes, Live-Broadcast.</p>
+        <p><b>v6.1</b> - Skills & Gilden System.</p>
+        <p><b>v6.0</b> - Globales Leaderboard & Promo-Codes.</p>
     </div>`;
     openModal("📝 Updates", html);
 }
