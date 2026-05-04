@@ -6,7 +6,7 @@
     <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
     <meta name="google" content="notranslate">
     
-    <title>Virtual Fisher PRO v6.0</title>
+    <title>Virtual Fisher PRO v6.1</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -97,7 +97,7 @@
         .equip-bar { display: flex; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 8px 12px; border-radius: 12px; font-size: 12px; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
         
         .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
-        .btn-grid-2 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+        .btn-grid-2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
         button { padding: 12px 8px; border: none; border-radius: 12px; background: #2563eb; color: white; font-weight: bold; cursor: pointer; transition: 0.15s; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; flex-direction: column; }
         button span { font-size: 20px; }
         button:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); }
@@ -157,7 +157,7 @@
         @media (max-width: 550px) {
             .container { padding: 12px; }
             .btn-grid { grid-template-columns: repeat(3, 1fr); }
-            .btn-grid-2 { grid-template-columns: repeat(3, 1fr); }
+            .btn-grid-2 { grid-template-columns: repeat(2, 1fr); }
             button { padding: 10px; font-size: 12px; }
             button span { font-size: 18px; }
         }
@@ -265,6 +265,7 @@
             </div>
             <div class="btn-grid-2">
                 <button id="btnProfile" style="font-size:14px;">📊 Profil</button>
+                <button id="btnGuild" style="font-size:14px; background:#eab308;">🛡️ Gilde</button>
                 <button id="btnPromo" style="font-size:14px; background:#8b5cf6;">🎫 Code</button>
                 <button id="btnUpdates" class="update-btn" style="font-size:14px;">📝 Update</button>
             </div>
@@ -335,9 +336,10 @@ window.currentDexTab = 'normal';
 let fishInterval = null;
 let wasMaintenance = false;
 
-// Global Leaderboard Cache
+// Caches for Leaderboard & Guilds
 let lbUpdateCooldown = 0;
 let lastLeaderboardUsers = [];
+let guildsCache = {};
 
 const zones = [
     { name: "🍃 Naturteich", reqPrestige: 0 },
@@ -574,10 +576,8 @@ function addQuestProgress(t, amt) {
 }
 
 // ==== SYNC LEADERBOARD LOGIK ====
-// Aktualisiert den eigenen Score im GLOBALEN Leaderboard-Eintrag auf der Datenbank
 async function syncGlobalLeaderboard() {
     if(!currentUser || !gameState) return;
-    
     let playerData = {
         name: currentUser,
         prestige: gameState.prestige || 0,
@@ -585,7 +585,6 @@ async function syncGlobalLeaderboard() {
         money: gameState.money || 0,
         stats: { totalCaught: gameState.stats.totalCaught || 0 }
     };
-    
     await set(ref(db, "global/leaderboard/" + currentUser), playerData);
 }
 
@@ -594,7 +593,6 @@ window.closeBroadcast = function() {
     document.getElementById("broadcast-banner").style.display = "none";
     if(globalState && globalState.broadcast) {
         if(!gameState) gameState = {};
-        // Wir merken uns, dass DIESER User DIESEN Timestamp weggedrückt hat
         gameState.lastBroadcast = globalState.broadcast.timestamp;
         saveData();
     }
@@ -612,7 +610,24 @@ async function loadData() {
         }
     });
     
-    // Horcht auf das globale Leaderboard und speichert es in den Cache
+    // GILDEN CACHE
+    onValue(ref(db, "global/guilds"), (snap) => {
+        guildsCache = snap.exists() ? snap.val() : {};
+        
+        // Prüfen, ob man aus der Gilde gekickt wurde
+        if(gameState && gameState.guild) {
+            let myG = guildsCache[gameState.guild];
+            if(!myG || !myG.members || !myG.members.includes(currentUser)) {
+                gameState.guild = "";
+                saveData();
+                log("🛡️ Du wurdest aus deiner Gilde entfernt oder sie wurde aufgelöst.");
+                if(window.currentOpenMenu === 'guild') window.handleGuildMenu();
+            }
+        }
+        if(window.currentOpenMenu === 'guild') window.handleGuildMenu();
+    });
+
+    // LEADERBOARD CACHE
     onValue(ref(db, "global/leaderboard"), (snap) => {
         if(snap.exists()) {
             let data = snap.val();
@@ -620,7 +635,6 @@ async function loadData() {
             for (let key in data) {
                 usersArray.push(data[key]);
             }
-            // Sortierung immer sofort anwenden
             usersArray.sort((a,b) => {
                 let caughtA = a.stats?.totalCaught || 0;
                 let caughtB = b.stats?.totalCaught || 0;
@@ -628,7 +642,6 @@ async function loadData() {
             });
             lastLeaderboardUsers = usersArray;
             
-            // Wenn das Menü gerade offen ist, sofort neu zeichnen
             if(window.currentOpenMenu === 'leaderboard') {
                 window.handleLeaderboard();
             }
@@ -652,7 +665,7 @@ async function loadData() {
         // Live Broadcast System prüfen
         if (globalState && globalState.broadcast) {
             let bc = globalState.broadcast;
-            // Nach 5 Minuten wird das Banner für ALLE automatisch gelöscht, selbst wenn sie nicht geklickt haben (5 * 60 * 1000 = 300000ms)
+            // Nach 5 Minuten wird das Banner gelöscht
             if (Date.now() - bc.timestamp < 300000 && (!gameState || gameState.lastBroadcast !== bc.timestamp)) {
                 document.getElementById('broadcast-text').innerText = bc.text;
                 document.getElementById('broadcast-banner').style.display = 'block';
@@ -678,7 +691,7 @@ async function loadData() {
                 lastDaily: 0, dailyStreak: 0, prestige: 0,
                 stats: { totalCaught: 0, totalEarned: 0 },
                 ownedRods: ["rod1"], eqRod: "rod1", baits: {}, eqBait: "none", bannedUntil: 0, rodStats: {},
-                usedCodes: {}
+                usedCodes: {}, guild: ""
             };
             saveData();
         }
@@ -734,11 +747,11 @@ async function loadData() {
             if(!gameState.stats) gameState.stats = { totalCaught: 0, totalEarned: 0 };
             if(!gameState.prestige) gameState.prestige = 0;
             if(!gameState.usedCodes) gameState.usedCodes = {};
+            if(gameState.guild === undefined) gameState.guild = "";
             if(gameState.zone >= zones.length) gameState.zone = 0;
             
             checkQuestResets();
             renderAquarium();
-            // Stellt sicher, dass man selbst auch im globalen Leaderboard steht
             syncGlobalLeaderboard();
             
             if(document.getElementById("authBox").style.display !== "none") {
@@ -761,6 +774,7 @@ async function loadData() {
             if(window.currentOpenMenu === 'daily') window.handleDailyMenu();
             if(window.currentOpenMenu === 'zone') window.handleZoneMenu();
             if(window.currentOpenMenu === 'dex') window.showDexTab(window.currentDexTab);
+            if(window.currentOpenMenu === 'guild') window.handleGuildMenu();
         }
     });
     setInterval(() => {
@@ -1385,6 +1399,242 @@ window.unequipBait = function() {
     log(`🪱 Köder entfernt!`);
 }
 
+// === NEU: GILDEN SYSTEM ===
+window.handleGuildMenu = function() {
+    window.currentOpenMenu = 'guild';
+    
+    // Hat der Spieler keine Gilde?
+    if(!gameState.guild) {
+        let html = `
+        <div style="background:#161b22; padding:15px; border-radius:12px; border:1px solid #eab308; margin-bottom:15px;">
+            <h4 style="margin:0 0 10px 0; color:#eab308;">🛡️ Gilde gründen</h4>
+            <p style="font-size:13px; color:#94a3b8;">Eine Gilde kostet <b>250.000$</b>. Verdiene zusammen mit 10 Mitgliedern Gilden-Punkte!</p>
+            <input id="createGuildName" placeholder="Gilden-Name (Max 15 Zeichen)" maxlength="15" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #30363d; background:#0d1117; color:white;">
+            <button class="success-btn" style="width:100%; background:#eab308;" onclick="window.createGuild()">Gründen (250.000$)</button>
+        </div>
+        <h4 style="margin-bottom:10px;">🏆 Top Gilden (Offen für Beitritt)</h4>
+        <div style="max-height:30vh; overflow-y:auto;">
+        `;
+        
+        // Gilden nach Punkten sortieren
+        let sortedGuilds = [];
+        for(let gName in guildsCache) {
+            sortedGuilds.push({ name: gName, ...guildsCache[gName] });
+        }
+        sortedGuilds.sort((a,b) => (b.points || 0) - (a.points || 0));
+
+        if(sortedGuilds.length === 0) {
+            html += `<p style="text-align:center; color:#94a3b8;">Noch keine Gilden vorhanden.</p>`;
+        } else {
+            sortedGuilds.forEach((g, i) => {
+                let rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
+                let canJoin = g.members && g.members.length < 10;
+                let btnHtml = canJoin 
+                    ? `<button class="update-btn" style="padding:4px 10px; font-size:12px;" onclick="window.joinGuild('${g.name}')">Beitreten</button>` 
+                    : `<span style="color:#ef4444; font-size:12px; font-weight:bold;">Voll</span>`;
+
+                html += `
+                <div style="display:flex; justify-content:space-between; align-items:center; background:#0d1117; padding:10px; border-radius:8px; margin-bottom:5px; border:1px solid #30363d;">
+                    <div>
+                        <b>${rank} ${g.name}</b><br>
+                        <small style="color:#eab308;">🛡️ ${g.points||0} Pkt | 👥 ${(g.members||[]).length}/10</small>
+                    </div>
+                    <div>${btnHtml}</div>
+                </div>`;
+            });
+        }
+        html += `</div>`;
+        return openModal("🛡️ Gilden", html);
+    }
+
+    // Spieler hat eine Gilde!
+    let myG = guildsCache[gameState.guild];
+    if(!myG) {
+        // Gilde existiert nicht mehr (z.B. gelöscht)
+        gameState.guild = "";
+        saveData();
+        return window.handleGuildMenu();
+    }
+
+    let isOwner = myG.owner === currentUser;
+    let members = myG.members || [];
+    
+    // Finde den Rang der Gilde
+    let sortedGuilds = [];
+    for(let gName in guildsCache) sortedGuilds.push({ name: gName, points: guildsCache[gName].points || 0 });
+    sortedGuilds.sort((a,b) => b.points - a.points);
+    let myRank = sortedGuilds.findIndex(g => g.name === gameState.guild) + 1;
+
+    let html = `
+    <div style="text-align:center; margin-bottom:15px; background:#161b22; padding:15px; border-radius:12px; border:2px solid #eab308;">
+        <h2 style="margin:0 0 5px 0; color:#eab308;">${gameState.guild}</h2>
+        <div style="font-size:14px;">🏆 Platz: <b>${myRank}</b> | 🛡️ Punkte: <b>${myG.points||0}</b></div>
+    </div>
+    
+    <div style="display:flex; gap:10px; margin-bottom:15px;">
+        <button class="success-btn" style="flex:1; background:#eab308; font-size:14px;" onclick="window.handleGuildDonateMenu()">🐟 Fische spenden</button>
+        <button class="danger-btn" style="flex:1; font-size:14px;" onclick="window.leaveGuild()">${isOwner ? 'Gilde auflösen' : 'Gilde verlassen'}</button>
+    </div>
+
+    <h4 style="margin-bottom:10px; border-bottom:1px solid #30363d; padding-bottom:5px;">👥 Mitglieder (${members.length}/10)</h4>
+    <div style="max-height:35vh; overflow-y:auto;">
+    `;
+
+    members.forEach(mName => {
+        let roleStr = (mName === myG.owner) ? `<span style="color:#facc15; font-size:12px;">👑 Leader</span>` : `<span style="color:#94a3b8; font-size:12px;">👤 Mitglied</span>`;
+        let kickBtn = (isOwner && mName !== currentUser) ? `<button class="danger-btn" style="padding:4px 8px; font-size:11px;" onclick="window.kickGuildMember('${mName}')">Kicken</button>` : '';
+        
+        html += `
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#0d1117; padding:10px; border-radius:8px; margin-bottom:5px;">
+            <div><b style="color:#60a5fa; cursor:pointer;" onclick="window.showPlayerProfile('${mName}')">${mName}</b><br>${roleStr}</div>
+            <div>${kickBtn}</div>
+        </div>`;
+    });
+    html += `</div>`;
+    
+    openModal("🛡️ Gilde", html);
+}
+
+window.createGuild = async function() {
+    if(gameState.money < 250000) return alert("Du brauchst 250.000$ um eine Gilde zu gründen!");
+    let name = document.getElementById("createGuildName").value.trim().replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 15);
+    if(name.length < 3) return alert("Der Gildenname muss mindestens 3 Zeichen lang sein (keine Sonderzeichen).");
+    if(guildsCache[name]) return alert("Eine Gilde mit diesem Namen existiert bereits!");
+
+    gameState.money -= 250000;
+    gameState.guild = name;
+    saveData();
+    syncGlobalLeaderboard();
+
+    await set(ref(db, "global/guilds/" + name), {
+        owner: currentUser,
+        points: 0,
+        members: [currentUser]
+    });
+    
+    log(`🛡️ Gilde '${name}' erfolgreich gegründet!`);
+    window.handleGuildMenu();
+}
+
+window.joinGuild = async function(name) {
+    let g = guildsCache[name];
+    if(!g) return alert("Gilde existiert nicht.");
+    if(g.members && g.members.length >= 10) return alert("Gilde ist voll.");
+    
+    let newMembers = g.members || [];
+    if(!newMembers.includes(currentUser)) newMembers.push(currentUser);
+
+    gameState.guild = name;
+    saveData();
+    
+    await set(ref(db, "global/guilds/" + name + "/members"), newMembers);
+    log(`🛡️ Du bist der Gilde '${name}' beigetreten!`);
+    window.handleGuildMenu();
+}
+
+window.leaveGuild = async function() {
+    let gName = gameState.guild;
+    let g = guildsCache[gName];
+    if(!g) return;
+
+    if(confirm(g.owner === currentUser ? "Willst du deine Gilde wirklich auflösen? (Alle Punkte gehen verloren!)" : "Willst du die Gilde wirklich verlassen?")) {
+        gameState.guild = "";
+        saveData();
+
+        if(g.owner === currentUser) {
+            // Gilde auflösen
+            await remove(ref(db, "global/guilds/" + gName));
+            log("🛡️ Gilde aufgelöst.");
+        } else {
+            // Nur verlassen
+            let newMembers = g.members.filter(m => m !== currentUser);
+            await set(ref(db, "global/guilds/" + gName + "/members"), newMembers);
+            log("🛡️ Gilde verlassen.");
+        }
+        window.handleGuildMenu();
+    }
+}
+
+window.kickGuildMember = async function(mName) {
+    if(confirm(`Möchtest du ${mName} wirklich aus der Gilde werfen?`)) {
+        let gName = gameState.guild;
+        let g = guildsCache[gName];
+        if(!g) return;
+        let newMembers = g.members.filter(m => m !== mName);
+        await set(ref(db, "global/guilds/" + gName + "/members"), newMembers);
+        window.handleGuildMenu();
+    }
+}
+
+window.handleGuildDonateMenu = function() {
+    if(!gameState.guild || !guildsCache[gameState.guild]) return alert("Du bist in keiner Gilde!");
+    if(!gameState.inventory) gameState.inventory = [];
+
+    let pointsToGet = 0;
+    let fishCount = 0;
+
+    gameState.inventory.forEach(item => {
+        if(item.isTrash) return;
+        fishCount++;
+        if(item.isShiny) pointsToGet += 50;
+        else if(item.c <= 5) pointsToGet += 5;
+        else pointsToGet += 1;
+    });
+
+    let html = `
+    <div style="text-align:center;">
+        <p style="color:#94a3b8; font-size:14px; margin-top:0;">Spende deine gefangenen Fische an die Gilde, um sie im Leaderboard nach oben zu bringen! (Müll wird dabei ignoriert und bleibt im Rucksack)</p>
+        
+        <div style="background:#0d1117; padding:15px; border-radius:12px; border:1px solid #eab308; margin-bottom:15px;">
+            <div style="font-size:28px; margin-bottom:5px; color:#eab308; font-weight:bold;">+${pointsToGet} Punkte</div>
+            <div style="color:#60a5fa;">Aus ${fishCount} Fischen im Rucksack</div>
+        </div>
+
+        <ul style="text-align:left; font-size:12px; color:#94a3b8; padding-left:20px; background:#161b22; padding:10px 10px 10px 30px; border-radius:8px;">
+            <li><b>1 Punkt:</b> Gewöhnliche Fische (>5%)</li>
+            <li><b style="color:#fcd34d;">5 Punkte:</b> Seltene Fische (<=5%)</li>
+            <li><b style="color:#a855f7;">50 Punkte:</b> Mutationen (Shinys)</li>
+        </ul>
+    </div>`;
+
+    let btn = fishCount > 0 
+        ? `<button class="success-btn" style="width:100%; background:#eab308;" onclick="window.executeGuildDonate()">Alle Fische Spenden</button>` 
+        : `<button disabled style="width:100%;">Nichts zum Spenden im Rucksack</button>`;
+
+    openModal("🛡️ Gilden-Spende", html, btn);
+}
+
+window.executeGuildDonate = async function() {
+    if(!gameState.guild || !guildsCache[gameState.guild] || !gameState.inventory) return;
+
+    let points = 0;
+    let newInv = [];
+
+    gameState.inventory.forEach(item => {
+        if(item.isTrash) {
+            newInv.push(item);
+        } else {
+            if(item.isShiny) points += 50;
+            else if(item.c <= 5) points += 5;
+            else points += 1;
+        }
+    });
+
+    if(points > 0) {
+        gameState.inventory = newInv;
+        saveData();
+
+        let guildRef = ref(db, "global/guilds/" + gameState.guild + "/points");
+        let snap = await get(guildRef);
+        let currentPoints = snap.exists() ? snap.val() : 0;
+        await set(guildRef, currentPoints + points);
+
+        log(`🛡️ Fische gespendet! Deine Gilde hat +${points} Punkte erhalten.`);
+        window.handleGuildMenu();
+    }
+}
+
+
 // --- HILFSFUNKTION FÜR COUNTDOWNS ---
 function getResetCountdown(type) {
     const now = new Date();
@@ -1565,20 +1815,6 @@ window.handleZoneMenu = function() {
 }
 window.changeZone = function(i) { gameState.zone = i; saveData(); log(`🗺️ Reise nach ${zones[i].name}`); window.handleZoneMenu(); }
 
-window.handleProfileMenu = function() {
-    window.currentOpenMenu = 'profile';
-    let html = `
-    <div class="profile-card">
-        <div class="profile-header">
-            <div class="profile-avatar">${gameState.prestige>0?'👑':'🎣'}</div>
-            <div><h2 style="margin:0;">${gameState.name}</h2><div style="color:#60a5fa;">👑 Prestige ${gameState.prestige} | ⭐ Level ${gameState.level}</div></div>
-        </div>
-        <div class="card-stats"><span>💰 ${Math.floor(gameState.money).toLocaleString()}$</span> <span>🐟 ${gameState.stats.totalCaught.toLocaleString()} Fische</span></div>
-        <div class="card-stats"><span>💵 ${gameState.stats.totalEarned.toLocaleString()}$ verdient</span> <span>🔥 Streak: ${gameState.dailyStreak||0}</span></div>
-    </div>`;
-    openModal("📊 Dein Profil", html);
-}
-
 // ==== NEUES GLOBALES LEADERBOARD ====
 window.handleLeaderboard = function() {
     window.currentOpenMenu = 'leaderboard';
@@ -1631,6 +1867,7 @@ window.showPlayerProfile = async function(name) {
                 <div>
                     <h2 style="margin:0;">${u.name}</h2>
                     <div style="color:#60a5fa;">👑 Prestige ${prestige} | ⭐ Level ${u.level}</div>
+                    ${u.guild ? `<div style="color:#eab308; font-size:12px; margin-top:2px;">🛡️ Gilde: ${u.guild}</div>` : ''}
                 </div>
             </div>
             <div class="card-stats">
@@ -1648,6 +1885,24 @@ window.showPlayerProfile = async function(name) {
     } else {
         alert("Spielerprofil konnte nicht geladen werden.");
     }
+}
+
+window.handleProfileMenu = function() {
+    window.currentOpenMenu = 'profile';
+    let html = `
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar">${gameState.prestige>0?'👑':'🎣'}</div>
+            <div>
+                <h2 style="margin:0;">${gameState.name}</h2>
+                <div style="color:#60a5fa;">👑 Prestige ${gameState.prestige} | ⭐ Level ${gameState.level}</div>
+                ${gameState.guild ? `<div style="color:#eab308; font-size:12px; margin-top:2px;">🛡️ Gilde: ${gameState.guild}</div>` : ''}
+            </div>
+        </div>
+        <div class="card-stats"><span>💰 ${Math.floor(gameState.money).toLocaleString()}$</span> <span>🐟 ${gameState.stats.totalCaught.toLocaleString()} Fische</span></div>
+        <div class="card-stats"><span>💵 ${gameState.stats.totalEarned.toLocaleString()}$ verdient</span> <span>🔥 Streak: ${gameState.dailyStreak||0}</span></div>
+    </div>`;
+    openModal("📊 Dein Profil", html);
 }
 
 window.handleDailyMenu = function() {
@@ -1808,13 +2063,13 @@ window.adminSendUpdateToDiscord = function() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             embeds: [{
-                title: "🚀 Update v6.0 ist online!",
+                title: "🚀 Update v6.1 ist online!",
                 description: "Das Spiel wurde soeben aktualisiert. Bitte ladet die Seite neu (bzw. schließt die Wartung), um die Änderungen zu sehen!",
                 color: 11027200,
                 fields: [
-                    { name: "🏆 Globales Leaderboard", value: "Das Leaderboard ist ab sofort 100% live und synchron. Alle Spieler sehen absolut die gleichen Ergebnisse, ohne Ladezeiten." },
-                    { name: "🎫 Neues Code-System", value: "Du kannst jetzt Promo-Codes für Geschenke einlösen! Es gibt dort bald Geld, XP und seltene Items." },
-                    { name: "⚡ Instant UI & Live Events", value: "Menüs laden noch schneller und Server-Events (Doppel XP etc.) greifen sofort live ins Spiel ein." }
+                    { name: "🛡️ Gilden-System", value: "Gründe mit 250.000$ eine eigene Gilde oder tritt einer bei (Max 10 Spieler pro Gilde)." },
+                    { name: "🐟 Fische Spenden", value: "Sammle gemeinsam mit deiner Gilde Punkte, indem du Fische im Gilden-Menü spendest anstatt sie zu verkaufen." },
+                    { name: "🏆 Top Gilden", value: "Ein neues Leaderboard nur für Gilden ist jetzt integriert. Kämpft euch an die Spitze!" }
                 ],
                 footer: { text: "Virtual Fisher PRO" }
             }]
@@ -1829,16 +2084,16 @@ window.adminSendUpdateToDiscord = function() {
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.0 - Global Sync & Promo-Codes</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.1 - Gilden-System Update</h3>
         <ul style="padding-left:20px;">
-            <li><b>Live Leaderboard:</b> Das Ranking ist ab sofort komplett global synchronisiert. Jeder sieht das Gleiche – ohne lästige Cooldowns.</li>
-            <li><b>Promo-Codes:</b> Es gibt einen neuen 🎫 Code-Button. Hiermit kannst du demnächst Belohnungen (Geld, XP, Items) vom Discord einlösen.</li>
-            <li><b>Instant UI:</b> Alle Rucksack-Aktionen und Item-Ausstattungen sind jetzt komplett verzögerungsfrei.</li>
+            <li><b>Neue Gilden:</b> Gründe eine Gilde oder trete einer bei. (Max. 10 Mitglieder)</li>
+            <li><b>Fische Spenden:</b> Verkaufe deine Fische nicht nur für Geld, sondern spende sie für deine Gilde, um im Rang aufzusteigen! (Shinys = 50 Punkte!)</li>
+            <li><b>Gilden Rangliste:</b> Miss dich mit anderen Gilden auf dem Server.</li>
         </ul>
         <hr style="border-color:#30363d;">
         <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
+        <p><b>v6.0</b> - Globales Leaderboard, Promo-Codes, Live-Broadcast.</p>
         <p><b>v5.8</b> - Mobile Fixes & Discord Server Integration.</p>
-        <p><b>v5.7</b> - 30 neue Quests, Live-Timer & Leaderboard Cooldowns.</p>
     </div>`;
     openModal("📝 Updates", html);
 }
@@ -2081,7 +2336,7 @@ window.adminSetEvent = async function() {
     else if(evtType === 'rain') { evtName = "🌧️ Monsun (2x Speed)"; mult = 2; }
     else if(evtType === 'hai') { evtName = "🦈 Raubfisch-Woche (5x Zander)"; mult = 5; }
     else if(evtType === 'xp') { evtName = `⭐ Custom XP-Boost (x${mult})`; }
-    else if(evtType === 'money') { evtName = `💰 Custom Geld-Boost (x${mult})`; }
+    else if(evtType === 'money') { evtName = `💰 Custom Geld-Verkaufs-Boost (x${mult})`; }
 
     await set(ref(db, "global/event"), { type: evtType, mult: mult, name: evtName, exp: Date.now() + (mins * 60 * 1000) });
     alert(`✅ Event '${evtName}' wurde für ${mins} Minuten gestartet!`);
@@ -2137,10 +2392,7 @@ window.adminQuickDelete = async function(user) {
     if(confirm(`⚠️ Willst du den Account '${user}' wirklich permanent löschen?`)) {
         await remove(ref(db, "accounts/"+user));
         await remove(ref(db, "users/"+user));
-        
-        // Lösche den Account auch direkt aus dem globalen Leaderboard
         await remove(ref(db, "global/leaderboard/" + user));
-        
         alert(`🗑️ Account ${user} gelöscht!`);
         window.adminShowAccounts(); 
     }
@@ -2243,12 +2495,7 @@ window.adminResetAccount = async function() {
     if(!user) return alert("Username eingeben!");
     if(confirm(`⚠️ Spielstand von ${user} wirklich komplett zurücksetzen? (Login bleibt erhalten)`)) {
         await remove(ref(db, "users/" + user));
-        
-        // Setze den Spieler auch im globalen Leaderboard zurück, anstatt ihn zu löschen
-        await set(ref(db, "global/leaderboard/" + user), {
-            name: user, prestige: 0, level: 1, money: 0, stats: { totalCaught: 0 }
-        });
-        
+        await set(ref(db, "global/leaderboard/" + user), { name: user, prestige: 0, level: 1, money: 0, stats: { totalCaught: 0 } });
         alert(`✅ Spielstand von ${user} wurde gelöscht und wird beim nächsten Login neu erstellt.`);
     }
 }
