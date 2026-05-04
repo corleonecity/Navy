@@ -435,14 +435,16 @@ function startWeatherEffects() {
         if(oldShark) oldShark.remove();
         
         let { event } = getCurrentEventInfo();
-        if(event && event.type === 'speed') {
+        if(event && (event.type === 'rain' || event.type === 'speed')) {
             let rainDiv = document.createElement('div'); rainDiv.className = 'rain-fx'; scene.appendChild(rainDiv);
         }
-        if(event && event.type === 'luck') {
+        if(event && (event.type === 'sun' || event.type === 'luck')) {
             let sunDiv = document.createElement('div'); sunDiv.className = 'sun-fx'; scene.appendChild(sunDiv);
         }
-        if(event && (event.type === 'xp' || event.type === 'money')) {
-            let sharkDiv = document.createElement('div'); sharkDiv.className = 'shark-fx'; sharkDiv.innerText = '🌟'; scene.appendChild(sharkDiv);
+        if(event && (event.type === 'hai' || event.type === 'xp' || event.type === 'money')) {
+            let sharkDiv = document.createElement('div'); sharkDiv.className = 'shark-fx'; 
+            sharkDiv.innerText = event.type === 'hai' ? '🦈' : '🌟'; 
+            scene.appendChild(sharkDiv);
         }
     }, 100);
 }
@@ -496,8 +498,8 @@ function roll(zIdx) {
     let modPool = pool.map(i => {
         let totalLuck = (rodDef.luck || 0) + (baitDef?.luck || 0);
         let w = i.c * (1 + (totalLuck / 100));
-        // Bei Glücks-Event wird die Chance auf alle seltenen Fische (C <= 5) multipliziert
         if(eventLuckMult > 1 && i.c <= 5 && !i.isTrash) w *= eventLuckMult;
+        if(event && event.type === 'hai' && i.n === 'Zander') w *= event.mult;
         return { ...i, weight: w };
     });
     
@@ -510,6 +512,8 @@ function roll(zIdx) {
     }
     
     let shinyChance = 0.01 * eventLuckMult;
+    if(event && event.type === 'sun') shinyChance *= event.mult;
+
     let isShiny = Math.random() < shinyChance;
     
     let itemW = 0;
@@ -807,6 +811,7 @@ function openModal(title, body, footer='', wide=false) {
     let modalBody = document.getElementById('modal-body');
     let modalContent = document.getElementById('modal-content');
     
+    // Verhindert das lästige Flackern und Hochscrollen bei Instant-Updates
     let scrollPos = modalBody.scrollTop;
     let isAlreadyOpen = document.getElementById('modal-overlay').style.display === 'flex';
     
@@ -926,8 +931,10 @@ window.handleFish = function() {
     
     let fishTimeSec = 60 * (1 - (speedBonus / 100)); 
     let { event } = getCurrentEventInfo();
-    // Wenn Speed-Event aktiv ist
+    
+    // Speed Bonus vom Event (Regen oder Custom Speed)
     if(event && event.type === 'speed') fishTimeSec = Math.floor(fishTimeSec / event.mult);
+    if(event && event.type === 'rain') fishTimeSec = Math.floor(fishTimeSec / event.mult);
 
     fishTimeSec = Math.max(1, Math.floor(fishTimeSec)); 
     
@@ -1722,13 +1729,43 @@ window.redeemPromoCode = async function() {
     let snap = await get(ref(db, "global/promocodes/" + code));
     if(snap.exists()) {
         let promo = snap.val();
-        gameState.money += promo.rewardMoney;
+        let rewMsg = [];
+        
+        if(promo.money) { 
+            gameState.money += promo.money; 
+            rewMsg.push(`${promo.money.toLocaleString()}$`); 
+        }
+        if(promo.xp) { 
+            gameState.xp += promo.xp; 
+            rewMsg.push(`${promo.xp.toLocaleString()} XP`); 
+        }
+        if(promo.itemName && promo.itemAmt) {
+            if(!gameState.inventory) gameState.inventory = [];
+            let baseItem = items.find(i => i.n === promo.itemName);
+            if(baseItem) {
+                for(let i=0; i<promo.itemAmt; i++) {
+                    gameState.inventory.push({
+                        id: Math.random().toString(36).substr(2,9),
+                        n: baseItem.n, baseName: baseItem.n, v: baseItem.v, xp: baseItem.xp,
+                        e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: baseItem.minW || 0
+                    });
+                }
+                rewMsg.push(`${promo.itemAmt}x ${promo.itemName}`);
+            }
+        }
+
+        if(gameState.xp >= gameState.level * 50) {
+            gameState.xp -= gameState.level * 50;
+            gameState.level++;
+            rewMsg.push(`⭐ LEVEL UP!`);
+        }
+
         if(!gameState.usedCodes) gameState.usedCodes = {};
         gameState.usedCodes[code] = true;
         saveData();
         window.closeModal();
-        alert(`✅ Code erfolgreich eingelöst! Du hast ${promo.rewardMoney.toLocaleString()}$ erhalten!`);
-        log(`🎫 Promo-Code ${code} eingelöst: +${promo.rewardMoney}$`);
+        alert(`✅ Code eingelöst! Belohnung: ${rewMsg.join(', ')}`);
+        log(`🎫 Promo-Code ${code} eingelöst! Belohnung: ${rewMsg.join(', ')}`);
     } else {
         alert("❌ Dieser Code ist ungültig oder existiert nicht.");
     }
@@ -1776,8 +1813,24 @@ window.handleAdminMenu = function() {
             <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #a855f7;">
                 <h4 style="margin:0 0 10px 0; color:#a855f7; border-bottom:1px solid #30363d; padding-bottom:5px;">🎫 Promo-Codes erstellen</h4>
                 <input id="adminCodeName" placeholder="Z.B. UPDATE59" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white; text-transform:uppercase;">
-                <input id="adminCodeReward" type="number" placeholder="Geld-Belohnung ($)" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                <button class="success-btn" style="width:100%; background:#a855f7;" onclick="window.adminCreatePromoCode()">Code aktivieren</button>
+                
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:5px;">
+                    <input id="adminCodeMoney" type="number" placeholder="Geld ($)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                    <input id="adminCodeXP" type="number" placeholder="XP" style="width:100%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                </div>
+                
+                <div style="display:grid; grid-template-columns:2fr 1fr; gap:5px; margin-bottom:5px;">
+                    <select id="adminCodeItem" style="width:100%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                        <option value="none">Kein Item</option>
+                        ${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}
+                    </select>
+                    <input id="adminCodeItemAmt" type="number" placeholder="Anzahl" style="width:100%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                </div>
+
+                <div style="display:flex; gap:5px;">
+                    <button class="success-btn" style="flex:1; background:#a855f7;" onclick="window.adminCreatePromoCode()">Erstellen</button>
+                    <button class="update-btn" style="flex:1;" onclick="window.adminManagePromoCodes()">Verwalten</button>
+                </div>
             </div>
             
             <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #10b981;">
@@ -1794,13 +1847,14 @@ window.handleAdminMenu = function() {
             <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #facc15;">
                 <h4 style="margin:0 0 10px 0; color:#facc15; border-bottom:1px solid #30363d; padding-bottom:5px;">⚡ Manuelle Live-Events</h4>
                 <select id="adminEventSelect" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                    <option value="xp">⭐ XP-Boost</option>
-                    <option value="money">💰 Geld-Verkaufs-Boost</option>
-                    <option value="luck">🍀 Seltene-Fische-Chance</option>
-                    <option value="speed">🎣 Angel-Geschwindigkeit</option>
+                    <option value="sun">☀️ Goldene Sonne (3x Shiny)</option>
+                    <option value="rain">🌧️ Monsun (2x Speed)</option>
+                    <option value="hai">🦈 Raubfisch-Woche (5x Zander)</option>
+                    <option value="xp">⭐ Custom XP-Boost</option>
+                    <option value="money">💰 Custom Geld-Verkaufs-Boost</option>
                 </select>
                 <div style="display:flex; gap:5px; margin-bottom:5px;">
-                    <input id="adminEventMult" type="number" placeholder="Faktor (z.B. 2)" step="0.5" style="width:50%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                    <input id="adminEventMult" type="number" placeholder="Faktor (nur XP/Geld)" step="0.5" style="width:50%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
                     <input id="adminEventTime" type="number" placeholder="Minuten" value="30" style="width:50%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
                 </div>
                 <div style="display:flex; gap:5px;">
@@ -1828,6 +1882,16 @@ window.handleAdminMenu = function() {
                 <button class="update-btn" style="width:100%;" onclick="window.adminGiveItem()">Item geben</button>
             </div>
 
+            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #a855f7;">
+                <h4 style="margin:0 0 10px 0; color:#a855f7; border-bottom:1px solid #30363d; padding-bottom:5px;">📝 Account Verwaltung</h4>
+                <input id="newAccUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <input id="newAccPass" placeholder="Passwort" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                <div style="display:flex; gap:5px;">
+                    <button class="success-btn" style="flex:1; background:#a855f7;" onclick="window.adminCreateAccount()">Erstellen</button>
+                    <button class="update-btn" style="flex:1;" onclick="window.adminShowAccounts()">Alle anzeigen</button>
+                </div>
+            </div>
+
             <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #ef4444;">
                 <h4 style="margin:0 0 10px 0; color:#ef4444; border-bottom:1px solid #30363d; padding-bottom:5px;">⛔ Bann & Reset</h4>
                 <div style="display:flex; gap:5px; margin-bottom:5px;">
@@ -1846,6 +1910,63 @@ window.handleAdminMenu = function() {
     openModal("👑 Admin Panel", html, "", true);
 }
 
+// === ADMIN PROMO CODES ===
+window.adminCreatePromoCode = async function() {
+    let code = document.getElementById("adminCodeName").value.trim().toUpperCase();
+    let money = Number(document.getElementById("adminCodeMoney").value) || 0;
+    let xp = Number(document.getElementById("adminCodeXP").value) || 0;
+    let itemName = document.getElementById("adminCodeItem").value;
+    let itemAmt = Number(document.getElementById("adminCodeItemAmt").value) || 0;
+    
+    if(!code) return alert("Bitte einen Namen für den Code eintragen!");
+    if(money === 0 && xp === 0 && (itemName === "none" || itemAmt === 0)) return alert("Der Code muss mindestens eine Belohnung (Geld, XP oder Item) haben!");
+    
+    let reward = { money, xp };
+    if(itemName !== "none" && itemAmt > 0) {
+        reward.itemName = itemName;
+        reward.itemAmt = itemAmt;
+    }
+
+    await set(ref(db, "global/promocodes/" + code), reward);
+    alert(`✅ Code '${code}' wurde erfolgreich erstellt!`);
+    
+    document.getElementById("adminCodeName").value = "";
+    document.getElementById("adminCodeMoney").value = "";
+    document.getElementById("adminCodeXP").value = "";
+    document.getElementById("adminCodeItemAmt").value = "";
+}
+
+window.adminManagePromoCodes = async function() {
+    let snap = await get(ref(db, "global/promocodes"));
+    let html = `<h3>🎫 Aktive Promo-Codes</h3><div style="max-height:300px; overflow-y:auto;">`;
+    if(snap.exists()) {
+        snap.forEach(child => {
+            let c = child.key;
+            let r = child.val();
+            let rewText = [];
+            if(r.money) rewText.push(`${r.money.toLocaleString()}$`);
+            if(r.xp) rewText.push(`${r.xp.toLocaleString()} XP`);
+            if(r.itemName) rewText.push(`${r.itemAmt}x ${r.itemName}`);
+            html += `<div style="background:#161b22; padding:10px; border-radius:8px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
+                <div><b style="color:#a855f7;">${c}</b><br><small style="color:#10b981;">${rewText.join(', ')}</small></div>
+                <button class="danger-btn" style="padding:6px; font-size:12px;" onclick="window.adminDeletePromoCode('${c}')">🗑️ Löschen</button>
+            </div>`;
+        });
+    } else {
+        html += `<p>Derzeit sind keine Promo-Codes aktiv.</p>`;
+    }
+    html += `</div><button class="update-btn" style="width:100%; margin-top:10px;" onclick="window.handleAdminMenu()">Zurück zum Admin Panel</button>`;
+    openModal("Codes Verwalten", html);
+}
+
+window.adminDeletePromoCode = async function(code) {
+    if(confirm(`Willst du den Promo-Code ${code} wirklich löschen? Spieler können ihn dann nicht mehr einlösen.`)) {
+        await remove(ref(db, "global/promocodes/" + code));
+        window.adminManagePromoCodes();
+    }
+}
+
+// === ADMIN BROADCAST & INSPECT ===
 window.adminSendBroadcast = async function() {
     let text = document.getElementById("adminBroadcastInput").value.trim();
     if(!text) return alert("Bitte eine Nachricht eingeben!");
@@ -1897,27 +2018,20 @@ window.adminInspectUser = async function() {
     openModal("Spieler-Akte", html, "", true);
 }
 
-window.adminCreatePromoCode = async function() {
-    let code = document.getElementById("adminCodeName").value.trim().toUpperCase();
-    let money = Number(document.getElementById("adminCodeReward").value);
-    
-    if(!code || isNaN(money) || money <= 0) return alert("Bitte Code und eine gültige Geldmenge eintragen!");
-    
-    await set(ref(db, "global/promocodes/" + code), { rewardMoney: money, active: true });
-    alert(`✅ Code '${code}' wurde erstellt und gibt Spielern ${money.toLocaleString()}$ !`);
-    document.getElementById("adminCodeName").value = "";
-    document.getElementById("adminCodeReward").value = "";
-}
-
+// === ADMIN EVENTS ===
 window.adminSetEvent = async function() {
     let evtType = document.getElementById('adminEventSelect').value;
-    let mult = Number(document.getElementById('adminEventMult').value);
+    let mult = Number(document.getElementById('adminEventMult').value) || 2;
     let mins = Number(document.getElementById('adminEventTime').value) || 30;
     
-    if(isNaN(mult) || mult <= 0) return alert("Bitte einen gültigen Multiplikator eintragen (z.B. 1.5 oder 2)!");
-
-    let typeNames = { "xp": "⭐ XP-Boost", "money": "💰 Geld-Boost", "luck": "🍀 Glücks-Boost", "speed": "🎣 Speed-Boost" };
-    let evtName = `${typeNames[evtType]} (x${mult})`;
+    let evtName = "";
+    // Die klassischen Events ignorieren die Mult-Eingabe und nutzen ihre vordefinierten starken Boosts
+    if(evtType === 'sun') { evtName = "☀️ Goldene Sonne (3x Shiny)"; mult = 3; }
+    else if(evtType === 'rain') { evtName = "🌧️ Monsun (2x Speed)"; mult = 2; }
+    else if(evtType === 'hai') { evtName = "🦈 Raubfisch-Woche (5x Zander)"; mult = 5; }
+    // Custom Events
+    else if(evtType === 'xp') { evtName = `⭐ Custom XP-Boost (x${mult})`; }
+    else if(evtType === 'money') { evtName = `💰 Custom Geld-Boost (x${mult})`; }
 
     await set(ref(db, "global/event"), { type: evtType, mult: mult, name: evtName, exp: Date.now() + (mins * 60 * 1000) });
     alert(`✅ Event '${evtName}' wurde für ${mins} Minuten gestartet!`);
@@ -1928,7 +2042,57 @@ window.adminStopEvent = async function() {
     alert("🛑 Aktuelles Live-Event wurde beendet.");
 }
 
-// Restliche bestehende Admin-Funktionen (Wartung, Give, Ban, Reset)
+// === ACCOUNT VERWALTUNG ===
+window.adminCreateAccount = async function() {
+    let user = document.getElementById('newAccUser').value.trim();
+    let pass = document.getElementById('newAccPass').value.trim();
+    if(user.length<3 || pass.length<3) return alert("Min. 3 Zeichen für User und Passwort!");
+    try {
+        await set(ref(db, "accounts/"+user), pass);
+        alert(`✅ Account ${user} erfolgreich erstellt!`);
+        document.getElementById('newAccUser').value = '';
+        document.getElementById('newAccPass').value = '';
+    } catch(e) {
+        alert("Fehler beim Erstellen: " + e.message);
+    }
+}
+
+window.adminShowAccounts = async function() {
+    let snap = await get(ref(db, "accounts"));
+    if(snap.exists()) {
+        let html = `<h3>📋 Alle registrierten Accounts</h3><div style="max-height:400px; overflow-y:auto; margin-bottom:10px;">`;
+        html += `<table style="width:100%; border-collapse: collapse; text-align:left;">
+            <tr style="border-bottom: 1px solid #30363d; color:#94a3b8;">
+                <th style="padding:8px;">Username</th>
+                <th style="padding:8px;">Passwort</th>
+                <th style="padding:8px; text-align:right;">Aktion</th>
+            </tr>`;
+        snap.forEach(child => {
+            let u = child.key;
+            let p = child.val();
+            html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td style="padding:8px; color:#60a5fa; font-weight:bold;">${u}</td>
+                <td style="padding:8px; color:#facc15;">${p}</td>
+                <td style="padding:8px; text-align:right;"><button class="danger-btn" style="padding:6px; font-size:12px; display:inline-block;" title="Löschen" onclick="window.adminQuickDelete('${u}')">🗑️</button></td>
+            </tr>`;
+        });
+        html += `</table></div><button class="update-btn" style="width:100%;" onclick="window.handleAdminMenu()">Zurück zum Panel</button>`;
+        openModal("Accounts", html, "", true);
+    } else {
+        alert("Keine Accounts in der Datenbank gefunden!");
+    }
+}
+
+window.adminQuickDelete = async function(user) {
+    if(confirm(`⚠️ Willst du den Account '${user}' wirklich permanent löschen?`)) {
+        await remove(ref(db, "accounts/"+user));
+        await remove(ref(db, "users/"+user));
+        alert(`🗑️ Account ${user} gelöscht!`);
+        window.adminShowAccounts(); 
+    }
+}
+
+// === RESTLICHES ADMIN ===
 window.adminSetMaintenance = async function(state) {
     await set(ref(db, "global/maintenance"), state);
     alert(state ? "⚠️ Wartungsmodus AKTIVIERT!" : "✅ Wartungsmodus BEENDET!");
