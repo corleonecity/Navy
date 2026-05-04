@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Virtual Fisher PRO v5.0</title>
+    <title>Virtual Fisher PRO v5.1</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -95,12 +95,15 @@
         
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px; }
         
-        /* MODERN QUEST DESIGN */
+        /* QUEST DESIGN */
         .quest-card { background: rgba(0,0,0,0.3); border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
         .quest-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
         .quest-bar-bg { width: 100%; background: #1e293b; height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid #334155; }
         .quest-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); transition: width 0.3s ease; }
         .quest-footer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #94a3b8; }
+
+        /* RUCKSACK NEUES DESIGN */
+        .inv-group-card { background: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
 
         .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .inv-card { background: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
@@ -469,7 +472,7 @@ function checkQuestResets() {
     if(!gameState.qs || typeof gameState.qs !== 'object' || Array.isArray(gameState.qs)) {
         gameState.qs = { p: {dc:0,de:0,wc:0,we:0,mc:0,me:0}, c: {}, d: "", w: "", m: "" };
     }
-    if(!gameState.qs.p) gameState.qs.p = { dc:0, de:0, wc:0, we:0, mc:0, me:0 };
+    if(!gameState.qs.p || typeof gameState.qs.p !== 'object') gameState.qs.p = { dc:0, de:0, wc:0, we:0, mc:0, me:0 };
     if(!gameState.qs.c) gameState.qs.c = {};
     
     let qs = gameState.qs;
@@ -515,6 +518,7 @@ async function loadData() {
         }
         
         if(gameState) {
+            // SICHERHEIT: ALTE OBJEKT-INVENTARE IN ARRAY UMWANDELN
             if(!gameState.inventory) {
                 gameState.inventory = [];
             } else if (!Array.isArray(gameState.inventory)) {
@@ -545,7 +549,7 @@ async function loadData() {
 
             if(gameState.combo !== undefined) delete gameState.combo;
             if(!gameState.dex) gameState.dex = {};
-            if(!gameState.qs) gameState.qs = { p: {dc:0,de:0}, c: {}, d: "" };
+            if(!gameState.qs || typeof gameState.qs !== 'object') gameState.qs = { p: {dc:0,de:0,wc:0,we:0,mc:0,me:0}, c: {}, d: "", w: "", m: "" };
             if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
             if(!gameState.aquarium.fishes) gameState.aquarium.fishes = [];
             if(!gameState.ownedRods || gameState.ownedRods.includes("r1")) { gameState.ownedRods = ["rod1"]; gameState.eqRod = "rod1"; }
@@ -574,7 +578,7 @@ async function loadData() {
             if(currentOpenMenu === 'profile') handleProfileMenu();
             if(currentOpenMenu === 'daily') handleDailyMenu();
             if(currentOpenMenu === 'zone') handleZoneMenu();
-            if(currentOpenMenu === 'dex') showDexTab(currentDexTab);
+            if(currentOpenMenu === 'dex') window.showDexTab(currentDexTab);
         }
     });
     setInterval(() => {
@@ -604,11 +608,13 @@ function updateUI() {
     document.getElementById("deco-zone-0").style.display = gameState.zone === 0 ? "block" : "none";
     document.getElementById("deco-zone-1").style.display = gameState.zone === 1 ? "block" : "none";
     
-    let { event } = getCurrentEventInfo();
+    let { event, timeLeft } = getCurrentEventInfo();
     let evtEl = document.getElementById("eventDisplay");
     if(event && event.name && event.type !== "normal") {
+        let mins = Math.floor(timeLeft / 60000);
+        let secs = Math.floor((timeLeft % 60000) / 1000);
         evtEl.innerHTML = `✨ ${event.name}`;
-        evtEl.setAttribute("title", event.desc); 
+        evtEl.setAttribute("title", `${event.desc} (Noch ${mins}m ${secs}s)`); 
     } else {
         evtEl.innerHTML = ``;
         evtEl.removeAttribute("title");
@@ -622,11 +628,6 @@ function updateUI() {
     } else {
         gameState.eqBait = "none";
         document.getElementById("ui-eq-bait").innerHTML = `🪱 Köder: Keine`;
-    }
-    
-    let btnFish = document.getElementById('btnFish');
-    if(btnFish && !btnFish.disabled && btnFish.innerHTML !== `🎣 Angeln`) {
-        btnFish.innerHTML = `🎣 Angeln`;
     }
 }
 
@@ -894,26 +895,51 @@ window.handleSellMenu = function() {
     
     let baseValue = 0;
     let trashValue = 0;
-    let hasItems = gameState.inventory.length > 0;
-    
-    let html = `<h3>🎒 Rucksack</h3><div style="max-height:40vh; overflow-y:auto; padding-right:5px; margin-bottom:10px;">`;
+    let grouped = {};
     
     gameState.inventory.forEach((item, idx) => {
-        let val = Number(item.v) || 0;
+        let val = Number(item.v);
+        if(isNaN(val)) val = 0;
+        
         if(val >= 0) baseValue += val;
         else trashValue += val;
         
-        let color = val >= 0 ? '#10b981' : '#ef4444';
-        let weightStr = item.weightG ? `⚖️ ${formatWeight(item.weightG)}` : '';
-        let aquaBtn = (!item.isTrash && gameState.aquarium.unlocked && gameState.aquarium.fishes.length < 5) ? `<button class="update-btn" style="padding:5px 8px; font-size:11px; margin-left:10px; flex-direction:row;" onclick="sendToAquarium(${idx})">🐟 Ins Aqua</button>` : '';
-        
-        html += `<div class="item-row" style="align-items:center;">
-            <div style="flex:1;"><b>${item.e} ${item.n}</b><br><small style="color:#94a3b8;">${weightStr}</small></div>
-            <div style="color:${color}; font-weight:bold;">${val >= 0 ? '+' : ''}${val.toLocaleString()}$</div>
-            ${aquaBtn}
-        </div>`;
+        let key = item.n; 
+        if(!grouped[key]) {
+            grouped[key] = {
+                n: key,
+                e: item.e,
+                isTrash: item.isTrash,
+                count: 0,
+                totalV: 0,
+                totalW: 0,
+                firstIdx: idx
+            };
+        }
+        grouped[key].count++;
+        grouped[key].totalV += val;
+        if(item.weightG) grouped[key].totalW += item.weightG;
     });
     
+    let hasItems = Object.keys(grouped).length > 0;
+    let html = `<h3>🎒 Rucksack</h3><div style="max-height:40vh; overflow-y:auto; padding-right:5px; margin-bottom:10px;">`;
+    
+    for(let [name, data] of Object.entries(grouped)) {
+        let color = data.totalV >= 0 ? '#10b981' : '#ef4444';
+        let weightStr = data.totalW > 0 ? `⚖️ Ges: ${formatWeight(data.totalW)}` : '';
+        let aquaBtn = (!data.isTrash && gameState.aquarium.unlocked && gameState.aquarium.fishes.length < 5) ? `<button class="update-btn" style="padding:4px 8px; font-size:11px; margin-left:10px; flex-direction:row;" onclick="sendToAquarium(${data.firstIdx})">🐟 1x Ins Aqua</button>` : '';
+        
+        html += `<div class="inv-group-card">
+            <div style="flex:1;">
+                <b style="font-size:15px;">${data.count}x ${data.e} ${name}</b><br>
+                <small style="color:#94a3b8;">${weightStr}</small>
+            </div>
+            <div style="text-align:right;">
+                <div style="color:${color}; font-weight:bold; font-size:15px;">${data.totalV >= 0 ? '+' : ''}${data.totalV.toLocaleString()}$</div>
+                <div style="margin-top:5px;">${aquaBtn}</div>
+            </div>
+        </div>`;
+    }
     html += `</div>`;
     
     if(!hasItems) return openModal("💰 Rucksack", "<p>Dein Rucksack ist leer!</p>");
@@ -921,6 +947,8 @@ window.handleSellMenu = function() {
     let bonusPercent = gameState.prestige || 0;
     let prestigeBonus = Math.floor(baseValue * (bonusPercent / 100));
     let finalTotal = Math.floor(baseValue + prestigeBonus + trashValue);
+    
+    if(isNaN(finalTotal)) finalTotal = 0;
     
     html += `
     <div class="summary-box">
@@ -1136,31 +1164,37 @@ window.unequipBait = function() { gameState.eqBait = "none"; saveData(); handleI
 window.handleQuestMenu = function() {
     currentOpenMenu = 'quest';
     checkQuestResets();
-    let qs = gameState.qs || { p: {}, c: {} };
-    let qsP = qs.p || {};
-    let html = `<p style="color:#fcd34d; text-align:center; margin-top:0;">⏳ Täglich um 0 Uhr reset</p>`;
-    
-    let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
-    cats.forEach(cat => {
-        html += `<h4 style="color:white; margin-top:15px;">${cat.n}</h4>`;
-        cat.l.forEach(q => {
-            let prog = (q.t === 'c' ? qsP[cat.c] : qsP[cat.e]) || 0;
-            let done = prog >= q.req;
-            let claimed = qs.c && qs.c[q.id];
-            let pct = Math.min(100, Math.floor((prog / q.req) * 100));
-            
-            html += `
-            <div class="quest-card">
-                <div class="quest-header"><span>${q.desc}</span> <span style="color:#facc15;">${q.rew}$</span></div>
-                <div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div>
-                <div class="quest-footer">
-                    <span>${Math.min(prog, q.req)} / ${q.req}</span>
-                    ${claimed ? '<span style="color:#10b981; font-weight:bold;">✅ Abgeschlossen</span>' : (done ? `<button class="success-btn" style="padding:4px 10px; font-size:12px; border-radius:6px;" onclick="claimQuest('${q.id}',${q.rew})">Abholen</button>` : `<span style="color:#ef4444;">🔒 Gesperrt</span>`)}
-                </div>
-            </div>`;
+    try {
+        let qs = gameState.qs || { p: {}, c: {} };
+        let qsP = qs.p || {};
+        if(typeof qsP !== 'object') qsP = {};
+        let html = `<p style="color:#fcd34d; text-align:center; margin-top:0;">⏳ Täglich um 0 Uhr reset</p>`;
+        
+        let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
+        cats.forEach(cat => {
+            html += `<h4 style="color:white; margin-top:15px;">${cat.n}</h4>`;
+            cat.l.forEach(q => {
+                let prog = (q.t === 'c' ? qsP[cat.c] : qsP[cat.e]) || 0;
+                let done = prog >= q.req;
+                let claimed = qs.c && qs.c[q.id];
+                let pct = Math.min(100, Math.floor((prog / q.req) * 100));
+                
+                html += `
+                <div class="quest-card">
+                    <div class="quest-header"><span>${q.desc}</span> <span style="color:#facc15;">${q.rew}$</span></div>
+                    <div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div>
+                    <div class="quest-footer">
+                        <span>${Math.min(prog, q.req)} / ${q.req}</span>
+                        ${claimed ? '<span style="color:#10b981; font-weight:bold;">✅ Abgeschlossen</span>' : (done ? `<button class="success-btn" style="padding:4px 10px; font-size:12px; border-radius:6px;" onclick="claimQuest('${q.id}',${q.rew})">Abholen</button>` : `<span style="color:#ef4444;">🔒 Gesperrt</span>`)}
+                    </div>
+                </div>`;
+            });
         });
-    });
-    openModal("📜 Quests", html);
+        openModal("📜 Quests", html);
+    } catch(e) {
+        console.error(e);
+        openModal("📜 Quests", "<p>Fehler beim Laden der Quests.</p>");
+    }
 }
 window.claimQuest = function(id, rew) { if(!gameState.qs.c) gameState.qs.c={}; gameState.qs.c[id]=true; gameState.money += rew; gameState.stats.totalEarned += rew; saveData(); handleQuestMenu(); }
 
@@ -1168,23 +1202,29 @@ window.handleDexMenu = function() {
     currentOpenMenu = 'dex';
     let html = `
     <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:10px;">
-        <select id="dexZoneFilter" onchange="showDexTab(currentDexTab)" style="padding:10px; border-radius:12px; background:#1e293b; color:white; border:1px solid #30363d; flex:1; font-weight:bold;">
+        <select id="dexZoneFilter" onchange="window.showDexTab(currentDexTab)" style="padding:10px; border-radius:12px; background:#1e293b; color:white; border:1px solid #30363d; flex:1; font-weight:bold; outline:none;">
             <option value="all">🌍 Alle Zonen</option>
             ${zones.map((z, i) => `<option value="${i}">${z.name}</option>`).join('')}
         </select>
     </div>
     <div style="display:flex; gap:10px; margin-bottom:15px;">
-        <button onclick="showDexTab('normal')" id="dexTabNormal" style="flex:1; background:#3b82f6;">Fische</button>
-        <button onclick="showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button>
+        <button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1; background:#3b82f6;">Fische</button>
+        <button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button>
     </div>
     <div id="dexGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px;"></div>`;
-    openModal("📖 Fisch-Dex", html);
-    showDexTab(currentDexTab);
+    
+    // Komplettes HTML setzen und erst dann die Grid-Funktion rufen
+    document.getElementById('modal-title').innerText = "📖 Fisch-Dex";
+    document.getElementById('modal-body').innerHTML = html;
+    document.getElementById('modal-footer').style.display = 'none';
+    document.getElementById('modal-content').classList.remove('wide');
+    document.getElementById('modal-overlay').style.display = 'flex';
+    
+    window.showDexTab(currentDexTab);
 }
 
 window.showDexTab = function(tab) {
     currentDexTab = tab;
-    currentOpenMenu = 'dex';
     let grid = document.getElementById('dexGrid');
     let filterEl = document.getElementById('dexZoneFilter');
     let zoneFilter = filterEl ? filterEl.value : 'all';
@@ -1200,23 +1240,27 @@ window.showDexTab = function(tab) {
     
     items.forEach(item => {
         if(zF !== 'all' && item.z !== zF) return; 
+        if(tab === 'shiny' && item.isTrash) return; // Müll hat keine Shinys in der DB-Anzeige
         
         total++;
         let d = gameState.dex ? gameState.dex[item.n] : null;
         let has = tab === 'normal' ? (d?.normal) : (d?.shiny);
         if(has) collected++;
         let div = document.createElement('div');
-        div.style.cssText = 'background:#0d1117; padding:8px; border-radius:12px; text-align:center; border:1px solid #30363d;' + (has ? '' : 'opacity:0.4; filter:grayscale(1);');
+        div.style.cssText = 'background:#0d1117; padding:8px; border-radius:12px; text-align:center; border:1px solid #30363d; cursor:pointer;' + (has ? '' : 'opacity:0.4; filter:grayscale(1);');
         div.innerHTML = `<div style="font-size:36px;">${item.e}</div><div style="font-size:11px;">${has ? (tab==='shiny'?'🧬 ':'')+item.n : '???'}</div>`;
-        if(has) div.onclick = () => showFishInfo(item.n, tab);
+        if(has) div.onclick = () => window.showFishInfo(item.n, tab);
         grid.appendChild(div);
     });
     
-    let info = document.getElementById('dexInfo') || document.createElement('div');
-    info.id = 'dexInfo';
-    info.style.cssText = 'text-align:center; margin-top:15px; padding:10px; background:#0d1117; border-radius:12px;';
+    let info = document.getElementById('dexInfo');
+    if(!info) {
+        info = document.createElement('div');
+        info.id = 'dexInfo';
+        info.style.cssText = 'text-align:center; margin-top:15px; padding:10px; background:#0d1117; border-radius:12px;';
+        grid.parentNode.appendChild(info);
+    }
     info.innerHTML = `<b>Gesammelt: ${collected}/${total}</b>`;
-    if(!document.getElementById('dexInfo')) grid.parentNode.appendChild(info);
 }
 
 window.showFishInfo = function(name, tab) {
@@ -1226,6 +1270,7 @@ window.showFishInfo = function(name, tab) {
     let rarity = item.c >= 15 ? 'Sehr häufig' : (item.c >= 10 ? 'Häufig' : (item.c >= 5 ? 'Gewöhnlich' : (item.c >= 2 ? 'Selten' : 'Episch')));
     
     let personalMax = d?.maxW ? `<br><span style="color:#fcd34d;">🏆 Rekord-Gewicht: ${formatWeight(d.maxW)}</span>` : '';
+    let maxWStr = item.maxW ? `<br>⚖️ Max. Gewicht: ${formatWeight(item.maxW)}` : '';
     
     let html = `<div style="text-align:center">
         <div style="font-size:60px;">${item.e}</div>
@@ -1234,6 +1279,7 @@ window.showFishInfo = function(name, tab) {
             💰 Basis-Wert: ${tab==='shiny' ? Math.abs(item.v)*5 : item.v}$<br>
             ⭐ Seltenheit: ${rarity} (${item.c}%)<br>
             🌍 Zone: ${item.z === -1 ? 'Überall' : zones[item.z]?.name || 'Unbekannt'}
+            ${maxWStr}
             ${personalMax}<br><br>
             🎣 Gefangen: ${d?.count || 0}x
         </p>
@@ -1247,7 +1293,7 @@ window.handleZoneMenu = function() {
     let html = zones.map((z,i) => `<div class="item-row"><b>${z.name}</b>${gameState.zone===i ? '<span style="color:#10b981;">📍 Aktiv</span>' : (gameState.prestige<z.reqPrestige ? `<span style="color:#ef4444;">🔒 Prestige ${z.reqPrestige}</span>` : `<button class="success-btn" onclick="changeZone(${i})">Reisen</button>`)}</div>`).join('');
     openModal("🗺️ Weltkarte", html);
 }
-window.changeZone = function(i) { gameState.zone = i; saveData(); log(`🗺️ Reise nach ${zones[i].name}`); handleZoneMenu(); }
+window.changeZone = function(i) { gameState.zone = i; saveData(); log(`🗺️ Reise nach ${zones[i].name}`); window.handleZoneMenu(); }
 
 window.handleProfileMenu = function() {
     currentOpenMenu = 'profile';
@@ -1329,8 +1375,6 @@ window.handleDailyMenu = function() {
         let statusHtml = '';
         
         let isFuture = i > (can ? streak : streak); 
-        // Logic: if can is true, day 'streak' is active. anything > streak is future.
-        // If can is false, day 'streak' is done. anything > streak is future.
         if (can && i > streak) isFuture = true;
         if (!can && i > streak) isFuture = true;
         
@@ -1339,7 +1383,6 @@ window.handleDailyMenu = function() {
         else statusHtml = '🔒';
         
         let rewDisplay = isFuture ? '???$' : `${rew}$`;
-        
         let isActive = (i === streak && can);
         html += `<div style="background:#0d1117; padding:10px; border-radius:12px; text-align:center; ${isActive?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:24px; margin:5px 0;">${statusHtml}</div><div style="color:#10b981;">${rewDisplay}</div></div>`;
     }
@@ -1360,15 +1403,21 @@ window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameSt
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.0 - Das Mega Update</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.1 - Bugfixes & Quality of Life</h3>
         <ul style="padding-left:20px;">
-            <li><b>Neuer Rucksack:</b> Fische werden nun nicht mehr gestapelt. Jeder Fisch bekommt seinen eigenen Slot mit individuellem Gewicht. Kein Geld-Bug mehr beim Verkaufen!</li>
-            <li><b>Neue Zone: Bach!</b> Ab Prestige 1 freigeschaltet. Mit 13 brandneuen Fischen und neuem Müll.</li>
-            <li><b>Shiny Müll:</b> Müll kann nun Shiny werden! Wenn das passiert, gibt es keine Strafe, sondern einen dicken Bonus.</li>
-            <li><b>Bugfixes:</b> Quest-Menü stürzt nicht mehr ab und sieht jetzt viel besser aus. Das Daily-Menü zeigt nun korrekt an, welche Tage noch gesperrt sind.</li>
-            <li><b>Shop Updates:</b> Gekaufte Ruten verschwinden aus dem Shop. Der Kontostand aktualisiert sich live im Fenstertitel. Rutenpreise drastisch reduziert!</li>
-            <li><b>Admin:</b> Spielstand kann komplett für einzelne Spieler zurückgesetzt werden.</li>
+            <li><b>Rucksack Gruppierung:</b> Der Rucksack fasst nun gleiche Fische intelligent zusammen, was das Design 100x sauberer macht!</li>
+            <li><b>Geld Bug gefixt:</b> Das Problem, dass der Rucksack beim Verkauf das Geld auf 0 setzt, wurde behoben.</li>
+            <li><b>Keine Combos mehr:</b> Das Combo-System wurde entfernt.</li>
+            <li><b>Angel Timer Fix:</b> Der Button bleibt nicht mehr bei "1s" hängen.</li>
+            <li><b>Shop Updates:</b> Gekaufte Ruten verschwinden. Der Kontostand geht beim Kaufen sofort live runter!</li>
+            <li><b>Quests Redesign:</b> Wunderschöne, fehlerfreie Fortschrittsbalken.</li>
+            <li><b>Event Hover:</b> Geh mit der Maus über das aktive Event, um Restzeit und Bonus zu sehen!</li>
+            <li><b>Admin:</b> "Spielstand komplett zurücksetzen" hinzugefügt.</li>
         </ul>
+        <hr style="border-color:#30363d;">
+        <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
+        <p><b>v5.0</b> - Shiny Müll, Neues Inventarsystem, Bach-Zone.</p>
+        <p><b>v4.5</b> - Equipment Overhaul. 2-Spalten Shop/Inventar. Fische können die Schnur reißen lassen, wenn sie zu schwer für die Rute sind.</p>
     </div>`;
     openModal("📝 Updates", html);
 }
@@ -1399,13 +1448,22 @@ window.handleAdminMenu = function() {
         </div>
 
         <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
+            <h4 style="margin:0 0 10px 0; color:#10b981;">Item Giver</h4>
+            <select id="adminItem" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+                ${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}
+            </select>
+            <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <button class="update-btn" onclick="adminGiveItem()">Item geben</button>
+        </div>
+
+        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
             <h4 style="margin:0 0 10px 0; color:#ef4444;">⚠️ Spielstand Zurücksetzen</h4>
             <input id="adminResetUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <button class="danger-btn" onclick="adminResetAccount()">Komplett Zurücksetzen</button>
         </div>
 
         <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
-            <h4 style="margin:0 0 10px 0; color:#ef4444;">⛔ Account Sperren / Verwalten</h4>
+            <h4 style="margin:0 0 10px 0; color:#ef4444;">⛔ Account Sperren</h4>
             <input id="adminBanUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <input id="adminBanTime" type="number" placeholder="Dauer in Minuten" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <div style="display:flex; gap:5px; margin-bottom:10px;">
@@ -1421,7 +1479,7 @@ window.handleAdminMenu = function() {
             <h4 style="margin:0 0 10px 0; color:#facc15;">📝 Account Erstellen</h4>
             <input id="newAccUser" placeholder="Neuer Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <input id="newAccPass" placeholder="Passwort" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-            <button class="success-btn" onclick="adminCreateAccount()">Erstellen</button>
+            <button class="success-btn" onclick="window.adminCreateAccount()">Erstellen</button>
         </div>
     </div>`;
     openModal("👑 Admin Panel", html, "", true);
@@ -1501,10 +1559,35 @@ window.adminGive = async function() {
     } else alert("Spieler nicht gefunden!");
 }
 
+window.adminGiveItem = async function() {
+    let target = document.getElementById('adminTarget').value.trim();
+    let item = document.getElementById('adminItem').value;
+    let count = Number(document.getElementById('adminItemCount').value);
+    if(!target || isNaN(count)) return alert("Username und Anzahl!");
+    let snap = await get(ref(db, "users/"+target));
+    if(snap.exists()) {
+        let data = snap.val();
+        if(!data.inventory || !Array.isArray(data.inventory)) data.inventory = [];
+        
+        let baseItem = items.find(i => i.n === item);
+        if(baseItem) {
+            for(let i=0; i<count; i++) {
+                data.inventory.push({
+                    id: Math.random().toString(36).substr(2,9),
+                    n: baseItem.n, baseName: baseItem.n, v: baseItem.v, xp: baseItem.xp,
+                    e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: baseItem.minW || 0
+                });
+            }
+            await set(ref(db, "users/"+target), data);
+            alert(`✅ ${count}x ${item} an ${target}`);
+        }
+    } else alert("Spieler nicht gefunden!");
+}
+
 window.adminResetAccount = async function() {
     let user = document.getElementById('adminResetUser').value.trim();
     if(!user) return alert("Username eingeben!");
-    if(confirm(`⚠️ Spielstand von ${user} wirklich komplett zurücksetzen? (Login bleibt erhalten, aber Geld, Level, Inventar etc. werden gelöscht)`)) {
+    if(confirm(`⚠️ Spielstand von ${user} wirklich komplett zurücksetzen? (Login bleibt erhalten)`)) {
         await remove(ref(db, "users/" + user));
         alert(`✅ Spielstand von ${user} wurde gelöscht und wird beim nächsten Login neu erstellt.`);
     }
@@ -1524,8 +1607,14 @@ window.adminCreateAccount = async function() {
     let user = document.getElementById('newAccUser').value.trim();
     let pass = document.getElementById('newAccPass').value.trim();
     if(user.length<3 || pass.length<3) return alert("Min. 3 Zeichen!");
-    await set(ref(db, "accounts/"+user), pass);
-    alert(`✅ Account ${user} erstellt!`);
+    try {
+        await set(ref(db, "accounts/"+user), pass);
+        alert(`✅ Account ${user} erfolgreich erstellt!`);
+        document.getElementById('newAccUser').value = '';
+        document.getElementById('newAccPass').value = '';
+    } catch(e) {
+        alert("Fehler beim Erstellen: " + e.message);
+    }
 }
 
 document.getElementById('btnLogin')?.addEventListener('click', async () => {
