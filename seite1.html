@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Virtual Fisher PRO v4.6</title>
+    <title>Virtual Fisher PRO v5.0</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -59,7 +59,6 @@
         .water-layer-2 { position: absolute; bottom: 5px; width: 200%; height: 20px; background: linear-gradient(90deg, var(--water-2) 0%, var(--water-2-dark) 25%, var(--water-2) 50%, var(--water-2-dark) 75%, var(--water-2) 100%); animation: waves 5s linear infinite reverse; z-index: 2; }
         @keyframes waves { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         
-        /* EVENT ANIMATIONEN */
         .rain-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(170deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 2%, rgba(255,255,255,0.4) 2.5%, rgba(255,255,255,0) 3%); background-size: 100% 200%; animation: rainFall 0.3s linear infinite; z-index: 5; pointer-events: none; }
         @keyframes rainFall { from { background-position: 0 0; } to { background-position: 0 100%; } }
         .sun-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, rgba(250, 204, 21, 0.3) 0%, transparent 70%); animation: pulseSun 3s infinite alternate; pointer-events: none; z-index: 5; }
@@ -96,6 +95,13 @@
         
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px; }
         
+        /* MODERN QUEST DESIGN */
+        .quest-card { background: rgba(0,0,0,0.3); border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 12px; }
+        .quest-header { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 8px; font-size: 14px; }
+        .quest-bar-bg { width: 100%; background: #1e293b; height: 12px; border-radius: 6px; overflow: hidden; margin-bottom: 8px; border: 1px solid #334155; }
+        .quest-bar-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #60a5fa); transition: width 0.3s ease; }
+        .quest-footer { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: #94a3b8; }
+
         .inv-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .inv-card { background: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 5px; }
         .inv-card h4 { margin: 0 0 5px 0; color: #60a5fa; border-bottom: 1px solid #30363d; padding-bottom: 5px; }
@@ -118,9 +124,7 @@
         @keyframes bossShake { 0%,100%{ transform: translate(0,0); } 25%{ transform: translate(2px,2px); } 50%{ transform: translate(-2px,-1px); } 75%{ transform: translate(1px,-2px); } }
         .boss-active { animation: bossShake 0.3s infinite; }
         
-        @media (max-width: 768px) {
-            .inv-grid { grid-template-columns: 1fr; }
-        }
+        @media (max-width: 768px) { .inv-grid { grid-template-columns: 1fr; } }
         @media (max-width: 550px) {
             .container { padding: 12px; }
             .btn-grid { grid-template-columns: repeat(2, 1fr); }
@@ -238,6 +242,7 @@ let gameState = null;
 let globalState = null;
 let currentOpenMenu = null;
 let currentDexTab = 'normal';
+let fishInterval = null;
 
 const zones = [
     { name: "🍃 Naturteich", reqPrestige: 0 },
@@ -246,15 +251,15 @@ const zones = [
 
 const items = [
     // ZONE 0 : TEICH MÜLL
-    {n:"Laub / Blätter", v:-1, xp:-1, c:12.0, z:0, e:"🍂", isTrash: true},
-    {n:"Entenfeder", v:-2, xp:-1, c:8.0, z:0, e:"🪶", isTrash: true},
-    {n:"Algen", v:-3, xp:-2, c:6.0, z:0, e:"🌿", isTrash: true},
-    {n:"Teichschlamm", v:-4, xp:-2, c:5.0, z:0, e:"🟤", isTrash: true},
-    {n:"Schneckenhaus", v:-2, xp:-1, c:5.0, z:0, e:"🐌", isTrash: true},
-    {n:"Angelhaken (rostig)", v:-6, xp:-3, c:3.0, z:0, e:"🪝", isTrash: true},
-    {n:"Gummistiefel", v:-8, xp:-4, c:2.0, z:0, e:"👢", isTrash: true},
-    {n:"Plastikflasche", v:-10, xp:-5, c:1.5, z:0, e:"🧴", isTrash: true},
-    {n:"Scherbe", v:-12, xp:-6, c:1.0, z:0, e:"🔪", isTrash: true},
+    {n:"Laub / Blätter", v:-1, xp:-1, c:12.0, z:0, e:"🍂", isTrash: true, minW: 5, maxW: 50},
+    {n:"Entenfeder", v:-2, xp:-1, c:8.0, z:0, e:"🪶", isTrash: true, minW: 1, maxW: 10},
+    {n:"Algen", v:-3, xp:-2, c:6.0, z:0, e:"🌿", isTrash: true, minW: 10, maxW: 500},
+    {n:"Teichschlamm", v:-4, xp:-2, c:5.0, z:0, e:"🟤", isTrash: true, minW: 100, maxW: 2000},
+    {n:"Schneckenhaus", v:-2, xp:-1, c:5.0, z:0, e:"🐌", isTrash: true, minW: 5, maxW: 30},
+    {n:"Angelhaken (rostig)", v:-6, xp:-3, c:3.0, z:0, e:"🪝", isTrash: true, minW: 2, maxW: 15},
+    {n:"Gummistiefel", v:-8, xp:-4, c:2.0, z:0, e:"👢", isTrash: true, minW: 500, maxW: 2500},
+    {n:"Plastikflasche", v:-10, xp:-5, c:1.5, z:0, e:"🧴", isTrash: true, minW: 20, maxW: 150},
+    {n:"Scherbe", v:-12, xp:-6, c:1.0, z:0, e:"🔪", isTrash: true, minW: 10, maxW: 100},
     // ZONE 0 : TEICH FISCHE
     {n:"Stichling", v:2, xp:2, c:15.0, z:0, e:"🐟", minW: 5, maxW: 15},
     {n:"Moderlieschen", v:3, xp:2, c:14.0, z:0, e:"🐠", minW: 10, maxW: 30},
@@ -272,12 +277,12 @@ const items = [
     {n:"Zander", v:55, xp:28, c:0.5, z:0, e:"🐟", minW: 800, maxW: 8000},
 
     // ZONE 1 : BACH MÜLL
-    {n:"Nasses Laub", v:-2, xp:-2, c:7.3, z:1, e:"🍂", isTrash: true},
-    {n:"Angelschnur", v:-5, xp:-3, c:5.5, z:1, e:"🧵", isTrash: true},
-    {n:"Bleischrot", v:-8, xp:-4, c:4.5, z:1, e:"⚫", isTrash: true},
-    {n:"Plastikbecher", v:-10, xp:-5, c:3.6, z:1, e:"🥤", isTrash: true},
-    {n:"Fischreuse (kaputt)", v:-15, xp:-8, c:1.8, z:1, e:"🪤", isTrash: true},
-    {n:"Gummiwurm", v:-6, xp:-3, c:1.8, z:1, e:"🪱", isTrash: true},
+    {n:"Nasses Laub", v:-2, xp:-2, c:7.3, z:1, e:"🍂", isTrash: true, minW: 5, maxW: 60},
+    {n:"Angelschnur", v:-5, xp:-3, c:5.5, z:1, e:"🧵", isTrash: true, minW: 2, maxW: 20},
+    {n:"Bleischrot", v:-8, xp:-4, c:4.5, z:1, e:"⚫", isTrash: true, minW: 5, maxW: 50},
+    {n:"Plastikbecher", v:-10, xp:-5, c:3.6, z:1, e:"🥤", isTrash: true, minW: 10, maxW: 50},
+    {n:"Fischreuse (kaputt)", v:-15, xp:-8, c:1.8, z:1, e:"🪤", isTrash: true, minW: 500, maxW: 3000},
+    {n:"Gummiwurm", v:-6, xp:-3, c:1.8, z:1, e:"🪱", isTrash: true, minW: 5, maxW: 20},
     // ZONE 1 : BACH FISCHE
     {n:"Groppe", v:5, xp:4, c:14.0, z:1, e:"🐟", minW: 10, maxW: 50},
     {n:"Elritze (Bach)", v:6, xp:4, c:13.0, z:1, e:"🐠", minW: 15, maxW: 60},
@@ -359,6 +364,7 @@ function startWeatherEffects() {
 }
 
 function formatWeight(g) {
+    if(!g) return "0 g";
     return g >= 1000 ? (g/1000).toFixed(2) + " kg" : Math.floor(g) + " g";
 }
 
@@ -392,7 +398,7 @@ function roll(zIdx) {
     let { event } = getCurrentEventInfo();
     let rodDef = rodsDB[gameState.eqRod] || rodsDB.rod1;
     let baitDef = gameState.eqBait !== "none" ? baitsDB[gameState.eqBait] : null;
-    let pool = items.filter(i => i.z === zIdx || i.z === -1);
+    let pool = items.filter(i => i.z === zIdx);
     
     if(baitDef && baitDef.trashRed) {
         pool = pool.filter(i => {
@@ -422,86 +428,44 @@ function roll(zIdx) {
     
     let itemW = 0;
     let finalVal = baseItem.v;
-    if(!baseItem.isTrash && baseItem.minW !== undefined) {
+    if(baseItem.minW !== undefined) {
         itemW = baseItem.minW + Math.random() * (baseItem.maxW - baseItem.minW);
-        let wPercent = (itemW - baseItem.minW) / (baseItem.maxW - baseItem.minW);
-        let valMult = 0.5 + wPercent; 
-        finalVal = Math.max(1, Math.floor(baseItem.v * valMult));
+        if(!baseItem.isTrash) {
+            let wPercent = (itemW - baseItem.minW) / (baseItem.maxW - baseItem.minW);
+            let valMult = 0.5 + wPercent; 
+            finalVal = Math.max(1, Math.floor(baseItem.v * valMult));
+        }
     }
     
     let finalItem = { baseName: baseItem.n, n: baseItem.n, v: finalVal, xp: baseItem.xp, c: baseItem.c, e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: itemW };
     
     if(isShiny) {
         finalItem.n = "🧬 " + baseItem.n;
-        finalItem.v = Math.abs(finalItem.v) * 5; // Auch Müll wird positiv!
+        finalItem.v = Math.abs(finalItem.v) * 5; 
         finalItem.xp = Math.abs(finalItem.xp) * 5; 
         finalItem.isShiny = true;
-        finalItem.isTrash = false; // Shiny Müll ist kein Müll mehr
+        finalItem.isTrash = false; 
     }
     
-    finalItem.id = Math.random().toString(36).substr(2,9); // Eindeutige ID fürs neue Inventar-System
+    finalItem.id = Math.random().toString(36).substr(2,9); 
     
     return finalItem;
 }
 
 function updateDex(item) {
     if(!gameState.dex) gameState.dex = {};
-    if(!gameState.dex[item.baseName]) gameState.dex[item.baseName] = { normal: false, shiny: false, count: 0 };
+    if(!gameState.dex[item.baseName]) gameState.dex[item.baseName] = { normal: false, shiny: false, count: 0, maxW: 0 };
     if(item.isShiny) gameState.dex[item.baseName].shiny = true;
     else gameState.dex[item.baseName].normal = true;
     gameState.dex[item.baseName].count++;
-}
-
-const questDB = {
-    daily: [
-        {id:'d1',desc:'Fange 15 Fische',t:'c',req:15,rew:50},
-        {id:'d2',desc:'Verdiene 250$',t:'e',req:250,rew:100},
-        {id:'d3',desc:'Fange 30 Fische',t:'c',req:30,rew:150},
-        {id:'d4',desc:'Verdiene 500$',t:'e',req:500,rew:200},
-        {id:'d5',desc:'Fange 50 Fische',t:'c',req:50,rew:300}
-    ],
-    weekly: [
-        {id:'w1',desc:'Fange 150 Fische',t:'c',req:150,rew:500},
-        {id:'w2',desc:'Verdiene 2500$',t:'e',req:2500,rew:800},
-        {id:'w3',desc:'Fange 300 Fische',t:'c',req:300,rew:1200},
-        {id:'w4',desc:'Verdiene 5000$',t:'e',req:5000,rew:1500},
-        {id:'w5',desc:'Fange 500 Fische',t:'c',req:500,rew:2000}
-    ],
-    monthly: [
-        {id:'m1',desc:'Fange 500 Fische',t:'c',req:500,rew:2500},
-        {id:'m2',desc:'Verdiene 10000$',t:'e',req:10000,rew:3000},
-        {id:'m3',desc:'Fange 1000 Fische',t:'c',req:1000,rew:4000},
-        {id:'m4',desc:'Verdiene 25000$',t:'e',req:25000,rew:5000},
-        {id:'m5',desc:'Fange 1500 Fische',t:'c',req:1500,rew:6000},
-        {id:'m6',desc:'Verdiene 50000$',t:'e',req:50000,rew:7500},
-        {id:'m7',desc:'Fange 2000 Fische',t:'c',req:2000,rew:9000},
-        {id:'m8',desc:'Verdiene 100000$',t:'e',req:100000,rew:12000},
-        {id:'m9',desc:'Fange 2500 Fische',t:'c',req:2500,rew:15000},
-        {id:'m10',desc:'Verdiene 200000$',t:'e',req:200000,rew:20000},
-        {id:'m11',desc:'Fange 3000 Fische',t:'c',req:3000,rew:25000},
-        {id:'m12',desc:'Verdiene 350000$',t:'e',req:350000,rew:30000},
-        {id:'m13',desc:'Fange 4000 Fische',t:'c',req:4000,rew:35000},
-        {id:'m14',desc:'Verdiene 500000$',t:'e',req:500000,rew:45000},
-        {id:'m15',desc:'Fange 5000 Fische',t:'c',req:5000,rew:60000}
-    ]
-};
-
-function getResetKeys() {
-    let d = new Date();
-    let daily = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-    let monthly = `${d.getFullYear()}-${d.getMonth()}`;
-    let d0 = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    let dayNum = d0.getUTCDay() || 7;
-    d0.setUTCDate(d0.getUTCDate() + 4 - dayNum);
-    let yStart = new Date(Date.UTC(d0.getUTCFullYear(),0,1));
-    let weekNo = Math.ceil((((d0 - yStart) / 86400000) + 1)/7);
-    let weekly = `${d0.getUTCFullYear()}-W${weekNo}`;
-    return { daily, weekly, monthly };
+    if(item.weightG && item.weightG > (gameState.dex[item.baseName].maxW || 0)) {
+        gameState.dex[item.baseName].maxW = item.weightG;
+    }
 }
 
 function checkQuestResets() {
-    let k = getResetKeys();
-    // Sicherheits-Check für korruptes Quest Objekt
+    let d = new Date();
+    let daily = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
     if(!gameState.qs || typeof gameState.qs !== 'object' || Array.isArray(gameState.qs)) {
         gameState.qs = { p: {dc:0,de:0,wc:0,we:0,mc:0,me:0}, c: {}, d: "", w: "", m: "" };
     }
@@ -510,17 +474,14 @@ function checkQuestResets() {
     
     let qs = gameState.qs;
     let save = false;
-    if(qs.d !== k.daily) { qs.d = k.daily; qs.p.dc=0; qs.p.de=0; for(let c in qs.c) if(c.startsWith('d')) delete qs.c[c]; save=true; }
-    if(qs.w !== k.weekly) { qs.w = k.weekly; qs.p.wc=0; qs.p.we=0; for(let c in qs.c) if(c.startsWith('w')) delete qs.c[c]; save=true; }
-    if(qs.m !== k.monthly) { qs.m = k.monthly; qs.p.mc=0; qs.p.me=0; for(let c in qs.c) if(c.startsWith('m')) delete qs.c[c]; save=true; }
+    if(qs.d !== daily) { qs.d = daily; qs.p.dc=0; qs.p.de=0; for(let c in qs.c) if(c.startsWith('d')) delete qs.c[c]; save=true; }
     if(save) saveData();
 }
 
 function addQuestProgress(t, amt) {
     if(!gameState?.qs?.p) return;
-    let p = gameState.qs.p;
-    if(t === 'c') { p.dc+=amt; p.wc+=amt; p.mc+=amt; }
-    if(t === 'e') { p.de+=amt; p.we+=amt; p.me+=amt; }
+    if(t === 'c') { gameState.qs.p.dc += amt; }
+    if(t === 'e') { gameState.qs.p.de += amt; }
 }
 
 async function loadData() {
@@ -533,7 +494,7 @@ async function loadData() {
             gameState = snap.val(); 
         } else {
             gameState = {
-                name: currentUser, money: 0, xp: 0, level: 1, zone: 0, combo: 0,
+                name: currentUser, money: 0, xp: 0, level: 1, zone: 0,
                 inventory: [], dex: {}, aquarium: { unlocked: false, fishes: [] },
                 lastDaily: 0, dailyStreak: 0, prestige: 0,
                 stats: { totalCaught: 0, totalEarned: 0 },
@@ -554,7 +515,6 @@ async function loadData() {
         }
         
         if(gameState) {
-            // RUCKSACK MIGRATION (Von Objekt zu Array)
             if(!gameState.inventory) {
                 gameState.inventory = [];
             } else if (!Array.isArray(gameState.inventory)) {
@@ -570,12 +530,9 @@ async function loadData() {
                                 if(isMutant) v = Math.abs(v) * 5;
                                 newInv.push({
                                     id: Math.random().toString(36).substr(2,9),
-                                    n: name,
-                                    baseName: baseName,
-                                    v: v,
+                                    n: name, baseName: baseName, v: v,
                                     xp: isMutant ? Math.abs(baseItem.xp)*5 : baseItem.xp,
-                                    e: baseItem.e,
-                                    isShiny: isMutant,
+                                    e: baseItem.e, isShiny: isMutant,
                                     isTrash: baseItem.isTrash && !isMutant,
                                     weightG: baseItem.minW ? baseItem.minW + Math.random()*(baseItem.maxW - baseItem.minW) : 0
                                 });
@@ -586,8 +543,9 @@ async function loadData() {
                 gameState.inventory = newInv;
             }
 
+            if(gameState.combo !== undefined) delete gameState.combo;
             if(!gameState.dex) gameState.dex = {};
-            if(!gameState.qs) gameState.qs = { p: {dc:0,de:0,wc:0,we:0,mc:0,me:0}, c: {}, d: "", w: "", m: "" };
+            if(!gameState.qs) gameState.qs = { p: {dc:0,de:0}, c: {}, d: "" };
             if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
             if(!gameState.aquarium.fishes) gameState.aquarium.fishes = [];
             if(!gameState.ownedRods || gameState.ownedRods.includes("r1")) { gameState.ownedRods = ["rod1"]; gameState.eqRod = "rod1"; }
@@ -643,7 +601,6 @@ function updateUI() {
     document.getElementById("ui-level").innerHTML = `⭐ Lvl ${gameState.level} (${Math.min(gameState.xp, xpNeeded)}/${xpNeeded})`;
     document.getElementById("zoneDisplay").innerHTML = `🌊 ${zones[gameState.zone].name}`;
     
-    // DEKO AKTUALISIEREN
     document.getElementById("deco-zone-0").style.display = gameState.zone === 0 ? "block" : "none";
     document.getElementById("deco-zone-1").style.display = gameState.zone === 1 ? "block" : "none";
     
@@ -651,7 +608,7 @@ function updateUI() {
     let evtEl = document.getElementById("eventDisplay");
     if(event && event.name && event.type !== "normal") {
         evtEl.innerHTML = `✨ ${event.name}`;
-        evtEl.setAttribute("title", event.desc); // TOOLTIP FÜR BONUS!
+        evtEl.setAttribute("title", event.desc); 
     } else {
         evtEl.innerHTML = ``;
         evtEl.removeAttribute("title");
@@ -668,13 +625,8 @@ function updateUI() {
     }
     
     let btnFish = document.getElementById('btnFish');
-    if(btnFish && !btnFish.disabled) { 
-        if(gameState.combo > 1) {
-            let mult = (1 + Math.min(gameState.combo, 50) * 0.02).toFixed(2);
-            btnFish.innerHTML = `🎣 Angeln 🔥 Combo: x${mult} (${gameState.combo})`;
-        } else if(btnFish.innerHTML !== `🎣 Angeln`) {
-            btnFish.innerHTML = `🎣 Angeln`;
-        }
+    if(btnFish && !btnFish.disabled && btnFish.innerHTML !== `🎣 Angeln`) {
+        btnFish.innerHTML = `🎣 Angeln`;
     }
 }
 
@@ -789,15 +741,16 @@ function finishMinigame(won) {
     document.getElementById('minigame-overlay').style.display = 'none';
     document.getElementById('minigame-container').classList.remove('boss-active');
     
+    let btn = document.getElementById('btnFish');
+    let scene = document.getElementById('fishing-scene');
+    scene.classList.remove('fishing-active');
+    btn.disabled = false;
+    btn.innerHTML = `🎣 Angeln`;
+    
     if(won) {
-        let comboMult = 1 + Math.min(gameState.combo, 50) * 0.02;
-        mgFishItem.v = Math.floor(mgFishItem.v * comboMult);
-        let finalXp = Math.floor(mgFishItem.xp * (mgFishItem.isShiny ? 5 : 2) * comboMult);
-        
         gameState.inventory.push({...mgFishItem});
-        
         updateDex(mgFishItem);
-        gameState.xp += finalXp;
+        gameState.xp += mgFishItem.xp;
         gameState.stats.totalCaught++;
         gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod] || 0) + 1;
         addQuestProgress('c', 1);
@@ -812,16 +765,15 @@ function finishMinigame(won) {
     } else {
         let lossXp = Math.floor(Math.abs(mgFishItem.xp) * 2);
         gameState.xp = Math.max(0, gameState.xp - lossXp);
-        gameState.combo = 0;
         log(`❌ Fisch entkommen! Verlust: ${lossXp} XP`);
         saveData();
     }
-    document.getElementById('btnFish').disabled = false;
-    document.getElementById('fishing-scene').classList.remove('fishing-active');
 }
 
 window.handleFish = function() {
     let btn = document.getElementById('btnFish');
+    if(btn.disabled) return;
+    
     btn.disabled = true;
     let scene = document.getElementById('fishing-scene');
     scene.classList.add('fishing-active');
@@ -840,7 +792,9 @@ window.handleFish = function() {
     let timeLeft = fishTimeSec;
     btn.innerHTML = `🎣 Angeln... (${timeLeft}s)`;
     
-    let fishInterval = setInterval(() => {
+    if(fishInterval) clearInterval(fishInterval);
+    
+    fishInterval = setInterval(() => {
         timeLeft--;
         if(timeLeft > 0) {
             btn.innerHTML = `🎣 Angeln... (${timeLeft}s)`;
@@ -852,86 +806,85 @@ window.handleFish = function() {
 }
 
 function executeFishCatch(btn, scene) {
-    if(!gameState.inventory) gameState.inventory = [];
-    if(!gameState.rodStats) gameState.rodStats = {};
-    
-    let item = roll(gameState.zone);
-    let rodDef = rodsDB[gameState.eqRod] || rodsDB.rod1;
-    let baitDef = baitsDB[gameState.eqBait];
-    
-    if(gameState.eqBait !== "none" && gameState.baits) {
-        gameState.baits[gameState.eqBait]--;
-        if(gameState.baits[gameState.eqBait] <= 0) {
-            log(`❌ Köder aufgebraucht!`);
-            gameState.eqBait = "none";
-        }
-    }
-    
-    if(!item.isTrash && item.weightG) {
-        let maxGrams = (rodDef.maxKg || 2) * 1000;
-        let resilience = (rodDef.res || 0) + (baitDef?.res || 0);
+    try {
+        if(!gameState.inventory) gameState.inventory = [];
+        if(!gameState.rodStats) gameState.rodStats = {};
         
-        let escapeChance = 0;
-        if(item.weightG > maxGrams) {
-            escapeChance = 80 - resilience; 
-        } else {
-            escapeChance = 10 - resilience; 
+        let item = roll(gameState.zone);
+        let rodDef = rodsDB[gameState.eqRod] || rodsDB.rod1;
+        let baitDef = baitsDB[gameState.eqBait];
+        
+        if(gameState.eqBait !== "none" && gameState.baits) {
+            gameState.baits[gameState.eqBait]--;
+            if(gameState.baits[gameState.eqBait] <= 0) {
+                log(`❌ Köder aufgebraucht!`);
+                gameState.eqBait = "none";
+            }
         }
         
-        if(escapeChance > 0 && Math.random() < (escapeChance / 100)) {
-            gameState.combo = 0;
-            log(`💥 Schnur gerissen! Der ${item.baseName} (${formatWeight(item.weightG)}) war zu wild!`);
+        if(!item.isTrash && item.weightG) {
+            let maxGrams = (rodDef.maxKg || 2) * 1000;
+            let resilience = (rodDef.res || 0) + (baitDef?.res || 0);
+            
+            let escapeChance = 0;
+            if(item.weightG > maxGrams) escapeChance = 80 - resilience; 
+            else escapeChance = 10 - resilience; 
+            
+            if(escapeChance > 0 && Math.random() < (escapeChance / 100)) {
+                log(`💥 Schnur gerissen! Der ${item.baseName} (${formatWeight(item.weightG)}) war zu wild!`);
+                saveData();
+                scene.classList.remove('fishing-active');
+                btn.disabled = false;
+                btn.innerHTML = `🎣 Angeln`;
+                return;
+            }
+        }
+        
+        if(item.isTrash) {
+            let penalty = Math.abs(item.xp); 
+            gameState.xp = Math.max(0, gameState.xp - penalty);
+            gameState.inventory.push({...item}); 
+            log(`🗑️ ${item.e} ${item.baseName} gefangen! -${penalty} XP`);
             saveData();
             scene.classList.remove('fishing-active');
             btn.disabled = false;
+            btn.innerHTML = `🎣 Angeln`;
             return;
         }
-    }
-    
-    if(item.isTrash) {
-        let penalty = Math.abs(item.xp); 
-        gameState.xp = Math.max(0, gameState.xp - penalty);
-        gameState.inventory.push({...item}); // Einzelnes Müll-Item
-        gameState.combo = 0;
-        log(`🗑️ ${item.e} ${item.baseName} gefangen! -${penalty} XP`);
+
+        if(item.isShiny || item.c <= 0.5) { 
+            triggerMinigame(item);
+            scene.classList.remove('fishing-active');
+            return;
+        }
+        
+        gameState.inventory.push({...item});
+        updateDex(item);
+        gameState.xp += item.xp;
+        gameState.stats.totalCaught++;
+        gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod] || 0) + 1;
+        addQuestProgress('c', 1);
+        
+        let wText = item.weightG ? ` ⚖️ ${formatWeight(item.weightG)}` : '';
+        let msg = item.isShiny ? `🧬 MUTATION: ${item.e} ${item.baseName}${wText} (${item.v}$)` : `${item.e} Gefangen: ${item.baseName}${wText} (${item.v}$)`;
+        
+        if(gameState.xp >= gameState.level * 50) {
+            gameState.xp -= gameState.level * 50;
+            gameState.level++;
+            msg += ` ⭐ LEVEL UP! Level ${gameState.level}!`;
+        }
+        log(msg);
         saveData();
         scene.classList.remove('fishing-active');
         btn.disabled = false;
-        return;
-    }
-
-    gameState.combo++;
-    if(item.isShiny || item.c <= 0.5) { 
-        triggerMinigame(item);
+        btn.innerHTML = `🎣 Angeln`;
+        
+    } catch(e) {
+        console.error(e);
         scene.classList.remove('fishing-active');
-        btn.disabled = true;
-        return;
+        btn.disabled = false;
+        btn.innerHTML = `🎣 Angeln`;
     }
-    
-    let comboMult = 1 + Math.min(gameState.combo, 50) * 0.02;
-    item.v = Math.floor(item.v * comboMult);
-    let finalXp = Math.floor(item.xp * (item.isShiny ? 5 : 1) * comboMult);
-    
-    gameState.inventory.push({...item});
-    
-    updateDex(item);
-    gameState.xp += finalXp;
-    gameState.stats.totalCaught++;
-    gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod] || 0) + 1;
-    addQuestProgress('c', 1);
-    
-    let wText = item.weightG ? ` ⚖️ ${formatWeight(item.weightG)}` : '';
-    let msg = item.isShiny ? `🧬 MUTATION: ${item.e} ${item.baseName}${wText} (${item.v}$)` : `${item.e} Gefangen: ${item.baseName}${wText} (${item.v}$)`;
-    
-    if(gameState.xp >= gameState.level * 50) {
-        gameState.xp -= gameState.level * 50;
-        gameState.level++;
-        msg += ` ⭐ LEVEL UP! Level ${gameState.level}!`;
-    }
-    log(msg);
-    saveData();
-    scene.classList.remove('fishing-active');
-    btn.disabled = false;
 }
 
 window.handleSellMenu = function() {
@@ -946,17 +899,17 @@ window.handleSellMenu = function() {
     let html = `<h3>🎒 Rucksack</h3><div style="max-height:40vh; overflow-y:auto; padding-right:5px; margin-bottom:10px;">`;
     
     gameState.inventory.forEach((item, idx) => {
-        let isMutant = item.isShiny;
-        if(item.v >= 0) baseValue += item.v;
-        else trashValue += item.v;
+        let val = Number(item.v) || 0;
+        if(val >= 0) baseValue += val;
+        else trashValue += val;
         
-        let color = item.v >= 0 ? '#10b981' : '#ef4444';
+        let color = val >= 0 ? '#10b981' : '#ef4444';
         let weightStr = item.weightG ? `⚖️ ${formatWeight(item.weightG)}` : '';
         let aquaBtn = (!item.isTrash && gameState.aquarium.unlocked && gameState.aquarium.fishes.length < 5) ? `<button class="update-btn" style="padding:5px 8px; font-size:11px; margin-left:10px; flex-direction:row;" onclick="sendToAquarium(${idx})">🐟 Ins Aqua</button>` : '';
         
         html += `<div class="item-row" style="align-items:center;">
             <div style="flex:1;"><b>${item.e} ${item.n}</b><br><small style="color:#94a3b8;">${weightStr}</small></div>
-            <div style="color:${color}; font-weight:bold;">${item.v >= 0 ? '+' : ''}${item.v.toLocaleString()}$</div>
+            <div style="color:${color}; font-weight:bold;">${val >= 0 ? '+' : ''}${val.toLocaleString()}$</div>
             ${aquaBtn}
         </div>`;
     });
@@ -967,7 +920,7 @@ window.handleSellMenu = function() {
     
     let bonusPercent = gameState.prestige || 0;
     let prestigeBonus = Math.floor(baseValue * (bonusPercent / 100));
-    let finalTotal = baseValue + prestigeBonus + trashValue;
+    let finalTotal = Math.floor(baseValue + prestigeBonus + trashValue);
     
     html += `
     <div class="summary-box">
@@ -989,15 +942,18 @@ window.handleSellMenu = function() {
 window.executeSell = function(val) {
     if(!gameState.inventory || gameState.inventory.length === 0) return;
     
-    gameState.money += val;
+    let finalVal = Number(val);
+    if(isNaN(finalVal)) return;
+    
+    gameState.money += finalVal;
     if(gameState.money < 0) gameState.money = 0; 
     
-    if(val > 0) { gameState.stats.totalEarned += val; addQuestProgress('e', val); }
+    if(finalVal > 0) { gameState.stats.totalEarned += finalVal; addQuestProgress('e', finalVal); }
     
-    gameState.inventory = []; // Rucksack komplett leeren
+    gameState.inventory = []; 
     
-    if(val < 0) log(`💸 Müll entsorgt. Das hat dich ${Math.abs(val).toLocaleString()}$ gekostet.`);
-    else log(`💰 Rucksack verkauft für ${val.toLocaleString()}$`);
+    if(finalVal < 0) log(`💸 Müll entsorgt. Das hat dich ${Math.abs(finalVal).toLocaleString()}$ gekostet.`);
+    else log(`💰 Rucksack verkauft für ${finalVal.toLocaleString()}$`);
     
     saveData();
     handleSellMenu(); 
@@ -1063,15 +1019,15 @@ window.removeFromAquarium = function(idx) {
 
 window.handleShopMenu = function() {
     currentOpenMenu = 'shop';
-    let html = `<h3>🛒 Shop (💰 ${Math.floor(gameState.money).toLocaleString()}$)</h3>
-    <div class="inv-grid"><div><h4 style="color:white; margin-top:0;">🎣 Angelruten</h4>`;
+    let titleStr = `🛒 Shop (💰 ${Math.floor(gameState.money).toLocaleString()}$)`;
+    
+    let html = `<div class="inv-grid"><div><h4 style="color:white; margin-top:0;">🎣 Angelruten</h4>`;
     
     let ownedList = gameState.ownedRods || [];
+    let hasRods = false;
     for(let [id, rod] of Object.entries(rodsDB)) {
-        let isOwned = ownedList.includes(id);
-        let btn = isOwned 
-            ? `<button disabled style="width:100%; background:#334155; color:#94a3b8; cursor:default;">Gekauft</button>` 
-            : `<button class="success-btn" style="width:100%;" ${gameState.money<rod.cost?'disabled':''} onclick="buyRod('${id}')">${rod.cost.toLocaleString()}$</button>`;
+        if(ownedList.includes(id)) continue;
+        hasRods = true;
         
         html += `
         <div class="inv-card">
@@ -1080,9 +1036,12 @@ window.handleShopMenu = function() {
             <div class="inv-stat"><span>Glück:</span> <span>+${rod.luck||0}%</span></div>
             <div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>${rod.res||0}%</span></div>
             <div class="inv-stat"><span>Max. Kilogramm:</span> <span>${rod.maxKg} kg</span></div>
-            <div style="margin-top:10px;">${btn}</div>
+            <div style="margin-top:10px;">
+                <button class="success-btn" style="width:100%;" ${gameState.money<rod.cost?'disabled':''} onclick="buyRod('${id}')">${rod.cost.toLocaleString()}$</button>
+            </div>
         </div>`;
     }
+    if(!hasRods) html += `<p style="text-align:center; color:#10b981;">Alle Ruten gekauft!</p>`;
     
     html += `</div><div><h4 style="color:white; margin-top:0;">🪱 Köder</h4>`;
     for(let [id, bait] of Object.entries(baitsDB)) {
@@ -1099,9 +1058,10 @@ window.handleShopMenu = function() {
         </div>`;
     }
     html += `</div></div>`;
-    openModal("🛒 Shop", html, "", true);
+    
+    document.getElementById('modal-title').innerText = titleStr;
+    openModal(titleStr, html, "", true);
 }
-
 window.buyRod = function(id) { gameState.money -= rodsDB[id].cost; if(!gameState.ownedRods) gameState.ownedRods=[]; gameState.ownedRods.push(id); saveData(); handleShopMenu(); }
 window.buyBait = function(id) { gameState.money -= baitsDB[id].cost; if(!gameState.baits) gameState.baits={}; gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); handleShopMenu(); }
 
@@ -1178,15 +1138,26 @@ window.handleQuestMenu = function() {
     checkQuestResets();
     let qs = gameState.qs || { p: {}, c: {} };
     let qsP = qs.p || {};
-    let html = `<p style="color:#fcd34d;">⏳ Täglich um 0 Uhr reset</p>`;
+    let html = `<p style="color:#fcd34d; text-align:center; margin-top:0;">⏳ Täglich um 0 Uhr reset</p>`;
+    
     let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
     cats.forEach(cat => {
-        html += `<h4>${cat.n}</h4>`;
+        html += `<h4 style="color:white; margin-top:15px;">${cat.n}</h4>`;
         cat.l.forEach(q => {
             let prog = (q.t === 'c' ? qsP[cat.c] : qsP[cat.e]) || 0;
             let done = prog >= q.req;
             let claimed = qs.c && qs.c[q.id];
-            html += `<div class="quest-row"><div><b>${q.desc}</b><br>${Math.min(prog, q.req)}/${q.req}</div><div>${claimed ? '✅' : (done ? `<button class="success-btn" onclick="claimQuest('${q.id}',${q.rew})">${q.rew}$</button>` : `🔒 ${q.rew}$`)}</div></div>`;
+            let pct = Math.min(100, Math.floor((prog / q.req) * 100));
+            
+            html += `
+            <div class="quest-card">
+                <div class="quest-header"><span>${q.desc}</span> <span style="color:#facc15;">${q.rew}$</span></div>
+                <div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div>
+                <div class="quest-footer">
+                    <span>${Math.min(prog, q.req)} / ${q.req}</span>
+                    ${claimed ? '<span style="color:#10b981; font-weight:bold;">✅ Abgeschlossen</span>' : (done ? `<button class="success-btn" style="padding:4px 10px; font-size:12px; border-radius:6px;" onclick="claimQuest('${q.id}',${q.rew})">Abholen</button>` : `<span style="color:#ef4444;">🔒 Gesperrt</span>`)}
+                </div>
+            </div>`;
         });
     });
     openModal("📜 Quests", html);
@@ -1203,7 +1174,7 @@ window.handleDexMenu = function() {
         </select>
     </div>
     <div style="display:flex; gap:10px; margin-bottom:15px;">
-        <button onclick="showDexTab('normal')" id="dexTabNormal" style="flex:1; background:#3b82f6;">Fische & Müll</button>
+        <button onclick="showDexTab('normal')" id="dexTabNormal" style="flex:1; background:#3b82f6;">Fische</button>
         <button onclick="showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button>
     </div>
     <div id="dexGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px;"></div>`;
@@ -1225,8 +1196,10 @@ window.showDexTab = function(tab) {
     let collected = 0, total = 0;
     grid.innerHTML = '';
     
+    let zF = zoneFilter === 'all' ? 'all' : parseInt(zoneFilter);
+    
     items.forEach(item => {
-        if(zoneFilter !== 'all' && item.z !== parseInt(zoneFilter)) return; 
+        if(zF !== 'all' && item.z !== zF) return; 
         
         total++;
         let d = gameState.dex ? gameState.dex[item.n] : null;
@@ -1251,7 +1224,9 @@ window.showFishInfo = function(name, tab) {
     if(!item) return;
     let d = gameState.dex[name];
     let rarity = item.c >= 15 ? 'Sehr häufig' : (item.c >= 10 ? 'Häufig' : (item.c >= 5 ? 'Gewöhnlich' : (item.c >= 2 ? 'Selten' : 'Episch')));
-    let wText = item.minW ? `<br>⚖️ Gewicht: ${formatWeight(item.minW)} - ${formatWeight(item.maxW)}` : '';
+    
+    let personalMax = d?.maxW ? `<br><span style="color:#fcd34d;">🏆 Rekord-Gewicht: ${formatWeight(d.maxW)}</span>` : '';
+    
     let html = `<div style="text-align:center">
         <div style="font-size:60px;">${item.e}</div>
         <h3>${tab==='shiny'?'🧬 ':''}${item.n}</h3>
@@ -1259,7 +1234,7 @@ window.showFishInfo = function(name, tab) {
             💰 Basis-Wert: ${tab==='shiny' ? Math.abs(item.v)*5 : item.v}$<br>
             ⭐ Seltenheit: ${rarity} (${item.c}%)<br>
             🌍 Zone: ${item.z === -1 ? 'Überall' : zones[item.z]?.name || 'Unbekannt'}
-            ${wText}<br>
+            ${personalMax}<br><br>
             🎣 Gefangen: ${d?.count || 0}x
         </p>
         <button class="update-btn" onclick="handleDexMenu()">Zurück</button>
@@ -1272,7 +1247,7 @@ window.handleZoneMenu = function() {
     let html = zones.map((z,i) => `<div class="item-row"><b>${z.name}</b>${gameState.zone===i ? '<span style="color:#10b981;">📍 Aktiv</span>' : (gameState.prestige<z.reqPrestige ? `<span style="color:#ef4444;">🔒 Prestige ${z.reqPrestige}</span>` : `<button class="success-btn" onclick="changeZone(${i})">Reisen</button>`)}</div>`).join('');
     openModal("🗺️ Weltkarte", html);
 }
-window.changeZone = function(i) { gameState.zone = i; saveData(); log(`🗺️ Reise nach ${zones[i].name}`); closeModal(); }
+window.changeZone = function(i) { gameState.zone = i; saveData(); log(`🗺️ Reise nach ${zones[i].name}`); handleZoneMenu(); }
 
 window.handleProfileMenu = function() {
     currentOpenMenu = 'profile';
@@ -1353,12 +1328,20 @@ window.handleDailyMenu = function() {
         let rew = i*100 + gameState.prestige*50;
         let statusHtml = '';
         
+        let isFuture = i > (can ? streak : streak); 
+        // Logic: if can is true, day 'streak' is active. anything > streak is future.
+        // If can is false, day 'streak' is done. anything > streak is future.
+        if (can && i > streak) isFuture = true;
+        if (!can && i > streak) isFuture = true;
+        
         if (i < streak || (i === streak && !can)) statusHtml = '✅'; 
         else if (i === streak && can) statusHtml = '🎁';
         else statusHtml = '🔒';
         
+        let rewDisplay = isFuture ? '???$' : `${rew}$`;
+        
         let isActive = (i === streak && can);
-        html += `<div style="background:#0d1117; padding:10px; border-radius:12px; text-align:center; ${isActive?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:24px;">${statusHtml}</div><div>${rew}$</div></div>`;
+        html += `<div style="background:#0d1117; padding:10px; border-radius:12px; text-align:center; ${isActive?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:24px; margin:5px 0;">${statusHtml}</div><div style="color:#10b981;">${rewDisplay}</div></div>`;
     }
     html += `</div>${cooldownText}`;
     openModal("🎁 Daily Bonus", html, can ? `<button class="success-btn" onclick="claimDaily(${streak*100 + gameState.prestige*50},${streak})">Abholen</button>` : '');
@@ -1372,26 +1355,20 @@ window.handlePrestigeMenu = function() {
     let can = gameState.level >= reqLvl && gameState.money >= reqMoney;
     openModal("🔁 Prestige", `<p>Mache Prestige, um einen <b>dauerhaften Verkaufs-Bonus</b> zu erhalten!</p><p>Reset: Level, Geld, Inventar<br>Bonus: <b>+1% Verkaufswert pro Prestige</b><br>Voraussetzung: Level ${reqLvl}, ${reqMoney.toLocaleString()}$</p>`, can ? `<button class="danger-btn" onclick="doPrestige()">PRESTIGE AUSFÜHREN</button>` : '');
 }
-window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameState.level=1; gameState.xp=0; gameState.combo=0; gameState.inventory=[]; saveData(); location.reload(); }
+window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameState.level=1; gameState.xp=0; gameState.inventory=[]; saveData(); location.reload(); }
 
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 4.6 - Shiny Müll & Zone Bach</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.0 - Das Mega Update</h3>
         <ul style="padding-left:20px;">
-            <li><b>Neuer Rucksack:</b> Fische werden nun nicht mehr gestapelt. Jeder Fisch bekommt seinen eigenen Slot mit individuellem Gewicht.</li>
+            <li><b>Neuer Rucksack:</b> Fische werden nun nicht mehr gestapelt. Jeder Fisch bekommt seinen eigenen Slot mit individuellem Gewicht. Kein Geld-Bug mehr beim Verkaufen!</li>
             <li><b>Neue Zone: Bach!</b> Ab Prestige 1 freigeschaltet. Mit 13 brandneuen Fischen und neuem Müll.</li>
             <li><b>Shiny Müll:</b> Müll kann nun Shiny werden! Wenn das passiert, gibt es keine Strafe, sondern einen dicken Bonus.</li>
-            <li><b>Bugfixes:</b> Quest-Menü funktioniert wieder. Das Daily-Menü zeigt nun korrekt an, welche Tage noch gesperrt sind.</li>
-            <li><b>Events:</b> Animationen sind zurück. Wenn du über den Event-Text oben wischst, siehst du, was es bringt.</li>
-            <li><b>Preis-Drop:</b> Die Preise für Starter-Angelruten wurden extrem gesenkt.</li>
+            <li><b>Bugfixes:</b> Quest-Menü stürzt nicht mehr ab und sieht jetzt viel besser aus. Das Daily-Menü zeigt nun korrekt an, welche Tage noch gesperrt sind.</li>
+            <li><b>Shop Updates:</b> Gekaufte Ruten verschwinden aus dem Shop. Der Kontostand aktualisiert sich live im Fenstertitel. Rutenpreise drastisch reduziert!</li>
+            <li><b>Admin:</b> Spielstand kann komplett für einzelne Spieler zurückgesetzt werden.</li>
         </ul>
-        <hr style="border-color:#30363d;">
-        <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
-        <p><b>v4.5</b> - Equipment Overhaul. 2-Spalten Shop/Inventar. Fische können die Schnur reißen lassen, wenn sie zu schwer für die Rute sind.</p>
-        <p><b>v4.1</b> - Boss-Timer auf 5 Sekunden gesetzt. Hardware-Rendering für flüssige Aquariumbewegung. Reale Angelzeiten (1 Min).</p>
-        <p><b>v4.0</b> - Erste Naturteich Zone mit komplett neuen Süßwasserfischen.</p>
-        <p><b>v3.8</b> - Live Popups für Rucksack, Shop & Profil.</p>
     </div>`;
     openModal("📝 Updates", html);
 }
@@ -1407,7 +1384,7 @@ window.handleAdminMenu = function() {
             <input id="adminEventTime" type="number" placeholder="Dauer in Minuten" value="30" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <div style="display:flex; gap:5px;">
                 <button class="success-btn" style="flex:1;" onclick="adminSetEvent()">Starten</button>
-                <button class="danger-btn" style="flex:1;" onclick="adminStopEvent()">Beenden</button>
+                <button class="danger-btn" style="flex:1;" onclick="adminStopEvent()">Alle Beenden</button>
             </div>
         </div>
         
@@ -1422,6 +1399,12 @@ window.handleAdminMenu = function() {
         </div>
 
         <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
+            <h4 style="margin:0 0 10px 0; color:#ef4444;">⚠️ Spielstand Zurücksetzen</h4>
+            <input id="adminResetUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <button class="danger-btn" onclick="adminResetAccount()">Komplett Zurücksetzen</button>
+        </div>
+
+        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
             <h4 style="margin:0 0 10px 0; color:#ef4444;">⛔ Account Sperren / Verwalten</h4>
             <input id="adminBanUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <input id="adminBanTime" type="number" placeholder="Dauer in Minuten" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
@@ -1432,6 +1415,13 @@ window.handleAdminMenu = function() {
             <hr style="border-color:#30363d; margin:10px 0;">
             <input id="adminDelUser" placeholder="Username zum Löschen" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <button class="danger-btn" onclick="adminDeleteAccount()">Löschen</button>
+        </div>
+        
+        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
+            <h4 style="margin:0 0 10px 0; color:#facc15;">📝 Account Erstellen</h4>
+            <input id="newAccUser" placeholder="Neuer Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <input id="newAccPass" placeholder="Passwort" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <button class="success-btn" onclick="adminCreateAccount()">Erstellen</button>
         </div>
     </div>`;
     openModal("👑 Admin Panel", html, "", true);
@@ -1511,10 +1501,19 @@ window.adminGive = async function() {
     } else alert("Spieler nicht gefunden!");
 }
 
+window.adminResetAccount = async function() {
+    let user = document.getElementById('adminResetUser').value.trim();
+    if(!user) return alert("Username eingeben!");
+    if(confirm(`⚠️ Spielstand von ${user} wirklich komplett zurücksetzen? (Login bleibt erhalten, aber Geld, Level, Inventar etc. werden gelöscht)`)) {
+        await remove(ref(db, "users/" + user));
+        alert(`✅ Spielstand von ${user} wurde gelöscht und wird beim nächsten Login neu erstellt.`);
+    }
+}
+
 window.adminDeleteAccount = async function() {
     let user = document.getElementById('adminDelUser').value.trim();
     if(!user) return alert("Username!");
-    if(confirm(`⚠️ ${user} unwiderruflich löschen?`)) {
+    if(confirm(`⚠️ ${user} inkl. Login unwiderruflich löschen?`)) {
         await remove(ref(db, "accounts/"+user));
         await remove(ref(db, "users/"+user));
         alert(`🗑️ ${user} gelöscht`);
