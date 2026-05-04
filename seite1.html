@@ -105,7 +105,7 @@
         .equip-bar { display: flex; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 8px 12px; border-radius: 12px; font-size: 12px; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
         
         .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
-        .btn-grid-2 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 8px; }
+        .btn-grid-2 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 8px; }
         button { padding: 12px 8px; border: none; border-radius: 12px; background: #2563eb; color: white; font-weight: bold; cursor: pointer; transition: 0.15s; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; flex-direction: column; }
         button span { font-size: 20px; }
         button:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); }
@@ -165,7 +165,7 @@
         @media (max-width: 550px) {
             .container { padding: 12px; }
             .btn-grid { grid-template-columns: repeat(3, 1fr); }
-            .btn-grid-2 { grid-template-columns: repeat(2, 1fr); }
+            .btn-grid-2 { grid-template-columns: repeat(3, 1fr); }
             button { padding: 10px; font-size: 12px; }
             button span { font-size: 18px; }
         }
@@ -273,6 +273,7 @@
             </div>
             <div class="btn-grid-2">
                 <button id="btnProfile" style="font-size:14px;">📊 Profil</button>
+                <button id="btnSkills" style="font-size:14px; background:#f59e0b;">🧠 Skills</button>
                 <button id="btnGuild" style="font-size:14px; background:#eab308;">🛡️ Gilde</button>
                 <button id="btnPromo" style="font-size:14px; background:#8b5cf6;">🎫 Code</button>
                 <button id="btnUpdates" class="update-btn" style="font-size:14px;">📝 Update</button>
@@ -421,7 +422,22 @@ const baitsDB = {
     "b10": { name: "Kunstköder", e: "🐟", cost: 50000, amt: 20, speed: 40, luck: 0, res: 30, trashRed: 0, desc: "+40% Speed, +30% Widerstand" }
 };
 
-// Event Info abrufen
+// Globaler Live-Refresh für offene Popups
+function refreshCurrentMenu() {
+    if(window.currentOpenMenu === 'sell') window.handleSellMenu();
+    if(window.currentOpenMenu === 'aqua') window.handleAquaMenu();
+    if(window.currentOpenMenu === 'shop') window.handleShopMenu();
+    if(window.currentOpenMenu === 'inv') window.handleInvMenu();
+    if(window.currentOpenMenu === 'quest') window.handleQuestMenu();
+    if(window.currentOpenMenu === 'profile') window.handleProfileMenu();
+    if(window.currentOpenMenu === 'daily') window.handleDailyMenu();
+    if(window.currentOpenMenu === 'zone') window.handleZoneMenu();
+    if(window.currentOpenMenu === 'dex') window.showDexTab(window.currentDexTab);
+    if(window.currentOpenMenu === 'guild') window.handleGuildMenu();
+    if(window.currentOpenMenu === 'leaderboard') window.handleLeaderboard(window.currentLeaderboardTab);
+    if(window.currentOpenMenu === 'skills') window.handleSkillsMenu();
+}
+
 function getCurrentEventInfo() {
     let now = Date.now();
     if (globalState && globalState.event && now < globalState.event.exp) {
@@ -521,7 +537,9 @@ function roll(zIdx) {
         r -= i.weight;
     }
     
-    let shinyChance = 0.01 * eventLuckMult;
+    // Skill Tree Einbindung: Shiny Chance berechnen (+0.025% per point, also +0.00025 decimal basis)
+    let baseShinyChance = 0.01 + ((gameState.skills?.shiny || 0) * 0.00025);
+    let shinyChance = baseShinyChance * eventLuckMult;
     if(event && event.type === 'sun') shinyChance *= event.mult;
 
     let isShiny = Math.random() < shinyChance;
@@ -539,7 +557,7 @@ function roll(zIdx) {
     
     let finalItem = { baseName: baseItem.n, n: baseItem.n, v: finalVal, xp: baseItem.xp, c: baseItem.c, e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: itemW };
     
-    if(isShiny) {
+    if(isShiny && !baseItem.isTrash) {
         finalItem.n = "🧬 " + baseItem.n;
         finalItem.v = Math.abs(finalItem.v) * 5; 
         finalItem.xp = Math.abs(finalItem.xp) * 5; 
@@ -583,7 +601,6 @@ function addQuestProgress(t, amt) {
     if(t === 'e') { gameState.qs.p.de += amt; gameState.qs.p.we += amt; gameState.qs.p.me += amt; }
 }
 
-// ==== SYNC LEADERBOARD LOGIK ====
 async function syncGlobalLeaderboard() {
     if(!currentUser || !gameState) return;
     let playerData = {
@@ -599,7 +616,6 @@ async function syncGlobalLeaderboard() {
     await set(ref(db, "global/leaderboard/" + currentUser), playerData);
 }
 
-// ==== BROADCAST BANNER SCHLIEßEN ====
 window.closeBroadcast = function() {
     document.getElementById("broadcast-banner").style.display = "none";
     if(globalState && globalState.broadcast) {
@@ -621,25 +637,19 @@ async function loadData() {
         }
     });
     
-    // GILDEN CACHE
     onValue(ref(db, "global/guilds"), (snap) => {
         guildsCache = snap.exists() ? snap.val() : {};
-        
         if(gameState && gameState.guild) {
             let myG = guildsCache[gameState.guild];
             if(!myG || !myG.members || !myG.members.includes(currentUser)) {
                 gameState.guild = "";
                 saveData();
-                if(window.currentOpenMenu === 'guild') window.handleGuildMenu();
+                refreshCurrentMenu();
             }
         }
-        if(window.currentOpenMenu === 'guild' || window.currentOpenMenu === 'leaderboard') {
-            if(window.currentOpenMenu === 'guild') window.handleGuildMenu();
-            if(window.currentOpenMenu === 'leaderboard') window.handleLeaderboard(window.currentLeaderboardTab || 'users');
-        }
+        refreshCurrentMenu();
     });
 
-    // LEADERBOARD CACHE
     onValue(ref(db, "global/leaderboard"), (snap) => {
         if(snap.exists()) {
             let data = snap.val();
@@ -653,10 +663,7 @@ async function loadData() {
                 return caughtB - caughtA;
             });
             lastLeaderboardUsers = usersArray;
-            
-            if(window.currentOpenMenu === 'leaderboard') {
-                window.handleLeaderboard(window.currentLeaderboardTab || 'users');
-            }
+            if(window.currentOpenMenu === 'leaderboard') refreshCurrentMenu();
         }
     });
 
@@ -701,7 +708,7 @@ async function loadData() {
                 lastDaily: 0, dailyStreak: 0, prestige: 0,
                 stats: { totalCaught: 0, totalEarned: 0 },
                 ownedRods: ["rod1"], eqRod: "rod1", baits: {}, eqBait: "none", bannedUntil: 0, rodStats: {},
-                usedCodes: {}, guild: ""
+                usedCodes: {}, guild: "", skills: { shiny: 0, aqua: 0 }
             };
             saveData();
         }
@@ -718,18 +725,14 @@ async function loadData() {
         }
         
         if(gameState) {
-            // FIREBASE ARRAY BUG FIX: Inventar korrekt auslesen, falls Firebase es als Objekt zurückgibt
             if(!gameState.inventory) {
                 gameState.inventory = [];
             } else if (!Array.isArray(gameState.inventory)) {
                 let newInv = [];
                 let objVals = Object.values(gameState.inventory);
-                
                 if (objVals.length > 0 && objVals[0].count === undefined) {
-                    // Firebase hat das Array in ein sparse Object verwandelt -> Wir lesen nur die Values aus
                     newInv = objVals;
                 } else {
-                    // Altes Format Migration (v5 -> v6)
                     for(let [name, data] of Object.entries(gameState.inventory)) {
                         if(data.count > 0) {
                             let isMutant = name.startsWith("🧬 ");
@@ -760,8 +763,8 @@ async function loadData() {
             if(!gameState.qs || typeof gameState.qs !== 'object') gameState.qs = { p: {dc:0,de:0,wc:0,we:0,mc:0,me:0}, c: {}, d: "", w: "", m: "" };
             if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
             if(!gameState.aquarium.fishes) gameState.aquarium.fishes = [];
+            if(!gameState.skills) gameState.skills = { shiny: 0, aqua: 0 };
             
-            // AUSRÜSTUNG SPEICHER FIX: Prüfe korrekt, ob Ruten vorhanden sind
             if(!gameState.ownedRods || gameState.ownedRods.length === 0) { gameState.ownedRods = ["rod1"]; }
             if(!gameState.eqRod) { gameState.eqRod = "rod1"; }
             
@@ -788,26 +791,20 @@ async function loadData() {
                 startWeatherEffects();
             }
             
-            if(window.currentOpenMenu === 'sell') window.handleSellMenu();
-            if(window.currentOpenMenu === 'shop') window.handleShopMenu();
-            if(window.currentOpenMenu === 'inv') window.handleInvMenu();
-            if(window.currentOpenMenu === 'aqua') window.handleAquaMenu();
-            if(window.currentOpenMenu === 'quest') window.handleQuestMenu();
-            if(window.currentOpenMenu === 'profile') window.handleProfileMenu();
-            if(window.currentOpenMenu === 'daily') window.handleDailyMenu();
-            if(window.currentOpenMenu === 'zone') window.handleZoneMenu();
-            if(window.currentOpenMenu === 'dex') window.showDexTab(window.currentDexTab);
-            if(window.currentOpenMenu === 'guild') window.handleGuildMenu();
+            refreshCurrentMenu();
         }
     });
+
     setInterval(() => {
         if(gameState?.aquarium?.fishes?.length > 0) {
-            let income = gameState.aquarium.fishes.reduce((s,f) => s + Math.floor(f.v * 0.1), 0);
+            let aquaMult = 1 + ((gameState.skills?.aqua || 0) * 0.025);
+            let income = gameState.aquarium.fishes.reduce((s,f) => s + Math.floor(f.v * 0.1 * aquaMult), 0);
             if(income > 0) {
                 gameState.money += income;
                 log(`🐟 Aquarium: +${income}$ passiv`);
                 saveData();
                 syncGlobalLeaderboard();
+                refreshCurrentMenu();
             }
         }
     }, 60000);
@@ -981,11 +978,11 @@ function finishMinigame(won) {
         gameState.inventory.push({...mgFishItem});
         updateDex(mgFishItem);
         gameState.xp += finalXp;
-        gameState.stats.totalCaught++;
+        gameState.stats.totalCaught++; // Stat-Update
         gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod] || 0) + 1;
         addQuestProgress('c', 1);
         
-        log(`⚔️ BOSS BESIEGT! ${mgFishItem.e} ${mgFishItem.baseName} (${mgFishItem.v}$)`);
+        log(`⚔️ BOSS BESIEGT! ${mgFishItem.e} Gefangen: ${mgFishItem.baseName} (${mgFishItem.v}$)`);
         if(gameState.xp >= gameState.level * 50) {
             gameState.xp -= gameState.level * 50;
             gameState.level++;
@@ -993,10 +990,13 @@ function finishMinigame(won) {
         }
         saveData();
         syncGlobalLeaderboard();
+        refreshCurrentMenu();
     } else {
         let lossXp = Math.floor(Math.abs(mgFishItem.xp) * 2);
         gameState.xp = Math.max(0, gameState.xp - lossXp);
+        log(`💨 Entkommen: ${mgFishItem.baseName} hat sich losgerissen!`); // Fehlender Log
         saveData();
+        refreshCurrentMenu();
     }
 }
 
@@ -1064,6 +1064,7 @@ function executeFishCatch(btn, scene) {
             else escapeChance = 10 - resilience; 
             
             if(escapeChance > 0 && Math.random() < (escapeChance / 100)) {
+                log(`💨 Entkommen: ${item.baseName} war zu stark!`); // Entkommen Log hinzugefügt
                 saveData();
                 scene.classList.remove('fishing-active');
                 btn.disabled = false;
@@ -1076,7 +1077,11 @@ function executeFishCatch(btn, scene) {
             let penalty = Math.abs(item.xp); 
             gameState.xp = Math.max(0, gameState.xp - penalty);
             gameState.inventory.push({...item}); 
+            gameState.stats.totalCaught++; // Zählt jetzt auch Müll zur Statistik um mit Inventar gleichzuziehen
+            log(`🗑️ Gefangen: ${item.baseName} (${item.v}$)`); // Müll Log hinzugefügt
             saveData();
+            syncGlobalLeaderboard();
+            refreshCurrentMenu();
             scene.classList.remove('fishing-active');
             btn.disabled = false;
             btn.innerHTML = `🎣 Angeln`;
@@ -1110,6 +1115,8 @@ function executeFishCatch(btn, scene) {
         log(msg);
         saveData();
         syncGlobalLeaderboard();
+        refreshCurrentMenu();
+        
         scene.classList.remove('fishing-active');
         btn.disabled = false;
         btn.innerHTML = `🎣 Angeln`;
@@ -1237,7 +1244,8 @@ window.handleAquaMenu = function() {
     let html = `<h3>🐠 Dein Aquarium (${gameState.aquarium.fishes.length}/5)</h3>`;
     if(gameState.aquarium.fishes.length === 0) html += "<p>Leer – Fische aus Rucksack einsetzen!</p>";
     gameState.aquarium.fishes.forEach((f, i) => {
-        let income = Math.floor(f.v * 0.1);
+        let aquaMult = 1 + ((gameState.skills?.aqua || 0) * 0.025);
+        let income = Math.floor(f.v * 0.1 * aquaMult);
         html += `<div class="item-row"><div>${f.e} ${f.n} <small style="color:#10b981; font-weight:bold;">(+${income}$/min)</small></div><button class="danger-btn" onclick="window.removeFromAquarium(${i})">Entfernen</button></div>`;
     });
     openModal("Aquarium", html);
@@ -1277,6 +1285,54 @@ window.removeFromAquarium = function(idx) {
     saveData();
     renderAquarium();
     window.handleAquaMenu();
+}
+
+// ==== SKILLS SYSTEM ====
+window.handleSkillsMenu = function() {
+    window.currentOpenMenu = 'skills';
+    if(!gameState.skills) gameState.skills = { shiny: 0, aqua: 0 };
+    
+    let spent = gameState.skills.shiny + gameState.skills.aqua;
+    let available = Math.max(0, (gameState.level - 1) - spent);
+
+    let html = `
+    <div style="text-align:center; margin-bottom:15px; background:#161b22; padding:15px; border-radius:12px; border:2px solid #f59e0b;">
+        <h2 style="margin:0 0 5px 0; color:#f59e0b;">🧠 Fähigkeiten</h2>
+        <div style="font-size:16px;">Verfügbare Skill-Punkte: <b style="color:#10b981;">${available}</b></div>
+        <small style="color:#94a3b8;">Du erhältst 1 Punkt pro Level-Up.</small>
+    </div>
+
+    <div class="inv-grid">
+        <div class="inv-card">
+            <h4 style="color:#a855f7;">✨ Shiny-Jäger</h4>
+            <p style="font-size:13px; color:#94a3b8; flex:1;">Erhöht die Chance auf Shiny-Fische um exakt +0.025% pro Punkt.</p>
+            <div class="inv-stat" style="margin-bottom:10px;"><span>Aktuelles Level:</span> <span style="color:#e2e8f0; font-weight:bold;">${gameState.skills.shiny} / 100</span></div>
+            <div class="inv-stat" style="margin-bottom:10px;"><span>Bonus:</span> <span style="color:#10b981;">+${(gameState.skills.shiny * 0.025).toFixed(3)}% Chance</span></div>
+            <button class="success-btn" style="width:100%;" ${available > 0 && gameState.skills.shiny < 100 ? '' : 'disabled'} onclick="window.upgradeSkill('shiny')">⭐ Verbessern</button>
+        </div>
+
+        <div class="inv-card">
+            <h4 style="color:#3b82f6;">🐟 Aquarium-Meister</h4>
+            <p style="font-size:13px; color:#94a3b8; flex:1;">Erhöht das passive Einkommen der Aquarium-Fische um +2.5% pro Punkt.</p>
+            <div class="inv-stat" style="margin-bottom:10px;"><span>Aktuelles Level:</span> <span style="color:#e2e8f0; font-weight:bold;">${gameState.skills.aqua} / 100</span></div>
+            <div class="inv-stat" style="margin-bottom:10px;"><span>Bonus:</span> <span style="color:#10b981;">+${(gameState.skills.aqua * 2.5).toFixed(1)}% Einkommen</span></div>
+            <button class="success-btn" style="width:100%;" ${available > 0 && gameState.skills.aqua < 100 ? '' : 'disabled'} onclick="window.upgradeSkill('aqua')">⭐ Verbessern</button>
+        </div>
+    </div>`;
+    
+    openModal("🧠 Skill-Baum", html, "", true);
+}
+
+window.upgradeSkill = function(type) {
+    if(!gameState.skills) gameState.skills = { shiny: 0, aqua: 0 };
+    let spent = gameState.skills.shiny + gameState.skills.aqua;
+    let available = Math.max(0, (gameState.level - 1) - spent);
+    
+    if(available > 0 && gameState.skills[type] < 100) {
+        gameState.skills[type]++;
+        saveData();
+        window.handleSkillsMenu();
+    }
 }
 
 window.handleShopMenu = function() {
@@ -1411,7 +1467,6 @@ window.unequipBait = function() {
 window.handleGuildMenu = function() {
     window.currentOpenMenu = 'guild';
     
-    // Hat der Spieler keine Gilde?
     if(!gameState.guild) {
         let html = `
         <div style="background:#161b22; padding:15px; border-radius:12px; border:1px solid #eab308; margin-bottom:15px;">
@@ -1461,10 +1516,8 @@ window.handleGuildMenu = function() {
         return openModal("🛡️ Gilden", html);
     }
 
-    // Spieler hat eine Gilde!
     let myG = guildsCache[gameState.guild];
     if(!myG) {
-        // Gilde existiert nicht mehr
         gameState.guild = "";
         saveData();
         return window.handleGuildMenu();
@@ -1505,7 +1558,6 @@ window.handleGuildMenu = function() {
     });
     html += `</div>`;
     
-    // Anfragen für Leader anzeigen
     if (isOwner && myG.requests && myG.requests.length > 0) {
         html += `<h4 style="color:#eab308; margin-top:15px; border-bottom:1px solid #30363d; padding-bottom:5px;">📩 Beitrittsanfragen</h4>`;
         myG.requests.forEach(reqUser => {
@@ -1529,17 +1581,18 @@ window.createGuild = async function() {
     if(name.length < 3) return alert("Der Gildenname muss mindestens 3 Zeichen lang sein (keine Sonderzeichen).");
     if(guildsCache[name]) return alert("Eine Gilde mit diesem Namen existiert bereits!");
 
-    gameState.money -= 250000;
-    gameState.guild = name;
-    saveData();
-    syncGlobalLeaderboard();
-
+    // Set DB First to prevent local cache bug
     await set(ref(db, "global/guilds/" + name), {
         owner: currentUser,
         points: 0,
         members: [currentUser],
         requests: []
     });
+
+    gameState.money -= 250000;
+    gameState.guild = name;
+    saveData();
+    syncGlobalLeaderboard();
     
     window.handleGuildMenu();
 }
@@ -1623,7 +1676,7 @@ window.handleGuildDonateMenu = function() {
 
     let grouped = {};
     gameState.inventory.forEach((item, idx) => {
-        if(item.isTrash) return; // Müll kann man nicht spenden
+        if(item.isTrash) return; 
         let key = (item.isShiny ? "shiny_" : "norm_") + item.n;
         if(!grouped[key]) {
             grouped[key] = {
@@ -1693,7 +1746,6 @@ window.executeGuildDonateGroup = async function(key, ptsPerFish) {
         if(donatedCount < amtToDonate && item.n === name && !!item.isShiny === isShiny && !item.isTrash) {
             donatedCount++;
             totalPoints += ptsPerFish;
-            // Wird gespendet, also nicht in neues Array pushen
         } else {
             newInv.push(item);
         }
@@ -1715,8 +1767,6 @@ window.executeGuildDonateGroup = async function(key, ptsPerFish) {
     }
 }
 
-
-// --- HILFSFUNKTION FÜR COUNTDOWNS ---
 function getResetCountdown(type) {
     const now = new Date();
     const target = new Date();
@@ -1737,7 +1787,6 @@ function getResetCountdown(type) {
     return `${h}h ${m}m ${s}s`;
 }
 
-// Globales Interval um die offenen Countdowns zu aktualisieren
 setInterval(() => {
     if(window.currentOpenMenu === 'quest') {
         let d = document.getElementById('daily-countdown');
@@ -1894,9 +1943,8 @@ window.handleZoneMenu = function() {
     let html = zones.map((z,i) => `<div class="item-row"><b>${z.name}</b>${gameState.zone===i ? '<span style="color:#10b981;">📍 Aktiv</span>' : (gameState.prestige<z.reqPrestige ? `<span style="color:#ef4444;">🔒 Prestige ${z.reqPrestige}</span>` : `<button class="success-btn" onclick="window.changeZone(${i})">Reisen</button>`)}</div>`).join('');
     openModal("🗺️ Weltkarte", html);
 }
-window.changeZone = function(i) { gameState.zone = i; saveData(); window.handleZoneMenu(); }
+window.changeZone = function(i) { gameState.zone = i; saveData(); window.handleZoneMenu(); updateUI(); }
 
-// ==== NEUES GLOBALES LEADERBOARD ====
 window.handleLeaderboard = function(tab = 'users') {
     window.currentOpenMenu = 'leaderboard';
     window.currentLeaderboardTab = tab;
@@ -2084,7 +2132,6 @@ window.doPrestige = function() {
     location.reload(); 
 }
 
-// ===== PROMO CODES (USER) =====
 document.getElementById('btnPromo')?.addEventListener('click', () => {
     let html = `
     <p>Gib hier einen Promo-Code ein, um Belohnungen zu erhalten!</p>
@@ -2146,7 +2193,6 @@ window.redeemPromoCode = async function() {
     }
 }
 
-// ===== FEEDBACK =====
 window.openFeedbackMenu = function() {
     let html = `
     <p style="color:#94a3b8; font-size:14px; margin-top:0;">Hast du einen Bug gefunden oder einen Wunsch für ein Update? Lass es uns wissen!</p>
@@ -2183,7 +2229,8 @@ window.adminSendUpdateToDiscord = function() {
                 fields: [
                     { name: "🛡️ Gilden-System", value: "Gründe mit 250.000$ eine eigene Gilde oder tritt einer bei (Max 10 Spieler pro Gilde)." },
                     { name: "🐟 Fische Spenden", value: "Sammle gemeinsam mit deiner Gilde Punkte, indem du Fische im Gilden-Menü spendest anstatt sie zu verkaufen." },
-                    { name: "🏆 Top Gilden", value: "Ein neues Leaderboard nur für Gilden ist integriert. Kämpft euch an die Spitze!" }
+                    { name: "🏆 Top Gilden", value: "Ein neues Leaderboard nur für Gilden ist integriert. Kämpft euch an die Spitze!" },
+                    { name: "🧠 Skill-Baum", value: "Ab sofort erhältst du 1 Skill-Punkt pro Level-Up, um passive Boni freizuschalten!" }
                 ],
                 footer: { text: "Virtual Fisher PRO" }
             }]
@@ -2198,16 +2245,17 @@ window.adminSendUpdateToDiscord = function() {
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.1 - Gilden-System Update</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.1 - Skills & Gilden Update</h3>
         <ul style="padding-left:20px;">
+            <li><b>Skill-Baum:</b> Verdiene pro Level-Up 1 Skill-Punkt und verbessere Shiny-Raten oder dein Aquarium!</li>
             <li><b>Neue Gilden:</b> Gründe eine Gilde oder trete einer bei. (Max. 10 Mitglieder)</li>
             <li><b>Fische Spenden:</b> Verkaufe deine Fische nicht nur für Geld, sondern spende sie für deine Gilde, um im Rang aufzusteigen! (Shinys = 50 Punkte!)</li>
             <li><b>Gilden Rangliste:</b> Miss dich mit anderen Gilden auf dem Server.</li>
+            <li><b>Bug-Fixes:</b> Logs für Müll/Entkommen, sofortige Updates und korrekte Statistiken hinzugefügt.</li>
         </ul>
         <hr style="border-color:#30363d;">
         <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
         <p><b>v6.0</b> - Globales Leaderboard, Promo-Codes, Live-Broadcast.</p>
-        <p><b>v5.8</b> - Mobile Fixes & Discord Server Integration.</p>
     </div>`;
     openModal("📝 Updates", html);
 }
@@ -2334,7 +2382,6 @@ window.handleAdminMenu = function() {
     openModal("👑 Admin Panel", html, "", true);
 }
 
-// === ADMIN PROMO CODES ===
 window.adminCreatePromoCode = async function() {
     let code = document.getElementById("adminCodeName").value.trim().toUpperCase();
     let money = Number(document.getElementById("adminCodeMoney").value) || 0;
@@ -2390,7 +2437,6 @@ window.adminDeletePromoCode = async function(code) {
     }
 }
 
-// === ADMIN BROADCAST & INSPECT ===
 window.adminSendBroadcast = async function() {
     let text = document.getElementById("adminBroadcastInput").value.trim();
     if(!text) return alert("Bitte eine Nachricht eingeben!");
@@ -2442,7 +2488,6 @@ window.adminInspectUser = async function() {
     openModal("Spieler-Akte", html, "", true);
 }
 
-// === ADMIN EVENTS ===
 window.adminSetEvent = async function() {
     let evtType = document.getElementById('adminEventSelect').value;
     let mult = Number(document.getElementById('adminEventMult').value) || 2;
@@ -2464,7 +2509,6 @@ window.adminStopEvent = async function() {
     alert("🛑 Aktuelles Live-Event wurde beendet.");
 }
 
-// === ACCOUNT VERWALTUNG ===
 window.adminCreateAccount = async function() {
     let user = document.getElementById('newAccUser').value.trim();
     let pass = document.getElementById('newAccPass').value.trim();
@@ -2556,7 +2600,6 @@ window.adminQuickDelete = async function(user) {
     }
 }
 
-// === RESTLICHES ADMIN ===
 window.adminSetMaintenance = async function(state) {
     await set(ref(db, "global/maintenance"), state);
     alert(state ? "⚠️ Wartungsmodus AKTIVIERT!" : "✅ Wartungsmodus BEENDET!");
@@ -2634,11 +2677,9 @@ window.adminGiveItem = async function() {
     if(snap.exists()) {
         let data = snap.val();
         
-        // FISCHE UND ITEMS VERGEBEN
         if(itemVal.startsWith("fish_")) {
             let item = itemVal.replace("fish_", "");
             
-            // Fix falls das Inventar beim User in der DB aktuell ein Sparse Array Object ist
             if(!data.inventory || !Array.isArray(data.inventory)) {
                 data.inventory = Array.isArray(data.inventory) ? data.inventory : (data.inventory ? Object.values(data.inventory) : []);
             }
@@ -2655,7 +2696,6 @@ window.adminGiveItem = async function() {
                 await set(ref(db, "users/"+target), data);
                 alert(`✅ ${count}x ${item} an ${target} gegeben`);
             }
-        // KÖDER VERGEBEN
         } else if (itemVal.startsWith("bait_")) {
             let baitId = itemVal.replace("bait_", "");
             if(!data.baits) data.baits = {};
@@ -2710,6 +2750,7 @@ document.getElementById('btnDaily')?.addEventListener('click', window.handleDail
 document.getElementById('btnUpdates')?.addEventListener('click', window.handleUpdateMenu);
 document.getElementById('btnPrestige')?.addEventListener('click', window.handlePrestigeMenu);
 document.getElementById('btnGuild')?.addEventListener('click', window.handleGuildMenu);
+document.getElementById('btnSkills')?.addEventListener('click', window.handleSkillsMenu);
 
 let savedUser = localStorage.getItem('vFisher_user');
 if(savedUser) { currentUser = savedUser; loadData(); }
