@@ -1244,9 +1244,25 @@ window.handleInvMenu = function() {
     openModal("🎒 Ausrüstung", html, "", true);
 }
 
-window.equipRod = function(id) { gameState.eqRod = id; saveData(); window.handleInvMenu(); }
-window.equipBait = function(id) { gameState.eqBait = id; saveData(); window.handleInvMenu(); }
-window.unequipBait = function() { gameState.eqBait = "none"; saveData(); window.handleInvMenu(); }
+// UPDATE: Ausrüsten triggert nun auch ein sichtbares Log und lädt das Menü sofort ohne es zu schließen
+window.equipRod = function(id) { 
+    gameState.eqRod = id; 
+    saveData(); 
+    window.handleInvMenu(); 
+    log(`🎣 Neue Rute ausgerüstet!`);
+}
+window.equipBait = function(id) { 
+    gameState.eqBait = id; 
+    saveData(); 
+    window.handleInvMenu(); 
+    log(`🪱 Köder ausgerüstet!`);
+}
+window.unequipBait = function() { 
+    gameState.eqBait = "none"; 
+    saveData(); 
+    window.handleInvMenu(); 
+    log(`🪱 Köder entfernt!`);
+}
 
 // --- HILFSFUNKTION FÜR COUNTDOWNS ---
 function getResetCountdown(type) {
@@ -1309,7 +1325,6 @@ window.handleQuestMenu = function() {
             <p style="margin:2px; font-size:13px; color:#facc15;">🏆 Monthly Reset in: <b id="monthly-countdown">${getResetCountdown('monthly')}</b></p>
         </div>`;
         
-        // BUG FIX: Removed 'window.' from questDB references
         let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
         cats.forEach(cat => {
             html += `<h4 style="color:white; margin-top:15px; border-bottom: 1px solid #30363d; padding-bottom:5px;">${cat.n}</h4>`;
@@ -1448,14 +1463,12 @@ window.handleProfileMenu = function() {
     openModal("📊 Dein Profil", html);
 }
 
-// BUG FIX: Updated Leaderboard to always show players & locally cache the stats
 window.handleLeaderboard = async function() {
     window.currentOpenMenu = 'leaderboard';
     
     let now = Date.now();
     let left = Math.ceil((lbUpdateCooldown - now) / 1000);
     
-    // Lokales Update des eigenen Spielers im Cache, damit die Fische sofort stimmen (falls man gerade geangelt hat)
     if (lastLeaderboardUsers.length > 0 && gameState && currentUser) {
         let me = lastLeaderboardUsers.find(u => u.name === currentUser);
         if (me) {
@@ -1465,7 +1478,6 @@ window.handleLeaderboard = async function() {
             me.level = gameState.level;
             me.prestige = gameState.prestige;
         }
-        // Neu sortieren, falls man einen Platz aufgestiegen ist
         lastLeaderboardUsers.sort((a,b) => {
             let cA = a.stats?.totalCaught || 0;
             let cB = b.stats?.totalCaught || 0;
@@ -1493,13 +1505,11 @@ window.handleLeaderboard = async function() {
 
     let timerHtml = `<div style="text-align:center; margin-bottom:10px; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px; border:1px solid #3b82f6;">🔄 Nächstes Update in: <b id="lb-countdown" style="color:#facc15;">${left > 0 ? left+'s' : 'Jetzt verfügbar!'}</b></div>`;
 
-    // Wenn Cooldown noch aktiv ist und wir gecachte Daten haben, zeige diese direkt an
     if(now < lbUpdateCooldown && lastLeaderboardUsers.length > 0) {
         let html = timerHtml + renderUsers(lastLeaderboardUsers);
         return openModal("🏆 Leaderboard", html);
     }
 
-    // Initiale Ladeanzeige oder gecachte Anzeige während des globalen DB Ladens
     if(lastLeaderboardUsers.length === 0) {
         openModal("🏆 Leaderboard", timerHtml + "<p style='text-align:center;'>Lade Daten...</p>");
     } else {
@@ -1511,7 +1521,7 @@ window.handleLeaderboard = async function() {
         get(ref(db, "accounts"))
     ]);
 
-    lbUpdateCooldown = Date.now() + 60000; // 60 Sekunden Cooldown setzen
+    lbUpdateCooldown = Date.now() + 60000; 
     left = 60;
     timerHtml = `<div style="text-align:center; margin-bottom:10px; background:rgba(0,0,0,0.5); padding:8px; border-radius:8px; border:1px solid #3b82f6;">🔄 Nächstes Update in: <b id="lb-countdown" style="color:#facc15;">${left}s</b></div>`;
 
@@ -1532,7 +1542,7 @@ window.handleLeaderboard = async function() {
             return caughtB - caughtA;
         });
 
-        lastLeaderboardUsers = users; // Cache updaten
+        lastLeaderboardUsers = users; 
         
         if(window.currentOpenMenu === 'leaderboard') {
             let html = timerHtml + renderUsers(users);
@@ -1541,20 +1551,42 @@ window.handleLeaderboard = async function() {
     }
 }
 
+// UPDATE: Komplettes Profil anzeigen, wenn man jemanden im Leaderboard anklickt
 window.showPlayerProfile = async function(name) {
     let snap = await get(ref(db,"users/"+name));
     if(snap.exists()) {
         let u = snap.val();
+        
+        // Werte sicher abrufen, falls bei neuen Accounts etwas fehlt
+        let totalCaught = u.stats?.totalCaught || 0;
+        let totalEarned = u.stats?.totalEarned || 0;
+        let streak = u.dailyStreak || 0;
+        let prestige = u.prestige || 0;
+        let money = u.money || 0;
+
         let html = `
         <div class="profile-card">
             <div class="profile-header">
-                <div class="profile-avatar">${u.prestige>0?'👑':'🎣'}</div>
-                <div><h2 style="margin:0;">${u.name}</h2><div style="color:#60a5fa;">👑 Prestige ${u.prestige||0} | ⭐ Level ${u.level}</div></div>
+                <div class="profile-avatar">${prestige > 0 ? '👑' : '🎣'}</div>
+                <div>
+                    <h2 style="margin:0;">${u.name}</h2>
+                    <div style="color:#60a5fa;">👑 Prestige ${prestige} | ⭐ Level ${u.level}</div>
+                </div>
             </div>
-            <div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span> <span>🐟 ${u.stats?.totalCaught||0} Fische</span></div>
+            <div class="card-stats">
+                <span>💰 ${Math.floor(money).toLocaleString()}$</span> 
+                <span>🐟 ${totalCaught.toLocaleString()} Fische</span>
+            </div>
+            <div class="card-stats">
+                <span>💵 ${totalEarned.toLocaleString()}$ verdient</span> 
+                <span>🔥 Streak: ${streak}</span>
+            </div>
         </div>
-        <button class="update-btn" onclick="window.handleLeaderboard()">Zurück zum Leaderboard</button>`;
+        <button class="update-btn" style="width:100%; margin-top:10px;" onclick="window.handleLeaderboard()">Zurück zum Leaderboard</button>`;
+        
         openModal(`📊 Profil: ${u.name}`, html);
+    } else {
+        alert("Spielerprofil konnte nicht geladen werden.");
     }
 }
 
