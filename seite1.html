@@ -67,7 +67,6 @@
             border: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 10; max-height: 95vh; overflow-y: auto;
         }
 
-        /* Broadcast Banner überarbeitet */
         #broadcast-banner { display:none; position:fixed; top:0; left:0; width:100%; background:linear-gradient(90deg, #ef4444, #b91c1c); color:white; text-align:center; padding:15px; font-weight:bold; z-index:100000; box-shadow:0 4px 15px rgba(0,0,0,0.6); font-size:15px; border-bottom: 2px solid #fca5a5; transition: opacity 0.5s ease;}
         #broadcast-banner button { position:absolute; right:15px; top:12px; background:none; border:none; color:white; font-size:20px; cursor:pointer; font-weight:bold; padding:0; line-height:1;}
         
@@ -1886,11 +1885,12 @@ window.handleAdminMenu = function() {
             </div>
             
             <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #10b981;">
-                <h4 style="margin:0 0 10px 0; color:#10b981; border-bottom:1px solid #30363d; padding-bottom:5px;">🛠️ Wartung</h4>
-                <div style="display:flex; gap:5px;">
+                <h4 style="margin:0 0 10px 0; color:#10b981; border-bottom:1px solid #30363d; padding-bottom:5px;">🛠️ Wartung & Updates</h4>
+                <div style="display:flex; gap:5px; margin-bottom:10px;">
                     <button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">Wartung AN</button>
                     <button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">Wartung AUS</button>
                 </div>
+                <button class="update-btn" style="width:100%; background:#8b5cf6;" onclick="window.adminSendUpdateToDiscord()">📢 Update in Discord posten</button>
             </div>
         </div>
 
