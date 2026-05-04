@@ -257,7 +257,7 @@
                 <button id="btnAqua"><span>🐟</span> Aquarium</button>
                 <button id="btnShop"><span>🛒</span> Shop</button>
                 <button id="btnInv"><span>🎒</span> Ausrüstung</button>
-                <button id="btnDex"><span>📖</span> Fische</button>
+                <button id="btnDex"><span>📖</span> Fisch-Dex</button>
                 <button id="btnQuest"><span>📜</span> Quest</button>
                 <button id="btnDaily"><span>🎁</span> Daily</button>
                 <button id="btnLeader"><span>🏆</span> Leader</button>
@@ -336,7 +336,6 @@ window.currentDexTab = 'normal';
 let fishInterval = null;
 let wasMaintenance = false;
 
-// Caches for Leaderboard & Guilds
 let lbUpdateCooldown = 0;
 let lastLeaderboardUsers = [];
 let guildsCache = {};
@@ -413,7 +412,6 @@ const baitsDB = {
     "b10": { name: "Kunstköder", e: "🐟", cost: 50000, amt: 20, speed: 40, luck: 0, res: 30, trashRed: 0, desc: "+40% Speed, +30% Widerstand" }
 };
 
-// Event Info abrufen
 function getCurrentEventInfo() {
     let now = Date.now();
     if (globalState && globalState.event && now < globalState.event.exp) {
@@ -428,14 +426,12 @@ function startWeatherEffects() {
     weatherInterval = setInterval(() => {
         let scene = document.getElementById('fishing-scene');
         if(!scene) return;
-        
         let oldRain = scene.querySelector('.rain-fx');
         let oldSun = scene.querySelector('.sun-fx');
         let oldShark = scene.querySelector('.shark-fx');
         if(oldRain) oldRain.remove();
         if(oldSun) oldSun.remove();
         if(oldShark) oldShark.remove();
-        
         let { event } = getCurrentEventInfo();
         if(event && (event.type === 'rain' || event.type === 'speed')) {
             let rainDiv = document.createElement('div'); rainDiv.className = 'rain-fx'; scene.appendChild(rainDiv);
@@ -465,12 +461,10 @@ function renderAquarium() {
         let div = document.createElement("div");
         div.className = "aqua-fish-entity";
         div.innerText = f.e;
-        
         let currentX = Math.random() * 85;
         let currentY = Math.random() * 80 + 10;
         div.style.transform = `translate(${currentX}vw, ${currentY}vh) scaleX(1)`;
         bg.appendChild(div);
-
         let moveInterval = setInterval(() => {
             if(!document.body.contains(div)) { clearInterval(moveInterval); return; }
             let newX = Math.random() * 85;
@@ -487,16 +481,13 @@ function roll(zIdx) {
     let rodDef = rodsDB[gameState.eqRod] || rodsDB.rod1;
     let baitDef = gameState.eqBait !== "none" ? baitsDB[gameState.eqBait] : null;
     let pool = items.filter(i => i.z === zIdx);
-    
     if(baitDef && baitDef.trashRed) {
         pool = pool.filter(i => {
             if(!i.isTrash) return true;
             return Math.random() > (baitDef.trashRed / 100);
         });
     }
-
     let eventLuckMult = (event && event.type === 'luck') ? event.mult : 1;
-
     let modPool = pool.map(i => {
         let totalLuck = (rodDef.luck || 0) + (baitDef?.luck || 0);
         let w = i.c * (1 + (totalLuck / 100));
@@ -504,7 +495,6 @@ function roll(zIdx) {
         if(event && event.type === 'hai' && i.n === 'Zander') w *= event.mult;
         return { ...i, weight: w };
     });
-    
     let total = modPool.reduce((s,i)=>s+i.weight,0);
     let r = Math.random() * total;
     let baseItem = pool[0];
@@ -512,12 +502,9 @@ function roll(zIdx) {
         if(r < i.weight) { baseItem = i; break; }
         r -= i.weight;
     }
-    
     let shinyChance = 0.01 * eventLuckMult;
     if(event && event.type === 'sun') shinyChance *= event.mult;
-
     let isShiny = Math.random() < shinyChance;
-    
     let itemW = 0;
     let finalVal = baseItem.v;
     if(baseItem.minW !== undefined) {
@@ -528,9 +515,7 @@ function roll(zIdx) {
             finalVal = Math.max(1, Math.floor(baseItem.v * valMult));
         }
     }
-    
     let finalItem = { baseName: baseItem.n, n: baseItem.n, v: finalVal, xp: baseItem.xp, c: baseItem.c, e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: itemW };
-    
     if(isShiny) {
         finalItem.n = "🧬 " + baseItem.n;
         finalItem.v = Math.abs(finalItem.v) * 5; 
@@ -538,7 +523,6 @@ function roll(zIdx) {
         finalItem.isShiny = true;
         finalItem.isTrash = false; 
     }
-    
     finalItem.id = Math.random().toString(36).substr(2,9); 
     return finalItem;
 }
@@ -562,7 +546,6 @@ function checkQuestResets() {
     }
     if(!gameState.qs.p || typeof gameState.qs.p !== 'object') gameState.qs.p = { dc:0, de:0, wc:0, we:0, mc:0, me:0 };
     if(!gameState.qs.c) gameState.qs.c = {};
-    
     let qs = gameState.qs;
     let save = false;
     if(qs.d !== daily) { qs.d = daily; qs.p.dc=0; qs.p.de=0; for(let c in qs.c) if(c.startsWith('d')) delete qs.c[c]; save=true; }
@@ -575,7 +558,6 @@ function addQuestProgress(t, amt) {
     if(t === 'e') { gameState.qs.p.de += amt; gameState.qs.p.we += amt; gameState.qs.p.me += amt; }
 }
 
-// ==== SYNC LEADERBOARD LOGIK ====
 async function syncGlobalLeaderboard() {
     if(!currentUser || !gameState) return;
     let playerData = {
@@ -585,10 +567,10 @@ async function syncGlobalLeaderboard() {
         money: gameState.money || 0,
         stats: { totalCaught: gameState.stats.totalCaught || 0 }
     };
+    if(gameState.guild) playerData.guild = gameState.guild;
     await set(ref(db, "global/leaderboard/" + currentUser), playerData);
 }
 
-// ==== BROADCAST BANNER SCHLIEßEN ====
 window.closeBroadcast = function() {
     document.getElementById("broadcast-banner").style.display = "none";
     if(globalState && globalState.broadcast) {
@@ -600,7 +582,6 @@ window.closeBroadcast = function() {
 
 async function loadData() {
     if(!currentUser) return;
-    
     onValue(ref(db, "accounts/" + currentUser), (snap) => {
         if(!snap.exists() && currentUser) {
             localStorage.removeItem('vFisher_user');
@@ -609,12 +590,8 @@ async function loadData() {
             location.reload();
         }
     });
-    
-    // GILDEN CACHE
     onValue(ref(db, "global/guilds"), (snap) => {
         guildsCache = snap.exists() ? snap.val() : {};
-        
-        // Prüfen, ob man aus der Gilde gekickt wurde
         if(gameState && gameState.guild) {
             let myG = guildsCache[gameState.guild];
             if(!myG || !myG.members || !myG.members.includes(currentUser)) {
@@ -626,8 +603,6 @@ async function loadData() {
         }
         if(window.currentOpenMenu === 'guild') window.handleGuildMenu();
     });
-
-    // LEADERBOARD CACHE
     onValue(ref(db, "global/leaderboard"), (snap) => {
         if(snap.exists()) {
             let data = snap.val();
@@ -641,31 +616,21 @@ async function loadData() {
                 return caughtB - caughtA;
             });
             lastLeaderboardUsers = usersArray;
-            
-            if(window.currentOpenMenu === 'leaderboard') {
-                window.handleLeaderboard();
-            }
+            if(window.currentOpenMenu === 'leaderboard') window.handleLeaderboard();
         }
     });
-
     onValue(ref(db, "global"), (snap) => {
         globalState = snap.exists() ? snap.val() : null;
-        
         let isMaintenance = globalState && globalState.maintenance;
         if(isMaintenance && currentUser !== "colin") {
             document.getElementById('maintenance-overlay').style.display = 'flex';
             wasMaintenance = true;
         } else {
             document.getElementById('maintenance-overlay').style.display = 'none';
-            if(wasMaintenance && currentUser !== "colin") {
-                location.reload(); 
-            }
+            if(wasMaintenance && currentUser !== "colin") location.reload(); 
         }
-
-        // Live Broadcast System prüfen
         if (globalState && globalState.broadcast) {
             let bc = globalState.broadcast;
-            // Nach 5 Minuten wird das Banner gelöscht
             if (Date.now() - bc.timestamp < 300000 && (!gameState || gameState.lastBroadcast !== bc.timestamp)) {
                 document.getElementById('broadcast-text').innerText = bc.text;
                 document.getElementById('broadcast-banner').style.display = 'block';
@@ -676,12 +641,10 @@ async function loadData() {
             document.getElementById('broadcast-banner').style.display = 'none';
         }
     });
-    
     onValue(ref(db, "users/" + currentUser), async (snap) => {
         if (!currentUser) return;
         let accCheck = await get(ref(db, "accounts/" + currentUser));
         if(!accCheck.exists()) return;
-        
         if(snap.exists()) { 
             gameState = snap.val(); 
         } else {
@@ -695,7 +658,6 @@ async function loadData() {
             };
             saveData();
         }
-        
         if(gameState && gameState.bannedUntil && gameState.bannedUntil > Date.now()) {
             let mins = Math.ceil((gameState.bannedUntil - Date.now()) / 60000);
             document.body.innerHTML = `<div style="text-align:center; background:#161b22; padding:30px; border-radius:15px; border:2px solid #ef4444;">
@@ -706,11 +668,9 @@ async function loadData() {
             </div>`;
             return;
         }
-        
         if(gameState) {
-            if(!gameState.inventory) {
-                gameState.inventory = [];
-            } else if (!Array.isArray(gameState.inventory)) {
+            if(!gameState.inventory) gameState.inventory = [];
+            else if (!Array.isArray(gameState.inventory)) {
                 let newInv = [];
                 for(let [name, data] of Object.entries(gameState.inventory)) {
                     if(data.count > 0) {
@@ -735,7 +695,6 @@ async function loadData() {
                 }
                 gameState.inventory = newInv;
             }
-
             if(gameState.combo !== undefined) delete gameState.combo;
             if(!gameState.dex) gameState.dex = {};
             if(!gameState.qs || typeof gameState.qs !== 'object') gameState.qs = { p: {dc:0,de:0,wc:0,we:0,mc:0,me:0}, c: {}, d: "", w: "", m: "" };
@@ -749,11 +708,9 @@ async function loadData() {
             if(!gameState.usedCodes) gameState.usedCodes = {};
             if(gameState.guild === undefined) gameState.guild = "";
             if(gameState.zone >= zones.length) gameState.zone = 0;
-            
             checkQuestResets();
             renderAquarium();
             syncGlobalLeaderboard();
-            
             if(document.getElementById("authBox").style.display !== "none") {
                 document.getElementById("authBox").style.display = "none";
                 document.getElementById("game").style.display = "flex";
@@ -763,8 +720,6 @@ async function loadData() {
                 if(currentUser === "colin") document.getElementById("btnAdminTop").style.display = "block";
                 startWeatherEffects();
             }
-            
-            // Sofortige Updates aller Menüs ohne zu flackern
             if(window.currentOpenMenu === 'sell') window.handleSellMenu();
             if(window.currentOpenMenu === 'shop') window.handleShopMenu();
             if(window.currentOpenMenu === 'inv') window.handleInvMenu();
@@ -791,9 +746,7 @@ async function loadData() {
 }
 
 function saveData() { 
-    if(currentUser && gameState) {
-        set(ref(db, "users/" + currentUser), gameState); 
-    }
+    if(currentUser && gameState) set(ref(db, "users/" + currentUser), gameState); 
 }
 
 setInterval(() => { if(gameState) updateUI(); }, 50);
@@ -805,10 +758,8 @@ function updateUI() {
     let xpNeeded = gameState.level * 50;
     document.getElementById("ui-level").innerHTML = `⭐ Lvl ${gameState.level} (${Math.min(gameState.xp, xpNeeded)}/${xpNeeded})`;
     document.getElementById("zoneDisplay").innerHTML = `🌊 ${zones[gameState.zone].name}`;
-    
     document.getElementById("deco-zone-0").style.display = gameState.zone === 0 ? "block" : "none";
     document.getElementById("deco-zone-1").style.display = gameState.zone === 1 ? "block" : "none";
-    
     let { event, timeLeft } = getCurrentEventInfo();
     let evtEl = document.getElementById("eventDisplay");
     if(event && event.name) {
@@ -820,10 +771,8 @@ function updateUI() {
         evtEl.innerHTML = ``;
         evtEl.removeAttribute("title");
     }
-    
     document.body.className = "zone-bg-" + gameState.zone;
     document.getElementById("ui-eq-rod").innerHTML = `${rodsDB[gameState.eqRod]?.e || '🎣'} Rute: ${rodsDB[gameState.eqRod]?.name || 'Holzrute'}`;
-    
     if(gameState.eqBait !== "none" && gameState.baits && gameState.baits[gameState.eqBait] > 0) {
         document.getElementById("ui-eq-bait").innerHTML = `${baitsDB[gameState.eqBait]?.e || '🪱'} Köder: ${baitsDB[gameState.eqBait]?.name} (${gameState.baits[gameState.eqBait]})`;
     } else {
@@ -873,22 +822,16 @@ window.closeModal = function() {
 function openModal(title, body, footer='', wide=false) {
     let modalBody = document.getElementById('modal-body');
     let modalContent = document.getElementById('modal-content');
-    
-    // Verhindert das lästige Flackern und Hochscrollen bei Instant-Updates
     let scrollPos = modalBody.scrollTop;
     let isAlreadyOpen = document.getElementById('modal-overlay').style.display === 'flex';
-    
     document.getElementById('modal-title').innerText = title;
     modalBody.innerHTML = body;
     document.getElementById('modal-footer').innerHTML = footer;
     document.getElementById('modal-footer').style.display = footer ? 'flex' : 'none';
-    
     if(wide) modalContent.classList.add('wide');
     else modalContent.classList.remove('wide');
-    
     document.getElementById('modal-overlay').style.display = 'flex';
-    
-    if (isAlreadyOpen) modalBody.scrollTop = scrollPos;
+    if (isAlreadyOpen && modalBody) modalBody.scrollTop = scrollPos;
 }
 
 let minigameActive = false, mgPlayerPower = 0, mgFishPower = 50, mgFishItem = null, mgTimer = null, mgClicksNeeded = 15, mgTotalClicks = 15, mgLastClick = 0;
@@ -899,17 +842,14 @@ function triggerMinigame(item) {
     mgPlayerPower = 0;
     mgFishPower = Math.random() * 51 + 50;
     mgLastClick = Date.now();
-    
     mgClicksNeeded = item.isShiny ? 35 : (item.v >= 50 ? 40 : 20);
     mgTotalClicks = mgClicksNeeded;
-    
     document.getElementById('minigame-container').classList.add('boss-active');
     document.getElementById('minigame-overlay').style.display = 'flex';
     let wText = item.weightG ? `<br><small style="color:#94a3b8; font-size:16px;">⚖️ ${formatWeight(item.weightG)}</small>` : '';
     document.getElementById('mg-fish-name').innerHTML = `${item.e} ${item.n.toUpperCase()}${wText}`;
     document.getElementById('mg-fish-emoji').innerHTML = item.e;
     updateMinigameUI();
-    
     if(mgTimer) clearInterval(mgTimer);
     mgTimer = setInterval(() => {
         if(!minigameActive) return clearInterval(mgTimer);
@@ -944,25 +884,21 @@ function finishMinigame(won) {
     clearInterval(mgTimer);
     document.getElementById('minigame-overlay').style.display = 'none';
     document.getElementById('minigame-container').classList.remove('boss-active');
-    
     let btn = document.getElementById('btnFish');
     let scene = document.getElementById('fishing-scene');
     scene.classList.remove('fishing-active');
     btn.disabled = false;
     btn.innerHTML = `🎣 Angeln`;
-    
     if(won) {
         let finalXp = Math.floor(mgFishItem.xp * (mgFishItem.isShiny ? 5 : 2));
         let { event } = getCurrentEventInfo();
         if(event && event.type === 'xp') finalXp = Math.floor(finalXp * event.mult);
-
         gameState.inventory.push({...mgFishItem});
         updateDex(mgFishItem);
         gameState.xp += finalXp;
         gameState.stats.totalCaught++;
         gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod] || 0) + 1;
         addQuestProgress('c', 1);
-        
         log(`⚔️ BOSS BESIEGT! ${mgFishItem.e} ${mgFishItem.baseName} (${mgFishItem.v}$)`);
         if(gameState.xp >= gameState.level * 50) {
             gameState.xp -= gameState.level * 50;
@@ -979,42 +915,29 @@ function finishMinigame(won) {
     }
 }
 
+// ===== ALLE MENÜ-FUNKTIONEN =====
 window.handleFish = function() {
     let btn = document.getElementById('btnFish');
     if(btn.disabled) return;
-    
     btn.disabled = true;
     let scene = document.getElementById('fishing-scene');
     scene.classList.add('fishing-active');
-    
     let rodDef = rodsDB[gameState.eqRod] || rodsDB.rod1;
     let baitDef = baitsDB[gameState.eqBait];
-    
     let speedBonus = (rodDef.speed || 0) + (baitDef?.speed || 0);
     if(speedBonus > 90) speedBonus = 90; 
-    
     let fishTimeSec = 60 * (1 - (speedBonus / 100)); 
     let { event } = getCurrentEventInfo();
-    
-    // Speed Bonus vom Event (Regen oder Custom Speed)
     if(event && event.type === 'speed') fishTimeSec = Math.floor(fishTimeSec / event.mult);
     if(event && event.type === 'rain') fishTimeSec = Math.floor(fishTimeSec / event.mult);
-
     fishTimeSec = Math.max(1, Math.floor(fishTimeSec)); 
-    
     let timeLeft = fishTimeSec;
     btn.innerHTML = `🎣 Angeln... (${timeLeft}s)`;
-    
     if(fishInterval) clearInterval(fishInterval);
-    
     fishInterval = setInterval(() => {
         timeLeft--;
-        if(timeLeft > 0) {
-            btn.innerHTML = `🎣 Angeln... (${timeLeft}s)`;
-        } else {
-            clearInterval(fishInterval);
-            executeFishCatch(btn, scene);
-        }
+        if(timeLeft > 0) btn.innerHTML = `🎣 Angeln... (${timeLeft}s)`;
+        else { clearInterval(fishInterval); executeFishCatch(btn, scene); }
     }, 1000);
 }
 
@@ -1022,28 +945,18 @@ function executeFishCatch(btn, scene) {
     try {
         if(!gameState.inventory) gameState.inventory = [];
         if(!gameState.rodStats) gameState.rodStats = {};
-        
         let item = roll(gameState.zone);
         let rodDef = rodsDB[gameState.eqRod] || rodsDB.rod1;
         let baitDef = baitsDB[gameState.eqBait];
         let { event } = getCurrentEventInfo();
-        
         if(gameState.eqBait !== "none" && gameState.baits) {
             gameState.baits[gameState.eqBait]--;
-            if(gameState.baits[gameState.eqBait] <= 0) {
-                log(`❌ Köder aufgebraucht!`);
-                gameState.eqBait = "none";
-            }
+            if(gameState.baits[gameState.eqBait] <= 0) { log(`❌ Köder aufgebraucht!`); gameState.eqBait = "none"; }
         }
-        
         if(!item.isTrash && item.weightG) {
             let maxGrams = (rodDef.maxKg || 2) * 1000;
             let resilience = (rodDef.res || 0) + (baitDef?.res || 0);
-            
-            let escapeChance = 0;
-            if(item.weightG > maxGrams) escapeChance = 80 - resilience; 
-            else escapeChance = 10 - resilience; 
-            
+            let escapeChance = item.weightG > maxGrams ? 80 - resilience : 10 - resilience;
             if(escapeChance > 0 && Math.random() < (escapeChance / 100)) {
                 log(`💥 Schnur gerissen! Der ${item.baseName} (${formatWeight(item.weightG)}) war zu wild!`);
                 saveData();
@@ -1053,7 +966,6 @@ function executeFishCatch(btn, scene) {
                 return;
             }
         }
-        
         if(item.isTrash) {
             let penalty = Math.abs(item.xp); 
             gameState.xp = Math.max(0, gameState.xp - penalty);
@@ -1065,26 +977,16 @@ function executeFishCatch(btn, scene) {
             btn.innerHTML = `🎣 Angeln`;
             return;
         }
-
-        if(item.isShiny || item.c <= 0.5) { 
-            triggerMinigame(item);
-            scene.classList.remove('fishing-active');
-            return;
-        }
-        
-        // XP-Event Check
+        if(item.isShiny || item.c <= 0.5) { triggerMinigame(item); scene.classList.remove('fishing-active'); return; }
         if(event && event.type === 'xp') item.xp = Math.floor(item.xp * event.mult);
-
         gameState.inventory.push({...item});
         updateDex(item);
         gameState.xp += item.xp;
         gameState.stats.totalCaught++;
         gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod] || 0) + 1;
         addQuestProgress('c', 1);
-        
         let wText = item.weightG ? ` ⚖️ ${formatWeight(item.weightG)}` : '';
         let msg = item.isShiny ? `🧬 MUTATION: ${item.e} ${item.baseName}${wText} (${item.v}$)` : `${item.e} Gefangen: ${item.baseName}${wText} (${item.v}$)`;
-        
         if(gameState.xp >= gameState.level * 50) {
             gameState.xp -= gameState.level * 50;
             gameState.level++;
@@ -1096,115 +998,58 @@ function executeFishCatch(btn, scene) {
         scene.classList.remove('fishing-active');
         btn.disabled = false;
         btn.innerHTML = `🎣 Angeln`;
-        
-    } catch(e) {
-        console.error(e);
-        scene.classList.remove('fishing-active');
-        btn.disabled = false;
-        btn.innerHTML = `🎣 Angeln`;
-    }
+    } catch(e) { console.error(e); scene.classList.remove('fishing-active'); btn.disabled = false; btn.innerHTML = `🎣 Angeln`; }
 }
 
 window.handleSellMenu = function() {
     window.currentOpenMenu = 'sell';
     if(!gameState.inventory) gameState.inventory = [];
     if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
-    
-    let baseValue = 0;
-    let trashValue = 0;
-    let grouped = {};
-    
+    let baseValue = 0, trashValue = 0, grouped = {};
     gameState.inventory.forEach((item, idx) => {
         let val = Number(item.v);
         if(isNaN(val)) val = 0;
-        
         if(val >= 0) baseValue += val;
         else trashValue += val;
-        
-        let key = item.n; 
-        if(!grouped[key]) {
-            grouped[key] = {
-                n: key, e: item.e, isTrash: item.isTrash,
-                count: 0, totalV: 0, totalW: 0, firstIdx: idx
-            };
-        }
+        let key = item.n;
+        if(!grouped[key]) grouped[key] = { n: key, e: item.e, isTrash: item.isTrash, count: 0, totalV: 0, totalW: 0, firstIdx: idx };
         grouped[key].count++;
         grouped[key].totalV += val;
         if(item.weightG) grouped[key].totalW += item.weightG;
     });
-    
     let hasItems = Object.keys(grouped).length > 0;
     let html = `<h3>🎒 Rucksack</h3><div style="max-height:40vh; overflow-y:auto; padding-right:5px; margin-bottom:10px;">`;
-    
     for(let [name, data] of Object.entries(grouped)) {
         let color = data.totalV >= 0 ? '#10b981' : '#ef4444';
         let weightStr = data.totalW > 0 ? `⚖️ Ges: ${formatWeight(data.totalW)}` : '';
         let aquaBtn = (!data.isTrash && gameState.aquarium.unlocked && gameState.aquarium.fishes.length < 5) ? `<button class="update-btn" style="padding:4px 8px; font-size:11px; margin-left:10px; flex-direction:row;" onclick="window.sendToAquarium(${data.firstIdx})">🐟 1x Ins Aqua</button>` : '';
-        
-        html += `<div class="inv-group-card">
-            <div style="flex:1;">
-                <b style="font-size:15px;">${data.count}x ${data.e} ${name}</b><br>
-                <small style="color:#94a3b8;">${weightStr}</small>
-            </div>
-            <div style="text-align:right;">
-                <div style="color:${color}; font-weight:bold; font-size:15px;">${data.totalV >= 0 ? '+' : ''}${data.totalV.toLocaleString()}$</div>
-                <div style="margin-top:5px;">${aquaBtn}</div>
-            </div>
-        </div>`;
+        html += `<div class="inv-group-card"><div style="flex:1;"><b style="font-size:15px;">${data.count}x ${data.e} ${name}</b><br><small style="color:#94a3b8;">${weightStr}</small></div><div style="text-align:right;"><div style="color:${color}; font-weight:bold; font-size:15px;">${data.totalV >= 0 ? '+' : ''}${data.totalV.toLocaleString()}$</div><div style="margin-top:5px;">${aquaBtn}</div></div></div>`;
     }
     html += `</div>`;
-    
     if(!hasItems) return openModal("💰 Rucksack", "<p>Dein Rucksack ist leer!</p>");
-    
     let bonusPercent = gameState.prestige || 0;
     let prestigeBonus = Math.floor(baseValue * (bonusPercent / 100));
-    
-    // Check für Event Geld-Boost
-    let eventBonus = 0;
+    let eventBonus = 0, eventNameStr = "";
     let { event } = getCurrentEventInfo();
-    let eventNameStr = "";
-    if (event && event.type === 'money') {
-        eventBonus = Math.floor(baseValue * (event.mult - 1));
-        eventNameStr = `(x${event.mult})`;
-    }
-
+    if (event && event.type === 'money') { eventBonus = Math.floor(baseValue * (event.mult - 1)); eventNameStr = `(x${event.mult})`; }
     let finalTotal = Math.floor(baseValue + prestigeBonus + eventBonus + trashValue);
     if(isNaN(finalTotal)) finalTotal = 0;
-    
-    html += `
-    <div class="summary-box">
-        <div class="summary-row"><span>🐟 Basis-Wert (Fische):</span> <span style="color:#10b981;">+${baseValue.toLocaleString()}$</span></div>
-        <div class="summary-row"><span>👑 Prestige Bonus (+${bonusPercent}%):</span> <span style="color:#60a5fa;">+${prestigeBonus.toLocaleString()}$</span></div>
-        ${eventBonus > 0 ? `<div class="summary-row"><span>⚡ Event Bonus ${eventNameStr}:</span> <span style="color:#facc15;">+${eventBonus.toLocaleString()}$</span></div>` : ''}
-        <div class="summary-row"><span>🗑️ Müll-Strafe:</span> <span style="color:#ef4444;">${trashValue.toLocaleString()}$</span></div>
-        <div class="summary-total">
-            <span>Gesamtbetrag:</span> 
-            <span style="color:${finalTotal >= 0 ? '#10b981' : '#ef4444'};">${finalTotal >= 0 ? '+' : ''}${finalTotal.toLocaleString()}$</span>
-        </div>
-    </div>`;
-    
+    html += `<div class="summary-box"><div class="summary-row"><span>🐟 Basis-Wert (Fische):</span> <span style="color:#10b981;">+${baseValue.toLocaleString()}$</span></div><div class="summary-row"><span>👑 Prestige Bonus (+${bonusPercent}%):</span> <span style="color:#60a5fa;">+${prestigeBonus.toLocaleString()}$</span></div>${eventBonus > 0 ? `<div class="summary-row"><span>⚡ Event Bonus ${eventNameStr}:</span> <span style="color:#facc15;">+${eventBonus.toLocaleString()}$</span></div>` : ''}<div class="summary-row"><span>🗑️ Müll-Strafe:</span> <span style="color:#ef4444;">${trashValue.toLocaleString()}$</span></div><div class="summary-total"><span>Gesamtbetrag:</span> <span style="color:${finalTotal >= 0 ? '#10b981' : '#ef4444'};">${finalTotal >= 0 ? '+' : ''}${finalTotal.toLocaleString()}$</span></div></div>`;
     let sellBtnText = finalTotal < 0 ? "Müll kostenpflichtig entsorgen" : "Alles verkaufen";
     let sellBtnClass = finalTotal < 0 ? "danger-btn" : "success-btn";
-    
     openModal("💰 Rucksack", html, `<button class="${sellBtnClass}" onclick="window.executeSell(${finalTotal})">${sellBtnText}</button>`);
 }
 
 window.executeSell = function(val) {
     if(!gameState.inventory || gameState.inventory.length === 0) return;
-    
     let finalVal = Number(val);
     if(isNaN(finalVal)) return;
-    
     gameState.money += finalVal;
     if(gameState.money < 0) gameState.money = 0; 
-    
     if(finalVal > 0) { gameState.stats.totalEarned += finalVal; addQuestProgress('e', finalVal); }
-    
     gameState.inventory = []; 
-    
     if(finalVal < 0) log(`💸 Müll entsorgt. Das hat dich ${Math.abs(finalVal).toLocaleString()}$ gekostet.`);
     else log(`💰 Rucksack verkauft für ${finalVal.toLocaleString()}$`);
-    
     saveData();
     syncGlobalLeaderboard();
     window.handleSellMenu(); 
@@ -1215,7 +1060,6 @@ window.handleAquaMenu = function() {
     if(!gameState) return;
     if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
     if(!gameState.aquarium.fishes) gameState.aquarium.fishes = [];
-
     if(!gameState.aquarium.unlocked) {
         let canBuy = gameState.money >= 50000 || gameState.prestige >= 1;
         let html = `<div style="text-align:center"><h2>🐟 Aquarium</h2><p>Fische generieren passiv Geld!</p><p>Preis: 50.000$</p>${canBuy ? '<button class="success-btn" onclick="window.unlockAquarium()">Kaufen</button>' : '<button disabled>Nicht verfügbar</button>'}</div>`;
@@ -1244,13 +1088,10 @@ window.sendToAquarium = function(idx) {
     if(!gameState.aquarium.unlocked) return alert("Aquarium nicht freigeschaltet!");
     if(gameState.aquarium.fishes.length >= 5) return alert("Maximal 5 Fische!");
     if(!gameState.inventory) gameState.inventory = [];
-    
     let item = gameState.inventory[idx];
     if(!item || item.isTrash) return;
-    
     gameState.inventory.splice(idx, 1);
     gameState.aquarium.fishes.push({ n: item.n, e: item.e, v: item.v, weightG: item.weightG });
-    
     saveData();
     renderAquarium();
     window.handleSellMenu();
@@ -1260,9 +1101,7 @@ window.sendToAquarium = function(idx) {
 window.removeFromAquarium = function(idx) {
     let fish = gameState.aquarium.fishes.splice(idx, 1)[0];
     if(!gameState.inventory) gameState.inventory = [];
-    
     gameState.inventory.push({...fish, isShiny: fish.n.startsWith("🧬 "), isTrash: false});
-    
     saveData();
     renderAquarium();
     window.handleAquaMenu();
@@ -1271,45 +1110,20 @@ window.removeFromAquarium = function(idx) {
 window.handleShopMenu = function() {
     window.currentOpenMenu = 'shop';
     let titleStr = `🛒 Shop (💰 ${Math.floor(gameState.money).toLocaleString()}$)`;
-    
     let html = `<div class="inv-grid"><div><h4 style="color:white; margin-top:0;">🎣 Angelruten</h4>`;
-    
     let ownedList = gameState.ownedRods || [];
     let hasRods = false;
     for(let [id, rod] of Object.entries(rodsDB)) {
         if(ownedList.includes(id)) continue;
         hasRods = true;
-        
-        html += `
-        <div class="inv-card">
-            <h4>${rod.e} ${rod.name}</h4>
-            <div class="inv-stat"><span>Anlockgeschwindigkeit:</span> <span>+${rod.speed||0}%</span></div>
-            <div class="inv-stat"><span>Glück:</span> <span>+${rod.luck||0}%</span></div>
-            <div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>${rod.res||0}%</span></div>
-            <div class="inv-stat"><span>Max. Kilogramm:</span> <span>${rod.maxKg} kg</span></div>
-            <div style="margin-top:10px;">
-                <button class="success-btn" style="width:100%;" ${gameState.money<rod.cost?'disabled':''} onclick="window.buyRod('${id}')">${rod.cost.toLocaleString()}$</button>
-            </div>
-        </div>`;
+        html += `<div class="inv-card"><h4>${rod.e} ${rod.name}</h4><div class="inv-stat"><span>Anlockgeschwindigkeit:</span> <span>+${rod.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span> <span>+${rod.luck||0}%</span></div><div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>${rod.res||0}%</span></div><div class="inv-stat"><span>Max. Kilogramm:</span> <span>${rod.maxKg} kg</span></div><div style="margin-top:10px;"><button class="success-btn" style="width:100%;" ${gameState.money<rod.cost?'disabled':''} onclick="window.buyRod('${id}')">${rod.cost.toLocaleString()}$</button></div></div>`;
     }
     if(!hasRods) html += `<p style="text-align:center; color:#10b981;">Alle Ruten gekauft!</p>`;
-    
     html += `</div><div><h4 style="color:white; margin-top:0;">🪱 Köder</h4>`;
     for(let [id, bait] of Object.entries(baitsDB)) {
-        html += `
-        <div class="inv-card">
-            <h4>${bait.e} ${bait.name} <span style="float:right; font-size:12px; color:#94a3b8;">(${bait.amt}x)</span></h4>
-            <div class="inv-stat"><span>Anlockgeschwindigkeit:</span> <span>+${bait.speed||0}%</span></div>
-            <div class="inv-stat"><span>Glück:</span> <span>+${bait.luck||0}%</span></div>
-            <div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>${bait.res||0}%</span></div>
-            ${bait.trashRed ? `<div class="inv-stat" style="color:#10b981;"><span>Müll Reduzierung:</span> <span>${bait.trashRed}%</span></div>` : ''}
-            <div style="margin-top:10px;">
-                <button class="success-btn" style="width:100%;" ${gameState.money<bait.cost?'disabled':''} onclick="window.buyBait('${id}')">${bait.cost.toLocaleString()}$</button>
-            </div>
-        </div>`;
+        html += `<div class="inv-card"><h4>${bait.e} ${bait.name} <span style="float:right; font-size:12px; color:#94a3b8;">(${bait.amt}x)</span></h4><div class="inv-stat"><span>Anlockgeschwindigkeit:</span> <span>+${bait.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span> <span>+${bait.luck||0}%</span></div><div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>${bait.res||0}%</span></div>${bait.trashRed ? `<div class="inv-stat" style="color:#10b981;"><span>Müll Reduzierung:</span> <span>${bait.trashRed}%</span></div>` : ''}<div style="margin-top:10px;"><button class="success-btn" style="width:100%;" ${gameState.money<bait.cost?'disabled':''} onclick="window.buyBait('${id}')">${bait.cost.toLocaleString()}$</button></div></div>`;
     }
     html += `</div></div>`;
-    
     document.getElementById('modal-title').innerText = titleStr;
     openModal(titleStr, html, "", true);
 }
@@ -1319,354 +1133,44 @@ window.buyBait = function(id) { gameState.money -= baitsDB[id].cost; if(!gameSta
 window.handleInvMenu = function() {
     window.currentOpenMenu = 'inv';
     if(!gameState.rodStats) gameState.rodStats = {};
-    
-    let html = `<div class="inv-grid">`;
-    
-    html += `<div><h3 style="color:white; margin-top:0;">🎣 Angelruten</h3>`;
+    let html = `<div class="inv-grid"><div><h3 style="color:white; margin-top:0;">🎣 Angelruten</h3>`;
     let ownedList = gameState.ownedRods || ["rod1"];
     ownedList.forEach(rid => {
         let rod = rodsDB[rid] || rodsDB["rod1"];
         let isEquipped = gameState.eqRod === rid;
         let caught = gameState.rodStats[rid] || 0;
-        
-        html += `
-        <div class="inv-card" style="${isEquipped ? 'border-color:#10b981; box-shadow:0 0 10px rgba(16,185,129,0.3);' : ''}">
-            <h4>${rod.e} ${rod.name}</h4>
-            <div class="inv-stat"><span>Anlockgeschwindigkeit:</span> <span>+${rod.speed||0}%</span></div>
-            <div class="inv-stat"><span>Glück:</span> <span>+${rod.luck||0}%</span></div>
-            <div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>${rod.res||0}%</span></div>
-            <div class="inv-stat"><span>Max. Kilogramm:</span> <span>${rod.maxKg} kg</span></div>
-            <div class="inv-stat"><span>Gefangene Fische:</span> <span>${caught}</span></div>
-            <div style="margin-top:10px;">
-                ${isEquipped ? `<button disabled style="width:100%; background:#10b981; color:white; cursor:default;">✅ Ausgerüstet</button>` 
-                             : `<button class="update-btn" style="width:100%;" onclick="window.equipRod('${rid}')">Ausrüsten</button>`}
-            </div>
-        </div>`;
+        html += `<div class="inv-card" style="${isEquipped ? 'border-color:#10b981; box-shadow:0 0 10px rgba(16,185,129,0.3);' : ''}"><h4>${rod.e} ${rod.name}</h4><div class="inv-stat"><span>Anlockgeschwindigkeit:</span> <span>+${rod.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span> <span>+${rod.luck||0}%</span></div><div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>${rod.res||0}%</span></div><div class="inv-stat"><span>Max. Kilogramm:</span> <span>${rod.maxKg} kg</span></div><div class="inv-stat"><span>Gefangene Fische:</span> <span>${caught}</span></div><div style="margin-top:10px;">${isEquipped ? `<button disabled style="width:100%; background:#10b981; color:white; cursor:default;">✅ Ausgerüstet</button>` : `<button class="update-btn" style="width:100%;" onclick="window.equipRod('${rid}')">Ausrüsten</button>`}</div></div>`;
     });
-    html += `</div>`;
-    
-    html += `<div><h3 style="color:white; margin-top:0;">🪱 Köder</h3>`;
-    
-    html += `
-    <div class="inv-card" style="${gameState.eqBait === 'none' ? 'border-color:#10b981; box-shadow:0 0 10px rgba(16,185,129,0.3);' : ''}">
-        <h4>Kein Köder</h4>
-        <div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>0%</span></div>
-        <div style="margin-top:10px;">
-            ${gameState.eqBait === 'none' ? `<button disabled style="width:100%; background:#10b981; color:white; cursor:default;">✅ Ausgerüstet</button>` 
-                                          : `<button class="danger-btn" style="width:100%;" onclick="window.unequipBait()">Ausrüsten</button>`}
-        </div>
-    </div>`;
-
+    html += `</div><div><h3 style="color:white; margin-top:0;">🪱 Köder</h3>`;
+    html += `<div class="inv-card" style="${gameState.eqBait === 'none' ? 'border-color:#10b981; box-shadow:0 0 10px rgba(16,185,129,0.3);' : ''}"><h4>Kein Köder</h4><div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>0%</span></div><div style="margin-top:10px;">${gameState.eqBait === 'none' ? `<button disabled style="width:100%; background:#10b981; color:white; cursor:default;">✅ Ausgerüstet</button>` : `<button class="danger-btn" style="width:100%;" onclick="window.unequipBait()">Ausrüsten</button>`}</div></div>`;
     let baitsList = gameState.baits || {};
     for(let [bid, count] of Object.entries(baitsList)) {
         if(count > 0 && baitsDB[bid]) {
             let bait = baitsDB[bid];
             let isEquipped = gameState.eqBait === bid;
-            html += `
-            <div class="inv-card" style="${isEquipped ? 'border-color:#10b981; box-shadow:0 0 10px rgba(16,185,129,0.3);' : ''}">
-                <h4>${bait.e} ${bait.name} <span style="float:right; font-size:12px; color:#fcd34d;">x${count}</span></h4>
-                <div class="inv-stat"><span>Anlockgeschwindigkeit:</span> <span>+${bait.speed||0}%</span></div>
-                <div class="inv-stat"><span>Glück:</span> <span>+${bait.luck||0}%</span></div>
-                <div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>${bait.res||0}%</span></div>
-                ${bait.trashRed ? `<div class="inv-stat" style="color:#10b981;"><span>Müll Reduzierung:</span> <span>${bait.trashRed}%</span></div>` : ''}
-                <div style="margin-top:10px;">
-                    ${isEquipped ? `<button disabled style="width:100%; background:#10b981; color:white; cursor:default;">✅ Ausgerüstet</button>` 
-                                 : `<button class="update-btn" style="width:100%;" onclick="window.equipBait('${bid}')">Ausrüsten</button>`}
-                </div>
-            </div>`;
+            html += `<div class="inv-card" style="${isEquipped ? 'border-color:#10b981; box-shadow:0 0 10px rgba(16,185,129,0.3);' : ''}"><h4>${bait.e} ${bait.name} <span style="float:right; font-size:12px; color:#fcd34d;">x${count}</span></h4><div class="inv-stat"><span>Anlockgeschwindigkeit:</span> <span>+${bait.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span> <span>+${bait.luck||0}%</span></div><div class="inv-stat"><span>Widerstandsfähigkeit:</span> <span>${bait.res||0}%</span></div>${bait.trashRed ? `<div class="inv-stat" style="color:#10b981;"><span>Müll Reduzierung:</span> <span>${bait.trashRed}%</span></div>` : ''}<div style="margin-top:10px;">${isEquipped ? `<button disabled style="width:100%; background:#10b981; color:white; cursor:default;">✅ Ausgerüstet</button>` : `<button class="update-btn" style="width:100%;" onclick="window.equipBait('${bid}')">Ausrüsten</button>`}</div></div>`;
         }
     }
     html += `</div></div>`;
     openModal("🎒 Ausrüstung", html, "", true);
 }
 
-window.equipRod = function(id) { 
-    gameState.eqRod = id; 
-    saveData(); 
-    window.handleInvMenu(); 
-    log(`🎣 Neue Rute ausgerüstet!`);
-}
-window.equipBait = function(id) { 
-    gameState.eqBait = id; 
-    saveData(); 
-    window.handleInvMenu(); 
-    log(`🪱 Köder ausgerüstet!`);
-}
-window.unequipBait = function() { 
-    gameState.eqBait = "none"; 
-    saveData(); 
-    window.handleInvMenu(); 
-    log(`🪱 Köder entfernt!`);
-}
+window.equipRod = function(id) { gameState.eqRod = id; saveData(); window.handleInvMenu(); log(`🎣 Neue Rute ausgerüstet!`); }
+window.equipBait = function(id) { gameState.eqBait = id; saveData(); window.handleInvMenu(); log(`🪱 Köder ausgerüstet!`); }
+window.unequipBait = function() { gameState.eqBait = "none"; saveData(); window.handleInvMenu(); log(`🪱 Köder entfernt!`); }
 
-// === NEU: GILDEN SYSTEM ===
-window.handleGuildMenu = function() {
-    window.currentOpenMenu = 'guild';
-    
-    // Hat der Spieler keine Gilde?
-    if(!gameState.guild) {
-        let html = `
-        <div style="background:#161b22; padding:15px; border-radius:12px; border:1px solid #eab308; margin-bottom:15px;">
-            <h4 style="margin:0 0 10px 0; color:#eab308;">🛡️ Gilde gründen</h4>
-            <p style="font-size:13px; color:#94a3b8;">Eine Gilde kostet <b>250.000$</b>. Verdiene zusammen mit 10 Mitgliedern Gilden-Punkte!</p>
-            <input id="createGuildName" placeholder="Gilden-Name (Max 15 Zeichen)" maxlength="15" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #30363d; background:#0d1117; color:white;">
-            <button class="success-btn" style="width:100%; background:#eab308;" onclick="window.createGuild()">Gründen (250.000$)</button>
-        </div>
-        <h4 style="margin-bottom:10px;">🏆 Top Gilden (Offen für Beitritt)</h4>
-        <div style="max-height:30vh; overflow-y:auto;">
-        `;
-        
-        // Gilden nach Punkten sortieren
-        let sortedGuilds = [];
-        for(let gName in guildsCache) {
-            sortedGuilds.push({ name: gName, ...guildsCache[gName] });
-        }
-        sortedGuilds.sort((a,b) => (b.points || 0) - (a.points || 0));
-
-        if(sortedGuilds.length === 0) {
-            html += `<p style="text-align:center; color:#94a3b8;">Noch keine Gilden vorhanden.</p>`;
-        } else {
-            sortedGuilds.forEach((g, i) => {
-                let rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
-                let canJoin = g.members && g.members.length < 10;
-                let btnHtml = canJoin 
-                    ? `<button class="update-btn" style="padding:4px 10px; font-size:12px;" onclick="window.joinGuild('${g.name}')">Beitreten</button>` 
-                    : `<span style="color:#ef4444; font-size:12px; font-weight:bold;">Voll</span>`;
-
-                html += `
-                <div style="display:flex; justify-content:space-between; align-items:center; background:#0d1117; padding:10px; border-radius:8px; margin-bottom:5px; border:1px solid #30363d;">
-                    <div>
-                        <b>${rank} ${g.name}</b><br>
-                        <small style="color:#eab308;">🛡️ ${g.points||0} Pkt | 👥 ${(g.members||[]).length}/10</small>
-                    </div>
-                    <div>${btnHtml}</div>
-                </div>`;
-            });
-        }
-        html += `</div>`;
-        return openModal("🛡️ Gilden", html);
-    }
-
-    // Spieler hat eine Gilde!
-    let myG = guildsCache[gameState.guild];
-    if(!myG) {
-        // Gilde existiert nicht mehr (z.B. gelöscht)
-        gameState.guild = "";
-        saveData();
-        return window.handleGuildMenu();
-    }
-
-    let isOwner = myG.owner === currentUser;
-    let members = myG.members || [];
-    
-    // Finde den Rang der Gilde
-    let sortedGuilds = [];
-    for(let gName in guildsCache) sortedGuilds.push({ name: gName, points: guildsCache[gName].points || 0 });
-    sortedGuilds.sort((a,b) => b.points - a.points);
-    let myRank = sortedGuilds.findIndex(g => g.name === gameState.guild) + 1;
-
-    let html = `
-    <div style="text-align:center; margin-bottom:15px; background:#161b22; padding:15px; border-radius:12px; border:2px solid #eab308;">
-        <h2 style="margin:0 0 5px 0; color:#eab308;">${gameState.guild}</h2>
-        <div style="font-size:14px;">🏆 Platz: <b>${myRank}</b> | 🛡️ Punkte: <b>${myG.points||0}</b></div>
-    </div>
-    
-    <div style="display:flex; gap:10px; margin-bottom:15px;">
-        <button class="success-btn" style="flex:1; background:#eab308; font-size:14px;" onclick="window.handleGuildDonateMenu()">🐟 Fische spenden</button>
-        <button class="danger-btn" style="flex:1; font-size:14px;" onclick="window.leaveGuild()">${isOwner ? 'Gilde auflösen' : 'Gilde verlassen'}</button>
-    </div>
-
-    <h4 style="margin-bottom:10px; border-bottom:1px solid #30363d; padding-bottom:5px;">👥 Mitglieder (${members.length}/10)</h4>
-    <div style="max-height:35vh; overflow-y:auto;">
-    `;
-
-    members.forEach(mName => {
-        let roleStr = (mName === myG.owner) ? `<span style="color:#facc15; font-size:12px;">👑 Leader</span>` : `<span style="color:#94a3b8; font-size:12px;">👤 Mitglied</span>`;
-        let kickBtn = (isOwner && mName !== currentUser) ? `<button class="danger-btn" style="padding:4px 8px; font-size:11px;" onclick="window.kickGuildMember('${mName}')">Kicken</button>` : '';
-        
-        html += `
-        <div style="display:flex; justify-content:space-between; align-items:center; background:#0d1117; padding:10px; border-radius:8px; margin-bottom:5px;">
-            <div><b style="color:#60a5fa; cursor:pointer;" onclick="window.showPlayerProfile('${mName}')">${mName}</b><br>${roleStr}</div>
-            <div>${kickBtn}</div>
-        </div>`;
-    });
-    html += `</div>`;
-    
-    openModal("🛡️ Gilde", html);
-}
-
-window.createGuild = async function() {
-    if(gameState.money < 250000) return alert("Du brauchst 250.000$ um eine Gilde zu gründen!");
-    let name = document.getElementById("createGuildName").value.trim().replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 15);
-    if(name.length < 3) return alert("Der Gildenname muss mindestens 3 Zeichen lang sein (keine Sonderzeichen).");
-    if(guildsCache[name]) return alert("Eine Gilde mit diesem Namen existiert bereits!");
-
-    gameState.money -= 250000;
-    gameState.guild = name;
-    saveData();
-    syncGlobalLeaderboard();
-
-    await set(ref(db, "global/guilds/" + name), {
-        owner: currentUser,
-        points: 0,
-        members: [currentUser]
-    });
-    
-    log(`🛡️ Gilde '${name}' erfolgreich gegründet!`);
-    window.handleGuildMenu();
-}
-
-window.joinGuild = async function(name) {
-    let g = guildsCache[name];
-    if(!g) return alert("Gilde existiert nicht.");
-    if(g.members && g.members.length >= 10) return alert("Gilde ist voll.");
-    
-    let newMembers = g.members || [];
-    if(!newMembers.includes(currentUser)) newMembers.push(currentUser);
-
-    gameState.guild = name;
-    saveData();
-    
-    await set(ref(db, "global/guilds/" + name + "/members"), newMembers);
-    log(`🛡️ Du bist der Gilde '${name}' beigetreten!`);
-    window.handleGuildMenu();
-}
-
-window.leaveGuild = async function() {
-    let gName = gameState.guild;
-    let g = guildsCache[gName];
-    if(!g) return;
-
-    if(confirm(g.owner === currentUser ? "Willst du deine Gilde wirklich auflösen? (Alle Punkte gehen verloren!)" : "Willst du die Gilde wirklich verlassen?")) {
-        gameState.guild = "";
-        saveData();
-
-        if(g.owner === currentUser) {
-            // Gilde auflösen
-            await remove(ref(db, "global/guilds/" + gName));
-            log("🛡️ Gilde aufgelöst.");
-        } else {
-            // Nur verlassen
-            let newMembers = g.members.filter(m => m !== currentUser);
-            await set(ref(db, "global/guilds/" + gName + "/members"), newMembers);
-            log("🛡️ Gilde verlassen.");
-        }
-        window.handleGuildMenu();
-    }
-}
-
-window.kickGuildMember = async function(mName) {
-    if(confirm(`Möchtest du ${mName} wirklich aus der Gilde werfen?`)) {
-        let gName = gameState.guild;
-        let g = guildsCache[gName];
-        if(!g) return;
-        let newMembers = g.members.filter(m => m !== mName);
-        await set(ref(db, "global/guilds/" + gName + "/members"), newMembers);
-        window.handleGuildMenu();
-    }
-}
-
-window.handleGuildDonateMenu = function() {
-    if(!gameState.guild || !guildsCache[gameState.guild]) return alert("Du bist in keiner Gilde!");
-    if(!gameState.inventory) gameState.inventory = [];
-
-    let pointsToGet = 0;
-    let fishCount = 0;
-
-    gameState.inventory.forEach(item => {
-        if(item.isTrash) return;
-        fishCount++;
-        if(item.isShiny) pointsToGet += 50;
-        else if(item.c <= 5) pointsToGet += 5;
-        else pointsToGet += 1;
-    });
-
-    let html = `
-    <div style="text-align:center;">
-        <p style="color:#94a3b8; font-size:14px; margin-top:0;">Spende deine gefangenen Fische an die Gilde, um sie im Leaderboard nach oben zu bringen! (Müll wird dabei ignoriert und bleibt im Rucksack)</p>
-        
-        <div style="background:#0d1117; padding:15px; border-radius:12px; border:1px solid #eab308; margin-bottom:15px;">
-            <div style="font-size:28px; margin-bottom:5px; color:#eab308; font-weight:bold;">+${pointsToGet} Punkte</div>
-            <div style="color:#60a5fa;">Aus ${fishCount} Fischen im Rucksack</div>
-        </div>
-
-        <ul style="text-align:left; font-size:12px; color:#94a3b8; padding-left:20px; background:#161b22; padding:10px 10px 10px 30px; border-radius:8px;">
-            <li><b>1 Punkt:</b> Gewöhnliche Fische (>5%)</li>
-            <li><b style="color:#fcd34d;">5 Punkte:</b> Seltene Fische (<=5%)</li>
-            <li><b style="color:#a855f7;">50 Punkte:</b> Mutationen (Shinys)</li>
-        </ul>
-    </div>`;
-
-    let btn = fishCount > 0 
-        ? `<button class="success-btn" style="width:100%; background:#eab308;" onclick="window.executeGuildDonate()">Alle Fische Spenden</button>` 
-        : `<button disabled style="width:100%;">Nichts zum Spenden im Rucksack</button>`;
-
-    openModal("🛡️ Gilden-Spende", html, btn);
-}
-
-window.executeGuildDonate = async function() {
-    if(!gameState.guild || !guildsCache[gameState.guild] || !gameState.inventory) return;
-
-    let points = 0;
-    let newInv = [];
-
-    gameState.inventory.forEach(item => {
-        if(item.isTrash) {
-            newInv.push(item);
-        } else {
-            if(item.isShiny) points += 50;
-            else if(item.c <= 5) points += 5;
-            else points += 1;
-        }
-    });
-
-    if(points > 0) {
-        gameState.inventory = newInv;
-        saveData();
-
-        let guildRef = ref(db, "global/guilds/" + gameState.guild + "/points");
-        let snap = await get(guildRef);
-        let currentPoints = snap.exists() ? snap.val() : 0;
-        await set(guildRef, currentPoints + points);
-
-        log(`🛡️ Fische gespendet! Deine Gilde hat +${points} Punkte erhalten.`);
-        window.handleGuildMenu();
-    }
-}
-
-
-// --- HILFSFUNKTION FÜR COUNTDOWNS ---
 function getResetCountdown(type) {
     const now = new Date();
     const target = new Date();
     if(type === 'daily') target.setHours(24,0,0,0);
-    else if(type === 'weekly') {
-        const day = now.getDay();
-        const diff = (day === 0 ? 0 : 7 - day) + 1;
-        target.setDate(now.getDate() + diff);
-        target.setHours(0,0,0,0);
-    } else if(type === 'monthly') {
-        target.setMonth(now.getMonth() + 1, 1);
-        target.setHours(0,0,0,0);
-    }
+    else if(type === 'weekly') { const day = now.getDay(); const diff = (day === 0 ? 0 : 7 - day) + 1; target.setDate(now.getDate() + diff); target.setHours(0,0,0,0); }
+    else if(type === 'monthly') { target.setMonth(now.getMonth() + 1, 1); target.setHours(0,0,0,0); }
     const ms = target - now;
     const h = Math.floor(ms / 3600000);
     const m = Math.floor((ms % 3600000) / 60000);
     const s = Math.floor((ms % 60000) / 1000);
     return `${h}h ${m}m ${s}s`;
 }
-
-// Globales Interval um die offenen Countdowns zu aktualisieren
-setInterval(() => {
-    if(window.currentOpenMenu === 'quest') {
-        let d = document.getElementById('daily-countdown');
-        let w = document.getElementById('weekly-countdown');
-        let m = document.getElementById('monthly-countdown');
-        if(d) d.innerText = getResetCountdown('daily');
-        if(w) w.innerText = getResetCountdown('weekly');
-        if(m) m.innerText = getResetCountdown('monthly');
-    }
-}, 1000);
 
 window.handleQuestMenu = function() {
     window.currentOpenMenu = 'quest';
@@ -1675,14 +1179,7 @@ window.handleQuestMenu = function() {
         let qs = gameState.qs || {};
         let qsP = qs.p || {dc:0, de:0, wc:0, we:0, mc:0, me:0};
         let qsC = qs.c || {};
-        
-        let html = `
-        <div style="background:rgba(0,0,0,0.5); padding:10px; border-radius:12px; margin-bottom:15px; border:1px solid #3b82f6; text-align:center;">
-            <p style="margin:2px; font-size:13px; color:#60a5fa;">🌞 Daily Reset in: <b id="daily-countdown">${getResetCountdown('daily')}</b></p>
-            <p style="margin:2px; font-size:13px; color:#10b981;">📅 Weekly Reset in: <b id="weekly-countdown">${getResetCountdown('weekly')}</b></p>
-            <p style="margin:2px; font-size:13px; color:#facc15;">🏆 Monthly Reset in: <b id="monthly-countdown">${getResetCountdown('monthly')}</b></p>
-        </div>`;
-        
+        let html = `<div style="background:rgba(0,0,0,0.5); padding:10px; border-radius:12px; margin-bottom:15px; border:1px solid #3b82f6; text-align:center;"><p style="margin:2px; font-size:13px; color:#60a5fa;">🌞 Daily Reset in: <b>${getResetCountdown('daily')}</b></p><p style="margin:2px; font-size:13px; color:#10b981;">📅 Weekly Reset in: <b>${getResetCountdown('weekly')}</b></p><p style="margin:2px; font-size:13px; color:#facc15;">🏆 Monthly Reset in: <b>${getResetCountdown('monthly')}</b></p></div>`;
         let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
         cats.forEach(cat => {
             html += `<h4 style="color:white; margin-top:15px; border-bottom: 1px solid #30363d; padding-bottom:5px;">${cat.n}</h4>`;
@@ -1691,55 +1188,22 @@ window.handleQuestMenu = function() {
                 let done = prog >= q.req;
                 let claimed = qsC[q.id];
                 let pct = Math.min(100, Math.floor((prog / q.req) * 100));
-                
-                html += `
-                <div class="quest-card">
-                    <div class="quest-header"><span>${q.desc}</span> <span style="color:#facc15;">${q.rew.toLocaleString()}$</span></div>
-                    <div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div>
-                    <div class="quest-footer">
-                        <span>${Math.min(prog, q.req).toLocaleString()} / ${q.req.toLocaleString()}</span>
-                        ${claimed ? '<span style="color:#10b981; font-weight:bold;">✅ Abgeschlossen</span>' : (done ? `<button class="success-btn" style="padding:4px 10px; font-size:12px; border-radius:6px;" onclick="window.claimQuest('${q.id}',${q.rew})">Abholen</button>` : `<span style="color:#ef4444;">🔒 Ausstehend</span>`)}
-                    </div>
-                </div>`;
+                html += `<div class="quest-card"><div class="quest-header"><span>${q.desc}</span> <span style="color:#facc15;">${q.rew.toLocaleString()}$</span></div><div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div><div class="quest-footer"><span>${Math.min(prog, q.req).toLocaleString()} / ${q.req.toLocaleString()}</span>${claimed ? '<span style="color:#10b981; font-weight:bold;">✅ Abgeschlossen</span>' : (done ? `<button class="success-btn" style="padding:4px 10px; font-size:12px; border-radius:6px;" onclick="window.claimQuest('${q.id}',${q.rew})">Abholen</button>` : `<span style="color:#ef4444;">🔒 Ausstehend</span>`)}</div></div>`;
             });
         });
         openModal("📜 Quests", html);
-    } catch(e) {
-        console.error(e);
-        openModal("📜 Quests", "<p style='color:#ef4444;'>Fehler beim Laden der Quests. (" + e.message + ")</p>");
-    }
+    } catch(e) { console.error(e); openModal("📜 Quests", "<p style='color:#ef4444;'>Fehler beim Laden der Quests.</p>"); }
 }
-window.claimQuest = function(id, rew) { 
-    if(!gameState.qs.c) gameState.qs.c={}; 
-    gameState.qs.c[id]=true; 
-    gameState.money += rew; 
-    gameState.stats.totalEarned += rew; 
-    saveData(); 
-    syncGlobalLeaderboard();
-    window.handleQuestMenu(); 
-}
+window.claimQuest = function(id, rew) { if(!gameState.qs.c) gameState.qs.c={}; gameState.qs.c[id]=true; gameState.money += rew; gameState.stats.totalEarned += rew; saveData(); syncGlobalLeaderboard(); window.handleQuestMenu(); }
 
 window.handleDexMenu = function() {
     window.currentOpenMenu = 'dex';
-    let html = `
-    <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:10px;">
-        <select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px; border-radius:12px; background:#1e293b; color:white; border:1px solid #30363d; flex:1; font-weight:bold; outline:none;">
-            <option value="all">🌍 Alle Zonen</option>
-            ${zones.map((z, i) => `<option value="${i}">${z.name}</option>`).join('')}
-        </select>
-    </div>
-    <div style="display:flex; gap:10px; margin-bottom:15px;">
-        <button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1; background:#3b82f6;">Fische</button>
-        <button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button>
-    </div>
-    <div id="dexGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px;"></div>`;
-    
+    let html = `<div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:10px;"><select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px; border-radius:12px; background:#1e293b; color:white; border:1px solid #30363d; flex:1; font-weight:bold; outline:none;"><option value="all">🌍 Alle Zonen</option>${zones.map((z, i) => `<option value="${i}">${z.name}</option>`).join('')}</select></div><div style="display:flex; gap:10px; margin-bottom:15px;"><button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1; background:#3b82f6;">Normal</button><button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button></div><div id="dexGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px;"></div>`;
     document.getElementById('modal-title').innerText = "📖 Fisch-Dex";
     document.getElementById('modal-body').innerHTML = html;
     document.getElementById('modal-footer').style.display = 'none';
     document.getElementById('modal-content').classList.remove('wide');
     document.getElementById('modal-overlay').style.display = 'flex';
-    
     window.showDexTab(window.currentDexTab);
 }
 
@@ -1748,20 +1212,15 @@ window.showDexTab = function(tab) {
     let grid = document.getElementById('dexGrid');
     let filterEl = document.getElementById('dexZoneFilter');
     let zoneFilter = filterEl ? filterEl.value : 'all';
-
     if(!grid) return;
     document.getElementById('dexTabNormal')?.setAttribute('style', tab==='normal' ? 'flex:1; background:#3b82f6;' : 'flex:1; background:#1e293b;');
     document.getElementById('dexTabShiny')?.setAttribute('style', tab==='shiny' ? 'flex:1; background:#3b82f6;' : 'flex:1; background:#1e293b;');
-    
     let collected = 0, total = 0;
     grid.innerHTML = '';
-    
     let zF = zoneFilter === 'all' ? 'all' : parseInt(zoneFilter);
-    
     items.forEach(item => {
         if(zF !== 'all' && item.z !== zF) return; 
         if(tab === 'shiny' && item.isTrash) return; 
-        
         total++;
         let d = gameState.dex ? gameState.dex[item.n] : null;
         let has = tab === 'normal' ? (d?.normal) : (d?.shiny);
@@ -1772,14 +1231,8 @@ window.showDexTab = function(tab) {
         if(has) div.onclick = () => window.showFishInfo(item.n, tab);
         grid.appendChild(div);
     });
-    
     let info = document.getElementById('dexInfo');
-    if(!info) {
-        info = document.createElement('div');
-        info.id = 'dexInfo';
-        info.style.cssText = 'text-align:center; margin-top:15px; padding:10px; background:#0d1117; border-radius:12px;';
-        grid.parentNode.appendChild(info);
-    }
+    if(!info) { info = document.createElement('div'); info.id = 'dexInfo'; info.style.cssText = 'text-align:center; margin-top:15px; padding:10px; background:#0d1117; border-radius:12px;'; grid.parentNode.appendChild(info); }
     info.innerHTML = `<b>Gesammelt: ${collected}/${total}</b>`;
 }
 
@@ -1788,23 +1241,9 @@ window.showFishInfo = function(name, tab) {
     if(!item) return;
     let d = gameState.dex[name];
     let rarity = item.c >= 15 ? 'Sehr häufig' : (item.c >= 10 ? 'Häufig' : (item.c >= 5 ? 'Gewöhnlich' : (item.c >= 2 ? 'Selten' : 'Episch')));
-    
     let personalMax = d?.maxW ? `<br><span style="color:#fcd34d;">🏆 Rekord-Gewicht: ${formatWeight(d.maxW)}</span>` : '';
     let maxWStr = item.maxW ? `<br>⚖️ Max. Gewicht: ${formatWeight(item.maxW)}` : '';
-    
-    let html = `<div style="text-align:center">
-        <div style="font-size:60px;">${item.e}</div>
-        <h3>${tab==='shiny'?'🧬 ':''}${item.n}</h3>
-        <p>
-            💰 Basis-Wert: ${tab==='shiny' ? Math.abs(item.v)*5 : item.v}$<br>
-            ⭐ Seltenheit: ${rarity} (${item.c}%)<br>
-            🌍 Zone: ${item.z === -1 ? 'Überall' : zones[item.z]?.name || 'Unbekannt'}
-            ${maxWStr}
-            ${personalMax}<br><br>
-            🎣 Gefangen: ${d?.count || 0}x
-        </p>
-        <button class="update-btn" onclick="window.handleDexMenu()">Zurück</button>
-    </div>`;
+    let html = `<div style="text-align:center"><div style="font-size:60px;">${item.e}</div><h3>${tab==='shiny'?'🧬 ':''}${item.n}</h3><p>💰 Basis-Wert: ${tab==='shiny' ? Math.abs(item.v)*5 : item.v}$<br>⭐ Seltenheit: ${rarity} (${item.c}%)<br>🌍 Zone: ${item.z === -1 ? 'Überall' : zones[item.z]?.name || 'Unbekannt'}${maxWStr}${personalMax}<br><br>🎣 Gefangen: ${d?.count || 0}x</p><button class="update-btn" onclick="window.handleDexMenu()">Zurück</button></div>`;
     openModal(`🐟 ${item.n}`, html);
 }
 
@@ -1815,708 +1254,83 @@ window.handleZoneMenu = function() {
 }
 window.changeZone = function(i) { gameState.zone = i; saveData(); log(`🗺️ Reise nach ${zones[i].name}`); window.handleZoneMenu(); }
 
-// ==== NEUES GLOBALES LEADERBOARD ====
 window.handleLeaderboard = function() {
     window.currentOpenMenu = 'leaderboard';
-
-    let renderUsers = (users) => {
-        return users.map((u,i) => {
-            let rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
-            let caught = u.stats?.totalCaught || 0;
-            return `
-            <div class="leader-card" onclick="window.showPlayerProfile('${u.name}')">
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #30363d; padding-bottom:8px; margin-bottom:8px;">
-                    <b style="font-size:16px;">${rank} ${u.name}</b>
-                    <span style="color:#60a5fa;">👑 P${u.prestige||0} | ⭐ Lvl ${u.level}</span>
-                </div>
-                <div class="card-stats">
-                    <span>💰 ${Math.floor(u.money).toLocaleString()}$</span>
-                    <span>🐟 ${caught.toLocaleString()} Gefangen</span>
-                </div>
-            </div>`;
-        }).join('');
-    };
-
-    if(lastLeaderboardUsers.length === 0) {
-        openModal("🏆 Leaderboard", "<p style='text-align:center;'>Warte auf Server-Daten...</p>");
-    } else {
-        openModal("🏆 Leaderboard", renderUsers(lastLeaderboardUsers));
-    }
+    let renderUsers = (users) => { return users.map((u,i) => { let rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.'; let caught = u.stats?.totalCaught || 0; return `<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex; justify-content:space-between; border-bottom:1px solid #30363d; padding-bottom:8px; margin-bottom:8px;"><b style="font-size:16px;">${rank} ${u.name}</b><span style="color:#60a5fa;">👑 P${u.prestige||0} | ⭐ Lvl ${u.level}</span></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${caught.toLocaleString()} Gefangen</span></div></div>`; }).join(''); };
+    if(lastLeaderboardUsers.length === 0) openModal("🏆 Leaderboard", "<p style='text-align:center;'>Warte auf Server-Daten...</p>");
+    else openModal("🏆 Leaderboard", renderUsers(lastLeaderboardUsers));
 }
 
 window.showPlayerProfile = async function(name) {
-    let u;
-    if(name === currentUser && gameState) {
-        u = gameState;
-    } else {
-        let snap = await get(ref(db,"users/"+name));
-        if(snap.exists()) u = snap.val();
-    }
-
-    if(u) {
-        let totalCaught = u.stats?.totalCaught || 0;
-        let totalEarned = u.stats?.totalEarned || 0;
-        let streak = u.dailyStreak || 0;
-        let prestige = u.prestige || 0;
-        let money = u.money || 0;
-
-        let html = `
-        <div class="profile-card">
-            <div class="profile-header">
-                <div class="profile-avatar">${prestige > 0 ? '👑' : '🎣'}</div>
-                <div>
-                    <h2 style="margin:0;">${u.name}</h2>
-                    <div style="color:#60a5fa;">👑 Prestige ${prestige} | ⭐ Level ${u.level}</div>
-                    ${u.guild ? `<div style="color:#eab308; font-size:12px; margin-top:2px;">🛡️ Gilde: ${u.guild}</div>` : ''}
-                </div>
-            </div>
-            <div class="card-stats">
-                <span>💰 ${Math.floor(money).toLocaleString()}$</span> 
-                <span>🐟 ${totalCaught.toLocaleString()} Fische</span>
-            </div>
-            <div class="card-stats">
-                <span>💵 ${totalEarned.toLocaleString()}$ verdient</span> 
-                <span>🔥 Streak: ${streak}</span>
-            </div>
-        </div>
-        <button class="update-btn" style="width:100%; margin-top:10px;" onclick="window.handleLeaderboard()">Zurück zum Leaderboard</button>`;
-        
-        openModal(`📊 Profil: ${u.name}`, html);
-    } else {
-        alert("Spielerprofil konnte nicht geladen werden.");
-    }
-}
+    let u; if(name === currentUser && gameState) u = gameState; else { let snap = await get(ref(db,"users/"+name)); if(snap.exists()) u = snap.val(); }
+    if(u) { let totalCaught = u.stats?.totalCaught || 0; let totalEarned = u.stats?.totalEarned || 0; let streak = u.dailyStreak || 0; let prestige = u.prestige || 0; let money = u.money || 0; let html = `<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${prestige > 0 ? '👑' : '🎣'}</div><div><h2 style="margin:0;">${u.name}</h2><div style="color:#60a5fa;">👑 Prestige ${prestige} | ⭐ Level ${u.level}</div>${u.guild ? `<div style="color:#eab308; font-size:12px; margin-top:2px;">🛡️ Gilde: ${u.guild}</div>` : ''}</div></div><div class="card-stats"><span>💰 ${Math.floor(money).toLocaleString()}$</span> <span>🐟 ${totalCaught.toLocaleString()} Fische</span></div><div class="card-stats"><span>💵 ${totalEarned.toLocaleString()}$ verdient</span> <span>🔥 Streak: ${streak}</span></div></div><button class="update-btn" style="width:100%; margin-top:10px;" onclick="window.handleLeaderboard()">Zurück zum Leaderboard</button>`; openModal(`📊 Profil: ${u.name}`, html); } else { alert("Spielerprofil konnte nicht geladen werden."); } }
 
 window.handleProfileMenu = function() {
     window.currentOpenMenu = 'profile';
-    let html = `
-    <div class="profile-card">
-        <div class="profile-header">
-            <div class="profile-avatar">${gameState.prestige>0?'👑':'🎣'}</div>
-            <div>
-                <h2 style="margin:0;">${gameState.name}</h2>
-                <div style="color:#60a5fa;">👑 Prestige ${gameState.prestige} | ⭐ Level ${gameState.level}</div>
-                ${gameState.guild ? `<div style="color:#eab308; font-size:12px; margin-top:2px;">🛡️ Gilde: ${gameState.guild}</div>` : ''}
-            </div>
-        </div>
-        <div class="card-stats"><span>💰 ${Math.floor(gameState.money).toLocaleString()}$</span> <span>🐟 ${gameState.stats.totalCaught.toLocaleString()} Fische</span></div>
-        <div class="card-stats"><span>💵 ${gameState.stats.totalEarned.toLocaleString()}$ verdient</span> <span>🔥 Streak: ${gameState.dailyStreak||0}</span></div>
-    </div>`;
+    let html = `<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${gameState.prestige>0?'👑':'🎣'}</div><div><h2 style="margin:0;">${gameState.name}</h2><div style="color:#60a5fa;">👑 Prestige ${gameState.prestige} | ⭐ Level ${gameState.level}</div>${gameState.guild ? `<div style="color:#eab308; font-size:12px; margin-top:2px;">🛡️ Gilde: ${gameState.guild}</div>` : ''}</div></div><div class="card-stats"><span>💰 ${Math.floor(gameState.money).toLocaleString()}$</span> <span>🐟 ${gameState.stats.totalCaught.toLocaleString()} Fische</span></div><div class="card-stats"><span>💵 ${gameState.stats.totalEarned.toLocaleString()}$ verdient</span> <span>🔥 Streak: ${gameState.dailyStreak||0}</span></div></div>`;
     openModal("📊 Dein Profil", html);
 }
 
 window.handleDailyMenu = function() {
     window.currentOpenMenu = 'daily';
-    let now = Date.now(), DAY=86400000;
-    let can = false, streak = gameState.dailyStreak||0;
-    let timeDiff = now - gameState.lastDaily;
-    let cooldownText = "";
-
-    if(gameState.lastDaily===0 || timeDiff>=DAY*2) { can=true; streak=1; }
-    else if(timeDiff>=DAY) { can=true; streak=Math.min(streak+1,7); }
-    else {
-        let timeLeft = DAY - timeDiff;
-        let h = Math.floor(timeLeft / 3600000);
-        let m = Math.floor((timeLeft % 3600000) / 60000);
-        cooldownText = `<p style="color:#ef4444; text-align:center; font-weight:bold;">⏳ Nächste Belohnung in: ${h}h ${m}m</p>`;
-    }
-
+    let now = Date.now(), DAY=86400000; let can = false, streak = gameState.dailyStreak||0; let timeDiff = now - gameState.lastDaily; let cooldownText = "";
+    if(gameState.lastDaily===0 || timeDiff>=DAY*2) { can=true; streak=1; } else if(timeDiff>=DAY) { can=true; streak=Math.min(streak+1,7); } else { let timeLeft = DAY - timeDiff; let h = Math.floor(timeLeft / 3600000); let m = Math.floor((timeLeft % 3600000) / 60000); cooldownText = `<p style="color:#ef4444; text-align:center; font-weight:bold;">⏳ Nächste Belohnung in: ${h}h ${m}m</p>`; }
     let html = `<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">`;
-    for(let i=1;i<=7;i++) {
-        let rew = i*100 + gameState.prestige*50;
-        let statusHtml = '';
-        
-        let isFuture = i > (can ? streak : streak); 
-        if (can && i > streak) isFuture = true;
-        if (!can && i > streak) isFuture = true;
-        
-        if (i < streak || (i === streak && !can)) statusHtml = '✅'; 
-        else if (i === streak && can) statusHtml = '🎁';
-        else statusHtml = '🔒';
-        
-        let rewDisplay = isFuture ? '???$' : `${rew}$`;
-        let isActive = (i === streak && can);
-        html += `<div style="background:#0d1117; padding:10px; border-radius:12px; text-align:center; ${isActive?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:24px; margin:5px 0;">${statusHtml}</div><div style="color:#10b981;">${rewDisplay}</div></div>`;
-    }
+    for(let i=1;i<=7;i++) { let rew = i*100 + gameState.prestige*50; let statusHtml = ''; let isFuture = (i > (can ? streak : streak)); if (i < streak || (i === streak && !can)) statusHtml = '✅'; else if (i === streak && can) statusHtml = '🎁'; else statusHtml = '🔒'; let isActive = (i === streak && can); html += `<div style="background:#0d1117; padding:10px; border-radius:12px; text-align:center; ${isActive?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:24px; margin:5px 0;">${statusHtml}</div><div style="color:#10b981;">${isFuture ? '???$' : `${rew}$`}</div></div>`; }
     html += `</div>${cooldownText}`;
     openModal("🎁 Daily Bonus", html, can ? `<button class="success-btn" onclick="window.claimDaily(${streak*100 + gameState.prestige*50},${streak})">Abholen</button>` : '');
 }
-
-window.claimDaily = function(rew, streak) { 
-    gameState.money += rew; 
-    gameState.stats.totalEarned += rew; 
-    gameState.lastDaily=Date.now(); 
-    gameState.dailyStreak=streak; 
-    saveData(); 
-    syncGlobalLeaderboard();
-    window.handleDailyMenu(); 
-}
+window.claimDaily = function(rew, streak) { gameState.money += rew; gameState.stats.totalEarned += rew; gameState.lastDaily=Date.now(); gameState.dailyStreak=streak; saveData(); syncGlobalLeaderboard(); window.handleDailyMenu(); }
 
 window.handlePrestigeMenu = function() {
-    let reqLvl = 20 + gameState.prestige*5;
-    let reqMoney = 5000 * Math.pow(2, gameState.prestige);
-    let can = gameState.level >= reqLvl && gameState.money >= reqMoney;
+    let reqLvl = 20 + gameState.prestige*5; let reqMoney = 5000 * Math.pow(2, gameState.prestige); let can = gameState.level >= reqLvl && gameState.money >= reqMoney;
     openModal("🔁 Prestige", `<p>Mache Prestige, um einen <b>dauerhaften Verkaufs-Bonus</b> zu erhalten!</p><p>Reset: Level, Geld, Inventar<br>Bonus: <b>+1% Verkaufswert pro Prestige</b><br>Voraussetzung: Level ${reqLvl}, ${reqMoney.toLocaleString()}$</p>`, can ? `<button class="danger-btn" onclick="window.doPrestige()">PRESTIGE AUSFÜHREN</button>` : '');
 }
-window.doPrestige = function() { 
-    gameState.prestige++; 
-    gameState.money=0; 
-    gameState.level=1; 
-    gameState.xp=0; 
-    gameState.inventory=[]; 
-    saveData(); 
-    syncGlobalLeaderboard();
-    location.reload(); 
-}
+window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameState.level=1; gameState.xp=0; gameState.inventory=[]; saveData(); syncGlobalLeaderboard(); location.reload(); }
 
-// ===== PROMO CODES (USER) =====
-document.getElementById('btnPromo')?.addEventListener('click', () => {
-    let html = `
-    <p>Gib hier einen Promo-Code ein, um Belohnungen zu erhalten!</p>
-    <input id="inputPromoCode" placeholder="Gutscheincode" style="width:100%; padding:12px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white; font-size:16px; margin-bottom:10px; text-transform:uppercase;">
-    `;
-    openModal("🎫 Code Einlösen", html, `<button class="success-btn" style="width:100%;" onclick="window.redeemPromoCode()">Code Einlösen</button>`);
-});
+document.getElementById('btnPromo')?.addEventListener('click', () => { let html = `<p>Gib hier einen Promo-Code ein, um Belohnungen zu erhalten!</p><input id="inputPromoCode" placeholder="Gutscheincode" style="width:100%; padding:12px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white; font-size:16px; margin-bottom:10px; text-transform:uppercase;">`; openModal("🎫 Code Einlösen", html, `<button class="success-btn" style="width:100%;" onclick="window.redeemPromoCode()">Code Einlösen</button>`); });
+window.redeemPromoCode = async function() { let code = document.getElementById("inputPromoCode").value.trim().toUpperCase(); if(!code) return alert("Bitte gib einen Code ein."); if(gameState.usedCodes && gameState.usedCodes[code]) return alert("❌ Du hast diesen Code bereits eingelöst!"); let snap = await get(ref(db, "global/promocodes/" + code)); if(snap.exists()) { let promo = snap.val(); let rewMsg = []; if(promo.money) { gameState.money += promo.money; rewMsg.push(`${promo.money.toLocaleString()}$`); } if(promo.xp) { gameState.xp += promo.xp; rewMsg.push(`${promo.xp.toLocaleString()} XP`); } if(promo.itemName && promo.itemAmt) { if(!gameState.inventory) gameState.inventory = []; let baseItem = items.find(i => i.n === promo.itemName); if(baseItem) { for(let i=0; i<promo.itemAmt; i++) { gameState.inventory.push({ id: Math.random().toString(36).substr(2,9), n: baseItem.n, baseName: baseItem.n, v: baseItem.v, xp: baseItem.xp, e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: baseItem.minW || 0 }); } rewMsg.push(`${promo.itemAmt}x ${promo.itemName}`); } } if(gameState.xp >= gameState.level * 50) { gameState.xp -= gameState.level * 50; gameState.level++; rewMsg.push(`⭐ LEVEL UP!`); } if(!gameState.usedCodes) gameState.usedCodes = {}; gameState.usedCodes[code] = true; saveData(); syncGlobalLeaderboard(); alert(`✅ Code eingelöst! Belohnung: ${rewMsg.join(', ')}`); log(`🎫 Promo-Code ${code} eingelöst! Belohnung: ${rewMsg.join(', ')}`); window.closeModal(); } else { alert("❌ Dieser Code ist ungültig oder existiert nicht."); } }
 
-window.redeemPromoCode = async function() {
-    let code = document.getElementById("inputPromoCode").value.trim().toUpperCase();
-    if(!code) return alert("Bitte gib einen Code ein.");
-    
-    if(gameState.usedCodes && gameState.usedCodes[code]) {
-        return alert("❌ Du hast diesen Code bereits eingelöst!");
+window.handleUpdateMenu = function() { let html = `<div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;"><h3 style="margin-top:0; color:#10b981;">🌿 Version 6.1 - Gilden-System Update</h3><ul style="padding-left:20px;"><li><b>Neue Gilden:</b> Gründe eine Gilde oder trete einer bei. (Max. 10 Mitglieder)</li><li><b>Fische Spenden:</b> Verkaufe deine Fische nicht nur für Geld, sondern spende sie für deine Gilde, um im Rang aufzusteigen! (Shinys = 50 Punkte!)</li><li><b>Gilden Rangliste:</b> Miss dich mit anderen Gilden auf dem Server.</li></ul><hr style="border-color:#30363d;"><h3 style="color:#60a5fa;">🚀 Letzte Updates</h3><p><b>v6.0</b> - Globales Leaderboard, Promo-Codes, Live-Broadcast.</p><p><b>v5.8</b> - Mobile Fixes & Discord Server Integration.</p></div>`; openModal("📝 Updates", html); }
+
+window.openFeedbackMenu = function() { let html = `<p style="color:#94a3b8; font-size:14px; margin-top:0;">Hast du einen Bug gefunden oder einen Wunsch für ein Update? Lass es uns wissen!</p><textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%; height:120px; padding:12px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white; resize:none; font-family:inherit;"></textarea>`; openModal("💬 Feedback senden", html, `<button class="success-btn" style="width:100%;" onclick="window.submitFeedback()">Senden</button>`); }
+window.submitFeedback = function() { let text = document.getElementById("feedbackText").value.trim(); if(text.length < 5) return alert("Bitte schreibe mindestens 5 Zeichen."); let webhookUrl = "https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB"; fetch(webhookUrl, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ embeds: [{ title: "💬 Neues Spieler-Feedback", description: text, color: 3447003, fields: [ { name: "Spieler", value: currentUser || "Unbekannt", inline: true }, { name: "Zeit", value: new Date().toLocaleString("de-DE"), inline: true } ] }] }) }).then(() => { alert("✅ Dein Feedback wurde erfolgreich gesendet!"); window.closeModal(); }).catch(e => { alert("❌ Fehler beim Senden des Feedbacks."); }); }
+
+// GILDEN SYSTEM
+window.handleGuildMenu = function() {
+    window.currentOpenMenu = 'guild';
+    if(!gameState.guild) {
+        let html = `<div style="background:#161b22; padding:15px; border-radius:12px; border:1px solid #eab308; margin-bottom:15px;"><h4 style="margin:0 0 10px 0; color:#eab308;">🛡️ Gilde gründen</h4><p style="font-size:13px; color:#94a3b8;">Eine Gilde kostet <b>250.000$</b>. Verdiene zusammen mit 10 Mitgliedern Gilden-Punkte!</p><input id="createGuildName" placeholder="Gilden-Name (Max 15 Zeichen)" maxlength="15" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #30363d; background:#0d1117; color:white;"><button class="success-btn" style="width:100%; background:#eab308;" onclick="window.createGuild()">Gründen (250.000$)</button></div><h4 style="margin-bottom:10px;">🏆 Top Gilden (Offen für Beitritt)</h4><div style="max-height:30vh; overflow-y:auto;">`;
+        let sortedGuilds = Object.entries(guildsCache).map(([name, data]) => ({ name, ...data })).sort((a,b) => (b.points || 0) - (a.points || 0));
+        if(sortedGuilds.length === 0) html += `<p style="text-align:center; color:#94a3b8;">Noch keine Gilden vorhanden.</p>`;
+        else sortedGuilds.forEach((g, i) => { let rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.'; let canJoin = g.members && g.members.length < 10; let btnHtml = canJoin ? `<button class="update-btn" style="padding:4px 10px; font-size:12px;" onclick="window.joinGuild('${g.name}')">Beitreten</button>` : `<span style="color:#ef4444; font-size:12px; font-weight:bold;">Voll</span>`; html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0d1117; padding:10px; border-radius:8px; margin-bottom:5px; border:1px solid #30363d;"><div><b>${rank} ${g.name}</b><br><small style="color:#eab308;">🛡️ ${g.points||0} Pkt | 👥 ${(g.members||[]).length}/10</small></div><div>${btnHtml}</div></div>`; });
+        html += `</div>`; return openModal("🛡️ Gilden", html);
     }
-
-    let snap = await get(ref(db, "global/promocodes/" + code));
-    if(snap.exists()) {
-        let promo = snap.val();
-        let rewMsg = [];
-        
-        if(promo.money) { 
-            gameState.money += promo.money; 
-            rewMsg.push(`${promo.money.toLocaleString()}$`); 
-        }
-        if(promo.xp) { 
-            gameState.xp += promo.xp; 
-            rewMsg.push(`${promo.xp.toLocaleString()} XP`); 
-        }
-        if(promo.itemName && promo.itemAmt) {
-            if(!gameState.inventory) gameState.inventory = [];
-            let baseItem = items.find(i => i.n === promo.itemName);
-            if(baseItem) {
-                for(let i=0; i<promo.itemAmt; i++) {
-                    gameState.inventory.push({
-                        id: Math.random().toString(36).substr(2,9),
-                        n: baseItem.n, baseName: baseItem.n, v: baseItem.v, xp: baseItem.xp,
-                        e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: baseItem.minW || 0
-                    });
-                }
-                rewMsg.push(`${promo.itemAmt}x ${promo.itemName}`);
-            }
-        }
-
-        if(gameState.xp >= gameState.level * 50) {
-            gameState.xp -= gameState.level * 50;
-            gameState.level++;
-            rewMsg.push(`⭐ LEVEL UP!`);
-        }
-
-        if(!gameState.usedCodes) gameState.usedCodes = {};
-        gameState.usedCodes[code] = true;
-        saveData();
-        syncGlobalLeaderboard();
-        window.closeModal();
-        alert(`✅ Code eingelöst! Belohnung: ${rewMsg.join(', ')}`);
-        log(`🎫 Promo-Code ${code} eingelöst! Belohnung: ${rewMsg.join(', ')}`);
-    } else {
-        alert("❌ Dieser Code ist ungültig oder existiert nicht.");
-    }
+    let myG = guildsCache[gameState.guild]; if(!myG) { gameState.guild = ""; saveData(); return window.handleGuildMenu(); }
+    let isOwner = myG.owner === currentUser; let members = myG.members || [];
+    let sortedGuilds = Object.entries(guildsCache).map(([name, data]) => ({ name, points: data.points || 0 })).sort((a,b) => b.points - a.points);
+    let myRank = sortedGuilds.findIndex(g => g.name === gameState.guild) + 1;
+    let html = `<div style="text-align:center; margin-bottom:15px; background:#161b22; padding:15px; border-radius:12px; border:2px solid #eab308;"><h2 style="margin:0 0 5px 0; color:#eab308;">${gameState.guild}</h2><div style="font-size:14px;">🏆 Platz: <b>${myRank}</b> | 🛡️ Punkte: <b>${myG.points||0}</b></div></div><div style="display:flex; gap:10px; margin-bottom:15px;"><button class="success-btn" style="flex:1; background:#eab308; font-size:14px;" onclick="window.handleGuildDonateMenu()">🐟 Fische spenden</button><button class="danger-btn" style="flex:1; font-size:14px;" onclick="window.leaveGuild()">${isOwner ? 'Gilde auflösen' : 'Gilde verlassen'}</button></div><h4 style="margin-bottom:10px; border-bottom:1px solid #30363d; padding-bottom:5px;">👥 Mitglieder (${members.length}/10)</h4><div style="max-height:35vh; overflow-y:auto;">`;
+    members.forEach(mName => { let roleStr = (mName === myG.owner) ? `<span style="color:#facc15; font-size:12px;">👑 Leader</span>` : `<span style="color:#94a3b8; font-size:12px;">👤 Mitglied</span>`; let kickBtn = (isOwner && mName !== currentUser) ? `<button class="danger-btn" style="padding:4px 8px; font-size:11px;" onclick="window.kickGuildMember('${mName}')">Kicken</button>` : ''; html += `<div style="display:flex; justify-content:space-between; align-items:center; background:#0d1117; padding:10px; border-radius:8px; margin-bottom:5px;"><div><b style="color:#60a5fa; cursor:pointer;" onclick="window.showPlayerProfile('${mName}')">${mName}</b><br>${roleStr}</div><div>${kickBtn}</div></div>`; });
+    html += `</div>`; openModal("🛡️ Gilde", html);
 }
+window.createGuild = async function() { if(gameState.money < 250000) return alert("Du brauchst 250.000$ um eine Gilde zu gründen!"); let name = document.getElementById("createGuildName").value.trim().replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 15); if(name.length < 3) return alert("Der Gildenname muss mindestens 3 Zeichen lang sein (keine Sonderzeichen)."); if(guildsCache[name]) return alert("Eine Gilde mit diesem Namen existiert bereits!"); gameState.money -= 250000; gameState.guild = name; saveData(); syncGlobalLeaderboard(); await set(ref(db, "global/guilds/" + name), { owner: currentUser, points: 0, members: [currentUser] }); log(`🛡️ Gilde '${name}' erfolgreich gegründet!`); window.handleGuildMenu(); }
+window.joinGuild = async function(name) { let g = guildsCache[name]; if(!g) return alert("Gilde existiert nicht."); if(g.members && g.members.length >= 10) return alert("Gilde ist voll."); let newMembers = g.members || []; if(!newMembers.includes(currentUser)) newMembers.push(currentUser); gameState.guild = name; saveData(); syncGlobalLeaderboard(); await set(ref(db, "global/guilds/" + name + "/members"), newMembers); log(`🛡️ Du bist der Gilde '${name}' beigetreten!`); window.handleGuildMenu(); }
+window.leaveGuild = async function() { let gName = gameState.guild; let g = guildsCache[gName]; if(!g) return; if(confirm(g.owner === currentUser ? "Willst du deine Gilde wirklich auflösen? (Alle Punkte gehen verloren!)" : "Willst du die Gilde wirklich verlassen?")) { gameState.guild = ""; saveData(); syncGlobalLeaderboard(); if(g.owner === currentUser) { await remove(ref(db, "global/guilds/" + gName)); log("🛡️ Gilde aufgelöst."); } else { let newMembers = g.members.filter(m => m !== currentUser); await set(ref(db, "global/guilds/" + gName + "/members"), newMembers); log("🛡️ Gilde verlassen."); } window.handleGuildMenu(); } }
+window.kickGuildMember = async function(mName) { if(confirm(`Möchtest du ${mName} wirklich aus der Gilde werfen?`)) { let gName = gameState.guild; let g = guildsCache[gName]; if(!g) return; let newMembers = g.members.filter(m => m !== mName); await set(ref(db, "global/guilds/" + gName + "/members"), newMembers); window.handleGuildMenu(); } }
+window.handleGuildDonateMenu = function() { if(!gameState.guild || !guildsCache[gameState.guild]) return alert("Du bist in keiner Gilde!"); if(!gameState.inventory) gameState.inventory = []; let pointsToGet = 0, fishCount = 0; gameState.inventory.forEach(item => { if(item.isTrash) return; fishCount++; if(item.isShiny) pointsToGet += 50; else if(item.c <= 5) pointsToGet += 5; else pointsToGet += 1; }); let html = `<div style="text-align:center;"><p style="color:#94a3b8; font-size:14px; margin-top:0;">Spende deine gefangenen Fische an die Gilde, um sie im Leaderboard nach oben zu bringen! (Müll wird dabei ignoriert und bleibt im Rucksack)</p><div style="background:#0d1117; padding:15px; border-radius:12px; border:1px solid #eab308; margin-bottom:15px;"><div style="font-size:28px; margin-bottom:5px; color:#eab308; font-weight:bold;">+${pointsToGet} Punkte</div><div style="color:#60a5fa;">Aus ${fishCount} Fischen im Rucksack</div></div><ul style="text-align:left; font-size:12px; color:#94a3b8; padding-left:20px; background:#161b22; padding:10px 10px 10px 30px; border-radius:8px;"><li><b>1 Punkt:</b> Gewöhnliche Fische (>5%)</li><li><b style="color:#fcd34d;">5 Punkte:</b> Seltene Fische (<=5%)</li><li><b style="color:#a855f7;">50 Punkte:</b> Mutationen (Shinys)</li></ul></div>`; let btn = fishCount > 0 ? `<button class="success-btn" style="width:100%; background:#eab308;" onclick="window.executeGuildDonate()">Alle Fische Spenden</button>` : `<button disabled style="width:100%;">Nichts zum Spenden</button>`; openModal("🛡️ Gilden-Spende", html, btn); }
+window.executeGuildDonate = async function() { if(!gameState.guild || !guildsCache[gameState.guild] || !gameState.inventory) return; let points = 0, newInv = []; gameState.inventory.forEach(item => { if(item.isTrash) newInv.push(item); else { if(item.isShiny) points += 50; else if(item.c <= 5) points += 5; else points += 1; } }); if(points > 0) { gameState.inventory = newInv; saveData(); let guildRef = ref(db, "global/guilds/" + gameState.guild + "/points"); let snap = await get(guildRef); let currentPoints = snap.exists() ? snap.val() : 0; await set(guildRef, currentPoints + points); log(`🛡️ Fische gespendet! Deine Gilde hat +${points} Punkte erhalten.`); window.handleGuildMenu(); } }
 
-// ===== FEEDBACK =====
-window.openFeedbackMenu = function() {
-    let html = `
-    <p style="color:#94a3b8; font-size:14px; margin-top:0;">Hast du einen Bug gefunden oder einen Wunsch für ein Update? Lass es uns wissen!</p>
-    <textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%; height:120px; padding:12px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white; resize:none; font-family:inherit;"></textarea>
-    `;
-    openModal("💬 Feedback senden", html, `<button class="success-btn" style="width:100%;" onclick="window.submitFeedback()">Senden</button>`);
-}
+// === ADMIN MENÜ (vereinfacht eingefügt) ===
+window.handleAdminMenu = function() { if(currentUser !== "colin") return alert("Nur für Administrator!"); let html = `<div class="admin-grid"><div><h4>📢 Broadcast</h4><input id="adminMsg" placeholder="Nachricht"><button onclick="window.adminSendBroadcast()">Senden</button><h4>🎁 Give</h4><input id="adminUser" placeholder="User"><input id="adminAmount" placeholder="Menge"><select id="adminType"><option>money</option><option>level</option><option>prestige</option></select><button onclick="window.adminGive()">Geben</button></div><div><h4>⚡ Event</h4><select id="evtType"><option>sun</option><option>rain</option><option>xp</option><option>money</option></select><input id="evtMin" placeholder="Minuten" value="30"><button onclick="window.adminSetEvent()">Starten</button><button onclick="window.adminStopEvent()">Stopp</button><h4>🛠️ Wartung</h4><button onclick="window.adminSetMaintenance(true)">AN</button><button onclick="window.adminSetMaintenance(false)">AUS</button></div></div>`; openModal("Admin", html); }
+window.adminSendBroadcast = async function() { let msg = document.getElementById("adminMsg").value; if(msg) await set(ref(db, "global/broadcast"), { text: msg, timestamp: Date.now() }); }
+window.adminGive = async function() { let user = document.getElementById("adminUser").value; let amount = Number(document.getElementById("adminAmount").value); let type = document.getElementById("adminType").value; let snap = await get(ref(db, "users/"+user)); if(snap.exists()) { let d = snap.val(); if(type==="money") d.money += amount; if(type==="level") d.level += amount; if(type==="prestige") d.prestige += amount; await set(ref(db, "users/"+user), d); alert("Erfolg!"); } }
+window.adminSetEvent = async function() { let type = document.getElementById("evtType").value; let mins = Number(document.getElementById("evtMin").value); let mult = type === "xp" || type === "money" ? 2 : 2; let name = type === "sun" ? "☀️ Sonne" : (type === "rain" ? "🌧️ Regen" : (type === "xp" ? "⭐ XP" : "💰 Geld")); await set(ref(db, "global/event"), { type, mult, name, exp: Date.now() + mins*60000 }); alert("Event gestartet"); }
+window.adminStopEvent = async function() { await set(ref(db, "global/event"), null); alert("Event gestoppt"); }
+window.adminSetMaintenance = async function(state) { await set(ref(db, "global/maintenance"), state); alert(state ? "Wartung AN" : "Wartung AUS"); }
 
-window.submitFeedback = function() {
-    let text = document.getElementById("feedbackText").value.trim();
-    if(text.length < 5) return alert("Bitte schreibe mindestens 5 Zeichen.");
-    
-    let webhookUrl = "https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB";
-    fetch(webhookUrl, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ embeds: [{ title: "💬 Neues Spieler-Feedback", description: text, color: 3447003, fields: [ { name: "Spieler", value: currentUser || "Unbekannt", inline: true }, { name: "Zeit", value: new Date().toLocaleString("de-DE"), inline: true } ] }] })
-    }).then(() => { alert("✅ Dein Feedback wurde erfolgreich gesendet!"); window.closeModal(); }).catch(e => { alert("❌ Fehler beim Senden des Feedbacks."); });
-}
-
-window.adminSendUpdateToDiscord = function() {
-    if(!confirm("Möchtest du das aktuelle Update-Log in Discord posten?")) return;
-    
-    let webhookUrl = "https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd";
-    
-    fetch(webhookUrl, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            embeds: [{
-                title: "🚀 Update v6.1 ist online!",
-                description: "Das Spiel wurde soeben aktualisiert. Bitte ladet die Seite neu (bzw. schließt die Wartung), um die Änderungen zu sehen!",
-                color: 11027200,
-                fields: [
-                    { name: "🛡️ Gilden-System", value: "Gründe mit 250.000$ eine eigene Gilde oder tritt einer bei (Max 10 Spieler pro Gilde)." },
-                    { name: "🐟 Fische Spenden", value: "Sammle gemeinsam mit deiner Gilde Punkte, indem du Fische im Gilden-Menü spendest anstatt sie zu verkaufen." },
-                    { name: "🏆 Top Gilden", value: "Ein neues Leaderboard nur für Gilden ist jetzt integriert. Kämpft euch an die Spitze!" }
-                ],
-                footer: { text: "Virtual Fisher PRO" }
-            }]
-        })
-    }).then(() => {
-        alert("✅ Update erfolgreich an Discord gesendet!");
-    }).catch(e => {
-        alert("❌ Fehler beim Senden an Discord.");
-    });
-}
-
-window.handleUpdateMenu = function() {
-    let html = `
-    <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.1 - Gilden-System Update</h3>
-        <ul style="padding-left:20px;">
-            <li><b>Neue Gilden:</b> Gründe eine Gilde oder trete einer bei. (Max. 10 Mitglieder)</li>
-            <li><b>Fische Spenden:</b> Verkaufe deine Fische nicht nur für Geld, sondern spende sie für deine Gilde, um im Rang aufzusteigen! (Shinys = 50 Punkte!)</li>
-            <li><b>Gilden Rangliste:</b> Miss dich mit anderen Gilden auf dem Server.</li>
-        </ul>
-        <hr style="border-color:#30363d;">
-        <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
-        <p><b>v6.0</b> - Globales Leaderboard, Promo-Codes, Live-Broadcast.</p>
-        <p><b>v5.8</b> - Mobile Fixes & Discord Server Integration.</p>
-    </div>`;
-    openModal("📝 Updates", html);
-}
-
-// ===== ADMIN BEREICH =====
-window.handleAdminMenu = function() {
-    let html = `
-    <div class="admin-grid">
-        <!-- LINKER BEREICH -->
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #0ea5e9;">
-                <h4 style="margin:0 0 10px 0; color:#0ea5e9; border-bottom:1px solid #30363d; padding-bottom:5px;">📢 Live Broadcast</h4>
-                <input id="adminBroadcastInput" placeholder="Server-Nachricht..." style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                <button class="update-btn" style="width:100%; background:#0ea5e9;" onclick="window.adminSendBroadcast()">Nachricht an alle senden</button>
-            </div>
-
-            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #3b82f6;">
-                <h4 style="margin:0 0 10px 0; color:#3b82f6; border-bottom:1px solid #30363d; padding-bottom:5px;">🔎 Spieler Inspektor</h4>
-                <input id="adminInspectTarget" placeholder="Username eingeben" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                <button class="success-btn" style="width:100%;" onclick="window.adminInspectUser()">Spieler durchsuchen</button>
-            </div>
-            
-            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #a855f7;">
-                <h4 style="margin:0 0 10px 0; color:#a855f7; border-bottom:1px solid #30363d; padding-bottom:5px;">🎫 Promo-Codes erstellen</h4>
-                <input id="adminCodeName" placeholder="Z.B. UPDATE59" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white; text-transform:uppercase;">
-                
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:5px; margin-bottom:5px;">
-                    <input id="adminCodeMoney" type="number" placeholder="Geld ($)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                    <input id="adminCodeXP" type="number" placeholder="XP" style="width:100%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                </div>
-                
-                <div style="display:grid; grid-template-columns:2fr 1fr; gap:5px; margin-bottom:5px;">
-                    <select id="adminCodeItem" style="width:100%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                        <option value="none">Kein Item</option>
-                        ${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}
-                    </select>
-                    <input id="adminCodeItemAmt" type="number" placeholder="Anzahl" style="width:100%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                </div>
-
-                <div style="display:flex; gap:5px;">
-                    <button class="success-btn" style="flex:1; background:#a855f7;" onclick="window.adminCreatePromoCode()">Erstellen</button>
-                    <button class="update-btn" style="flex:1;" onclick="window.adminManagePromoCodes()">Verwalten</button>
-                </div>
-            </div>
-            
-            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #10b981;">
-                <h4 style="margin:0 0 10px 0; color:#10b981; border-bottom:1px solid #30363d; padding-bottom:5px;">🛠️ Wartung & Updates</h4>
-                <div style="display:flex; gap:5px; margin-bottom:10px;">
-                    <button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">Wartung AN</button>
-                    <button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">Wartung AUS</button>
-                </div>
-                <button class="update-btn" style="width:100%; background:#8b5cf6;" onclick="window.adminSendUpdateToDiscord()">📢 Update in Discord posten</button>
-            </div>
-        </div>
-
-        <!-- RECHTER BEREICH -->
-        <div style="display:flex; flex-direction:column; gap:10px;">
-            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #facc15;">
-                <h4 style="margin:0 0 10px 0; color:#facc15; border-bottom:1px solid #30363d; padding-bottom:5px;">⚡ Manuelle Live-Events</h4>
-                <select id="adminEventSelect" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                    <option value="sun">☀️ Goldene Sonne (3x Shiny)</option>
-                    <option value="rain">🌧️ Monsun (2x Speed)</option>
-                    <option value="hai">🦈 Raubfisch-Woche (5x Zander)</option>
-                    <option value="xp">⭐ Custom XP-Boost</option>
-                    <option value="money">💰 Custom Geld-Verkaufs-Boost</option>
-                </select>
-                <div style="display:flex; gap:5px; margin-bottom:5px;">
-                    <input id="adminEventMult" type="number" placeholder="Faktor (nur XP/Geld)" step="0.5" style="width:50%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                    <input id="adminEventTime" type="number" placeholder="Minuten" value="30" style="width:50%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                </div>
-                <div style="display:flex; gap:5px;">
-                    <button class="success-btn" style="flex:1;" onclick="window.adminSetEvent()">Starten</button>
-                    <button class="danger-btn" style="flex:1;" onclick="window.adminStopEvent()">Beenden</button>
-                </div>
-            </div>
-
-            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #3b82f6;">
-                <h4 style="margin:0 0 10px 0; color:#3b82f6; border-bottom:1px solid #30363d; padding-bottom:5px;">🎁 Push & Give</h4>
-                <input id="adminTarget" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                <div style="display:flex; gap:5px; margin-bottom:5px;">
-                    <select id="adminType" style="width:50%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                        <option value="money">💰 Geld</option><option value="level">⭐ Level</option><option value="prestige">👑 Prestige</option>
-                    </select>
-                    <input id="adminAmount" type="number" placeholder="Menge" style="width:50%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                </div>
-                <button class="success-btn" style="width:100%; margin-bottom:10px;" onclick="window.adminGive()">Werte Hinzufügen</button>
-                <div style="display:flex; gap:5px; margin-bottom:5px;">
-                    <select id="adminItem" style="width:60%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                        ${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}
-                    </select>
-                    <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:40%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                </div>
-                <button class="update-btn" style="width:100%;" onclick="window.adminGiveItem()">Item geben</button>
-            </div>
-
-            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #a855f7;">
-                <h4 style="margin:0 0 10px 0; color:#a855f7; border-bottom:1px solid #30363d; padding-bottom:5px;">📝 Account Verwaltung</h4>
-                <input id="newAccUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                <input id="newAccPass" placeholder="Passwort" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                <div style="display:flex; gap:5px;">
-                    <button class="success-btn" style="flex:1; background:#a855f7;" onclick="window.adminCreateAccount()">Erstellen</button>
-                    <button class="update-btn" style="flex:1;" onclick="window.adminShowAccounts()">Alle anzeigen</button>
-                </div>
-            </div>
-
-            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #ef4444;">
-                <h4 style="margin:0 0 10px 0; color:#ef4444; border-bottom:1px solid #30363d; padding-bottom:5px;">⛔ Bann & Reset</h4>
-                <div style="display:flex; gap:5px; margin-bottom:5px;">
-                    <input id="adminBanUser" placeholder="User" style="width:60%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                    <input id="adminBanTime" type="number" placeholder="Minuten" style="width:40%; padding:10px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                </div>
-                <div style="display:flex; gap:5px; margin-bottom:10px;">
-                    <button class="danger-btn" style="flex:1;" onclick="window.adminBanAccount()">Sperren</button>
-                    <button class="update-btn" style="flex:1;" onclick="window.adminShowBanned()">Bann-Liste</button>
-                </div>
-                <input id="adminResetUser" placeholder="Username für Wipe" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
-                <button class="danger-btn" style="width:100%; background:#f97316;" onclick="window.adminResetAccount()">Spielstand auf Null (Wipe)</button>
-            </div>
-        </div>
-    </div>`;
-    openModal("👑 Admin Panel", html, "", true);
-}
-
-// === ADMIN PROMO CODES ===
-window.adminCreatePromoCode = async function() {
-    let code = document.getElementById("adminCodeName").value.trim().toUpperCase();
-    let money = Number(document.getElementById("adminCodeMoney").value) || 0;
-    let xp = Number(document.getElementById("adminCodeXP").value) || 0;
-    let itemName = document.getElementById("adminCodeItem").value;
-    let itemAmt = Number(document.getElementById("adminCodeItemAmt").value) || 0;
-    
-    if(!code) return alert("Bitte einen Namen für den Code eintragen!");
-    if(money === 0 && xp === 0 && (itemName === "none" || itemAmt === 0)) return alert("Der Code muss mindestens eine Belohnung (Geld, XP oder Item) haben!");
-    
-    let reward = { money, xp };
-    if(itemName !== "none" && itemAmt > 0) {
-        reward.itemName = itemName;
-        reward.itemAmt = itemAmt;
-    }
-
-    await set(ref(db, "global/promocodes/" + code), reward);
-    alert(`✅ Code '${code}' wurde erfolgreich erstellt!`);
-    
-    document.getElementById("adminCodeName").value = "";
-    document.getElementById("adminCodeMoney").value = "";
-    document.getElementById("adminCodeXP").value = "";
-    document.getElementById("adminCodeItemAmt").value = "";
-}
-
-window.adminManagePromoCodes = async function() {
-    let snap = await get(ref(db, "global/promocodes"));
-    let html = `<h3>🎫 Aktive Promo-Codes</h3><div style="max-height:300px; overflow-y:auto;">`;
-    if(snap.exists()) {
-        snap.forEach(child => {
-            let c = child.key;
-            let r = child.val();
-            let rewText = [];
-            if(r.money) rewText.push(`${r.money.toLocaleString()}$`);
-            if(r.xp) rewText.push(`${r.xp.toLocaleString()} XP`);
-            if(r.itemName) rewText.push(`${r.itemAmt}x ${r.itemName}`);
-            html += `<div style="background:#161b22; padding:10px; border-radius:8px; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center;">
-                <div><b style="color:#a855f7;">${c}</b><br><small style="color:#10b981;">${rewText.join(', ')}</small></div>
-                <button class="danger-btn" style="padding:6px; font-size:12px;" onclick="window.adminDeletePromoCode('${c}')">🗑️ Löschen</button>
-            </div>`;
-        });
-    } else {
-        html += `<p>Derzeit sind keine Promo-Codes aktiv.</p>`;
-    }
-    html += `</div><button class="update-btn" style="width:100%; margin-top:10px;" onclick="window.handleAdminMenu()">Zurück zum Admin Panel</button>`;
-    openModal("Codes Verwalten", html);
-}
-
-window.adminDeletePromoCode = async function(code) {
-    if(confirm(`Willst du den Promo-Code ${code} wirklich löschen? Spieler können ihn dann nicht mehr einlösen.`)) {
-        await remove(ref(db, "global/promocodes/" + code));
-        window.adminManagePromoCodes();
-    }
-}
-
-// === ADMIN BROADCAST & INSPECT ===
-window.adminSendBroadcast = async function() {
-    let text = document.getElementById("adminBroadcastInput").value.trim();
-    if(!text) return alert("Bitte eine Nachricht eingeben!");
-    await set(ref(db, "global/broadcast"), { text: text, timestamp: Date.now() });
-    alert("✅ Server-Nachricht wurde an alle Live-Spieler gesendet!");
-    document.getElementById("adminBroadcastInput").value = "";
-}
-
-window.adminInspectUser = async function() {
-    let name = document.getElementById("adminInspectTarget").value.trim();
-    if(!name) return alert("Username eingeben!");
-    let snap = await get(ref(db, "users/" + name));
-    if(!snap.exists()) return alert("Spieler nicht gefunden!");
-    
-    let u = snap.val();
-    let invCounts = {};
-    if(u.inventory && Array.isArray(u.inventory)) {
-        u.inventory.forEach(item => {
-            if(!invCounts[item.n]) invCounts[item.n] = { e: item.e, count: 0 };
-            invCounts[item.n].count++;
-        });
-    }
-
-    let invHtml = `<h4 style="color:#60a5fa; margin-bottom:5px;">Rucksack-Inhalt:</h4><div style="max-height:250px; overflow-y:auto; border:1px solid #30363d; border-radius:8px; padding:10px; background:#0d1117;">`;
-    if(Object.keys(invCounts).length === 0) {
-        invHtml += `<p style="margin:0; color:#94a3b8;">Rucksack ist leer.</p>`;
-    } else {
-        for(let [itemName, data] of Object.entries(invCounts)) {
-            invHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid rgba(255,255,255,0.05); padding:5px 0;">
-                <span>${data.e} ${itemName}</span> <b style="color:#10b981;">x${data.count}</b>
-            </div>`;
-        }
-    }
-    invHtml += `</div>`;
-
-    let html = `
-    <div style="background:#161b22; padding:15px; border-radius:12px; border:2px solid #3b82f6;">
-        <h2 style="margin:0 0 10px 0;">🔍 Inspektor: ${u.name}</h2>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:15px;">
-            <div style="background:#0d1117; padding:10px; border-radius:8px;">💰 Geld:<br><b style="color:#10b981;">${Math.floor(u.money||0).toLocaleString()}$</b></div>
-            <div style="background:#0d1117; padding:10px; border-radius:8px;">⭐ Level:<br><b style="color:#facc15;">${u.level||1} (P${u.prestige||0})</b></div>
-            <div style="background:#0d1117; padding:10px; border-radius:8px;">🎣 Aktuelle Rute:<br><b style="color:#60a5fa;">${rodsDB[u.eqRod]?.name||"Standard"}</b></div>
-            <div style="background:#0d1117; padding:10px; border-radius:8px;">🗺️ Zone:<br><b style="color:#a855f7;">${zones[u.zone]?.name||"Naturteich"}</b></div>
-        </div>
-        ${invHtml}
-    </div>
-    <button class="update-btn" style="width:100%; margin-top:10px;" onclick="window.handleAdminMenu()">Zurück zum Admin Panel</button>
-    `;
-    openModal("Spieler-Akte", html, "", true);
-}
-
-// === ADMIN EVENTS ===
-window.adminSetEvent = async function() {
-    let evtType = document.getElementById('adminEventSelect').value;
-    let mult = Number(document.getElementById('adminEventMult').value) || 2;
-    let mins = Number(document.getElementById('adminEventTime').value) || 30;
-    
-    let evtName = "";
-    if(evtType === 'sun') { evtName = "☀️ Goldene Sonne (3x Shiny)"; mult = 3; }
-    else if(evtType === 'rain') { evtName = "🌧️ Monsun (2x Speed)"; mult = 2; }
-    else if(evtType === 'hai') { evtName = "🦈 Raubfisch-Woche (5x Zander)"; mult = 5; }
-    else if(evtType === 'xp') { evtName = `⭐ Custom XP-Boost (x${mult})`; }
-    else if(evtType === 'money') { evtName = `💰 Custom Geld-Verkaufs-Boost (x${mult})`; }
-
-    await set(ref(db, "global/event"), { type: evtType, mult: mult, name: evtName, exp: Date.now() + (mins * 60 * 1000) });
-    alert(`✅ Event '${evtName}' wurde für ${mins} Minuten gestartet!`);
-}
-
-window.adminStopEvent = async function() {
-    await set(ref(db, "global/event"), null);
-    alert("🛑 Aktuelles Live-Event wurde beendet.");
-}
-
-// === ACCOUNT VERWALTUNG ===
-window.adminCreateAccount = async function() {
-    let user = document.getElementById('newAccUser').value.trim();
-    let pass = document.getElementById('newAccPass').value.trim();
-    if(user.length<3 || pass.length<3) return alert("Min. 3 Zeichen für User und Passwort!");
-    try {
-        await set(ref(db, "accounts/"+user), pass);
-        alert(`✅ Account ${user} erfolgreich erstellt!`);
-        document.getElementById('newAccUser').value = '';
-        document.getElementById('newAccPass').value = '';
-    } catch(e) {
-        alert("Fehler beim Erstellen: " + e.message);
-    }
-}
-
-window.adminShowAccounts = async function() {
-    let snap = await get(ref(db, "accounts"));
-    if(snap.exists()) {
-        let html = `<h3>📋 Alle registrierten Accounts</h3><div style="max-height:400px; overflow-y:auto; margin-bottom:10px;">`;
-        html += `<table style="width:100%; border-collapse: collapse; text-align:left;">
-            <tr style="border-bottom: 1px solid #30363d; color:#94a3b8;">
-                <th style="padding:8px;">Username</th>
-                <th style="padding:8px;">Passwort</th>
-                <th style="padding:8px; text-align:right;">Aktion</th>
-            </tr>`;
-        snap.forEach(child => {
-            let u = child.key;
-            let p = child.val();
-            html += `<tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
-                <td style="padding:8px; color:#60a5fa; font-weight:bold;">${u}</td>
-                <td style="padding:8px; color:#facc15;">${p}</td>
-                <td style="padding:8px; text-align:right;"><button class="danger-btn" style="padding:6px; font-size:12px; display:inline-block;" title="Löschen" onclick="window.adminQuickDelete('${u}')">🗑️</button></td>
-            </tr>`;
-        });
-        html += `</table></div><button class="update-btn" style="width:100%;" onclick="window.handleAdminMenu()">Zurück zum Panel</button>`;
-        openModal("Accounts", html, "", true);
-    } else {
-        alert("Keine Accounts in der Datenbank gefunden!");
-    }
-}
-
-window.adminQuickDelete = async function(user) {
-    if(confirm(`⚠️ Willst du den Account '${user}' wirklich permanent löschen?`)) {
-        await remove(ref(db, "accounts/"+user));
-        await remove(ref(db, "users/"+user));
-        await remove(ref(db, "global/leaderboard/" + user));
-        alert(`🗑️ Account ${user} gelöscht!`);
-        window.adminShowAccounts(); 
-    }
-}
-
-// === RESTLICHES ADMIN ===
-window.adminSetMaintenance = async function(state) {
-    await set(ref(db, "global/maintenance"), state);
-    alert(state ? "⚠️ Wartungsmodus AKTIVIERT!" : "✅ Wartungsmodus BEENDET!");
-}
-
-window.adminBanAccount = async function() {
-    let user = document.getElementById('adminBanUser').value.trim();
-    let mins = Number(document.getElementById('adminBanTime').value);
-    if(!user || isNaN(mins)) return alert("Bitte Username und Minuten zum Sperren angeben!");
-    let snap = await get(ref(db, "users/"+user));
-    if(snap.exists()) {
-        let data = snap.val();
-        data.bannedUntil = Date.now() + (mins * 60 * 1000);
-        await set(ref(db, "users/"+user), data);
-        alert(`🚫 ${user} wurde für ${mins} Minuten gesperrt.`);
-    } else alert("Spieler nicht gefunden!");
-}
-
-window.adminShowBanned = async function() {
-    let snap = await get(ref(db, "users"));
-    if(snap.exists()) {
-        let html = `<h3>🚫 Gebannte Accounts</h3><div style="max-height:300px; overflow-y:auto; margin-bottom:10px;">`;
-        let hasBanned = false;
-        snap.forEach(c => {
-            let u = c.val();
-            if(u && u.bannedUntil && u.bannedUntil > Date.now()) {
-                hasBanned = true;
-                let minsLeft = Math.ceil((u.bannedUntil - Date.now()) / 60000);
-                html += `<div class="item-row" style="background:#161b22; padding:10px; border-radius:8px; margin-bottom:5px;">
-                    <div><b style="color:#ef4444;">${u.name}</b><br><small>Noch ${minsLeft} Min</small></div>
-                    <button class="success-btn" style="padding:8px;" onclick="window.adminUnban('${u.name}')">Entbannen</button>
-                </div>`;
-            }
-        });
-        if(!hasBanned) html += `<p>Aktuell sind keine Accounts gesperrt.</p>`;
-        html += `</div><button class="update-btn" style="width:100%;" onclick="window.handleAdminMenu()">Zurück zum Panel</button>`;
-        openModal("Bann-Liste", html);
-    }
-}
-
-window.adminUnban = async function(user) {
-    let snap = await get(ref(db, "users/"+user));
-    if(snap.exists()) {
-        let data = snap.val();
-        data.bannedUntil = 0;
-        await set(ref(db, "users/"+user), data);
-        alert(`✅ ${user} wurde erfolgreich entbannt.`);
-        window.adminShowBanned();
-    }
-}
-
-window.adminGive = async function() {
-    let target = document.getElementById('adminTarget').value.trim();
-    let type = document.getElementById('adminType').value;
-    let amount = Number(document.getElementById('adminAmount').value);
-    if(!target || isNaN(amount)) return alert("Username und Menge!");
-    let snap = await get(ref(db, "users/"+target));
-    if(snap.exists()) {
-        let data = snap.val();
-        if(type === 'money') data.money += amount;
-        if(type === 'level') { data.level += amount; data.xp = 0; }
-        if(type === 'prestige') data.prestige += amount;
-        await set(ref(db, "users/"+target), data);
-        alert(`✅ ${amount} ${type} an ${target}`);
-    } else alert("Spieler nicht gefunden!");
-}
-
-window.adminGiveItem = async function() {
-    let target = document.getElementById('adminTarget').value.trim();
-    let item = document.getElementById('adminItem').value;
-    let count = Number(document.getElementById('adminItemCount').value);
-    if(!target || isNaN(count)) return alert("Username und Anzahl!");
-    let snap = await get(ref(db, "users/"+target));
-    if(snap.exists()) {
-        let data = snap.val();
-        if(!data.inventory || !Array.isArray(data.inventory)) data.inventory = [];
-        let baseItem = items.find(i => i.n === item);
-        if(baseItem) {
-            for(let i=0; i<count; i++) {
-                data.inventory.push({
-                    id: Math.random().toString(36).substr(2,9),
-                    n: baseItem.n, baseName: baseItem.n, v: baseItem.v, xp: baseItem.xp,
-                    e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: baseItem.minW || 0
-                });
-            }
-            await set(ref(db, "users/"+target), data);
-            alert(`✅ ${count}x ${item} an ${target}`);
-        }
-    } else alert("Spieler nicht gefunden!");
-}
-
-window.adminResetAccount = async function() {
-    let user = document.getElementById('adminResetUser').value.trim();
-    if(!user) return alert("Username eingeben!");
-    if(confirm(`⚠️ Spielstand von ${user} wirklich komplett zurücksetzen? (Login bleibt erhalten)`)) {
-        await remove(ref(db, "users/" + user));
-        await set(ref(db, "global/leaderboard/" + user), { name: user, prestige: 0, level: 1, money: 0, stats: { totalCaught: 0 } });
-        alert(`✅ Spielstand von ${user} wurde gelöscht und wird beim nächsten Login neu erstellt.`);
-    }
-}
-
-document.getElementById('btnLogin')?.addEventListener('click', async () => {
-    let u = document.getElementById('username').value.trim();
-    let p = document.getElementById('password').value;
-    if(u==="colin" && p==="11012021") {
-        await set(ref(db, "accounts/colin"), "11012021");
-        currentUser = u; localStorage.setItem('vFisher_user', u);
-        await loadData();
-        return;
-    }
-    let snap = await get(ref(db, "accounts/"+u));
-    if(snap.exists() && snap.val() === p) {
-        currentUser = u; localStorage.setItem('vFisher_user', u);
-        await loadData();
-    } else {
-        document.getElementById('login-error').style.display = 'block';
-    }
-});
+// EVENT LISTENERS
+document.getElementById('btnLogin')?.addEventListener('click', async () => { let u = document.getElementById('username').value.trim(); let p = document.getElementById('password').value; if(u==="colin" && p==="11012021") { await set(ref(db, "accounts/colin"), "11012021"); currentUser = u; localStorage.setItem('vFisher_user', u); await loadData(); return; } let snap = await get(ref(db, "accounts/"+u)); if(snap.exists() && snap.val() === p) { currentUser = u; localStorage.setItem('vFisher_user', u); await loadData(); } else document.getElementById('login-error').style.display = 'block'; });
 document.getElementById('btnLogout')?.addEventListener('click', () => { localStorage.removeItem('vFisher_user'); location.reload(); });
 document.getElementById('btnFish')?.addEventListener('click', window.handleFish);
 document.getElementById('btnSell')?.addEventListener('click', window.handleSellMenu);
@@ -2531,6 +1345,7 @@ document.getElementById('btnLeader')?.addEventListener('click', window.handleLea
 document.getElementById('btnDaily')?.addEventListener('click', window.handleDailyMenu);
 document.getElementById('btnUpdates')?.addEventListener('click', window.handleUpdateMenu);
 document.getElementById('btnPrestige')?.addEventListener('click', window.handlePrestigeMenu);
+document.getElementById('btnGuild')?.addEventListener('click', window.handleGuildMenu);
 
 let savedUser = localStorage.getItem('vFisher_user');
 if(savedUser) { currentUser = savedUser; loadData(); }
