@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Virtual Fisher PRO v5.3</title>
+    <title>Virtual Fisher PRO v5.4</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -65,6 +65,7 @@
         @keyframes pulseSun { from { opacity: 0.5; transform: scale(1); } to { opacity: 1; transform: scale(1.1); } }
         .shark-fx { position: absolute; bottom: 5px; font-size: 22px; animation: swimShark 8s linear infinite; z-index: 3; pointer-events: none; }
         @keyframes swimShark { 0% { right: -40px; transform: scaleX(-1); } 100% { right: 110%; transform: scaleX(-1); } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
         #top-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; font-weight: bold; flex-wrap: wrap; gap: 8px; }
         #stats-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; font-size: 13px; font-weight: bold; flex-wrap: wrap; gap: 8px; }
@@ -138,6 +139,13 @@
     </style>
 </head>
 <body>
+<!--WARTUNGS SCREEN-->
+<div id="maintenance-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:999999; justify-content:center; align-items:center; flex-direction:column; text-align:center; color:white;">
+    <h1 style="color:#0ea5e9; font-size:40px; margin-bottom:10px;">🛠️ Spiel wird aktualisiert</h1>
+    <p style="font-size:18px; color:#94a3b8;">Bitte habe einen Moment Geduld. Wir sind gleich wieder da!</p>
+    <div style="margin-top:30px; border: 4px solid #1e293b; border-top: 4px solid #0ea5e9; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite;"></div>
+</div>
+
 <div id="aquarium-bg"></div>
 <div id="minigame-overlay" class="modal-overlay" style="z-index: 99999;">
     <div id="minigame-container">
@@ -183,7 +191,6 @@
     </div>
     <div id="authBox">
         <h3>🔐 Virtual Fisher Login</h3>
-        <p style="font-size:12px; margin:5px 0;">Demo: colin / 11012021</p>
         <input id="username" placeholder="Spielername" style="width:100%; padding:12px; margin:5px 0; border-radius:12px; border:1px solid #30363d; background:#0d1117; color:white;">
         <input id="password" type="password" placeholder="Passwort" style="width:100%; padding:12px; margin:5px 0; border-radius:12px; border:1px solid #30363d; background:#0d1117; color:white;">
         <button id="btnLogin" style="width:100%; margin:15px 0; padding:14px; background:#10b981;">Einloggen</button>
@@ -246,6 +253,7 @@ let globalState = null;
 window.currentOpenMenu = null;
 window.currentDexTab = 'normal';
 let fishInterval = null;
+let wasMaintenance = false;
 
 const zones = [
     { name: "🍃 Naturteich", reqPrestige: 0 },
@@ -462,9 +470,60 @@ function updateDex(item) {
     }
 }
 
-function checkQuestResets() {
+const questDB = {
+    daily: [
+        {id:'d1',desc:'Fange 15 Fische',t:'c',req:15,rew:50},
+        {id:'d2',desc:'Verdiene 250$',t:'e',req:250,rew:100},
+        {id:'d3',desc:'Fange 30 Fische',t:'c',req:30,rew:150},
+        {id:'d4',desc:'Verdiene 500$',t:'e',req:500,rew:200},
+        {id:'d5',desc:'Fange 50 Fische',t:'c',req:50,rew:300}
+    ],
+    weekly: [
+        {id:'w1',desc:'Fange 150 Fische',t:'c',req:150,rew:500},
+        {id:'w2',desc:'Verdiene 2500$',t:'e',req:2500,rew:800},
+        {id:'w3',desc:'Fange 300 Fische',t:'c',req:300,rew:1200},
+        {id:'w4',desc:'Verdiene 5000$',t:'e',req:5000,rew:1500},
+        {id:'w5',desc:'Fange 500 Fische',t:'c',req:500,rew:2000},
+        {id:'w6',desc:'Verdiene 10000$',t:'e',req:10000,rew:3000},
+        {id:'w7',desc:'Fange 750 Fische',t:'c',req:750,rew:4000},
+        {id:'w8',desc:'Verdiene 20000$',t:'e',req:20000,rew:5000},
+        {id:'w9',desc:'Fange 1000 Fische',t:'c',req:1000,rew:6000},
+        {id:'w10',desc:'Verdiene 50000$',t:'e',req:50000,rew:10000}
+    ],
+    monthly: [
+        {id:'m1',desc:'Fange 500 Fische',t:'c',req:500,rew:2500},
+        {id:'m2',desc:'Verdiene 10000$',t:'e',req:10000,rew:3000},
+        {id:'m3',desc:'Fange 1000 Fische',t:'c',req:1000,rew:4000},
+        {id:'m4',desc:'Verdiene 25000$',t:'e',req:25000,rew:5000},
+        {id:'m5',desc:'Fange 1500 Fische',t:'c',req:1500,rew:6000},
+        {id:'m6',desc:'Verdiene 50000$',t:'e',req:50000,rew:7500},
+        {id:'m7',desc:'Fange 2000 Fische',t:'c',req:2000,rew:9000},
+        {id:'m8',desc:'Verdiene 100000$',t:'e',req:100000,rew:12000},
+        {id:'m9',desc:'Fange 2500 Fische',t:'c',req:2500,rew:15000},
+        {id:'m10',desc:'Verdiene 200000$',t:'e',req:200000,rew:20000},
+        {id:'m11',desc:'Fange 3000 Fische',t:'c',req:3000,rew:25000},
+        {id:'m12',desc:'Verdiene 350000$',t:'e',req:350000,rew:30000},
+        {id:'m13',desc:'Fange 4000 Fische',t:'c',req:4000,rew:35000},
+        {id:'m14',desc:'Verdiene 500000$',t:'e',req:500000,rew:45000},
+        {id:'m15',desc:'Fange 5000 Fische',t:'c',req:5000,rew:60000}
+    ]
+};
+
+function getResetKeys() {
     let d = new Date();
     let daily = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+    let monthly = `${d.getFullYear()}-${d.getMonth()}`;
+    let d0 = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    let dayNum = d0.getUTCDay() || 7;
+    d0.setUTCDate(d0.getUTCDate() + 4 - dayNum);
+    let yStart = new Date(Date.UTC(d0.getUTCFullYear(),0,1));
+    let weekNo = Math.ceil((((d0 - yStart) / 86400000) + 1)/7);
+    let weekly = `${d0.getUTCFullYear()}-W${weekNo}`;
+    return { daily, weekly, monthly };
+}
+
+function checkQuestResets() {
+    let k = getResetKeys();
     if(!gameState.qs || typeof gameState.qs !== 'object' || Array.isArray(gameState.qs)) {
         gameState.qs = { p: {dc:0,de:0,wc:0,we:0,mc:0,me:0}, c: {}, d: "", w: "", m: "" };
     }
@@ -473,7 +532,9 @@ function checkQuestResets() {
     
     let qs = gameState.qs;
     let save = false;
-    if(qs.d !== daily) { qs.d = daily; qs.p.dc=0; qs.p.de=0; for(let c in qs.c) if(c.startsWith('d')) delete qs.c[c]; save=true; }
+    if(qs.d !== k.daily) { qs.d = k.daily; qs.p.dc=0; qs.p.de=0; for(let c in qs.c) if(c.startsWith('d')) delete qs.c[c]; save=true; }
+    if(qs.w !== k.weekly) { qs.w = k.weekly; qs.p.wc=0; qs.p.we=0; for(let c in qs.c) if(c.startsWith('w')) delete qs.c[c]; save=true; }
+    if(qs.m !== k.monthly) { qs.m = k.monthly; qs.p.mc=0; qs.p.me=0; for(let c in qs.c) if(c.startsWith('m')) delete qs.c[c]; save=true; }
     if(save) saveData();
 }
 
@@ -487,7 +548,20 @@ async function loadData() {
     if(!currentUser) return;
     onValue(ref(db, "global"), (snap) => {
         globalState = snap.exists() ? snap.val() : null;
+        
+        // Wartungsmodus Check
+        let isMaintenance = globalState && globalState.maintenance;
+        if(isMaintenance && currentUser !== "colin") {
+            document.getElementById('maintenance-overlay').style.display = 'flex';
+            wasMaintenance = true;
+        } else {
+            document.getElementById('maintenance-overlay').style.display = 'none';
+            if(wasMaintenance && currentUser !== "colin") {
+                location.reload(); // Reload wenn Wartung beendet
+            }
+        }
     });
+    
     onValue(ref(db, "users/" + currentUser), (snap) => {
         if(snap.exists()) { 
             gameState = snap.val(); 
@@ -904,13 +978,8 @@ window.handleSellMenu = function() {
         let key = item.n; 
         if(!grouped[key]) {
             grouped[key] = {
-                n: key,
-                e: item.e,
-                isTrash: item.isTrash,
-                count: 0,
-                totalV: 0,
-                totalW: 0,
-                firstIdx: idx
+                n: key, e: item.e, isTrash: item.isTrash,
+                count: 0, totalV: 0, totalW: 0, firstIdx: idx
             };
         }
         grouped[key].count++;
@@ -1162,16 +1231,19 @@ window.handleQuestMenu = function() {
     window.currentOpenMenu = 'quest';
     checkQuestResets();
     try {
-        let qsP = gameState.qs.p;
+        let qs = gameState.qs || {};
+        let qsP = qs.p || {dc:0, de:0, wc:0, we:0, mc:0, me:0};
+        let qsC = qs.c || {};
+        
         let html = `<p style="color:#fcd34d; text-align:center; margin-top:0;">⏳ Fortschritt & Reset</p>`;
         
         let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
         cats.forEach(cat => {
             html += `<h4 style="color:white; margin-top:15px; border-bottom: 1px solid #30363d; padding-bottom:5px;">${cat.n}</h4>`;
             cat.l.forEach(q => {
-                let prog = (q.t === 'c' ? qsP[cat.c] : qsP[cat.e]) || 0;
+                let prog = (q.t === 'c' ? (qsP[cat.c] || 0) : (qsP[cat.e] || 0));
                 let done = prog >= q.req;
-                let claimed = gameState.qs.c && gameState.qs.c[q.id];
+                let claimed = qsC[q.id];
                 let pct = Math.min(100, Math.floor((prog / q.req) * 100));
                 
                 html += `
@@ -1188,7 +1260,7 @@ window.handleQuestMenu = function() {
         openModal("📜 Quests", html);
     } catch(e) {
         console.error(e);
-        openModal("📜 Quests", "<p style='color:#ef4444;'>Fehler beim Laden der Quests. Bitte lade das Spiel neu.</p>");
+        openModal("📜 Quests", "<p style='color:#ef4444;'>Fehler beim Laden der Quests. (" + e.message + ")</p>");
     }
 }
 window.claimQuest = function(id, rew) { if(!gameState.qs.c) gameState.qs.c={}; gameState.qs.c[id]=true; gameState.money += rew; gameState.stats.totalEarned += rew; saveData(); window.handleQuestMenu(); }
@@ -1309,9 +1381,11 @@ window.handleLeaderboard = async function() {
     if(snap.exists()) {
         let users = [];
         snap.forEach(c => users.push(c.val()));
-        users.sort((a,b) => b.prestige - a.prestige || b.level - a.level || b.money - a.money);
         
-        let html = users.slice(0,20).map((u,i) => {
+        // Sortierung nach den meisten gefangenen Fischen!
+        users.sort((a,b) => (b.stats?.totalCaught || 0) - (a.stats?.totalCaught || 0));
+        
+        let html = users.map((u,i) => {
             let rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
             let caught = u.stats?.totalCaught || 0;
             return `
@@ -1397,14 +1471,18 @@ window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameSt
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.3 - Bugfixes & Erweiterung</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 5.4 - Leaderboard & Fixes</h3>
         <ul style="padding-left:20px;">
-            <li><b>Ausrüstung Live-Update:</b> Ein Klick auf "Ausrüsten" aktualisiert das Menü jetzt endlich sofort in Echtzeit! Keine Neustarts mehr nötig.</li>
-            <li><b>Admin Feature:</b> Neue Funktion "Alle Accounts anzeigen" hinzugefügt. Du kannst im Admin-Panel jetzt eine Liste aller erstellten Accounts und Passwörter ansehen.</li>
-            <li><b>Rucksack Gruppierung:</b> Der Rucksack fasst nun gleiche Fische intelligent zusammen! Keine ewigen Listen mehr, sondern saubere Boxen inkl. Gesamtgewicht und Einzel-Ins-Aqua Button.</li>
-            <li><b>Quests Redesign:</b> Wunderschöne, fehlerfreie Fortschrittsbalken.</li>
-            <li><b>Event Hover:</b> Geh mit der Maus über das aktive Event, um Restzeit und Bonus zu sehen!</li>
+            <li><b>Leaderboard Update:</b> Alle Spieler sind nun sichtbar! Die Liste wird ab sofort nach "Meiste gefangene Fische" absteigend sortiert. Wer ist die #1?</li>
+            <li><b>Quests Bugfix:</b> Es wurde ein Fehler behoben, der das Questmenü bei neuen Spielständen abstürzen ließ. Es werden nun alle 5/10/15 Aufgaben sauber geladen.</li>
+            <li><b>Admin Updates:</b> Admin Panel wurde in 2 Spalten extrem ordentlich aufgeräumt. Es gibt zudem nun eine "Spieler Zurücksetzen" Funktion und das Wartungsmodus-Feature, das alle blockiert!</li>
+            <li><b>Fisch-Dex:</b> Das Zonen-Dropdown filtert die Fische ab sofort Live im Hintergrund, ohne dass das Menü schließen muss.</li>
+            <li><b>Daily Bonus Update:</b> Zukünftige Belohnungen sind nun mit einem "???$" verdeckt, damit die Überraschung bleibt!</li>
         </ul>
+        <hr style="border-color:#30363d;">
+        <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
+        <p><b>v5.1</b> - Rucksack Redesign & Müll Gewicht Updates.</p>
+        <p><b>v5.0</b> - Shiny Müll, Neues Inventarsystem, Bach-Zone.</p>
     </div>`;
     openModal("📝 Updates", html);
 }
@@ -1413,6 +1491,14 @@ window.handleAdminMenu = function() {
     let html = `
     <div class="admin-grid">
         <div style="display:flex; flex-direction:column; gap:10px;">
+            <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #0ea5e9;">
+                <h4 style="margin:0 0 10px 0; color:#0ea5e9; border-bottom:1px solid #30363d; padding-bottom:5px;">🛠️ Wartungsmodus (Update Screen)</h4>
+                <div style="display:flex; gap:5px;">
+                    <button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">Einschalten</button>
+                    <button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">Ausschalten</button>
+                </div>
+            </div>
+
             <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #3b82f6;">
                 <h4 style="margin:0 0 10px 0; color:#3b82f6; border-bottom:1px solid #30363d; padding-bottom:5px;">🎁 Spieler pushen</h4>
                 <input id="adminTarget" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
@@ -1477,6 +1563,11 @@ window.handleAdminMenu = function() {
         </div>
     </div>`;
     openModal("👑 Admin Panel", html, "", true);
+}
+
+window.adminSetMaintenance = async function(state) {
+    await set(ref(db, "global/maintenance"), state);
+    alert(state ? "⚠️ Wartungsmodus AKTIVIERT! Alle Spieler sind blockiert." : "✅ Wartungsmodus BEENDET! Alle Spieler laden neu.");
 }
 
 window.adminSetEvent = async function() {
@@ -1611,7 +1702,6 @@ window.adminCreateAccount = async function() {
     }
 }
 
-// NEU: Alle Accounts & Passwörter anzeigen!
 window.adminShowAccounts = async function() {
     let snap = await get(ref(db, "accounts"));
     if(snap.exists()) {
@@ -1640,8 +1730,7 @@ document.getElementById('btnLogin')?.addEventListener('click', async () => {
     let u = document.getElementById('username').value.trim();
     let p = document.getElementById('password').value;
     let snap = await get(ref(db, "accounts/"+u));
-    if((snap.exists() && snap.val() === p) || (u==="colin" && p==="11012021")) {
-        if(u==="colin") await set(ref(db, "accounts/colin"), "11012021");
+    if(snap.exists() && snap.val() === p) {
         currentUser = u; localStorage.setItem('vFisher_user', u);
         await loadData();
     } else document.getElementById('login-error').style.display = 'block';
