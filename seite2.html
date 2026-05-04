@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>🐟 Roblox Angler PRO | Robux Fishing</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', 'Poppins', 'Apple Color Emoji', sans-serif;
+            background: radial-gradient(circle at 30% 10%, #0a0f2a, #030617);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            color: #f0f3ff;
+        }
+        .game-container {
+            max-width: 580px;
+            width: 100%;
+            background: rgba(12, 18, 34, 0.85);
+            backdrop-filter: blur(14px);
+            border-radius: 48px;
+            border: 1px solid rgba(255,215,0,0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6), 0 0 0 2px rgba(0, 255, 255, 0.1);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        .pixel-header {
+            background: #1b2a4e;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #ffcc33;
+            font-weight: bold;
+            font-size: 1.2rem;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .robux-badge {
+            background: #00a2ff;
+            padding: 5px 12px;
+            border-radius: 60px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1rem;
+            box-shadow: inset 0 -1px 0 #0055aa, 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .stats-panel {
+            display: flex;
+            justify-content: space-between;
+            background: #0f142ecc;
+            margin: 12px 16px;
+            padding: 10px 16px;
+            border-radius: 60px;
+            backdrop-filter: blur(4px);
+            font-weight: bold;
+            flex-wrap: wrap;
+            gap: 10px;
+            border: 1px solid #2d4eff;
+        }
+        .fishing-stage {
+            background: #0a0e24;
+            margin: 8px 16px;
+            border-radius: 40px;
+            padding: 10px;
+            position: relative;
+            height: 140px;
+            overflow: hidden;
+            border-bottom: 4px solid #2d6eff;
+            cursor: pointer;
+        }
+        .boat {
+            position: absolute;
+            bottom: 20px;
+            left: 15px;
+            font-size: 42px;
+            transition: transform 0.2s ease;
+            filter: drop-shadow(2px 4px 6px black);
+            z-index: 3;
+        }
+        .bobber {
+            position: absolute;
+            bottom: 25px;
+            left: 70%;
+            width: 14px;
+            height: 14px;
+            background: #ff4d4d;
+            border-radius: 50%;
+            box-shadow: 0 0 8px red;
+            transition: all 0.08s;
+            z-index: 3;
+        }
+        .wave {
+            position: absolute;
+            bottom: 0;
+            width: 200%;
+            height: 24px;
+            background: repeating-linear-gradient(90deg, #2b7fff30, #3b9eff60, #2b7fff30);
+            animation: waveMove 2s linear infinite;
+        }
+        @keyframes waveMove { 0%{ transform: translateX(0); } 100%{ transform: translateX(-50%); } }
+        .btn-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px;
+        }
+        .btn {
+            background: linear-gradient(145deg, #2b3b6e, #1b2a50);
+            border: none;
+            border-radius: 36px;
+            padding: 12px 6px;
+            color: white;
+            font-weight: bold;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.1s linear;
+            box-shadow: 0 5px 0 #0f162f;
+            cursor: pointer;
+        }
+        .btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #0f162f; }
+        .btn-large {
+            grid-column: span 3;
+            background: #3b82f6;
+            font-size: 1.3rem;
+            padding: 16px;
+            box-shadow: 0 6px 0 #1e3a8a;
+        }
+        .log-box {
+            background: #01051ccc;
+            margin: 8px 16px 20px;
+            border-radius: 24px;
+            padding: 12px;
+            height: 160px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            border-left: 6px solid gold;
+        }
+        .shop-item {
+            background: #0f172a;
+            border-radius: 24px;
+            padding: 10px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .modal-card {
+            background: #111827;
+            width: 90%;
+            max-width: 480px;
+            border-radius: 48px;
+            padding: 20px;
+            border: 2px solid #ffcc44;
+            color: white;
+        }
+        .fight-bar {
+            background: #2d3748;
+            height: 24px;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        .fight-fill {
+            height: 100%;
+            width: 0%;
+            transition: width 0.05s linear;
+        }
+        button:disabled { opacity: 0.5; transform: none; filter: grayscale(0.2); }
+        .rod-slot, .bait-slot {
+            background: #07112e;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+        }
+        .inline-icon { font-size: 1.2rem; }
+        @media (max-width: 500px) {
+            .btn { font-size: 0.75rem; padding: 8px; }
+            .stats-panel { font-size: 0.8rem; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="appRoot">
+    <div class="pixel-header">
+        <span>🐟 ROBLOX ANGLER</span>
+        <div class="robux-badge"> <span>🪙</span> <span id="robuxAmount">0</span> R$</div>
+    </div>
+    <div class="stats-panel">
+        <span>⭐ Lvl <span id="playerLevel">1</span></span>
+        <span>🎣 <span id="xpText">0</span>/<span id="xpNeeded">50</span> XP</span>
+        <span>🌊 <span id="zoneName">Teich</span></span>
+        <span>🔥 <span id="comboCount">0</span>x</span>
+    </div>
+    <div class="fishing-stage" id="fishingStage">
+        <div class="boat">⛵</div>
+        <div class="bobber" id="bobber"></div>
+        <div class="wave" style="bottom: 0;"></div>
+        <div class="wave" style="bottom: 8px; opacity: 0.5; animation-duration: 3s;"></div>
+    </div>
+    <div style="display: flex; justify-content: space-between; padding: 0 20px; gap: 10px; margin-bottom: 6px;">
+        <div class="rod-slot">🎣 <span id="rodName">Holzrute</span></div>
+        <div class="bait-slot">🪱 <span id="baitName">Kein Köder</span></div>
+    </div>
+    <div class="btn-grid">
+        <button class="btn" id="fishBtn">🎣 Angeln</button>
+        <button class="btn" id="invBtn">🎒 Inventar</button>
+        <button class="btn" id="shopBtn">🛒 Shop</button>
+        <button class="btn" id="rodsBtn">🔧 Ruten</button>
+        <button class="btn" id="zoneBtn">🗺️ Zone</button>
+        <button class="btn" id="profileBtn">👤 Profil</button>
+        <button class="btn" id="prestigeBtn">🔁 Prestige</button>
+    </div>
+    <div class="log-box" id="logPanel">
+        <div style="color:#ffb347;">✨ Willkommen, Angler! Fange Roblox-Fische und sammle Robux!</div>
+    </div>
+</div>
+
+<script>
+    // ---------- RO BUX FISHING SIMULATOR ----------
+    // Zonen mit robux multiplikatoren & fischpools
+    const ZONES = [
+        { name: "🌿 Blauer Teich", reqPrestige: 0, robuxMult: 1.0, fishPool: "basic" },
+        { name: "🏝️ Korallenriff", reqPrestige: 1, robuxMult: 1.8, fishPool: "reef" },
+        { name: "🌊 Tiefsee-Abgrund", reqPrestige: 3, robuxMult: 3.2, fishPool: "deep" },
+        { name: "✨ Roblox Himmelsee", reqPrestige: 6, robuxMult: 6.0, fishPool: "legend" }
+    ];
+
+    // Fische (wert in Robux, xp, emoji)
+    const FISH_DB = {
+        basic: [
+            { name: "Guppy", value: 2, xp: 5, emoji: "🐟", chance: 35 },
+            { name: "Karpfen", value: 5, xp: 8, emoji: "🐡", chance: 25 },
+            { name: "Forelle", value: 12, xp: 18, emoji: "🐠", chance: 20 },
+            { name: "Roblox Lachs", value: 30, xp: 35, emoji: "🍣", chance: 12 },
+            { name: "Admin Barsch", value: 90, xp: 70, emoji: "👑", chance: 5 },
+            { name: "Goldener Robux-Fisch", value: 250, xp: 200, emoji: "🪙", chance: 2 }
+        ],
+        reef: [
+            { name: "Clownfisch", value: 15, xp: 20, emoji: "🐠", chance: 30 },
+            { name: "Papageifisch", value: 35, xp: 40, emoji: "🌈", chance: 25 },
+            { name: "Rochen", value: 70, xp: 65, emoji: "🦈", chance: 20 },
+            { name: "Roblox Hai", value: 180, xp: 140, emoji: "🦈", chance: 12 },
+            { name: "Königs-Seeigel", value: 400, xp: 300, emoji: "🌟", chance: 4 }
+        ],
+        deep: [
+            { name: "Laternenfisch", value: 45, xp: 55, emoji: "💡", chance: 28 },
+            { name: "Riesenkalmar", value: 110, xp: 90, emoji: "🐙", chance: 24 },
+            { name: "Anglerfisch", value: 240, xp: 210, emoji: "🎣", chance: 18 },
+            { name: "Leviathan", value: 650, xp: 500, emoji: "🐉", chance: 8 },
+            { name: "Abyss Wächter", value: 1500, xp: 1100, emoji: "👁️", chance: 2.5 }
+        ],
+        legend: [
+            { name: "Roblox Admin", value: 800, xp: 700, emoji: "🧢", chance: 25 },
+            { name: "Diamant-Thunfisch", value: 2200, xp: 1800, emoji: "💎", chance: 18 },
+            { name: "Sternen-Flunder", value: 5000, xp: 4000, emoji: "⭐", chance: 9 },
+            { name: "Robux-Gott", value: 12500, xp: 9500, emoji: "🪙✨", chance: 3.5 },
+            { name: "Mythischer Ozeanlord", value: 30000, xp: 21000, emoji: "🌊👑", chance: 1.2 }
+        ]
+    };
+
+    // Ruten
+    const RODS = {
+        wood: { name: "Holzrute", cost: 0, boost: 1.0, emoji: "🪵", desc: "Anfänger" },
+        iron: { name: "Eisenrute", cost: 350, boost: 1.4, emoji: "⚙️", desc: "+40% Wert" },
+        golden: { name: "Goldrute", cost: 1800, boost: 2.2, emoji: "🏆", desc: "+120% Wert" },
+        robloxian: { name: "Roblox-Rute", cost: 7500, boost: 3.5, emoji: "🔧", desc: "+250% Wert & XP" }
+    };
+
+    // Köder (einmal-effekte)
+    const BAITS = {
+        worm: { name: "Wurm", cost: 40, effect: "luck", value: 1.3, emoji: "🪱", desc: "+30% seltene Chance" },
+        glow: { name: "Glühköder", cost: 180, effect: "boost", value: 2.0, emoji: "✨", desc: "doppelte XP" }
+    };
+
+    // ---------- SPEICHERSTRUKTUR ----------
+    let player = {
+        robux: 120,           // start mit bisschen robux
+        level: 1,
+        xp: 0,
+        zoneIndex: 0,
+        combo: 0,
+        prestige: 0,
+        ownedRods: ["wood"],
+        currentRod: "wood",
+        baits: { worm: 0, glow: 0 },
+        currentBait: null,
+        inventory: {},       // { fischName: anzahl }
+        stats: { totalCaught: 0, totalRobuxEarned: 0 },
+        dailyReset: 0
+    };
+
+    let fightActive = false;
+    let fightFish = null;
+    let fightClicks = 0;
+    let fightTotalClicks = 0;
+    let fightInterval = null;
+    let fightPower = 0;
+
+    // Helfer
+    function saveGame() {
+        localStorage.setItem("robloxAnglerSave", JSON.stringify(player));
+    }
+    function loadGame() {
+        let data = localStorage.getItem("robloxAnglerSave");
+        if(data) {
+            try {
+                let p = JSON.parse(data);
+                player = { ...player, ...p };
+                if(!player.ownedRods) player.ownedRods = ["wood"];
+                if(!player.baits) player.baits = { worm: 0, glow:0 };
+                if(!player.inventory) player.inventory = {};
+                if(!player.stats) player.stats = { totalCaught:0, totalRobuxEarned:0 };
+            }catch(e){}
+        }
+        updateUI();
+    }
+
+    function addLog(msg, isError=false) {
+        let logDiv = document.getElementById("logPanel");
+        let entry = document.createElement("div");
+        entry.style.borderBottom = "1px solid #2a3a70";
+        entry.style.padding = "6px 0";
+        entry.style.fontSize = "0.8rem";
+        entry.innerHTML = isError ? `⚠️ ${msg}` : `🎣 ${msg}`;
+        logDiv.prepend(entry);
+        if(logDiv.children.length > 28) logDiv.removeChild(logDiv.lastChild);
+    }
+
+    function getZone() { return ZONES[player.zoneIndex]; }
+
+    function getRodMult() {
+        let rod = RODS[player.currentRod];
+        return rod ? rod.boost : 1.0;
+    }
+
+    function getBaitEffect() {
+        if(!player.currentBait) return { mult: 1.0, xpMult: 1.0, luck: false };
+        let bait = BAITS[player.currentBait];
+        if(!bait) return { mult:1, xpMult:1, luck:false };
+        if(bait.effect === "boost") return { mult: bait.value, xpMult:2.0, luck:false };
+        if(bait.effect === "luck") return { mult:1.2, xpMult:1.2, luck:true };
+        return { mult:1, xpMult:1, luck:false };
+    }
+
+    function getFishFromZone() {
+        let zoneData = ZONES[player.zoneIndex];
+        let pool = FISH_DB[zoneData.fishPool];
+        if(!pool) return FISH_DB.basic[0];
+        let totalChance = pool.reduce((s,f)=>s+f.chance,0);
+        let r = Math.random() * totalChance;
+        let accum = 0;
+        for(let f of pool) {
+            accum += f.chance;
+            if(r <= accum) return { ...f };
+        }
+        return pool[0];
+    }
+
+    function addXP(amount) {
+        player.xp += amount;
+        let needed = player.level * 50;
+        while(player.xp >= needed) {
+            player.xp -= needed;
+            player.level++;
+            needed = player.level * 50;
+            addLog(`⭐ LEVEL UP! Du bist jetzt Level ${player.level}! +${Math.floor(needed * 0.5)} Robux Bonus`);
+            player.robux += Math.floor(needed * 0.5);
+            saveGame();
+        }
+        updateUI();
+    }
+
+    function awardFish(fish, isFightWin = false, comboMult = 1) {
+        let rodMult = getRodMult();
+        let baitEff = getBaitEffect();
+        let zoneMult = getZone().robuxMult;
+        let finalValue = Math.floor(fish.value * rodMult * zoneMult * baitEff.mult);
+        if(isFightWin) finalValue = Math.floor(finalValue * 1.5);
+        let comboBonus = 1 + Math.min(player.combo, 35) * 0.03;
+        finalValue = Math.floor(finalValue * comboBonus);
+        let xpGain = Math.floor(fish.xp * rodMult * (baitEff.xpMult) * (isFightWin?1.5:1) * comboBonus);
+        player.robux += finalValue;
+        player.stats.totalRobuxEarned += finalValue;
+        player.stats.totalCaught++;
+        addXP(xpGain);
+        // inventar
+        let fishKey = fish.emoji + " " + fish.name;
+        player.inventory[fishKey] = (player.inventory[fishKey] || 0) + 1;
+        addLog(`+${finalValue} R$ | ${fish.emoji} ${fish.name} (${fish.value} Basis) Combo x${comboBonus.toFixed(1)}`);
+        saveGame();
+        updateUI();
+    }
+
+    // KAMPF MINIGAME für seltene Fische > 300 wert oder legendäre
+    function startFight(fish) {
+        fightActive = true;
+        fightFish = fish;
+        fightClicks = 0;
+        fightTotalClicks = Math.floor(Math.random() * 15) + 12; // 12-27 klicks
+        fightPower = 50;
+        showFightModal();
+    }
+
+    function showFightModal() {
+        let modalDiv = document.createElement("div");
+        modalDiv.className = "modal";
+        modalDiv.id = "fightModal";
+        modalDiv.innerHTML = `
+            <div class="modal-card">
+                <h2 style="text-align:center;">⚔️ DR. FISCH KAMPF! ⚔️</h2>
+                <div style="font-size:48px; text-align:center;">${fightFish.emoji}</div>
+                <div><strong>${fightFish.name}</strong> wehrt sich!</div>
+                <div>Klicke schnell! (${fightClicks}/${fightTotalClicks})</div>
+                <div class="fight-bar"><div id="fightPowerFill" class="fight-fill" style="width:50%; background:#ff4444;"></div></div>
+                <button id="fightClickBtn" style="width:100%; background:#f97316; padding:14px; border-radius:60px; margin:12px 0; font-size:1.3rem;">🔥 ZUSCHLAGEN 🔥</button>
+                <div id="fightTimerMsg" style="font-size:12px; color:#aaa;"></div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+        let lastClick = Date.now();
+        let countdownTimer = null;
+        let powerDecay = setInterval(() => {
+            if(!fightActive) return clearInterval(powerDecay);
+            if(Date.now() - lastClick > 1200) {
+                endFight(false);
+                clearInterval(powerDecay);
+            }
+            fightPower = Math.max(0, fightPower - 1.2);
+            let fill = document.getElementById("fightPowerFill");
+            if(fill) fill.style.width = fightPower + "%";
+            if(fightPower <= 0) { endFight(false); clearInterval(powerDecay); }
+        }, 150);
+
+        function endFight(win) {
+            fightActive = false;
+            clearInterval(powerDecay);
+            if(countdownTimer) clearInterval(countdownTimer);
+            document.getElementById("fightModal")?.remove();
+            if(win) {
+                addLog(`🏆 BESIEGT! ${fightFish.emoji} ${fightFish.name} – Wert verdoppelt!`);
+                awardFish(fightFish, true, player.combo);
+            } else {
+                addLog(`❌ Kampf verloren! ${fightFish.name} entkam! Du verlierst 5 Combo.`, true);
+                player.combo = Math.max(0, player.combo - 5);
+                updateUI();
+                saveGame();
+            }
+            document.getElementById("fishBtn").disabled = false;
+        }
+
+        document.getElementById("fightClickBtn").onclick = () => {
+            if(!fightActive) return;
+            lastClick = Date.now();
+            fightClicks++;
+            fightPower = Math.min(100, fightPower + 8);
+            let fill = document.getElementById("fightPowerFill");
+            if(fill) fill.style.width = fightPower + "%";
+            document.querySelector("#fightModal .modal-card div:nth-child(3)").innerHTML = `<strong>${fightFish.name}</strong> wehrt sich! (${fightClicks}/${fightTotalClicks})`;
+            if(fightClicks >= fightTotalClicks) {
+                endFight(true);
+            }
+        };
+    }
+
+    // Hauptangelaktion
+    async function fishAction() {
+        let btn = document.getElementById("fishBtn");
+        if(btn.disabled) return;
+        btn.disabled = true;
+        // Animation
+        let bobber = document.getElementById("bobber");
+        bobber.style.transform = "translateY(8px)";
+        setTimeout(()=>bobber.style.transform="", 200);
+        // Köder verbrauch
+        if(player.currentBait && player.baits[player.currentBait] > 0) {
+            player.baits[player.currentBait]--;
+            if(player.baits[player.currentBait] === 0) {
+                addLog(`🔴 Köder ${BAITS[player.currentBait]?.name} aufgebraucht!`);
+                player.currentBait = null;
+            }
+            saveGame();
+        }
+
+        setTimeout(() => {
+            let caughtFish = getFishFromZone();
+            let rareThreshold = (player.zoneIndex >= 2) ? 250 : 150;
+            let baitEff = getBaitEffect();
+            let isRare = (caughtFish.value * getRodMult() * getZone().robuxMult) > rareThreshold || caughtFish.value >= 180;
+            if(baitEff.luck && Math.random() < 0.35) isRare = true;
+            player.combo++;
+            updateUI();
+            // Fight bei seltenen Fischen (boss)
+            if(isRare && Math.random() < 0.45) {
+                startFight(caughtFish);
+                btn.disabled = true;
+                return;
+            }
+            // normaler Fang
+            awardFish(caughtFish, false, 1);
+            btn.disabled = false;
+            saveGame();
+        }, 380);
+    }
+
+    // UI updaten
+    function updateUI() {
+        document.getElementById("robuxAmount").innerText = Math.floor(player.robux);
+        document.getElementById("playerLevel").innerText = player.level;
+        let needed = player.level * 50;
+        document.getElementById("xpText").innerText = Math.min(player.xp, needed);
+        document.getElementById("xpNeeded").innerText = needed;
+        document.getElementById("zoneName").innerHTML = ZONES[player.zoneIndex].name;
+        document.getElementById("comboCount").innerText = player.combo;
+        let rodObj = RODS[player.currentRod];
+        document.getElementById("rodName").innerHTML = rodObj ? rodObj.name : "Holzrute";
+        let baitName = player.currentBait ? (BAITS[player.currentBait]?.name + " ✓") : "Kein Köder";
+        document.getElementById("baitName").innerHTML = baitName;
+    }
+
+    // Shops & Inventar
+    function openShop() {
+        let modal = createModal("ROBUX SHOP", `
+            <div class="shop-item"><span>🎣 Eisenrute (+40% Wert)</span><button class="btn" id="buyIron">${RODS.iron.cost} R$</button></div>
+            <div class="shop-item"><span>🏆 Goldrute (+120% Wert)</span><button class="btn" id="buyGold">${RODS.golden.cost} R$</button></div>
+            <div class="shop-item"><span>🔧 Roblox-Rute (+250% Wert)</span><button class="btn" id="buyRobloxian">${RODS.robloxian.cost} R$</button></div>
+            <hr/><div class="shop-item"><span>🪱 Wurm-Köder (+30% Chance, +20% Wert)</span><button class="btn" id="buyWorm">${BAITS.worm.cost} R$ (x1)</button></div>
+            <div class="shop-item"><span>✨ Glühköder (2x XP & doppelter Wert)</span><button class="btn" id="buyGlow">${BAITS.glow.cost} R$ (x1)</button></div>
+        `);
+        modal.querySelector("#buyIron")?.addEventListener("click",()=>buyRod("iron"));
+        modal.querySelector("#buyGold")?.addEventListener("click",()=>buyRod("golden"));
+        modal.querySelector("#buyRobloxian")?.addEventListener("click",()=>buyRod("robloxian"));
+        modal.querySelector("#buyWorm")?.addEventListener("click",()=>buyBait("worm"));
+        modal.querySelector("#buyGlow")?.addEventListener("click",()=>buyBait("glow"));
+    }
+
+    function buyRod(rodId) {
+        let cost = RODS[rodId].cost;
+        if(player.robux >= cost && !player.ownedRods.includes(rodId)) {
+            player.robux -= cost;
+            player.ownedRods.push(rodId);
+            addLog(`🔧 ${RODS[rodId].name} gekauft!`);
+            saveGame();
+            updateUI();
+            closeModal();
+        } else { addLog("Nicht genug Robux oder bereits besitzt!", true); }
+    }
+    function buyBait(baitId) {
+        let cost = BAITS[baitId].cost;
+        if(player.robux >= cost) {
+            player.robux -= cost;
+            player.baits[baitId] = (player.baits[baitId] || 0) + 1;
+            addLog(`🪱 ${BAITS[baitId].name} gekauft!`);
+            saveGame();
+            updateUI();
+            closeModal();
+        } else addLog("Zu wenig Robux!", true);
+    }
+
+    function openInventory() {
+        let invHtml = `<h3>🎒 Inventar (Fische & Köder)</h3><div style="max-height:300px; overflow-y:auto;">`;
+        let has = false;
+        for(let [key, count] of Object.entries(player.inventory)) {
+            if(count>0) { invHtml += `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #2a3a60; padding:6px;">${key} x${count}</div>`; has=true; }
+        }
+        invHtml += `<hr/><h4>🎣 Ausgerüstete Rute: ${RODS[player.currentRod].name}</h4>`;
+        invHtml += `<div>Verfügbare Ruten:</div>`;
+        player.ownedRods.forEach(rid => {
+            invHtml += `<button class="btn" style="margin:4px;" onclick="equipRod('${rid}')">${RODS[rid].emoji} ${RODS[rid].name}</button>`;
+        });
+        invHtml += `<hr/><h4>🪱 Köder (Ausrüsten)</h4>`;
+        for(let [bid, amt] of Object.entries(player.baits)) {
+            if(amt>0 && BAITS[bid]) {
+                invHtml += `<button class="btn" style="margin:4px;" onclick="equipBait('${bid}')">${BAITS[bid].emoji} ${BAITS[bid].name} (${amt})</button>`;
+            }
+        }
+        invHtml += `<button class="btn" style="margin:4px;" onclick="unequipBait()">❌ Kein Köder</button>`;
+        invHtml += `</div>`;
+        let modal = createModal("Inventar & Ausrüstung", invHtml);
+        window.equipRod = (rid) => {
+            if(player.ownedRods.includes(rid)) {
+                player.currentRod = rid;
+                saveGame();
+                updateUI();
+                closeModal();
+                addLog(`🎣 ${RODS[rid].name} ausgerüstet!`);
+            }
+        };
+        window.equipBait = (bid) => {
+            if(player.baits[bid] > 0) {
+                player.currentBait = bid;
+                saveGame();
+                updateUI();
+                closeModal();
+                addLog(`🪱 ${BAITS[bid].name} ausgerüstet!`);
+            }
+        };
+        window.unequipBait = () => {
+            player.currentBait = null;
+            saveGame();
+            updateUI();
+            closeModal();
+            addLog(`Köder abgelegt.`);
+        };
+    }
+
+    function openRodsMenu() {
+        let html = `<h3>🔧 Rutenwechsel</h3>`;
+        player.ownedRods.forEach(rid => {
+            let r = RODS[rid];
+            html += `<div class="shop-item"><span>${r.emoji} ${r.name} (${r.desc})</span><button class="btn" onclick="equipRodFromMenu('${rid}')">Ausrüsten</button></div>`;
+        });
+        let modal = createModal("Ruten", html);
+        window.equipRodFromMenu = (rid) => {
+            player.currentRod = rid;
+            saveGame();
+            updateUI();
+            addLog(`⚡ Rute gewechselt zu ${RODS[rid].name}`);
+            closeModal();
+        };
+    }
+
+    function openZoneTravel() {
+        let html = `<h3>🗺️ Zonen (Prestige Voraussetzung)</h3>`;
+        ZONES.forEach((z, idx) => {
+            let locked = player.prestige < z.reqPrestige;
+            html += `<div class="shop-item"><span>${z.name} (x${z.robuxMult} R$)</span> ${locked ? `🔒 benötigt Prestige ${z.reqPrestige}` : `<button class="btn" onclick="travelToZone(${idx})">Reisen</button>`}</div>`;
+        });
+        let modal = createModal("Weltkarte", html);
+        window.travelToZone = (idx) => {
+            if(player.prestige >= ZONES[idx].reqPrestige) {
+                player.zoneIndex = idx;
+                addLog(`🌊 Reise nach ${ZONES[idx].name}!`);
+                saveGame();
+                updateUI();
+                closeModal();
+            } else addLog("Zone gesperrt! Prestige erforderlich.", true);
+        };
+    }
+
+    function openProfile() {
+        let totalWorth = Object.entries(player.inventory).reduce((sum,[,cnt])=>sum+cnt,0);
+        let html = `<div style="text-align:center;"><div style="font-size:56px;">🎣</div><h2>${player.prestige > 0 ? "🏆 Meisterangler" : "Angler"}</h2>
+        <p>💎 Robux: ${Math.floor(player.robux)} R$</p><p>⭐ Level ${player.level} | Prestige ${player.prestige}</p>
+        <p>🐟 Gefangene Fische: ${player.stats.totalCaught}</p><p>💰 Verdient: ${Math.floor(player.stats.totalRobuxEarned)} R$</p>
+        <p>🔥 Maximale Combo: ${player.combo}</p><button class="btn" id="resetProfileBtn" style="background:#a51b1b;">⚠️ Reset (Spiel neu)</button></div>`;
+        let modal = createModal("📊 Profil", html);
+        document.getElementById("resetProfileBtn")?.addEventListener("click", () => {
+            if(confirm("ALLE DATEN ZURÜCKSETZEN? Robux verloren!")) {
+                localStorage.clear();
+                location.reload();
+            }
+        });
+    }
+
+    function prestigeSystem() {
+        let reqLvl = 15 + player.prestige * 5;
+        if(player.level >= reqLvl && player.robux >= 2500) {
+            player.prestige++;
+            player.robux = Math.floor(player.robux * 0.2);
+            player.level = 1;
+            player.xp = 0;
+            player.combo = 0;
+            player.zoneIndex = 0;
+            player.inventory = {};
+            player.baits = { worm: 0, glow:0 };
+            player.currentBait = null;
+            player.ownedRods = ["wood"];
+            player.currentRod = "wood";
+            addLog(`🔁 PRESTIGE ${player.prestige}! Freischaltung neuer Zonen! +50% gesamter Robux Bonus`);
+            saveGame();
+            updateUI();
+        } else {
+            addLog(`Prestige benötigt Level ${reqLvl} & 2500 R$`, true);
+        }
+    }
+
+    // modals helper
+    function createModal(title, content) {
+        let existing = document.querySelector(".modal");
+        if(existing) existing.remove();
+        let modalDiv = document.createElement("div");
+        modalDiv.className = "modal";
+        modalDiv.innerHTML = `<div class="modal-card"><h2>${title}</h2><div>${content}</div><button class="btn" style="margin-top:16px;" id="closeModalBtn">Schließen</button></div>`;
+        document.body.appendChild(modalDiv);
+        modalDiv.querySelector("#closeModalBtn").addEventListener("click", ()=>modalDiv.remove());
+        return modalDiv;
+    }
+    function closeModal() {
+        let m = document.querySelector(".modal");
+        if(m) m.remove();
+    }
+
+    // Event listeners
+    function bindEvents() {
+        document.getElementById("fishBtn").onclick = fishAction;
+        document.getElementById("shopBtn").onclick = openShop;
+        document.getElementById("invBtn").onclick = openInventory;
+        document.getElementById("rodsBtn").onclick = openRodsMenu;
+        document.getElementById("zoneBtn").onclick = openZoneTravel;
+        document.getElementById("profileBtn").onclick = openProfile;
+        document.getElementById("prestigeBtn").onclick = prestigeSystem;
+    }
+
+    // Animation loop für bobber / scene
+    setInterval(()=>{
+        let bobber = document.getElementById("bobber");
+        if(bobber && !document.getElementById("fishBtn")?.disabled) {
+            bobber.style.animation = "none";
+            bobber.offsetHeight;
+            bobber.style.animation = "bobUnder 0.6s ease-in-out infinite alternate";
+        }
+    }, 500);
+    loadGame();
+    bindEvents();
+    updateUI();
+    // style für bobber animation
+    let style = document.createElement('style');
+    style.textContent = `@keyframes bobUnder { 0% { bottom: 25px; } 100% { bottom: 2px; opacity: 0.7; } } .bobber { animation: bobUnder 0.6s ease-in-out infinite alternate; }`;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>
