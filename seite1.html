@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Virtual Fisher PRO v4.0</title>
+    <title>Virtual Fisher PRO v4.1</title>
     <style>
         :root {
-            /* Fallback Wasserfarben, werden von der Zone überschrieben */
             --water-1: rgba(59,130,246,0.3);
             --water-1-dark: rgba(59,130,246,0.6);
             --water-2: rgba(29,78,216,0.3);
@@ -21,7 +20,6 @@
             background: radial-gradient(circle at center, #0f172a 0%, #010409 100%); padding: 10px;
         }
         
-        /* ZONE 0: NATURTEICH */
         body.zone-bg-0 { 
             background: radial-gradient(circle at top, #2d6a4f 0%, #1a3f2a 100%); 
             --water-1: rgba(45,106,79,0.5);
@@ -31,7 +29,16 @@
         }
         
         #aquarium-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: hidden; }
-        .aqua-fish-entity { position: absolute; font-size: clamp(40px, 8vw, 55px); filter: drop-shadow(0 0 10px rgba(59,130,246,0.5)); transition: left 5s linear, top 5s linear; white-space: nowrap; }
+        
+        /* AQUARIUM SMOOTH FIX */
+        .aqua-fish-entity { 
+            position: absolute; 
+            top: 0; left: 0;
+            font-size: clamp(40px, 8vw, 55px); 
+            filter: drop-shadow(0 0 10px rgba(59,130,246,0.5)); 
+            transition: transform 6s ease-in-out; 
+            white-space: nowrap; 
+        }
         
         #btnAdminTop { position: fixed; top: 10px; right: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid #3b82f6; font-size: 24px; cursor: pointer; display: none; z-index: 1000; padding: 8px 12px; border-radius: 40px; }
         
@@ -143,7 +150,6 @@
 <button id="btnAdminTop" onclick="handleAdminMenu()">⚙️</button>
 <div class="container">
     <div id="fishing-scene">
-        <!-- NATURTEICH DEKO -->
         <div style="position:absolute; bottom:20px; left:5%; font-size:24px; z-index:1; opacity:0.8;">🌾</div>
         <div style="position:absolute; bottom:5px; right:15%; font-size:22px; z-index:3;">🪷🐸</div>
         <div style="position:absolute; top:8px; right:35%; font-size:14px; z-index:1; opacity:0.7;">🦟</div>
@@ -219,14 +225,11 @@ let globalState = null;
 let currentOpenMenu = null;
 let currentDexTab = 'normal';
 
-// NUR NOCH ZONE 0 VORHANDEN
 const zones = [
     { name: "🍃 Naturteich", reqPrestige: 0 }
 ];
 
-// NEUE FISCHE UND MÜLL ITEMS MIT ECHTEN XP WERTEN
 const items = [
-    // --- TEICH: MÜLL ---
     {n:"Laub / Blätter", v:-1, xp:-1, c:12.0, z:0, e:"🍂"},
     {n:"Entenfeder", v:-2, xp:-1, c:8.0, z:0, e:"🪶"},
     {n:"Algen", v:-3, xp:-2, c:6.0, z:0, e:"🌿"},
@@ -236,8 +239,6 @@ const items = [
     {n:"Gummistiefel", v:-8, xp:-4, c:2.0, z:0, e:"👢"},
     {n:"Plastikflasche", v:-10, xp:-5, c:1.5, z:0, e:"🧴"},
     {n:"Scherbe", v:-12, xp:-6, c:1.0, z:0, e:"🔪"},
-
-    // --- TEICH: FISCHE ---
     {n:"Stichling", v:2, xp:2, c:15.0, z:0, e:"🐟"},
     {n:"Moderlieschen", v:3, xp:2, c:14.0, z:0, e:"🐠"},
     {n:"Elritze", v:3, xp:3, c:13.0, z:0, e:"🐟"},
@@ -255,9 +256,9 @@ const items = [
 ];
 
 const rodsDB = {
-    "r1": { name: "Holzrute", e: "🪵", cost: 0, boost: 0, desc: "Standard" },
-    "r2": { name: "Fiberglas", e: "🎣", cost: 5000, boost: 0.1, desc: "+10% Seltene" },
-    "r3": { name: "Meisterrute", e: "🔱", cost: 100000, boost: 0.4, desc: "+40% Seltene" }
+    "r1": { name: "Holzrute", e: "🪵", cost: 0, boost: 0, speed: 60, desc: "Dauer: 60s" },
+    "r2": { name: "Fiberglas", e: "🎣", cost: 5000, boost: 0.1, speed: 45, desc: "+10% Selten, 45s Dauer" },
+    "r3": { name: "Meisterrute", e: "🔱", cost: 100000, boost: 0.4, speed: 30, desc: "+40% Selten, 30s Dauer" }
 };
 const baitsDB = {
     "b1": { name: "Brot", e: "🍞", cost: 100, amt: 20, desc: "+5% Chance", type: "boost" },
@@ -308,18 +309,21 @@ function renderAquarium() {
         let div = document.createElement("div");
         div.className = "aqua-fish-entity";
         div.innerText = f.e;
-        div.style.left = Math.random() * 85 + "%";
-        div.style.top = Math.random() * 80 + 10 + "%";
+        
+        // SMOOTH ANIMATION
+        let currentX = Math.random() * 85;
+        let currentY = Math.random() * 80 + 10;
+        div.style.transform = `translate(${currentX}vw, ${currentY}vh) scaleX(1)`;
+        bg.appendChild(div);
+
         let moveInterval = setInterval(() => {
             if(!document.body.contains(div)) { clearInterval(moveInterval); return; }
             let newX = Math.random() * 85;
             let newY = Math.random() * 80 + 10;
-            if(newX < parseFloat(div.style.left)) div.style.transform = "scaleX(-1)";
-            else div.style.transform = "scaleX(1)";
-            div.style.left = newX + "%";
-            div.style.top = newY + "%";
+            let scaleX = newX < currentX ? -1 : 1;
+            div.style.transform = `translate(${newX}vw, ${newY}vh) scaleX(${scaleX})`;
+            currentX = newX;
         }, 6000);
-        bg.appendChild(div);
     });
 }
 
@@ -346,8 +350,7 @@ function roll(zIdx) {
     if(event.target === "shiny") shinyChance *= event.boost;
     let isShiny = Math.random() < shinyChance;
     
-    // Wichtig: Wir übergeben hier jetzt auch die xp von der BaseItem-Datenbank!
-    let finalItem = { baseName: baseItem.n, n: baseItem.n, v: baseItem.v, xp: baseItem.xp, e: baseItem.e, isShiny: false };
+    let finalItem = { baseName: baseItem.n, n: baseItem.n, v: baseItem.v, xp: baseItem.xp, c: baseItem.c, e: baseItem.e, isShiny: false };
     if(isShiny && baseItem.v >= 0) {
         finalItem.n = "🧬 " + baseItem.n;
         finalItem.v *= 5;
@@ -446,13 +449,24 @@ async function loadData() {
                 inventory: {}, dex: {}, aquarium: { unlocked: false, fishes: [] },
                 lastDaily: 0, dailyStreak: 0, prestige: 0,
                 stats: { totalCaught: 0, totalEarned: 0 },
-                ownedRods: ["r1"], eqRod: "r1", baits: {}, eqBait: "none"
+                ownedRods: ["r1"], eqRod: "r1", baits: {}, eqBait: "none", bannedUntil: 0
             };
             saveData();
         }
+        
+        // DIREKTER BANN-CHECK!
+        if(gameState && gameState.bannedUntil && gameState.bannedUntil > Date.now()) {
+            let mins = Math.ceil((gameState.bannedUntil - Date.now()) / 60000);
+            document.body.innerHTML = `<div style="text-align:center; background:#161b22; padding:30px; border-radius:15px; border:2px solid #ef4444;">
+                <h1 style="color:#ef4444; margin-top:0;">🚫 ACCOUNT GESPERRT</h1>
+                <p>Dein Account wurde durch einen Administrator temporär gesperrt.</p>
+                <p style="font-size:18px;">Verbleibende Zeit: <b style="color:#facc15;">${mins} Minuten</b></p>
+                <button onclick="localStorage.removeItem('vFisher_user'); location.reload()" style="margin-top:15px; padding:12px; background:#3b82f6; border:none; border-radius:8px; color:white; font-weight:bold; cursor:pointer; width:100%;">Abmelden & Neu laden</button>
+            </div>`;
+            return;
+        }
+        
         if(gameState) {
-            // WICHTIG: Wenn alte Fische im Inventar sind, die nicht mehr existieren, am besten ignorieren,
-            // aber wir sorgen hier nur für ein leeres Inventar falls undefined
             if(!gameState.inventory) gameState.inventory = {};
             if(!gameState.dex) gameState.dex = {};
             if(!gameState.qs) gameState.qs = { p: {}, c: {} };
@@ -464,7 +478,6 @@ async function loadData() {
             if(!gameState.baits) { gameState.baits = {}; gameState.eqBait = "none"; }
             if(!gameState.stats) gameState.stats = { totalCaught: 0, totalEarned: 0 };
             if(!gameState.prestige) gameState.prestige = 0;
-            // Stelle sicher, dass die Zone nicht out of bounds ist
             if(gameState.zone >= zones.length) gameState.zone = 0;
             
             checkQuestResets();
@@ -530,12 +543,15 @@ function updateUI() {
         document.getElementById("ui-eq-bait").innerHTML = `🪱 Köder: Keine`;
     }
     
+    // UI Update darf den Countdown Text nicht überschreiben!
     let btnFish = document.getElementById('btnFish');
-    if(btnFish && !btnFish.disabled && gameState.combo > 1) {
-        let mult = (1 + Math.min(gameState.combo, 50) * 0.02).toFixed(2);
-        btnFish.innerHTML = `🎣 Angeln 🔥 Combo: x${mult} (${gameState.combo})`;
-    } else if(btnFish && btnFish.innerHTML !== `🎣 Angeln`) {
-        btnFish.innerHTML = `🎣 Angeln`;
+    if(btnFish && !btnFish.disabled) { 
+        if(gameState.combo > 1) {
+            let mult = (1 + Math.min(gameState.combo, 50) * 0.02).toFixed(2);
+            btnFish.innerHTML = `🎣 Angeln 🔥 Combo: x${mult} (${gameState.combo})`;
+        } else if(btnFish.innerHTML !== `🎣 Angeln`) {
+            btnFish.innerHTML = `🎣 Angeln`;
+        }
     }
 }
 
@@ -645,7 +661,6 @@ function finishMinigame(won) {
     if(won) {
         let comboMult = 1 + Math.min(gameState.combo, 50) * 0.02;
         let finalValue = Math.floor(mgFishItem.v * comboMult);
-        // Bossfische geben extra XP (5x den normalen Item-Wert)
         let finalXp = Math.floor(mgFishItem.xp * (mgFishItem.isShiny ? 5 : 2) * comboMult);
         gameState.inventory[mgFishItem.n] = (gameState.inventory[mgFishItem.n] || 0) + 1;
         updateDex(mgFishItem);
@@ -675,66 +690,80 @@ window.handleFish = function() {
     btn.disabled = true;
     let scene = document.getElementById('fishing-scene');
     scene.classList.add('fishing-active');
-    let fishTime = 800;
-    let { event } = getCurrentEventInfo();
-    if(event.type === "rain") fishTime = 400;
     
-    setTimeout(() => {
-        if(!gameState.inventory) gameState.inventory = {};
-        
-        let item = roll(gameState.zone);
-        if(gameState.eqBait !== "none" && gameState.baits) {
-            gameState.baits[gameState.eqBait]--;
-            if(gameState.baits[gameState.eqBait] <= 0) {
-                log(`❌ Köder aufgebraucht!`);
-                gameState.eqBait = "none";
-            }
+    // NEUE FISHING SPEED LOGIK (BASIS 60 Sekunden)
+    let rodDef = rodsDB[gameState.eqRod] || rodsDB.r1;
+    let fishTimeSec = rodDef.speed || 60; 
+    let { event } = getCurrentEventInfo();
+    if(event.type === "rain") fishTimeSec = Math.max(1, Math.floor(fishTimeSec / 2));
+    
+    let timeLeft = fishTimeSec;
+    btn.innerHTML = `🎣 Angeln... (${timeLeft}s)`;
+    
+    let fishInterval = setInterval(() => {
+        timeLeft--;
+        if(timeLeft > 0) {
+            btn.innerHTML = `🎣 Angeln... (${timeLeft}s)`;
+        } else {
+            clearInterval(fishInterval);
+            executeFishCatch(btn, scene);
         }
-        
-        if(item.v < 0) {
-            // Strafe bezieht sich jetzt auf den echten XP-Wert der für das Item festgelegt ist
-            let penalty = Math.abs(item.xp); 
-            gameState.xp = Math.max(0, gameState.xp - penalty);
-            gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1;
-            gameState.combo = 0;
-            log(`🗑️ ${item.e} ${item.baseName} gefangen! -${penalty} XP`);
-            saveData();
-            scene.classList.remove('fishing-active');
-            btn.disabled = false;
-            return;
-        }
+    }, 1000);
+}
 
-        gameState.combo++;
-        if(item.isShiny || item.v >= 25) { // Für Zander/Karpfen/Aal/Hecht etc.
-            triggerMinigame(item);
-            scene.classList.remove('fishing-active');
-            btn.disabled = true;
-            return;
+function executeFishCatch(btn, scene) {
+    if(!gameState.inventory) gameState.inventory = {};
+    
+    let item = roll(gameState.zone);
+    if(gameState.eqBait !== "none" && gameState.baits) {
+        gameState.baits[gameState.eqBait]--;
+        if(gameState.baits[gameState.eqBait] <= 0) {
+            log(`❌ Köder aufgebraucht!`);
+            gameState.eqBait = "none";
         }
-        
-        let comboMult = 1 + Math.min(gameState.combo, 50) * 0.02;
-        let finalValue = Math.floor(item.v * comboMult);
-        
-        // Normale XP Berechnung basierend auf item.xp
-        let finalXp = Math.floor(item.xp * (item.isShiny ? 5 : 1) * comboMult);
-        
+    }
+    
+    if(item.v < 0) {
+        let penalty = Math.abs(item.xp); 
+        gameState.xp = Math.max(0, gameState.xp - penalty);
         gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1;
-        updateDex(item);
-        gameState.xp += finalXp;
-        gameState.stats.totalCaught++;
-        addQuestProgress('c', 1);
-        
-        let msg = item.isShiny ? `🧬 MUTATION: ${item.e} ${item.baseName} (${finalValue}$)` : `${item.e} Gefangen: ${item.baseName} (${finalValue}$)`;
-        if(gameState.xp >= gameState.level * 50) {
-            gameState.xp -= gameState.level * 50;
-            gameState.level++;
-            msg += ` ⭐ LEVEL UP! Level ${gameState.level}!`;
-        }
-        log(msg);
+        gameState.combo = 0;
+        log(`🗑️ ${item.e} ${item.baseName} gefangen! -${penalty} XP`);
         saveData();
         scene.classList.remove('fishing-active');
         btn.disabled = false;
-    }, fishTime);
+        return;
+    }
+
+    gameState.combo++;
+    // BOSS TRIGGER: Nur wenn Chance <= 0.5% ist oder Shiny
+    if(item.isShiny || item.c <= 0.5) { 
+        triggerMinigame(item);
+        scene.classList.remove('fishing-active');
+        btn.disabled = true;
+        return;
+    }
+    
+    let comboMult = 1 + Math.min(gameState.combo, 50) * 0.02;
+    let finalValue = Math.floor(item.v * comboMult);
+    let finalXp = Math.floor(item.xp * (item.isShiny ? 5 : 1) * comboMult);
+    
+    gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1;
+    updateDex(item);
+    gameState.xp += finalXp;
+    gameState.stats.totalCaught++;
+    addQuestProgress('c', 1);
+    
+    let msg = item.isShiny ? `🧬 MUTATION: ${item.e} ${item.baseName} (${finalValue}$)` : `${item.e} Gefangen: ${item.baseName} (${finalValue}$)`;
+    if(gameState.xp >= gameState.level * 50) {
+        gameState.xp -= gameState.level * 50;
+        gameState.level++;
+        msg += ` ⭐ LEVEL UP! Level ${gameState.level}!`;
+    }
+    log(msg);
+    saveData();
+    scene.classList.remove('fishing-active');
+    btn.disabled = false;
 }
 
 window.handleSellMenu = function() {
@@ -753,7 +782,6 @@ window.handleSellMenu = function() {
             let isMutant = name.startsWith("🧬 ");
             let baseName = isMutant ? name.replace("🧬 ", "") : name;
             let baseItem = items.find(i => i.n === baseName);
-            // Ignoriere alte Fische die nicht mehr in der Datenbank sind
             if(baseItem) {
                 hasItems = true;
                 let itemValue = (isMutant ? baseItem.v * 5 : baseItem.v) * count;
@@ -802,7 +830,6 @@ window.handleSellMenu = function() {
 window.executeSell = function(val) {
     if(!gameState.inventory) gameState.inventory = {};
     let hasItems = false;
-    // Prüfe nur gültige Items
     for(let name of Object.keys(gameState.inventory)) {
         let baseName = name.startsWith("🧬 ") ? name.replace("🧬 ", "") : name;
         if(items.find(i => i.n === baseName) && gameState.inventory[name] > 0) hasItems = true;
@@ -814,8 +841,6 @@ window.executeSell = function(val) {
     
     if(val > 0) { gameState.stats.totalEarned += val; addQuestProgress('e', val); }
     
-    // Leere das Inventar, behalte alte (nicht mehr gültige Items) aus Sicherheitsgründen aber lösche die aktuell gezeigten.
-    // Am sichersten: Ganz leeren.
     gameState.inventory = {};
     
     if(val < 0) log(`💸 Müll entsorgt. Das hat dich ${Math.abs(val).toLocaleString()}$ gekostet.`);
@@ -1000,8 +1025,8 @@ window.showDexTab = function(tab) {
     grid.innerHTML = '';
     
     items.forEach(item => {
-        if(item.v < 0) return; // Müll ignorieren
-        if(zoneFilter !== 'all' && item.z !== parseInt(zoneFilter)) return; // Nach Zone filtern
+        if(item.v < 0) return; 
+        if(zoneFilter !== 'all' && item.z !== parseInt(zoneFilter)) return; 
         
         total++;
         let d = gameState.dex ? gameState.dex[item.n] : null;
@@ -1134,13 +1159,12 @@ window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameSt
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 4.0 - Das Natur-Update</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 4.1</h3>
         <ul style="padding-left:20px; margin-bottom:0;">
-            <li><b>Neue Welt:</b> Willkommen am "Naturteich" (Zone 0)! Entspanne im Grünen mit Schilf und Seerosen.</li>
-            <li><b>Neue Fische:</b> 14 komplett neue, heimische Fische wie der Hecht, Zander, Aal und Stichling! Alle alten Fische wurden entfernt.</li>
-            <li><b>Neuer Müll:</b> Passe beim Angeln auf, du könntest nun Laub, alte Entenfedern oder Gummistiefel an der Angel haben.</li>
-            <li><b>Neue XP-Logik:</b> Jeder Fisch und jeder Müll hat nun einen eigenen, vordefinierten XP-Wert!</li>
-            <li><b>Neues Dex-Feature:</b> Du kannst dir die Fische im Dex jetzt bequem über das Dropdown-Menü nach Zonen sortiert anzeigen lassen!</li>
+            <li><b>Neue Angelzeiten:</b> Angeln dauert nun reell 60 Sekunden. Kaufe bessere Ruten, um die Zeit auf bis zu 30s zu senken!</li>
+            <li><b>Neuer Boss-Trigger:</b> Bosse tauchen nun nur noch bei extrem seltenen Fischen (Chance <= 0.5%) auf!</li>
+            <li><b>Smooth Aquarium:</b> Die Fische im Hintergrund bewegen sich nun butterweich dank Hardware-Rendering.</li>
+            <li><b>Admin System:</b> Administratoren können nun Accounts live für X Minuten sperren und wieder entbannen.</li>
         </ul>
     </div>`;
     openModal("📝 Updates", html);
@@ -1169,16 +1193,72 @@ window.handleAdminMenu = function() {
         </div>
 
         <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
-            <h4 style="margin:0 0 10px 0; color:#ef4444;">Account Verwaltung</h4>
+            <h4 style="margin:0 0 10px 0; color:#ef4444;">⛔ Account Sperren / Verwalten</h4>
+            <input id="adminBanUser" placeholder="Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <input id="adminBanTime" type="number" placeholder="Dauer in Minuten" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
+            <div style="display:flex; gap:5px; margin-bottom:10px;">
+                <button class="danger-btn" style="flex:1;" onclick="adminBanAccount()">Sperren</button>
+                <button class="update-btn" style="flex:1;" onclick="adminShowBanned()">Bann-Liste</button>
+            </div>
+            <hr style="border-color:#30363d; margin:10px 0;">
             <input id="adminDelUser" placeholder="Username zum Löschen" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <button class="danger-btn" onclick="adminDeleteAccount()">Löschen</button>
-            <hr style="border-color:#30363d; margin:10px 0;">
+        </div>
+        
+        <div style="background:#0d1117; padding:10px; border-radius:12px; border:1px solid #30363d;">
+            <h4 style="margin:0 0 10px 0; color:#facc15;">📝 Account Erstellen</h4>
             <input id="newAccUser" placeholder="Neuer Username" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <input id="newAccPass" placeholder="Passwort" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
             <button class="success-btn" onclick="adminCreateAccount()">Erstellen</button>
         </div>
     </div>`;
     openModal("👑 Admin Panel", html);
+}
+
+window.adminBanAccount = async function() {
+    let user = document.getElementById('adminBanUser').value.trim();
+    let mins = Number(document.getElementById('adminBanTime').value);
+    if(!user || isNaN(mins)) return alert("Bitte Username und Minuten zum Sperren angeben!");
+    let snap = await get(ref(db, "users/"+user));
+    if(snap.exists()) {
+        let data = snap.val();
+        data.bannedUntil = Date.now() + (mins * 60 * 1000);
+        await set(ref(db, "users/"+user), data);
+        alert(`🚫 ${user} wurde für ${mins} Minuten gesperrt.`);
+    } else alert("Spieler nicht gefunden!");
+}
+
+window.adminShowBanned = async function() {
+    let snap = await get(ref(db, "users"));
+    if(snap.exists()) {
+        let html = `<h3>🚫 Gebannte Accounts</h3><div style="max-height:300px; overflow-y:auto; margin-bottom:10px;">`;
+        let hasBanned = false;
+        snap.forEach(c => {
+            let u = c.val();
+            if(u.bannedUntil && u.bannedUntil > Date.now()) {
+                hasBanned = true;
+                let minsLeft = Math.ceil((u.bannedUntil - Date.now()) / 60000);
+                html += `<div class="item-row" style="background:#161b22; padding:10px; border-radius:8px; margin-bottom:5px;">
+                    <div><b style="color:#ef4444;">${u.name}</b><br><small>Noch ${minsLeft} Min</small></div>
+                    <button class="success-btn" style="padding:8px;" onclick="adminUnban('${u.name}')">Entbannen</button>
+                </div>`;
+            }
+        });
+        if(!hasBanned) html += `<p>Aktuell sind keine Accounts gesperrt.</p>`;
+        html += `</div><button class="update-btn" style="width:100%;" onclick="handleAdminMenu()">Zurück zum Panel</button>`;
+        openModal("Bann-Liste", html);
+    }
+}
+
+window.adminUnban = async function(user) {
+    let snap = await get(ref(db, "users/"+user));
+    if(snap.exists()) {
+        let data = snap.val();
+        data.bannedUntil = 0;
+        await set(ref(db, "users/"+user), data);
+        alert(`✅ ${user} wurde erfolgreich entbannt.`);
+        adminShowBanned();
+    }
 }
 
 window.adminGive = async function() {
