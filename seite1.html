@@ -3,58 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Virtual Fisher PRO v2.5</title>
+    <title>Virtual Fisher PRO v2.6</title>
     <style>
-        /* --- GRUNDDESIGN & HINTERGRUND --- */
+        /* --- GRUNDDESIGN & APPLE EMOJIS --- */
         body {
             margin: 0; 
             font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', 'Segoe UI', Tahoma, sans-serif;
             color: #e6f0ff; display: flex; justify-content: center; align-items: center;
             min-height: 100vh; overflow: hidden; 
-            background: radial-gradient(circle at center, #0f172a 0%, #010409 100%);
+            transition: background 1s ease-in-out;
+            background: radial-gradient(circle at center, #0f172a 0%, #010409 100%); /* Default Fallback */
         }
 
-        .bg-bubbles { position: fixed; bottom: -50px; background: rgba(59,130,246,0.05); border-radius: 50%; animation: floatUp linear infinite; z-index: -1; }
+        /* --- VOLLBILD ZONEN HINTERGRÜNDE --- */
+        body.zone-bg-0 { background: radial-gradient(circle at top, #1e3a8a 0%, #020617 100%); } /* See */
+        body.zone-bg-1 { background: radial-gradient(circle at top, #0284c7 0%, #082f49 100%); } /* Meer */
+        body.zone-bg-2 { background: radial-gradient(circle at bottom, #1e1b4b 0%, #020617 100%); } /* Tiefsee */
+        body.zone-bg-3 { background: radial-gradient(circle at center, #4c1d95 0%, #000000 100%); } /* Verlorener Ozean */
+
+        .bg-bubbles { position: fixed; bottom: -50px; background: rgba(255,255,255,0.05); border-radius: 50%; animation: floatUp linear infinite; z-index: -1; }
         @keyframes floatUp { to { transform: translateY(-120vh) scale(1.5); opacity: 0; } }
+
+        /* --- ADMIN BUTTON OBEN RECHTS (FIXIERT) --- */
+        #btnAdminTop {
+            position: fixed; top: 15px; right: 20px; background: rgba(15, 23, 42, 0.8); border: 1px solid #3b82f6; 
+            font-size: 28px; cursor: pointer; display: none; z-index: 1000; padding: 10px; border-radius: 50%;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5); transition: 0.2s; backdrop-filter: blur(5px);
+        }
+        #btnAdminTop:hover { transform: scale(1.1) rotate(45deg); background: #3b82f6; }
 
         /* --- HAUPT-CONTAINER --- */
         .container {
-            width: 95%; max-width: 550px; 
-            background: #161b22; padding: 20px; border-radius: 16px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.9); border: 1px solid rgba(59, 130, 246, 0.2);
+            width: 95%; max-width: 500px; 
+            background: rgba(22, 27, 34, 0.85); backdrop-filter: blur(10px);
+            padding: 20px; border-radius: 16px;
+            box-shadow: 0 15px 50px rgba(0,0,0,0.8); border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center; position: relative; animation: fadeIn 0.4s ease-out;
             max-height: 98vh; display: flex; flex-direction: column;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- ADMIN BUTTON OBEN RECHTS --- */
-        #btnAdminTop {
-            position: absolute; top: 15px; right: 15px; background: transparent; border: none; 
-            font-size: 26px; cursor: pointer; display: none; z-index: 50; padding: 0; box-shadow: none; transition: 0.2s;
-        }
-        #btnAdminTop:hover { transform: scale(1.1) rotate(15deg); filter: drop-shadow(0 0 5px #3b82f6); }
-
-        /* --- ANGEL-ANIMATION & ZONEN FARBEN --- */
+        /* --- ANGEL-ANIMATION --- */
         #fishing-scene {
             height: 120px; position: relative; margin-bottom: 10px; border-bottom: 3px solid #3b82f6;
-            overflow: hidden; border-radius: 12px 12px 0 0; transition: background 0.5s ease; flex-shrink: 0;
+            overflow: hidden; border-radius: 12px 12px 0 0; flex-shrink: 0; background: transparent;
         }
-
-        #fishing-scene.zone-0 { background: linear-gradient(180deg, rgba(2,6,23,0.8) 0%, rgba(30,64,175,0.5) 100%); }
-        #fishing-scene.zone-0 .water-layer-1 { background: linear-gradient(90deg, rgba(59,130,246,0.3) 0%, rgba(59,130,246,0.5) 25%, rgba(59,130,246,0.3) 50%, rgba(59,130,246,0.5) 75%, rgba(59,130,246,0.3) 100%); }
-        #fishing-scene.zone-0 .water-layer-2 { background: linear-gradient(90deg, rgba(29,78,216,0.3) 0%, rgba(29,78,216,0.5) 25%, rgba(29,78,216,0.3) 50%, rgba(29,78,216,0.5) 75%, rgba(29,78,216,0.3) 100%); }
-
-        #fishing-scene.zone-1 { background: linear-gradient(180deg, rgba(14,165,233,0.6) 0%, rgba(2,132,199,0.5) 100%); }
-        #fishing-scene.zone-1 .water-layer-1 { background: linear-gradient(90deg, rgba(14,165,233,0.3) 0%, rgba(14,165,233,0.5) 25%, rgba(14,165,233,0.3) 50%, rgba(14,165,233,0.5) 75%, rgba(14,165,233,0.3) 100%); }
-        #fishing-scene.zone-1 .water-layer-2 { background: linear-gradient(90deg, rgba(2,132,199,0.3) 0%, rgba(2,132,199,0.5) 25%, rgba(2,132,199,0.3) 50%, rgba(2,132,199,0.5) 75%, rgba(2,132,199,0.3) 100%); }
-
-        #fishing-scene.zone-2 { background: linear-gradient(180deg, rgba(15,23,42,0.9) 0%, rgba(30,58,138,0.8) 100%); }
-        #fishing-scene.zone-2 .water-layer-1 { background: linear-gradient(90deg, rgba(30,58,138,0.3) 0%, rgba(30,58,138,0.6) 25%, rgba(30,58,138,0.3) 50%, rgba(30,58,138,0.6) 75%, rgba(30,58,138,0.3) 100%); }
-        #fishing-scene.zone-2 .water-layer-2 { background: linear-gradient(90deg, rgba(15,23,42,0.4) 0%, rgba(15,23,42,0.7) 25%, rgba(15,23,42,0.4) 50%, rgba(15,23,42,0.7) 75%, rgba(15,23,42,0.4) 100%); }
-
-        #fishing-scene.zone-3 { background: linear-gradient(180deg, rgba(88,28,135,0.8) 0%, rgba(126,34,206,0.6) 100%); }
-        #fishing-scene.zone-3 .water-layer-1 { background: linear-gradient(90deg, rgba(168,85,247,0.3) 0%, rgba(168,85,247,0.5) 25%, rgba(168,85,247,0.3) 50%, rgba(168,85,247,0.5) 75%, rgba(168,85,247,0.3) 100%); }
-        #fishing-scene.zone-3 .water-layer-2 { background: linear-gradient(90deg, rgba(126,34,206,0.3) 0%, rgba(126,34,206,0.5) 25%, rgba(126,34,206,0.3) 50%, rgba(126,34,206,0.5) 75%, rgba(126,34,206,0.3) 100%); }
 
         .boat-container { position: absolute; bottom: 12px; left: 15%; animation: bobbingBoat 3s ease-in-out infinite; z-index: 3; }
         @keyframes bobbingBoat { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-3px) rotate(2deg); } }
@@ -67,12 +60,12 @@
         #fishing-line-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
         .net-anim { position: absolute; bottom: 5px; right: 15%; font-size: 30px; animation: bobbingBoat 4s ease-in-out infinite reverse; z-index: 3; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); display: none; }
 
-        .water-layer-1 { position: absolute; bottom: 0; width: 200%; height: 20px; animation: waves 4s linear infinite; z-index: 4; transition: background 0.5s ease;}
-        .water-layer-2 { position: absolute; bottom: 5px; width: 200%; height: 20px; animation: waves 5s linear infinite reverse; z-index: 2; transition: background 0.5s ease;}
+        .water-layer-1 { position: absolute; bottom: 0; width: 200%; height: 20px; background: linear-gradient(90deg, rgba(59,130,246,0.2) 0%, rgba(59,130,246,0.5) 25%, rgba(59,130,246,0.2) 50%, rgba(59,130,246,0.5) 75%, rgba(59,130,246,0.2) 100%); animation: waves 4s linear infinite; z-index: 4; }
+        .water-layer-2 { position: absolute; bottom: 5px; width: 200%; height: 20px; background: linear-gradient(90deg, rgba(29,78,216,0.2) 0%, rgba(29,78,216,0.5) 25%, rgba(29,78,216,0.2) 50%, rgba(29,78,216,0.5) 75%, rgba(29,78,216,0.2) 100%); animation: waves 5s linear infinite reverse; z-index: 2; }
         @keyframes waves { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
         /* Wetter & Events FX */
-        .sun-fx { position: absolute; top: 10px; right: 20px; width: 25px; height: 25px; background: #facc15; border-radius: 50%; box-shadow: 0 0 20px 10px rgba(250, 204, 21, 0.6); animation: pulseSun 2s infinite alternate; }
+        .sun-fx { position: absolute; top: 10px; right: 20px; width: 35px; height: 35px; background: #facc15; border-radius: 50%; box-shadow: 0 0 30px 15px rgba(250, 204, 21, 0.6); animation: pulseSun 2s infinite alternate; }
         @keyframes pulseSun { from { transform: scale(1); opacity: 0.8;} to { transform: scale(1.2); opacity: 1;} }
         .rain-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(170deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 2%, rgba(255,255,255,0.3) 2.5%, rgba(255,255,255,0) 3%); background-size: 100% 200%; animation: rainFall 0.3s linear infinite; z-index: 5;}
         @keyframes rainFall { from { background-position: 0 0; } to { background-position: 0 100%; } }
@@ -81,15 +74,11 @@
         @keyframes swimShark { 0% { right: -50px; transform: scaleX(-1); } 100% { right: 120%; transform: scaleX(-1); } }
 
         /* --- UI & BUTTONS --- */
-        #top-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 13px; font-weight: bold; flex-shrink: 0;}
-        .tooltip { position: relative; cursor: help; border-bottom: 1px dotted #fff; }
-        .tooltip .tooltiptext { visibility: hidden; width: 200px; background-color: #0f172a; color: #fff; text-align: center; border-radius: 8px; padding: 10px; position: absolute; z-index: 10; bottom: 150%; left: 50%; transform: translateX(-50%); opacity: 0; transition: 0.2s; border: 1px solid #3b82f6; font-size: 12px; font-weight: normal; box-shadow: 0 5px 15px rgba(0,0,0,0.5); pointer-events: none;}
-        .tooltip:hover .tooltiptext { visibility: visible; opacity: 1; }
+        #top-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; font-size: 14px; font-weight: bold; flex-shrink: 0;}
+        
+        #stats-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; font-size: 15px; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;}
+        .equip-bar { display: flex; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 8px; flex-shrink: 0;}
 
-        #stats-bar { display: flex; justify-content: space-between; align-items: center; background: #0d1117; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; font-size: 14px; font-weight: bold; border: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;}
-        .equip-bar { display: flex; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 8px; flex-shrink: 0;}
-
-        /* Content Scroll */
         #game-controls { flex-grow: 1; overflow-y: auto; padding-right: 5px; display: flex; flex-direction: column;}
         #game-controls::-webkit-scrollbar { width: 0px; } 
 
@@ -105,60 +94,30 @@
         .prestige-btn { background: #8b5cf6; flex-direction: row; font-size: 14px; flex-shrink: 0;} 
         .success-btn { background: #10b981; flex-direction: row; }
         .update-btn { background: #0ea5e9; flex-direction: row; }
+        .admin-btn { background: #f43f5e; flex-direction: row; }
 
         input { padding: 12px; width: 90%; margin: 8px 0; border-radius: 8px; border: 1px solid #30363d; background: #0d1117; color: white; box-sizing: border-box; }
+        .admin-input { width: 100%; margin: 5px 0; padding: 10px; }
 
-        /* --- NEUER GROSSER LOG --- */
+        /* --- MEGA LOG --- */
         #log { 
-            height: 250px; 
-            overflow-y: auto; background: #0d1117; padding: 12px; border-radius: 8px; 
-            font-size: 14px; text-align: left; border-left: 3px solid #3b82f6; 
+            height: 250px; /* Sehr groß */
+            overflow-y: auto; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 8px; 
+            font-size: 15px; text-align: left; border-left: 4px solid #3b82f6; 
             line-height: 1.6; margin-top: 10px; flex-shrink: 0;
         }
         #log::-webkit-scrollbar { width: 6px; } #log::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
 
         /* --- MODAL / POPUP SYSTEM --- */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(5px); animation: fadeIn 0.2s; padding: 10px; box-sizing: border-box;}
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(5px); animation: fadeIn 0.2s; padding: 10px; box-sizing: border-box;}
         .modal-content { background: #161b22; width: 100%; max-width: 500px; max-height: 90vh; border-radius: 14px; border: 1px solid #30363d; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
-        .modal-header { background: #0d1117; padding: 15px 20px; font-size: 16px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; flex-shrink: 0;}
-        .modal-body { padding: 15px 20px; overflow-y: auto; font-size: 14px; text-align: left; }
-        .modal-body::-webkit-scrollbar { width: 4px; } .modal-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        .modal-header { background: #0d1117; padding: 15px 20px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; flex-shrink: 0;}
+        .modal-body { padding: 20px; overflow-y: auto; font-size: 15px; text-align: left; }
+        .modal-body::-webkit-scrollbar { width: 6px; } .modal-body::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
         .modal-footer { padding: 15px 20px; background: #0d1117; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #30363d; flex-shrink: 0;}
         .close-btn { background: none; color: #8b949e; font-size: 24px; cursor: pointer; padding: 0; transition: 0.2s; } .close-btn:hover { color: #f87171; transform: scale(1.2); }
         
         .item-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .quest-row { background: #0d1117; padding: 10px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #30363d; }
-        
-        .dex-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .dex-tab { flex: 1; padding: 10px; background: #0d1117; text-align: center; border-radius: 8px; cursor: pointer; border: 1px solid #30363d; transition: 0.2s; font-weight: bold;}
-        .dex-tab.active { background: #2563eb; border-color: #3b82f6; }
-        .fish-dex-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
-        .dex-card { background: #0d1117; padding: 10px; border-radius: 8px; border: 1px solid #30363d; text-align: center; cursor: pointer; transition: 0.2s; }
-        .dex-card:hover:not(.locked) { transform: translateY(-2px); border-color: #3b82f6; background: rgba(59,130,246,0.1); }
-        .dex-card.locked { opacity: 0.3; filter: grayscale(100%); cursor: not-allowed; }
-        .dex-emoji { font-size: 26px; margin-bottom: 5px; }
-        .shiny-badge { font-size: 11px; background: rgba(245,158,11,0.2); border: 1px solid #f59e0b; color: #fcd34d; padding: 2px 6px; border-radius: 4px; display: inline-block; margin-top: 5px;}
-
-        .daily-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px;}
-        .daily-card { background: #0d1117; border: 1px solid #30363d; border-radius: 8px; padding: 10px 5px; text-align: center; transition: 0.2s; }
-        .daily-card.day7 { grid-column: span 3; background: rgba(245, 158, 11, 0.05); border-color: #fcd34d; padding: 15px;}
-        .daily-card.active { background: rgba(59,130,246,0.2); border-color: #3b82f6; transform: scale(1.05); box-shadow: 0 0 15px rgba(59,130,246,0.3); }
-        .daily-card.missed { opacity: 0.4; }
-
-        .leader-row { background: #0d1117; padding: 12px; border-radius: 8px; margin-bottom: 6px; display: flex; justify-content: space-between; border: 1px solid #30363d; cursor: pointer; transition: 0.2s; font-size: 14px;}
-        .leader-row:hover { border-color: #60a5fa; background: rgba(96,165,250,0.1); transform: translateX(5px); }
-
-        .profile-card { background: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .profile-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #30363d; padding-bottom: 10px; margin-bottom: 10px;}
-        .profile-avatar { font-size: 35px; background: #1e293b; width: 60px; height: 60px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #60a5fa; flex-shrink: 0;}
-        .profile-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .stat-box { background: rgba(255,255,255,0.03); padding: 10px; border-radius: 8px; text-align: center; }
-        .stat-val { font-size: 16px; font-weight: bold; color: #60a5fa; }
-        .stat-lbl { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
-
-        .update-log-item { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #30363d; }
-        .update-title { color: #60a5fa; font-weight: bold; margin-bottom: 8px; font-size: 16px; }
-        .update-list { font-size: 14px; color: #94a3b8; padding-left: 20px; margin: 0; line-height: 1.6; }
         
         @media (max-width: 480px) {
             .btn-grid { grid-template-columns: 1fr 1fr; }
@@ -170,10 +129,10 @@
 <body>
 
 <script>
-    for(let i=0; i<15; i++) {
+    for(let i=0; i<20; i++) {
         let div = document.createElement('div'); div.className = 'bg-bubbles';
-        div.style.left = Math.random() * 100 + 'vw'; div.style.width = Math.random() * 15 + 5 + 'px'; div.style.height = div.style.width;
-        div.style.animationDuration = Math.random() * 5 + 5 + 's'; div.style.animationDelay = Math.random() * 5 + 's';
+        div.style.left = Math.random() * 100 + 'vw'; div.style.width = Math.random() * 20 + 5 + 'px'; div.style.height = div.style.width;
+        div.style.animationDuration = Math.random() * 8 + 4 + 's'; div.style.animationDelay = Math.random() * 5 + 's';
         document.body.appendChild(div);
     }
 </script>
@@ -186,10 +145,11 @@
     </div>
 </div>
 
-<div class="container">
-    <button id="btnAdminTop" onclick="handleAdminMenu()" title="Admin Panel">⚙️</button>
+<!-- Der Admin Button Oben Rechts -->
+<button id="btnAdminTop" onclick="handleAdminMenu()" title="Admin Panel">⚙️</button>
 
-    <div id="fishing-scene" class="zone-0">
+<div class="container">
+    <div id="fishing-scene">
         <div id="weather-layer" data-weather="none"></div>
         <svg id="fishing-line-svg"><line id="line-element" x1="0" y1="0" x2="0" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-dasharray="3,3" /></svg>
         <div id="netAnim" class="net-anim">🕸️</div>
@@ -202,18 +162,18 @@
     <!-- Login -->
     <div id="authBox">
         <h3>🔐 Virtual Fisher Login</h3>
-        <p style="font-size: 12px; color: #8b949e;">Gib deinen Username und Passwort ein.</p>
+        <p style="font-size: 13px; color: #8b949e;">Gib deine Zugangsdaten ein.</p>
         <input id="username" placeholder="Spielername" autocomplete="off">
         <input id="password" type="password" placeholder="Passwort" autocomplete="off"><br>
-        <button id="btnLogin" style="width: 90%; margin: 15px auto; flex-direction: row;">Login</button>
-        <div id="login-error" style="color: #ef4444; font-size: 13px; display: none;">Daten falsch oder Account existiert nicht!</div>
+        <button id="btnLogin" style="width: 90%; margin: 15px auto; flex-direction: row; font-size: 16px;">Einloggen</button>
+        <div id="login-error" style="color: #ef4444; font-size: 14px; display: none;">Account nicht gefunden oder Passwort falsch!</div>
     </div>
 
     <!-- Game UI -->
     <div id="game" style="display:none; flex-direction: column; height: 100%;">
         <div id="top-info">
-            <span id="zoneDisplay" style="color: #60a5fa;">🌊 See</span>
-            <span id="eventDisplay" class="tooltip">🌍 Lade Event...<span class="tooltiptext" id="eventTooltip"></span></span>
+            <span id="zoneDisplay" style="color: #60a5fa; font-size: 16px;">🌊 See</span>
+            <span id="eventDisplay" style="color: #c084fc; font-size: 14px;">🌍 Kein Event</span>
             <button id="btnLogout" class="danger-btn">🚪 Logout</button>
         </div>
         
@@ -228,27 +188,27 @@
         </div>
 
         <div id="game-controls">
-            <button id="btnFish" style="width: 100%; margin-bottom: 15px; padding: 18px; font-size: 18px; text-transform: uppercase; letter-spacing: 1px; flex-direction: row;">🎣 Angeln</button>
+            <button id="btnFish" style="width: 100%; margin-bottom: 15px; padding: 18px; font-size: 20px; text-transform: uppercase; letter-spacing: 1.5px; flex-direction: row;">🎣 Angeln</button>
 
             <div class="btn-grid">
-                <button id="btnSell"><span style="font-size: 18px;">💰</span> Verkaufen</button>
-                <button id="btnShop"><span style="font-size: 18px;">🛒</span> Shop</button>
-                <button id="btnInv"><span style="font-size: 18px;">🎒</span> Inventar</button>
+                <button id="btnSell"><span style="font-size: 22px;">💰</span> Verkaufen</button>
+                <button id="btnShop"><span style="font-size: 22px;">🛒</span> Shop</button>
+                <button id="btnInv"><span style="font-size: 22px;">🎒</span> Inventar</button>
                 
-                <button id="btnNet"><span style="font-size: 18px;">⚙️</span> Auto-Netz</button>
-                <button id="btnDex"><span style="font-size: 18px;">📖</span> Fisch-Dex</button>
-                <button id="btnQuest"><span style="font-size: 18px;">📜</span> Quest</button>
+                <button id="btnNet"><span style="font-size: 22px;">⚙️</span> Auto-Netz</button>
+                <button id="btnDex"><span style="font-size: 22px;">📖</span> Fisch-Dex</button>
+                <button id="btnQuest"><span style="font-size: 22px;">📜</span> Quest</button>
                 
-                <button id="btnDaily"><span style="font-size: 18px;">🎁</span> Daily</button>
-                <button id="btnLeader"><span style="font-size: 18px;">🏆</span> Leader</button>
-                <button id="btnZone"><span style="font-size: 18px;">🗺️</span> Zone</button>
+                <button id="btnDaily"><span style="font-size: 22px;">🎁</span> Daily</button>
+                <button id="btnLeader"><span style="font-size: 22px;">🏆</span> Leader</button>
+                <button id="btnZone"><span style="font-size: 22px;">🗺️</span> Zone</button>
             </div>
             
             <div class="btn-grid-2">
-                <button id="btnProfile" style="flex-direction: row;">📊 Profil</button>
-                <button id="btnUpdates" class="update-btn">📝 Updates</button>
+                <button id="btnProfile" style="flex-direction: row; font-size: 16px;">📊 Profil</button>
+                <button id="btnUpdates" class="update-btn" style="font-size: 16px;">📝 Updates</button>
             </div>
-            <button id="btnPrestige" class="prestige-btn" style="width: 100%;">🔁 Prestige Aufstieg</button>
+            <button id="btnPrestige" class="prestige-btn" style="width: 100%; margin-bottom: 10px;">🔁 Prestige Aufstieg</button>
 
             <div id="log">Lade Spielstand...</div>
         </div>
@@ -257,8 +217,9 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, get, set, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
+// 🔥 ECHTE FIREBASE MIT LIVE-ANBINDUNG
 const firebaseConfig = {
     apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY", authDomain: "cc-shop-36c3b.firebaseapp.com",
     databaseURL: "https://cc-shop-36c3b-default-rtdb.europe-west1.firebasedatabase.app", projectId: "cc-shop-36c3b", storageBucket: "cc-shop-36c3b.firebasestorage.app"
@@ -282,32 +243,8 @@ const items = [
     {n:"Geisterschiff-Teil",v:300,c:5,z:3,e:"🏴‍☠️"}, {n:"Atlantis-Kristall",v:800,c:2,z:3,e:"💎"}, {n:"Kraken-Tentakel",v:1000,c:1,z:3,e:"🐙"}, {n:"Megalodon",v:1500,c:0.5,z:3,e:"🦖"}, {n:"Nessie",v:2500,c:0.2,z:3,e:"🦕"}, {n:"Poseidons Dreizack",v:5000,c:0.05,z:3,e:"🔱"}, {n:"Megalodon-Zahn",v:7500,c:0.02,z:3,e:"🦷"}, {n:"Leviathan-Herz",v:10000,c:0.005,z:3,e:"❤️"}
 ];
 
-function getRarity(c) {
-    if(c >= 15) return { l: "Gewöhnlich", cl: "rarity-common" };
-    if(c >= 8) return { l: "Selten", cl: "rarity-rare" };
-    if(c >= 2) return { l: "Episch", cl: "rarity-epic" };
-    return { l: "Legendär", cl: "rarity-legendary" };
-}
-
-const rodsDB = { 
-    "r1": { name: "Holzrute", e: "🪵", cost: 0, boost: 0, desc: "Standard" }, 
-    "r2": { name: "Fiberglas-Rute", e: "🎣", cost: 5000, boost: 0.1, desc: "+10% Seltene" }, 
-    "r3": { name: "Carbon-Rute", e: "🦾", cost: 25000, boost: 0.2, desc: "+20% Seltene" }, 
-    "r4": { name: "Meister-Rute", e: "🔱", cost: 100000, boost: 0.4, desc: "+40% Seltene" },
-    "r5": { name: "Platin-Rute", e: "⚡", cost: 500000, boost: 0.6, desc: "+60% Seltene" },
-    "r6": { name: "Diamant-Rute", e: "💎", cost: 2500000, boost: 0.8, desc: "+80% Seltene" },
-    "r7": { name: "Mystische Rute", e: "🔮", cost: 10000000, boost: 1.0, desc: "+100% Seltene" }
-};
-
-const baitsDB = { 
-    "b1": { name: "Brot", e: "🍞", cost: 100, amt: 20, desc: "+5% allg. Chance", type: "boost" }, 
-    "b2": { name: "Wurm", e: "🪱", cost: 500, amt: 20, desc: "Blockt Müll", type: "clean" }, 
-    "b3": { name: "Gold-Köder", e: "✨", cost: 2500, amt: 10, desc: "3x Mutation", type: "shiny" },
-    "b4": { name: "Garnelen", e: "🦐", cost: 2000, amt: 20, desc: "+10% allg. Chance", type: "boostStrong" },
-    "b5": { name: "Mega-Wurm", e: "🐛", cost: 5000, amt: 50, desc: "Blockt Müll (50x)", type: "clean" },
-    "b6": { name: "Diamant-Köder", e: "💠", cost: 10000, amt: 10, desc: "5x Mutation", type: "shinyStrong" }
-};
-
+const rodsDB = { "r1": { name: "Holzrute", e: "🪵", cost: 0, boost: 0, desc: "Standard" }, "r2": { name: "Fiberglas-Rute", e: "🎣", cost: 5000, boost: 0.1, desc: "+10% Seltene" }, "r3": { name: "Carbon-Rute", e: "🦾", cost: 25000, boost: 0.2, desc: "+20% Seltene" }, "r4": { name: "Meister-Rute", e: "🔱", cost: 100000, boost: 0.4, desc: "+40% Seltene" }, "r5": { name: "Platin-Rute", e: "⚡", cost: 500000, boost: 0.6, desc: "+60% Seltene" }, "r6": { name: "Diamant-Rute", e: "💎", cost: 2500000, boost: 0.8, desc: "+80% Seltene" }, "r7": { name: "Mystische Rute", e: "🔮", cost: 10000000, boost: 1.0, desc: "+100% Seltene" } };
+const baitsDB = { "b1": { name: "Brot", e: "🍞", cost: 100, amt: 20, desc: "+5% allg. Chance", type: "boost" }, "b2": { name: "Wurm", e: "🪱", cost: 500, amt: 20, desc: "Blockt Müll", type: "clean" }, "b3": { name: "Gold-Köder", e: "✨", cost: 2500, amt: 10, desc: "3x Mutation", type: "shiny" }, "b4": { name: "Garnelen", e: "🦐", cost: 2000, amt: 20, desc: "+10% allg. Chance", type: "boostStrong" }, "b5": { name: "Mega-Wurm", e: "🐛", cost: 5000, amt: 50, desc: "Blockt Müll (50x)", type: "clean" }, "b6": { name: "Diamant-Köder", e: "💠", cost: 10000, amt: 10, desc: "5x Mutation", type: "shinyStrong" } };
 const autoLevels = [ { cost: 0, time: 0, cap: 0 }, { cost: 5000, time: 300, cap: 12 }, { cost: 25000, time: 270, cap: 16 }, { cost: 100000, time: 240, cap: 24 }, { cost: 500000, time: 210, cap: 32 }, { cost: 2500000, time: 180, cap: 48 }, { cost: 10000000, time: 120, cap: 60 } ];
 
 const specialEvents = [
@@ -315,8 +252,7 @@ const specialEvents = [
     { name: "🌧️ Monsun", type: "rain", boost: 2, target: "Speed", desc: "Angeln geht doppelt so schnell!" },
     { name: "🦈 Hai-Woche", type: "hai", boost: 5, target: "Hai", desc: "5x Chance auf Haie!" },
     { name: "💎 Schatzsuche", type: "normal", boost: 10, target: "Atlantis-Kristall", desc: "10x Chance auf Kristalle!" },
-    { name: "🌿 Algenblüte", type: "algae", boost: 5, target: "Alge", desc: "Überall Algen... pass auf!" },
-    { name: "🌍 Friede", type: "normal", boost: 1, target: "None", desc: "Normales Wetter." }
+    { name: "🌿 Algenblüte", type: "algae", boost: 5, target: "Alge", desc: "Überall Algen... pass auf!" }
 ];
 
 function getCurrentEventInfo() {
@@ -373,22 +309,6 @@ function addQuestProgress(t, amt) {
     if(t === 'e') { p.de+=amt; p.we+=amt; p.me+=amt; } 
 }
 
-function getFishChance(zIdx, itemN) {
-    if(!gameState) return 0;
-    let { event } = getCurrentEventInfo(); let rodDef = rodsDB[gameState.eqRod]; let baitDef = gameState.eqBait !== "none" ? baitsDB[gameState.eqBait] : null;
-    let pool = items.filter(i => i.z === zIdx || i.z === -1); 
-    if (baitDef && (baitDef.type === "clean" || baitDef.type === "cleanStrong")) pool = pool.filter(i => i.v >= 0);
-    let modPool = pool.map(i => {
-        let w = i.c * (1 + rodDef.boost);
-        if (baitDef && (baitDef.type === "boost" || baitDef.type === "boostStrong")) w *= (baitDef.type === "boost" ? 1.05 : 1.10);
-        if (i.n === event.target) w *= event.boost;
-        return { n: i.n, weight: w };
-    });
-    let total = modPool.reduce((s, i) => s + i.weight, 0);
-    let myItem = modPool.find(x => x.n === itemN);
-    return myItem ? ((myItem.weight / total) * 100).toFixed(2) : 0;
-}
-
 function roll(zIdx) {
     let { event } = getCurrentEventInfo(); let rodDef = rodsDB[gameState.eqRod]; let baitDef = gameState.eqBait !== "none" ? baitsDB[gameState.eqBait] : null;
     let pool = items.filter(i => i.z === zIdx || i.z === -1); 
@@ -431,6 +351,7 @@ function updateDex(item) {
     gameState.dex[item.baseName].count++;
 }
 
+// 🔥 LIVE DATENBANK
 async function loadData() {
     if (!currentUser) return;
     
@@ -457,12 +378,6 @@ async function loadData() {
             if(!gameState.baits) { gameState.baits = {}; gameState.eqBait = "none"; }
             if(!gameState.eqBait) gameState.eqBait = "none";
             
-            for(let k in gameState.dex) {
-                if(typeof gameState.dex[k] === 'boolean') {
-                    gameState.dex[k] = { normal: gameState.dex[k], shiny: false, count: 1 };
-                }
-            }
-            
             if(typeof gameState.combo === 'undefined') gameState.combo = 0; 
             if(typeof gameState.lastCatchTime === 'undefined') gameState.lastCatchTime = 0;
             
@@ -483,13 +398,15 @@ async function loadData() {
 
 function saveData() { if (currentUser && gameState) set(ref(db, "users/" + currentUser), gameState); }
 
+// BANKROTT SYSTEM: Setzt bei -150.000 komplett auf Null zurück!
 window.checkBankruptcy = async function() {
-    if (gameState && gameState.money <= -150000) {
-        gameState.money = 0; 
+    // STRIKTE NUMMERN PRÜFUNG!
+    if (gameState && Number(gameState.money) <= -150000) {
+        gameState.money = 0; // Stoppt den Loop
         alert("💸 BANKROTT! Dein Schuldenberg hat -150.000$ erreicht. Dein Spielstand wurde soeben vernichtet.");
+        
         let u = currentUser; currentUser = null; localStorage.removeItem('vFisher_user');
         
-        // Kompletter Löschvorgang in Firebase
         let defaultState = { name: u, money: 0, xp: 0, level: 1, zone: 0, combo: 0, inventory: {}, dex: {}, net: { level: 0, lastClaim: Date.now() }, lastDaily: 0, dailyStreak: 0, prestige: 0, stats: { totalCaught: 0, totalEarned: 0 } };
         await set(ref(db, "users/" + u), defaultState);
         location.reload();
@@ -500,9 +417,12 @@ function updateUI() {
     if(!gameState) return;
     checkBankruptcy();
     
-    document.getElementById("ui-money").innerText = `💰 ${Number(gameState.money).toLocaleString()}$`;
-    document.getElementById("ui-level").innerText = `⭐ Lvl ${gameState.level} (${gameState.xp}/${gameState.level * 50})`;
+    document.getElementById("ui-money").innerText = `💰 ${Math.floor(Number(gameState.money)).toLocaleString()}$`;
+    document.getElementById("ui-level").innerText = `⭐ Lvl ${gameState.level} (${Math.floor(gameState.xp)}/${gameState.level * 50})`;
     document.getElementById("zoneDisplay").innerText = `🌊 ${zones[gameState.zone].name}`;
+    
+    // Globale Hintergrundfarbe anpassen (Vollbild Zonen)
+    document.body.className = "zone-bg-" + gameState.zone;
     document.getElementById("fishing-scene").className = "zone-" + gameState.zone;
 
     let { event, timeLeft } = getCurrentEventInfo();
@@ -537,13 +457,13 @@ function updateUI() {
     if(!btnFish.disabled) { 
         if(gameState.combo > 1) { 
             let mult = (1 + (Math.min(gameState.combo, 50) * 0.02)).toFixed(2);
-            btnFish.innerHTML = `🎣 Angeln <span style="font-size:12px; color:#fcd34d;">🔥 Combo: x${mult} (${gameState.combo})</span>`;
+            btnFish.innerHTML = `🎣 Angeln <span style="font-size:14px; color:#fcd34d;">🔥 Combo: x${mult} (${gameState.combo})</span>`;
         } else { 
             btnFish.innerHTML = `🎣 Angeln`; 
         }
     }
 }
-setInterval(() => { if(gameState) updateUI(); }, 20); 
+setInterval(() => { if(gameState) { updateUI(); } }, 10); 
 
 function renderFishingLine() {
     let scene = document.getElementById('fishing-scene');
@@ -568,6 +488,7 @@ function renderFishingLine() {
 }
 requestAnimationFrame(renderFishingLine);
 
+// 🔥 HARDCORE COMBO TIMER
 setInterval(() => {
     if(gameState && gameState.combo > 0) {
         if(Date.now() > (gameState.lastCatchTime || 0)) {
@@ -576,7 +497,7 @@ setInterval(() => {
     }
 }, 100);
 
-// Sehr großer Log für die letzten 50 Aktionen
+// MEGA LOG (Zeigt 50 Einträge an)
 function log(t) { 
     let l = document.getElementById("log"); 
     let prefix = t.startsWith("Willkommen") || t.startsWith("✅") || t.startsWith("💰") || t.startsWith("🕸️") || t.startsWith("🧬") || t.startsWith("❌") || t.startsWith("👑") || t.startsWith("🗺️") ? "" : "🎣 ";
@@ -599,6 +520,7 @@ window.doPrestige = function() {
     gameState.prestige++; gameState.money=0; gameState.level=1; gameState.combo=0; gameState.inventory={}; saveData(); location.reload(); 
 }
 
+// --- AKTIONEN ---
 window.handleFish = function() {
     const btn = document.getElementById('btnFish'); btn.disabled = true;
     const scene = document.getElementById('fishing-scene'); scene.classList.add('fishing-active');
@@ -644,33 +566,34 @@ window.handleSellMenu = function() {
     }
     if (!has) return openModal("💰 Verkauf", "<p>Dein Rucksack ist leer!</p>");
     
+    // MATHE BUG FIX: Prestige wirkt sich NUR auf positiven Profit aus!
     let bonus = gameState.prestige * 1; 
     let finalTotal = base;
     
-    // WICHTIGER FIX: Prestige Bonus erhöht nur positive Beträge, bestraft nicht zusätzlich für Müll!
     if (base > 0) {
         finalTotal = Math.floor(base * (1 + (bonus / 100)));
     }
     
     html += `<hr><div class="item-row" style="color:#94a3b8;"><span>Basiswert:</span><span>${base.toLocaleString()}$</span></div>`;
     if (bonus > 0 && base > 0) html += `<div class="item-row" style="color:#f59e0b;"><span>🏆 Prestige (+${bonus}%):</span><span>+${(finalTotal - base).toLocaleString()}$</span></div>`;
-    html += `<div class="item-row" style="font-weight:bold; font-size:18px; color:${finalTotal>=0?'#10b981':'#ef4444'};"><span>Gesamt:</span><span>${finalTotal.toLocaleString()}$</span></div>`;
-    openModal("💰 Verkauf", html, `<button class="success-btn" onclick="executeSell(${finalTotal})">Alles Verkaufen</button>`);
+    html += `<div class="item-row" style="font-weight:bold; font-size:22px; color:${finalTotal>=0?'#10b981':'#ef4444'};"><span>Gesamt:</span><span>${finalTotal.toLocaleString()}$</span></div>`;
+    openModal("💰 Verkauf", html, `<button class="success-btn" style="font-size:16px; padding: 12px 20px;" onclick="executeSell(${finalTotal})">Alles Verkaufen</button>`);
 }
 
 window.executeSell = function(val) { 
     let hasItems = false; for(let k in gameState.inventory) { if(gameState.inventory[k] > 0) hasItems = true; }
     if(!hasItems) return; 
     
-    gameState.money = Number(gameState.money) + Number(val); // STRIKTES NUMBER PARSING GEGEN BUGS
+    // GANZ STRIKT: Immer Number nutzen, um String-Concatenation (Text-Kleber) zu vermeiden!
+    gameState.money = Math.floor(Number(gameState.money) + Number(val)); 
     
     if(val>0){ gameState.stats.totalEarned += val; addQuestProgress('e', val); } 
-    gameState.inventory = {}; updateUI(); log(`💰 Alles verkauft für ${val.toLocaleString()}$`); saveData(); 
+    gameState.inventory = {}; updateUI(); log(`💰 Alles verkauft für ${Number(val).toLocaleString()}$`); saveData(); 
     handleSellMenu(); 
 }
 
 window.handleShopMenu = function() {
-    let html = `<h3>🛒 Shop <span style="font-size:14px; float:right; color:#10b981;">💰 ${Number(gameState.money).toLocaleString()}$</span></h3>`;
+    let html = `<h3>🛒 Shop <span style="font-size:14px; float:right; color:#10b981;">💰 ${Math.floor(Number(gameState.money)).toLocaleString()}$</span></h3>`;
     html += `<h4 style="color:#60a5fa; margin-top:0;">🎣 Ruten Kaufen</h4>`;
     for(let r in rodsDB) {
         if(!gameState.ownedRods.includes(r)) {
@@ -690,9 +613,9 @@ window.handleShopMenu = function() {
     }
     openModal(`🛒 Shop`, html);
 }
-window.buyRod = function(id) { gameState.money-=rodsDB[id].cost; gameState.ownedRods.push(id); saveData(); updateUI(); handleShopMenu(); }
-window.buyBait = function(id) { gameState.money-=baitsDB[id].cost; gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); updateUI(); handleShopMenu(); }
-window.buyNet = function(cost) { gameState.money-=cost; gameState.net.level++; gameState.net.lastClaim=Date.now(); saveData(); updateUI(); handleShopMenu(); }
+window.buyRod = function(id) { gameState.money = Number(gameState.money) - Number(rodsDB[id].cost); gameState.ownedRods.push(id); saveData(); updateUI(); handleShopMenu(); }
+window.buyBait = function(id) { gameState.money = Number(gameState.money) - Number(baitsDB[id].cost); gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); updateUI(); handleShopMenu(); }
+window.buyNet = function(cost) { gameState.money = Number(gameState.money) - Number(cost); gameState.net.level++; gameState.net.lastClaim=Date.now(); saveData(); updateUI(); handleShopMenu(); }
 
 window.handleInvMenu = function() {
     let html = `<h4 style="color:#60a5fa; margin-top:0;">🎣 Rute Ausrüsten</h4>`;
@@ -727,15 +650,14 @@ window.handleQuestMenu = function() {
     dArr.forEach(cat => {
         html += `<h4 style="color:#60a5fa; border-bottom:1px solid #30363d; margin-bottom:10px; margin-top: 15px;">${cat.n}</h4>`;
         cat.l.forEach(q => {
-            let prog = 0; if(qs && qs.p) prog = (q.t === 'c' ? qs.p[cat.c] : qs.p[cat.e]) || 0;
-            let done = prog >= q.req; let claimed = qs && qs.c ? qs.c[q.id] : false; let dProg = Math.min(prog, q.req);
+            let prog = (q.t === 'c' ? qs.p[cat.c] : qs.p[cat.e]) || 0; let done = prog >= q.req; let claimed = qs.c[q.id]; let dProg = Math.min(prog, q.req);
             html += `<div class="quest-row"><div><b>${q.desc}</b><br><span style="font-size:12px;color:#94a3b8;">${dProg.toLocaleString()} / ${q.req.toLocaleString()}</span></div><div>`;
             if (claimed) html += `✅`; else if (done) html += `<button class="success-btn" style="padding: 8px 12px; font-size: 13px;" onclick="claimQuest('${q.id}', ${q.rew})">${q.rew}$</button>`; else html += `<span style="font-size: 13px; color: #94a3b8;">🔒 ${q.rew}$</span>`;
             html += `</div></div>`;
         });
     }); openModal("📜 Missionen", html);
 }
-window.claimQuest = function(id, rew) { gameState.qs.c[id]=true; gameState.money+=rew; gameState.stats.totalEarned+=rew; updateUI(); saveData(); handleQuestMenu(); }
+window.claimQuest = function(id, rew) { gameState.qs.c[id]=true; gameState.money = Number(gameState.money) + Number(rew); gameState.stats.totalEarned+=rew; updateUI(); saveData(); handleQuestMenu(); }
 
 window.handleDailyMenu = function() {
     let now = Date.now(); let DAY = 86400000; let can = false; let nStr = gameState.dailyStreak;
@@ -752,7 +674,7 @@ window.handleDailyMenu = function() {
 }
 window.claimDaily = function(rew, str) { 
     if (gameState.lastDaily > 0 && Date.now() - gameState.lastDaily < 86400000 && gameState.dailyStreak === str) return;
-    gameState.money+=rew; gameState.stats.totalEarned+=rew; gameState.lastDaily=Date.now(); gameState.dailyStreak=str; updateUI(); saveData(); handleDailyMenu(); 
+    gameState.money = Number(gameState.money) + Number(rew); gameState.stats.totalEarned+=rew; gameState.lastDaily=Date.now(); gameState.dailyStreak=str; updateUI(); saveData(); handleDailyMenu(); 
 }
 
 window.currentDexTab = 'normal';
@@ -799,7 +721,7 @@ window.handleZoneMenu = function() {
     let html=`<p style="font-size: 14px; color: #94a3b8; margin-top:0;">Bestimmte Fische leben nur in bestimmten Zonen!</p>`; 
     zones.forEach((z,i)=>{ 
         let l=gameState.prestige<z.reqPrestige; 
-        html+=`<div class="item-row ${l?'locked':''}" style="align-items: center;"><b>${z.name}</b> ${gameState.zone===i?'<button disabled style="padding: 8px 15px; font-weight:bold; background: transparent; border: 1px solid #10b981; color: #10b981;">📍 Aktiv</button>':(l?`<span style="color:#ef4444; font-size: 13px;">🔒 Prestige ${z.reqPrestige}</span>`:`<button class="success-btn" style="padding: 8px 15px;" onclick="changeZone(${i})">Reisen</button>`)}</div>`; 
+        html+=`<div class="item-row ${l?'locked':''}" style="align-items: center;"><b>${z.name}</b> ${gameState.zone===i?'<span style="color:#10b981; font-weight: bold;">📍 Aktiv</span>':(l?`<span style="color:#ef4444; font-size: 13px;">🔒 Prestige ${z.reqPrestige}</span>`:`<button class="success-btn" style="padding: 8px 15px;" onclick="changeZone(${i})">Reisen</button>`)}</div>`; 
     }); openModal("🗺️ Weltkarte", html); 
 }
 
@@ -808,7 +730,7 @@ window.handleProfileMenu = function() {
         <div class="profile-card">
             <div class="profile-header"><div class="profile-avatar">${gameState.prestige > 0 ? '👑' : '🎣'}</div><div style="text-align: left;"><h2 style="margin:0; color:#60a5fa;">${gameState.name.toUpperCase()}</h2><div style="color:#94a3b8; font-size:13px;">Level ${gameState.level} • Prestige ${gameState.prestige}</div></div></div>
             <div class="profile-stats-grid">
-                <div class="stat-box"><div class="stat-lbl">Kapital</div><div class="stat-val" style="color:#10b981;">${gameState.money.toLocaleString()}$</div></div>
+                <div class="stat-box"><div class="stat-lbl">Kapital</div><div class="stat-val" style="color:#10b981;">${Math.floor(Number(gameState.money)).toLocaleString()}$</div></div>
                 <div class="stat-box"><div class="stat-lbl">Gefangen</div><div class="stat-val">${gameState.stats.totalCaught.toLocaleString()}</div></div>
                 <div class="stat-box"><div class="stat-lbl">Verdient</div><div class="stat-val">${gameState.stats.totalEarned.toLocaleString()}$</div></div>
                 <div class="stat-box"><div class="stat-lbl">Streak</div><div class="stat-val" style="color:#fcd34d;">${gameState.dailyStreak} 🔥</div></div>
@@ -827,7 +749,7 @@ window.showPlayerProfile = async function(pName) {
                 <div class="profile-card">
                     <div class="profile-header"><div class="profile-avatar">${u.prestige > 0 ? '👑' : '🎣'}</div><div style="text-align: left;"><h2 style="margin:0; color:#60a5fa;">${u.name.toUpperCase()}</h2><div style="color:#94a3b8; font-size:13px;">Level ${u.level} • Prestige ${u.prestige}</div></div></div>
                     <div class="profile-stats-grid">
-                        <div class="stat-box"><div class="stat-lbl">Kapital</div><div class="stat-val" style="color:#10b981;">${u.money.toLocaleString()}$</div></div>
+                        <div class="stat-box"><div class="stat-lbl">Kapital</div><div class="stat-val" style="color:#10b981;">${Math.floor(Number(u.money)).toLocaleString()}$</div></div>
                         <div class="stat-box"><div class="stat-lbl">Gefangen</div><div class="stat-val">${u.stats.totalCaught.toLocaleString()}</div></div>
                         <div class="stat-box"><div class="stat-lbl">Verdient</div><div class="stat-val">${u.stats.totalEarned.toLocaleString()}$</div></div>
                         <div class="stat-box"><div class="stat-lbl">Streak</div><div class="stat-val" style="color:#fcd34d;">${u.dailyStreak || 0} 🔥</div></div>
@@ -840,11 +762,18 @@ window.showPlayerProfile = async function(pName) {
 }
 
 window.handlePrestigeMenu = function() { 
-    let reqLevel = 20 + (gameState.prestige * 5);
-    let reqMoney = 5000 * Math.pow(2, gameState.prestige);
-    let canPrestige = gameState.level >= reqLevel && gameState.money >= reqMoney;
+    let reqs = getPrestigeReqs(gameState.prestige);
+    let canPrestige = gameState.level >= reqs.lvl && Number(gameState.money) >= reqs.mon;
     
-    let html = `<div style="text-align: center;"><p style="color: #ef4444; font-weight: bold; font-size:16px;">Reset von Level, Geld, und Inventar!</p><p>Gibt +1% Bonus pro Prestige und schaltet Zonen frei.<br><i>(Deine gekauften Ruten, Netze und der Dex bleiben erhalten)</i></p><hr style="border-color: #30363d;"><p>Voraussetzung: <b>Level ${reqLevel}</b> und <b>${reqMoney.toLocaleString()}$</b></p></div>`;
+    let html = `
+        <div style="text-align: center;">
+            <p style="color: #ef4444; font-weight: bold; font-size:16px;">Reset von Level, Geld und Inventar!</p>
+            <p>Gibt +1% Bonus pro Prestige und schaltet Zonen frei.<br><i>(Deine Ruten, Netze und der Dex bleiben erhalten)</i></p>
+            <hr style="border-color: #30363d;">
+            <p style="color: #fcd34d;">Voraussetzung für Prestige ${gameState.prestige + 1}:</p>
+            <p><b>Level ${reqs.lvl}</b> und <b>${reqs.mon.toLocaleString()}$</b></p>
+        </div>
+    `;
     openModal("🔁 Prestige", html, canPrestige?`<button class="danger-btn" style="font-size: 16px; padding: 12px;" onclick="doPrestige()">⚠️ Prestige durchführen!</button>`:`<button disabled style="padding: 12px; font-size:16px;">Nicht bereit</button>`); 
 }
 
@@ -858,7 +787,7 @@ window.handleLeaderboard = async function() {
             let html=``; 
             usrs.forEach((u,i)=> {
                 let medal = i===0 ? "🥇" : i===1 ? "🥈" : i===2 ? "🥉" : `<b>${i+1}.</b>`;
-                html+=`<div class="leader-row" onclick="showPlayerProfile('${u.name}')" style="${u.name===currentUser?'border:1px solid #10b981;':''}"><span>${medal} ${u.name}</span> <span style="text-align: right; font-size: 13px; color: #94a3b8;">Prestige ${u.prestige} | Lvl ${u.level}<br><span style="color:#10b981;">${u.money.toLocaleString()}$</span></span></div>`;
+                html+=`<div class="leader-row" onclick="showPlayerProfile('${u.name}')" style="${u.name===currentUser?'border:1px solid #10b981;':''}"><span>${medal} ${u.name}</span> <span style="text-align: right; font-size: 13px; color: #94a3b8;">Prestige ${u.prestige} | Lvl ${u.level}<br><span style="color:#10b981;">${Math.floor(Number(u.money)).toLocaleString()}$</span></span></div>`;
             }); openModal("🏆 Globales Leaderboard", html); 
         } 
     } catch(e){ openModal("🏆 Leaderboard", "<p>Fehler beim Laden.</p>"); }
@@ -866,87 +795,91 @@ window.handleLeaderboard = async function() {
 
 // --- ADMIN MENU ---
 window.handleAdminMenu = function() {
-    let html = `<h3 style="color:#f43f5e; margin-top:0;">👑 Admin Panel</h3>`;
-    html += `<h4 style="color:#60a5fa; margin-bottom:5px;">🌍 Globales Event</h4>`;
+    let html = `<h3 style="color:#f43f5e; margin-top:0;">👑 Giver System</h3>`;
+    
+    html += `<div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 8px; margin-bottom: 20px;">`;
+    html += `<input id="adminTargetUser" placeholder="Ziel Username" class="admin-input">`;
+    html += `<input id="adminAmount" type="number" placeholder="Menge" class="admin-input">`;
+    html += `<div style="display:flex; gap:10px; margin-top:10px;">`;
+    html += `<button class="success-btn" style="flex:1;" onclick="adminGive('money')">Give Geld</button>`;
+    html += `<button class="prestige-btn" style="flex:1;" onclick="adminGive('xp')">Give Level (XP)</button>`;
+    html += `<button class="update-btn" style="flex:1;" onclick="adminGive('prestige')">Give Prestige</button>`;
+    html += `</div></div>`;
+
+    html += `<h3 style="color:#60a5fa; margin-top:0;">🌍 Globale Events</h3>`;
     specialEvents.forEach((ev, idx) => {
         html += `<div class="item-row"><b>${ev.name}</b> <button class="danger-btn" onclick="startAdminEvent(${idx})">Starten</button></div>`;
     });
-    html += `<button class="update-btn" style="width:100%; margin-top:5px;" onclick="stopAdminEvent()">🛑 Globales Event Beenden</button>`;
+    html += `<button class="update-btn" style="width:100%; margin-top:5px;" onclick="stopAdminEvent()">🛑 Events Beenden</button>`;
     
     html += `<hr style="border-color:#30363d; margin:15px 0;">`;
-    html += `<h4 style="color:#60a5fa; margin-bottom:5px;">👤 Account erstellen</h4>`;
+    html += `<h3 style="color:#10b981; margin-bottom:5px;">👤 Account Manager</h3>`;
     html += `<input id="adminNewUser" placeholder="Neuer Username" style="width:48%; display:inline-block;"> `;
     html += `<input id="adminNewPass" placeholder="Passwort" style="width:48%; display:inline-block; margin-left:1%;">`;
-    html += `<button class="success-btn" style="width:100%; margin-top:5px;" onclick="adminCreateAccount()">Account Erstellen</button>`;
+    html += `<button class="success-btn" style="width:100%; margin-top:5px; margin-bottom: 15px;" onclick="adminCreateAccount()">Account Erstellen</button>`;
     
-    html += `<hr style="border-color:#30363d; margin:15px 0;">`;
-    html += `<h4 style="color:#60a5fa; margin-bottom:5px;">🎁 Give Items</h4>`;
-    html += `<input id="adminTargetUser" placeholder="Ziel Username (z.B. colin)" style="width:100%;">`;
-    html += `<div style="display:flex; gap:10px; margin-top:10px;">`;
-    html += `<button class="success-btn" style="flex:1;" onclick="adminGiveMoney()">Give Geld</button>`;
-    html += `<button class="prestige-btn" style="flex:1;" onclick="adminGiveXP()">Give Level</button>`;
-    html += `</div>`;
-
-    openModal("👑 Admin", html);
+    html += `<input id="adminDelUser" placeholder="Zu löschender Username" style="width:100%; margin-bottom:5px;">`;
+    html += `<button class="danger-btn" style="width:100%;" onclick="adminDeleteAccount()">⚠️ Account Löschen</button>`;
+    
+    openModal("👑 Admin Control Panel", html);
 }
-window.startAdminEvent = function(idx) { let evt = specialEvents[idx]; set(ref(db, "global/event"), { ...evt, exp: Date.now() + 15 * 60000 }); log(`👑 Admin Event gestartet: ${evt.name}`); closeModal(); }
-window.stopAdminEvent = function() { set(ref(db, "global/event"), null); log(`👑 Admin hat globale Events beendet.`); closeModal(); }
 
-window.adminGiveMoney = async function() {
+window.adminGive = async function(type) {
     let tUser = document.getElementById('adminTargetUser').value.trim();
-    if(!tUser) return alert("Bitte Username eingeben!");
-    const s = await get(ref(db, "users/" + tUser + "/money"));
-    if(s.exists()) {
-        let m = Number(s.val()) || 0;
-        await set(ref(db, "users/" + tUser + "/money"), m + 1000000);
-        log(`👑 Admin: 1.000.000$ an ${tUser} gesendet!`);
-    } else { alert("Spieler nicht gefunden!"); }
+    let amt = Number(document.getElementById('adminAmount').value.trim());
+    if(!tUser || isNaN(amt) || amt <= 0) return alert("Bitte gültigen User und Menge eingeben!");
+    
+    const s = await get(ref(db, "users/" + tUser + "/" + type));
+    if(s.exists() || type === 'money') {
+        let current = Number(s.val()) || 0;
+        await set(ref(db, "users/" + tUser + "/" + type), current + amt);
+        alert(`Erfolgreich ${amt} ${type} an ${tUser} gesendet!`);
+    } else { alert("Spieler noch nie eingeloggt!"); }
 }
 
-window.adminGiveXP = async function() {
-    let tUser = document.getElementById('adminTargetUser').value.trim();
-    if(!tUser) return alert("Bitte Username eingeben!");
-    const s = await get(ref(db, "users/" + tUser + "/xp"));
-    if(s.exists()) {
-        let x = Number(s.val()) || 0;
-        await set(ref(db, "users/" + tUser + "/xp"), x + 10000);
-        log(`👑 Admin: 10.000 XP an ${tUser} gesendet!`);
-    } else { alert("Spieler nicht gefunden!"); }
-}
+window.startAdminEvent = function(idx) { let evt = specialEvents[idx]; set(ref(db, "global/event"), { ...evt, exp: Date.now() + 15 * 60000 }); closeModal(); alert(`Event ${evt.name} global gestartet!`); }
+window.stopAdminEvent = function() { set(ref(db, "global/event"), null); closeModal(); alert("Event beendet!"); }
 
 window.adminCreateAccount = async function() {
     let nUser = document.getElementById('adminNewUser').value.trim();
     let nPass = document.getElementById('adminNewPass').value.trim();
     if(nUser.length < 3 || nPass.length < 4) return alert("Username min 3, Passwort min 4 Zeichen!");
     await set(ref(db, "accounts/" + nUser), nPass);
-    alert(`Account ${nUser} erfolgreich in Firebase erstellt!`);
-    document.getElementById('adminNewUser').value = ""; document.getElementById('adminNewPass').value = "";
+    alert(`Account ${nUser} erstellt!`);
+}
+
+window.adminDeleteAccount = async function() {
+    let dUser = document.getElementById('adminDelUser').value.trim();
+    if(!dUser) return alert("Bitte Username eingeben!");
+    if(confirm(`Bist du sicher, dass du ${dUser} KOMPLETT löschen willst?`)) {
+        await remove(ref(db, "accounts/" + dUser));
+        await remove(ref(db, "users/" + dUser));
+        alert(`Account ${dUser} vernichtet!`);
+    }
 }
 
 window.handleUpdateMenu = function() {
     let html = `
         <div style="text-align: left;">
             <div class="update-log-item">
-                <div class="update-title update-latest">v2.5 - Admin Accounts, Zonen-Farben & Mathe Fix</div>
+                <div class="update-title update-latest">v2.6 - Ocean Expansion & Admin Master</div>
                 <ul class="update-list">
-                    <li>🧮 <b>Mathe Bug Fix:</b> Der Fehler, dass sich Geld-Werte im Minus-Bereich beim Verkaufen falsch zusammenrechnen, ist behoben.</li>
-                    <li>🗺️ <b>Zonen-Farben:</b> Wenn du in eine andere Zone gehst (z.B. Tiefsee), ändern sich Himmel und Wasser im Angel-Szenario jetzt drastisch und live.</li>
-                    <li>⚙️ <b>Neues Admin-Panel:</b> Als Colin kannst du jetzt im Panel neue Spieler-Accounts generieren und gezielt Usernamen "Give Geld" oder "Give Level" spendieren!</li>
-                    <li>📈 <b>Dynamisches Prestige:</b> Jedes Prestige-Level ist jetzt deutlich schwerer als das vorherige. Prestige 1 = Lvl 25 & 10.000$. Prestige 2 = Lvl 30 & 20.000$...</li>
-                    <li>📱 <b>Apple Emojis:</b> Ein neuer globaler Font zwingt nun jedes Gerät dazu, Apple-iOS Emojis zu nutzen.</li>
-                    <li>📜 <b>Mega Log:</b> Die Konsole unten ist jetzt riesig (wie im Screenshot) und speichert die letzten 50 Aktionen.</li>
+                    <li>🌍 <b>Vollbild Zonen:</b> Der Himmel und das Wasser verändern sich jetzt auf dem gesamten Bildschirm, wenn du reist!</li>
+                    <li>🧮 <b>Strikter Mathe-Fix:</b> Negative Zahlen buggen nicht mehr. Müll wird beim Verkauf korrekt ohne Bonus abgezogen.</li>
+                    <li>👑 <b>Admin Giver & Manager:</b> Giver-System eingefügt (Give Geld, XP, Prestige). Admin kann nun Accounts in Firebase erstellen und löschen!</li>
+                    <li>📈 <b>Exponentielles Prestige:</b> Prestige wird nun pro Level schwerer (Lvl 20/25/30 und 5k/10k/20k).</li>
+                    <li>🍎 <b>Apple Emojis:</b> Es wurde ein Force-Font hinzugefügt, der auf allen Geräten die sauberen Apple-Emojis lädt (wenn vom System unterstützt).</li>
                 </ul>
             </div>
-            <div class="update-log-item"><div class="update-title">v2.4 - UI Perfection, Bugfixes & Admin Tools</div></div>
+            <div class="update-log-item"><div class="update-title">v2.5 - Math Fix & Admin Update</div></div>
+            <div class="update-log-item"><div class="update-title">v2.4 - UI Perfection, Bugfixes</div></div>
             <div class="update-log-item"><div class="update-title">v2.3 - Global Events & Mobile Rework</div></div>
             <div class="update-log-item"><div class="update-title">v2.2 - Das Meister-Update</div></div>
-            <div class="update-log-item"><div class="update-title">v2.1 - Responsive Design & Haie</div></div>
-            <div class="update-log-item"><div class="update-title">v2.0 - Realtime Database</div></div>
         </div>
     `; openModal("📝 Update Logs", html);
 }
 
-// --- DYNAMISCHER DATENBANK LOGIN ---
+// --- LOGIN ---
 window.onload = async () => {
     let savedUser = localStorage.getItem('vFisher_user');
     if(savedUser) {
@@ -965,7 +898,7 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
             document.getElementById('login-error').style.display='none'; 
             currentUser=u; localStorage.setItem('vFisher_user', u); await loadData(); 
         } else if (u === "colin" && p === "11012021") {
-            await set(ref(db, "accounts/colin"), "11012021"); // Fallback Master-Key Erstellung
+            await set(ref(db, "accounts/colin"), "11012021"); 
             document.getElementById('login-error').style.display='none'; 
             currentUser=u; localStorage.setItem('vFisher_user', u); await loadData(); 
         } else { 
