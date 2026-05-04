@@ -3,413 +3,102 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Virtual Fisher PRO v3.5</title>
+    <title>Virtual Fisher PRO v3.6</title>
     <style>
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            margin: 0;
-            font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', Tahoma, sans-serif;
-            color: #e6f0ff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            transition: background 1s ease-in-out;
-            background: radial-gradient(circle at center, #0f172a 0%, #010409 100%);
-            padding: 10px;
+            margin: 0; font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', Tahoma, sans-serif;
+            color: #e6f0ff; display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; transition: background 1s ease-in-out;
+            background: radial-gradient(circle at center, #0f172a 0%, #010409 100%); padding: 10px;
         }
-        #aquarium-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
-            pointer-events: none;
-            overflow: hidden;
-        }
-        .aqua-fish-entity {
-            position: absolute;
-            font-size: clamp(40px, 8vw, 55px);
-            filter: drop-shadow(0 0 10px rgba(59,130,246,0.5));
-            transition: left 5s linear, top 5s linear;
-            white-space: nowrap;
-        }
+        #aquarium-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: hidden; }
+        .aqua-fish-entity { position: absolute; font-size: clamp(40px, 8vw, 55px); filter: drop-shadow(0 0 10px rgba(59,130,246,0.5)); transition: left 5s linear, top 5s linear; white-space: nowrap; }
+        
         body.zone-bg-0 { background: radial-gradient(circle at top, #1e3a8a 0%, #020617 100%); }
         body.zone-bg-1 { background: radial-gradient(circle at top, #0284c7 0%, #082f49 100%); }
         body.zone-bg-2 { background: radial-gradient(circle at bottom, #1e1b4b 0%, #020617 100%); }
         body.zone-bg-3 { background: radial-gradient(circle at center, #4c1d95 0%, #000000 100%); }
-        #btnAdminTop {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(15, 23, 42, 0.8);
-            border: 1px solid #3b82f6;
-            font-size: 24px;
-            cursor: pointer;
-            display: none;
-            z-index: 1000;
-            padding: 8px 12px;
-            border-radius: 40px;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
-            backdrop-filter: blur(5px);
-        }
+        
+        #btnAdminTop { position: fixed; top: 10px; right: 10px; background: rgba(15, 23, 42, 0.8); border: 1px solid #3b82f6; font-size: 24px; cursor: pointer; display: none; z-index: 1000; padding: 8px 12px; border-radius: 40px; }
+        
         .container {
-            width: 100%;
-            max-width: 550px;
-            background: rgba(22, 27, 34, 0.9);
-            backdrop-filter: blur(12px);
-            padding: 15px;
-            border-radius: 20px;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.8);
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
-            z-index: 10;
-            max-height: 95vh;
-            overflow-y: auto;
+            width: 100%; max-width: 550px; background: rgba(22, 27, 34, 0.9); backdrop-filter: blur(12px);
+            padding: 15px; border-radius: 20px; box-shadow: 0 15px 50px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 10; max-height: 95vh; overflow-y: auto;
         }
-        #fishing-scene {
-            height: 110px;
-            position: relative;
-            margin-bottom: 12px;
-            border-bottom: 3px solid #3b82f6;
-            overflow: hidden;
-            border-radius: 16px 16px 0 0;
-            background: rgba(0,0,0,0.2);
-        }
-        .boat-container {
-            position: absolute;
-            bottom: 10px;
-            left: 10%;
-            animation: bobbingBoat 3s ease-in-out infinite;
-            z-index: 3;
-        }
-        @keyframes bobbingBoat {
-            0%, 100% { transform: translateY(0) rotate(-2deg); }
-            50% { transform: translateY(-3px) rotate(2deg); }
-        }
+        #fishing-scene { height: 110px; position: relative; margin-bottom: 12px; border-bottom: 3px solid #3b82f6; overflow: hidden; border-radius: 16px 16px 0 0; background: rgba(0,0,0,0.2); }
+        .boat-container { position: absolute; bottom: 10px; left: 10%; animation: bobbingBoat 3s ease-in-out infinite; z-index: 3; }
+        @keyframes bobbingBoat { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-3px) rotate(2deg); } }
         .fisher-emoji { font-size: clamp(28px, 7vw, 36px); display: inline-block; }
-        .bobber {
-            position: absolute;
-            bottom: 12px;
-            left: 60%;
-            width: 10px;
-            height: 10px;
-            background: #ef4444;
-            border-radius: 50%;
-            border: 2px solid #7f1d1d;
-            transition: 0.1s;
-            z-index: 3;
-            box-shadow: 0 0 8px rgba(239,68,68,0.8);
-        }
-        .fishing-active .bobber {
-            animation: bobUnder 0.6s ease-in-out infinite alternate;
-        }
-        @keyframes bobUnder {
-            0% { bottom: 12px; transform: scale(1); }
-            100% { bottom: -5px; transform: scale(0.7); opacity: 0.6; }
-        }
-        #fishing-line-svg {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            pointer-events: none;
-        }
-        .water-layer-1 {
-            position: absolute;
-            bottom: 0;
-            width: 200%;
-            height: 20px;
-            background: linear-gradient(90deg, rgba(59,130,246,0.3) 0%, rgba(59,130,246,0.6) 25%, rgba(59,130,246,0.3) 50%, rgba(59,130,246,0.6) 75%, rgba(59,130,246,0.3) 100%);
-            animation: waves 4s linear infinite;
-            z-index: 4;
-        }
-        .water-layer-2 {
-            position: absolute;
-            bottom: 5px;
-            width: 200%;
-            height: 20px;
-            background: linear-gradient(90deg, rgba(29,78,216,0.3) 0%, rgba(29,78,216,0.6) 25%, rgba(29,78,216,0.3) 50%, rgba(29,78,216,0.6) 75%, rgba(29,78,216,0.3) 100%);
-            animation: waves 5s linear infinite reverse;
-            z-index: 2;
-        }
-        @keyframes waves {
-            from { transform: translateX(0); }
-            to { transform: translateX(-50%); }
-        }
-        .rain-fx {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(170deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 2%, rgba(255,255,255,0.4) 2.5%, rgba(255,255,255,0) 3%);
-            background-size: 100% 200%;
-            animation: rainFall 0.3s linear infinite;
-            z-index: 5;
-            pointer-events: none;
-        }
-        @keyframes rainFall {
-            from { background-position: 0 0; }
-            to { background-position: 0 100%; }
-        }
-        .shark-fx {
-            position: absolute;
-            bottom: 5px;
-            font-size: 22px;
-            animation: swimShark 8s linear infinite;
-            z-index: 3;
-            pointer-events: none;
-        }
-        @keyframes swimShark {
-            0% { right: -40px; transform: scaleX(-1); }
-            100% { right: 110%; transform: scaleX(-1); }
-        }
-        #top-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 13px;
-            font-weight: bold;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        #stats-bar {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(0,0,0,0.4);
-            padding: 10px 12px;
-            border-radius: 12px;
-            margin-bottom: 8px;
-            font-size: 14px;
-            font-weight: bold;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .equip-bar {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .btn-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .btn-grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        button {
-            padding: 12px 8px;
-            border: none;
-            border-radius: 12px;
-            background: #2563eb;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.15s;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            flex-direction: column;
-        }
+        
+        .bobber { position: absolute; bottom: 12px; left: 60%; width: 10px; height: 10px; background: #ef4444; border-radius: 50%; border: 2px solid #7f1d1d; transition: 0.1s; z-index: 3; box-shadow: 0 0 8px rgba(239,68,68,0.8); }
+        .fishing-active .bobber { animation: bobUnder 0.6s ease-in-out infinite alternate; }
+        @keyframes bobUnder { 0% { bottom: 12px; transform: scale(1); } 100% { bottom: -5px; transform: scale(0.7); opacity: 0.6; } }
+        
+        #fishing-line-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; }
+        .water-layer-1 { position: absolute; bottom: 0; width: 200%; height: 20px; background: linear-gradient(90deg, rgba(59,130,246,0.3) 0%, rgba(59,130,246,0.6) 25%, rgba(59,130,246,0.3) 50%, rgba(59,130,246,0.6) 75%, rgba(59,130,246,0.3) 100%); animation: waves 4s linear infinite; z-index: 4; }
+        .water-layer-2 { position: absolute; bottom: 5px; width: 200%; height: 20px; background: linear-gradient(90deg, rgba(29,78,216,0.3) 0%, rgba(29,78,216,0.6) 25%, rgba(29,78,216,0.3) 50%, rgba(29,78,216,0.6) 75%, rgba(29,78,216,0.3) 100%); animation: waves 5s linear infinite reverse; z-index: 2; }
+        @keyframes waves { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        
+        .rain-fx { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(170deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 2%, rgba(255,255,255,0.4) 2.5%, rgba(255,255,255,0) 3%); background-size: 100% 200%; animation: rainFall 0.3s linear infinite; z-index: 5; pointer-events: none; }
+        @keyframes rainFall { from { background-position: 0 0; } to { background-position: 0 100%; } }
+        .shark-fx { position: absolute; bottom: 5px; font-size: 22px; animation: swimShark 8s linear infinite; z-index: 3; pointer-events: none; }
+        @keyframes swimShark { 0% { right: -40px; transform: scaleX(-1); } 100% { right: 110%; transform: scaleX(-1); } }
+        
+        #top-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 13px; font-weight: bold; flex-wrap: wrap; gap: 8px; }
+        #stats-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.4); padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; font-size: 13px; font-weight: bold; flex-wrap: wrap; gap: 8px; }
+        .equip-bar { display: flex; justify-content: space-between; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 8px 12px; border-radius: 12px; font-size: 12px; margin-bottom: 10px; flex-wrap: wrap; gap: 8px; }
+        
+        .btn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 8px; }
+        .btn-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        button { padding: 12px 8px; border: none; border-radius: 12px; background: #2563eb; color: white; font-weight: bold; cursor: pointer; transition: 0.15s; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 6px; flex-direction: column; }
         button span { font-size: 20px; }
         button:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-2px); }
         button:active:not(:disabled) { transform: translateY(1px); }
         button:disabled { background: #334155; cursor: not-allowed; opacity: 0.6; }
         .danger-btn { background: #ef4444; flex-direction: row; }
-        .prestige-btn { background: #8b5cf6; flex-direction: row; }
+        .prestige-btn { background: #8b5cf6; flex-direction: row; justify-content: center; font-size: 16px; }
         .success-btn { background: #10b981; flex-direction: row; }
         .update-btn { background: #0ea5e9; flex-direction: row; }
-        #log {
-            height: 180px;
-            overflow-y: auto;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            border-radius: 12px;
-            font-size: 13px;
-            text-align: left;
-            border-left: 4px solid #3b82f6;
-            margin-top: 10px;
-        }
-        .log-entry {
-            padding: 5px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            word-break: break-word;
-        }
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            backdrop-filter: blur(8px);
-            padding: 16px;
-        }
-        .modal-content {
-            background: #161b22;
-            width: 100%;
-            max-width: 500px;
-            max-height: 85vh;
-            border-radius: 20px;
-            border: 1px solid #30363d;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        .modal-header {
-            background: #0d1117;
-            padding: 15px 20px;
-            font-size: 18px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #30363d;
-        }
-        .modal-body {
-            padding: 20px;
-            overflow-y: auto;
-            font-size: 14px;
-        }
-        .modal-footer {
-            padding: 15px 20px;
-            background: #0d1117;
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            border-top: 1px solid #30363d;
-        }
-        .close-btn {
-            background: none;
-            color: #8b949e;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0;
-        }
-        .item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .quest-row {
-            background: #0d1117;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .leader-row {
-            background: #0d1117;
-            padding: 12px;
-            border-radius: 12px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .profile-card {
-            background: #0d1117;
-            border: 1px solid #30363d;
-            border-radius: 16px;
-            padding: 15px;
-            margin-bottom: 15px;
-        }
-        .profile-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid #30363d;
-            padding-bottom: 12px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .profile-avatar {
-            font-size: 40px;
-            background: #1e293b;
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border: 2px solid #60a5fa;
-        }
-        #minigame-container {
-            background: #0f172a;
-            padding: 20px;
-            border-radius: 20px;
-            border: 2px solid #ef4444;
-            text-align: center;
-        }
-        .power-bar-bg {
-            width: 100%;
-            background: #1e293b;
-            height: 30px;
-            border-radius: 8px;
-            overflow: hidden;
-            margin: 8px 0;
-        }
-        .power-bar-fill {
-            height: 100%;
-            transition: width 0.1s linear;
-            display: flex;
-            align-items: center;
-            justify-content: flex-end;
-            padding-right: 8px;
-            font-weight: bold;
-            font-size: 11px;
-        }
-        @keyframes bossShake {
-            0%,100%{ transform: translate(0,0); }
-            25%{ transform: translate(2px,2px); }
-            50%{ transform: translate(-2px,-1px); }
-            75%{ transform: translate(1px,-2px); }
-        }
+        
+        #log { height: 180px; overflow-y: auto; background: rgba(0,0,0,0.5); padding: 10px; border-radius: 12px; font-size: 13px; text-align: left; border-left: 4px solid #3b82f6; margin-top: 10px; }
+        .log-entry { padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); word-break: break-word; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center; z-index: 10000; backdrop-filter: blur(8px); padding: 16px; }
+        .modal-content { background: #161b22; width: 100%; max-width: 500px; max-height: 85vh; border-radius: 20px; border: 1px solid #30363d; display: flex; flex-direction: column; overflow: hidden; }
+        .modal-header { background: #0d1117; padding: 15px 20px; font-size: 18px; font-weight: bold; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #30363d; }
+        .modal-body { padding: 20px; overflow-y: auto; font-size: 14px; }
+        .modal-footer { padding: 15px 20px; background: #0d1117; display: flex; justify-content: flex-end; gap: 10px; border-top: 1px solid #30363d; }
+        .close-btn { background: none; color: #8b949e; font-size: 24px; cursor: pointer; padding: 0; }
+        
+        .item-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap; gap: 8px; }
+        .quest-row { background: #0d1117; padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        
+        /* Neues Design für Rucksack-Abrechnung */
+        .summary-box { background: rgba(0,0,0,0.3); border-radius: 12px; padding: 15px; margin-top: 15px; border: 1px solid #30363d; }
+        .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 14px; }
+        .summary-total { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; margin-top: 10px; font-size: 16px; font-weight: bold; }
+        
+        /* Leaderboard & Profile Cards */
+        .leader-card, .profile-card { background: #0d1117; border: 1px solid #30363d; border-radius: 12px; padding: 15px; margin-bottom: 10px; transition: 0.2s; cursor: pointer; }
+        .leader-card:hover { border-color: #3b82f6; transform: translateY(-2px); }
+        .profile-header { display: flex; align-items: center; gap: 15px; border-bottom: 1px solid #30363d; padding-bottom: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+        .profile-avatar { font-size: 40px; background: #1e293b; width: 70px; height: 70px; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 2px solid #60a5fa; }
+        .card-stats { display: flex; justify-content: space-between; font-size: 13px; color: #8b949e; margin-top: 5px; }
+
+        #minigame-container { background: #0f172a; padding: 20px; border-radius: 20px; border: 2px solid #ef4444; text-align: center; }
+        .power-bar-bg { width: 100%; background: #1e293b; height: 30px; border-radius: 8px; overflow: hidden; margin: 8px 0; }
+        .power-bar-fill { height: 100%; transition: width 0.1s linear; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-weight: bold; font-size: 11px; }
+        @keyframes bossShake { 0%,100%{ transform: translate(0,0); } 25%{ transform: translate(2px,2px); } 50%{ transform: translate(-2px,-1px); } 75%{ transform: translate(1px,-2px); } }
         .boss-active { animation: bossShake 0.3s infinite; }
+        
         @media (max-width: 550px) {
             .container { padding: 12px; }
             .btn-grid { grid-template-columns: repeat(2, 1fr); }
             .btn-grid-2 { grid-template-columns: 1fr; }
             button { padding: 10px; font-size: 12px; }
             button span { font-size: 18px; }
-            #stats-bar { font-size: 12px; }
         }
     </style>
 </head>
@@ -463,6 +152,7 @@
         </div>
         <div id="stats-bar">
             <span id="ui-money">💰 0$</span>
+            <span id="ui-prestige" style="color:#fcd34d;">👑 P0 (+0%)</span>
             <span id="ui-level">⭐ Lvl 1 (0/50)</span>
         </div>
         <div class="equip-bar">
@@ -590,7 +280,6 @@ function renderAquarium() {
         div.innerText = f.e;
         div.style.left = Math.random() * 85 + "%";
         div.style.top = Math.random() * 80 + 10 + "%";
-        let dir = 1;
         let moveInterval = setInterval(() => {
             if(!document.body.contains(div)) { clearInterval(moveInterval); return; }
             let newX = Math.random() * 85;
@@ -666,6 +355,8 @@ function checkQuestResets() {
     if(!gameState.qs) {
         gameState.qs = { d: k.daily, w: k.weekly, m: k.monthly, p: { dc:0, de:0, wc:0, we:0, mc:0, me:0 }, c: {} };
     }
+    if(!gameState.qs.p) gameState.qs.p = { dc:0, de:0, wc:0, we:0, mc:0, me:0 }; // Sicherheits-Check
+    if(!gameState.qs.c) gameState.qs.c = {};
     let qs = gameState.qs;
     let save = false;
     if(qs.d !== k.daily) { qs.d = k.daily; qs.p.dc=0; qs.p.de=0; for(let c in qs.c) if(c.startsWith('d')) delete qs.c[c]; save=true; }
@@ -700,13 +391,12 @@ async function loadData() {
             saveData();
         }
         if(gameState) {
-            // SICHERHEIT: Aquarium korrekt initialisieren, falls es beim Laden fehlt
             if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
             if(!gameState.aquarium.fishes) gameState.aquarium.fishes = [];
-            
             if(!gameState.ownedRods) { gameState.ownedRods = ["r1"]; gameState.eqRod = "r1"; }
             if(!gameState.baits) { gameState.baits = {}; gameState.eqBait = "none"; }
             if(!gameState.stats) gameState.stats = { totalCaught: 0, totalEarned: 0 };
+            if(!gameState.prestige) gameState.prestige = 0;
             checkQuestResets();
             updateUI();
             renderAquarium();
@@ -737,6 +427,7 @@ function saveData() { if(currentUser && gameState) set(ref(db, "users/" + curren
 function updateUI() {
     if(!gameState) return;
     document.getElementById("ui-money").innerHTML = `💰 ${Math.floor(gameState.money).toLocaleString()}$`;
+    document.getElementById("ui-prestige").innerHTML = `👑 P${gameState.prestige} (+${gameState.prestige}%)`;
     let xpNeeded = gameState.level * 50;
     document.getElementById("ui-level").innerHTML = `⭐ Lvl ${gameState.level} (${Math.min(gameState.xp, xpNeeded)}/${xpNeeded})`;
     document.getElementById("zoneDisplay").innerHTML = `🌊 ${zones[gameState.zone].name}`;
@@ -895,13 +586,12 @@ window.handleFish = function() {
             }
         }
         
-        // MÜLL LOGIK ANGEPASST
         if(item.v < 0) {
             let penalty = Math.abs(item.v);
-            gameState.xp = Math.max(0, gameState.xp - penalty); // XP direkt abziehen (bis minimal 0)
-            gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1; // Rucksack packen
+            gameState.xp = Math.max(0, gameState.xp - penalty);
+            gameState.inventory[item.n] = (gameState.inventory[item.n] || 0) + 1;
             gameState.combo = 0;
-            log(`🗑️ ${item.e} ${item.baseName} gefangen! -${penalty} XP (Im Rucksack)`);
+            log(`🗑️ ${item.e} ${item.baseName} gefangen! -${penalty} XP`);
             updateUI();
             saveData();
             scene.classList.remove('fishing-active');
@@ -939,11 +629,13 @@ window.handleFish = function() {
 }
 
 window.handleSellMenu = function() {
-    if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] }; // Safety Check
+    if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
     
-    let totalValue = 0;
+    let baseValue = 0;
+    let trashValue = 0;
     let hasItems = false;
-    let html = `<h3>🎒 Rucksack</h3>`;
+    
+    let html = `<h3>🎒 Rucksack</h3><div style="max-height:40vh; overflow-y:auto; padding-right:5px; margin-bottom:10px;">`;
     
     for(let [name, count] of Object.entries(gameState.inventory)) {
         if(count > 0) {
@@ -953,13 +645,13 @@ window.handleSellMenu = function() {
             let baseItem = items.find(i => i.n === baseName);
             if(baseItem) {
                 let itemValue = (isMutant ? baseItem.v * 5 : baseItem.v) * count;
-                totalValue += itemValue;
-                let color = itemValue >= 0 ? '#10b981' : '#ef4444';
+                if(itemValue >= 0) baseValue += itemValue;
+                else trashValue += itemValue;
                 
-                // Button für das Aquarium einbauen
+                let color = itemValue >= 0 ? '#10b981' : '#ef4444';
                 let aquaBtn = '';
                 if(baseItem.v > 0 && gameState.aquarium.unlocked && gameState.aquarium.fishes.length < 5) {
-                    aquaBtn = `<button class="update-btn" style="padding:6px; font-size:12px; margin-left:10px; flex-direction:row;" onclick="sendToAquarium('${name}')">🐟 Ins Aqua</button>`;
+                    aquaBtn = `<button class="update-btn" style="padding:5px 8px; font-size:11px; margin-left:10px; flex-direction:row;" onclick="sendToAquarium('${name}')">🐟 Ins Aqua</button>`;
                 }
                 
                 html += `<div class="item-row" style="align-items:center;">
@@ -970,11 +662,24 @@ window.handleSellMenu = function() {
             }
         }
     }
+    html += `</div>`;
     
-    if(!hasItems) return openModal("💰 Rucksack", "<p>Leer!</p>");
-    let bonus = gameState.prestige;
-    let finalTotal = totalValue >= 0 ? Math.floor(totalValue * (1 + bonus/100)) : totalValue;
-    html += `<hr><div><strong>Gesamt: ${finalTotal.toLocaleString()}$</strong></div>`;
+    if(!hasItems) return openModal("💰 Rucksack", "<p>Dein Rucksack ist leer!</p>");
+    
+    let bonusPercent = gameState.prestige || 0;
+    let prestigeBonus = Math.floor(baseValue * (bonusPercent / 100));
+    let finalTotal = baseValue + prestigeBonus + trashValue;
+    
+    html += `
+    <div class="summary-box">
+        <div class="summary-row"><span>🐟 Basis-Wert (Fische):</span> <span style="color:#10b981;">+${baseValue.toLocaleString()}$</span></div>
+        <div class="summary-row"><span>👑 Prestige Bonus (+${bonusPercent}%):</span> <span style="color:#60a5fa;">+${prestigeBonus.toLocaleString()}$</span></div>
+        <div class="summary-row"><span>🗑️ Müll-Strafe:</span> <span style="color:#ef4444;">${trashValue.toLocaleString()}$</span></div>
+        <div class="summary-total">
+            <span>Gesamtbetrag:</span> 
+            <span style="color:${finalTotal >= 0 ? '#10b981' : '#ef4444'};">${finalTotal >= 0 ? '+' : ''}${finalTotal.toLocaleString()}$</span>
+        </div>
+    </div>`;
     
     let sellBtnText = finalTotal < 0 ? "Müll kostenpflichtig entsorgen" : "Alles verkaufen";
     let sellBtnClass = finalTotal < 0 ? "danger-btn" : "success-btn";
@@ -986,25 +691,21 @@ window.executeSell = function(val) {
     let hasItems = Object.values(gameState.inventory).some(v => v > 0);
     if(!hasItems) return;
     
-    gameState.money += val; // Val ist bei Müll negativ, also wird abgezogen
-    if(gameState.money < 0) gameState.money = 0; // Wir verhindern, dass Spieler ins Minus rutschen
+    gameState.money += val;
+    if(gameState.money < 0) gameState.money = 0; 
     
     if(val > 0) { gameState.stats.totalEarned += val; addQuestProgress('e', val); }
     gameState.inventory = {};
     updateUI();
     
-    if(val < 0) {
-        log(`💸 Müll entsorgt. Das hat dich ${Math.abs(val).toLocaleString()}$ gekostet.`);
-    } else {
-        log(`💰 Verkauft für ${val.toLocaleString()}$`);
-    }
+    if(val < 0) log(`💸 Müll entsorgt. Das hat dich ${Math.abs(val).toLocaleString()}$ gekostet.`);
+    else log(`💰 Rucksack verkauft für ${val.toLocaleString()}$`);
     
     saveData();
     handleSellMenu();
 }
 
 window.handleAquaMenu = function() {
-    // Sicherheitsprüfung, um Fehler beim Öffnen zu verhindern
     if(!gameState) return;
     if(!gameState.aquarium) gameState.aquarium = { unlocked: false, fishes: [] };
     if(!gameState.aquarium.fishes) gameState.aquarium.fishes = [];
@@ -1049,7 +750,7 @@ window.sendToAquarium = function(itemName) {
         gameState.aquarium.fishes.push({ n: itemName, e: baseItem.e, v: value });
         saveData();
         renderAquarium();
-        handleSellMenu(); // Rucksack-Ansicht aktualisieren
+        handleSellMenu();
         log(`🐟 ${itemName} ins Aquarium gesetzt!`);
     }
 }
@@ -1064,10 +765,14 @@ window.removeFromAquarium = function(idx) {
 
 window.handleShopMenu = function() {
     let html = `<h3>🛒 Shop (💰 ${Math.floor(gameState.money).toLocaleString()}$)</h3><h4>🎣 Ruten</h4>`;
+    let ownedList = gameState.ownedRods || [];
     for(let [id, rod] of Object.entries(rodsDB)) {
-        if(!gameState.ownedRods.includes(id)) {
-            html += `<div class="item-row"><div><b>${rod.e} ${rod.name}</b><br><small>${rod.desc}</small></div><button class="success-btn" ${gameState.money<rod.cost?'disabled':''} onclick="buyRod('${id}')">${rod.cost.toLocaleString()}$</button></div>`;
-        }
+        let isOwned = ownedList.includes(id);
+        let btn = isOwned 
+            ? `<button disabled style="background:#334155; color:#94a3b8;">Gekauft</button>` 
+            : `<button class="success-btn" ${gameState.money<rod.cost?'disabled':''} onclick="buyRod('${id}')">${rod.cost.toLocaleString()}$</button>`;
+        
+        html += `<div class="item-row"><div><b>${rod.e} ${rod.name}</b><br><small>${rod.desc}</small></div>${btn}</div>`;
     }
     html += `<h4>🪱 Köder</h4>`;
     for(let [id, bait] of Object.entries(baitsDB)) {
@@ -1075,18 +780,21 @@ window.handleShopMenu = function() {
     }
     openModal("🛒 Shop", html);
 }
-window.buyRod = function(id) { gameState.money -= rodsDB[id].cost; gameState.ownedRods.push(id); saveData(); handleShopMenu(); }
-window.buyBait = function(id) { gameState.money -= baitsDB[id].cost; gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); handleShopMenu(); }
+window.buyRod = function(id) { gameState.money -= rodsDB[id].cost; if(!gameState.ownedRods) gameState.ownedRods=[]; gameState.ownedRods.push(id); saveData(); handleShopMenu(); }
+window.buyBait = function(id) { gameState.money -= baitsDB[id].cost; if(!gameState.baits) gameState.baits={}; gameState.baits[id] = (gameState.baits[id]||0) + baitsDB[id].amt; saveData(); handleShopMenu(); }
 
 window.handleInvMenu = function() {
     let html = `<h4>🎣 Rute ausrüsten</h4>`;
-    gameState.ownedRods.forEach(rid => {
-        let rod = rodsDB[rid];
+    let ownedList = gameState.ownedRods || ["r1"];
+    ownedList.forEach(rid => {
+        let rod = rodsDB[rid] || rodsDB["r1"];
         html += `<div class="item-row"><div>${rod.e} ${rod.name}</div><button class="update-btn" onclick="equipRod('${rid}')">Ausrüsten</button></div>`;
     });
     html += `<h4>🪱 Köder</h4>`;
     html += `<div class="item-row"><div>Kein Köder</div><button class="danger-btn" onclick="unequipBait()">Ablegen</button></div>`;
-    for(let [bid, count] of Object.entries(gameState.baits)) {
+    
+    let baitsList = gameState.baits || {};
+    for(let [bid, count] of Object.entries(baitsList)) {
         if(count > 0 && baitsDB[bid]) {
             html += `<div class="item-row"><div>${baitsDB[bid].e} ${baitsDB[bid].name} (${count}x)</div><button class="update-btn" onclick="equipBait('${bid}')">Ausrüsten</button></div>`;
         }
@@ -1099,21 +807,22 @@ window.unequipBait = function() { gameState.eqBait = "none"; saveData(); updateU
 
 window.handleQuestMenu = function() {
     checkQuestResets();
-    let qs = gameState.qs;
+    let qs = gameState.qs || { p: {}, c: {} };
+    let qsP = qs.p || {};
     let html = `<p style="color:#fcd34d;">⏳ Täglich um 0 Uhr reset</p>`;
     let cats = [{n:"🌞 Daily", l:questDB.daily, c:'dc', e:'de'}, {n:"📅 Weekly", l:questDB.weekly, c:'wc', e:'we'}, {n:"🏆 Monthly", l:questDB.monthly, c:'mc', e:'me'}];
     cats.forEach(cat => {
         html += `<h4>${cat.n}</h4>`;
         cat.l.forEach(q => {
-            let prog = (q.t === 'c' ? qs.p[cat.c] : qs.p[cat.e]) || 0;
+            let prog = (q.t === 'c' ? qsP[cat.c] : qsP[cat.e]) || 0;
             let done = prog >= q.req;
-            let claimed = qs.c[q.id];
+            let claimed = qs.c && qs.c[q.id];
             html += `<div class="quest-row"><div><b>${q.desc}</b><br>${Math.min(prog, q.req)}/${q.req}</div><div>${claimed ? '✅' : (done ? `<button class="success-btn" onclick="claimQuest('${q.id}',${q.rew})">${q.rew}$</button>` : `🔒 ${q.rew}$`)}</div></div>`;
         });
     });
     openModal("📜 Quests", html);
 }
-window.claimQuest = function(id, rew) { gameState.qs.c[id]=true; gameState.money += rew; gameState.stats.totalEarned += rew; saveData(); updateUI(); handleQuestMenu(); }
+window.claimQuest = function(id, rew) { if(!gameState.qs.c) gameState.qs.c={}; gameState.qs.c[id]=true; gameState.money += rew; gameState.stats.totalEarned += rew; saveData(); updateUI(); handleQuestMenu(); }
 
 window.handleDexMenu = function() {
     let html = `<div style="display:flex; gap:10px; margin-bottom:15px;"><button onclick="showDexTab('normal')" id="dexTabNormal" style="flex:1; background:#3b82f6;">Normal</button><button onclick="showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Mutationen</button></div><div id="dexGrid" style="display:grid; grid-template-columns:repeat(auto-fill,minmax(90px,1fr)); gap:8px;"></div>`;
@@ -1128,9 +837,9 @@ window.showDexTab = function(tab) {
     let collected = 0, total = 0;
     grid.innerHTML = '';
     items.forEach(item => {
-        if(item.v < 0) return;
+        if(item.v < 0) return; // Müll ignorieren
         total++;
-        let d = gameState.dex[item.n];
+        let d = gameState.dex ? gameState.dex[item.n] : null;
         let has = tab === 'normal' ? (d?.normal) : (d?.shiny);
         if(has) collected++;
         let div = document.createElement('div');
@@ -1142,7 +851,7 @@ window.showDexTab = function(tab) {
     let info = document.getElementById('dexInfo') || document.createElement('div');
     info.id = 'dexInfo';
     info.style.cssText = 'text-align:center; margin-top:15px; padding:10px; background:#0d1117; border-radius:12px;';
-    info.innerHTML = `<b>Gesammelt: ${collected}/${total}</b>`;
+    info.innerHTML = `<b>Gesammelt: ${collected}/${total}</b><br><small style="color:#8b949e;">(Hinweis: Es gibt aktuell genau ${total} Fische im Code)</small>`;
     if(!document.getElementById('dexInfo')) grid.parentNode.appendChild(info);
 }
 window.showFishInfo = function(name, tab) {
@@ -1161,57 +870,111 @@ window.handleZoneMenu = function() {
 window.changeZone = function(i) { gameState.zone = i; saveData(); updateUI(); log(`🗺️ Reise nach ${zones[i].name}`); closeModal(); }
 
 window.handleProfileMenu = function() {
-    let html = `<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${gameState.prestige>0?'👑':'🎣'}</div><div><h2>${gameState.name}</h2><div>Level ${gameState.level} | Prestige ${gameState.prestige}</div></div></div>
-    <div><div>💰 ${Math.floor(gameState.money).toLocaleString()}$</div><div>🐟 ${gameState.stats.totalCaught.toLocaleString()} Fische</div><div>💵 ${gameState.stats.totalEarned.toLocaleString()}$ verdient</div><div>🔥 Streak: ${gameState.dailyStreak||0}</div></div></div>`;
-    openModal("📊 Profil", html);
+    let html = `
+    <div class="profile-card">
+        <div class="profile-header">
+            <div class="profile-avatar">${gameState.prestige>0?'👑':'🎣'}</div>
+            <div><h2 style="margin:0;">${gameState.name}</h2><div style="color:#60a5fa;">👑 Prestige ${gameState.prestige} | ⭐ Level ${gameState.level}</div></div>
+        </div>
+        <div class="card-stats"><span>💰 ${Math.floor(gameState.money).toLocaleString()}$</span> <span>🐟 ${gameState.stats.totalCaught.toLocaleString()} Fische</span></div>
+        <div class="card-stats"><span>💵 ${gameState.stats.totalEarned.toLocaleString()}$ verdient</span> <span>🔥 Streak: ${gameState.dailyStreak||0}</span></div>
+    </div>`;
+    openModal("📊 Dein Profil", html);
 }
 
 window.handleLeaderboard = async function() {
-    openModal("🏆 Leaderboard", "Lade...");
+    openModal("🏆 Leaderboard", "<p style='text-align:center;'>Lade Daten...</p>");
     let snap = await get(ref(db,"users"));
     if(snap.exists()) {
         let users = [];
         snap.forEach(c => users.push(c.val()));
         users.sort((a,b) => b.prestige - a.prestige || b.level - a.level || b.money - a.money);
-        let html = users.slice(0,20).map((u,i) => `<div class="leader-row" onclick="showPlayerProfile('${u.name}')"><span>${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1+'.'} ${u.name}</span><span>P${u.prestige} Lvl${u.level} | ${Math.floor(u.money).toLocaleString()}$</span></div>`).join('');
+        
+        let html = users.slice(0,20).map((u,i) => {
+            let rank = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';
+            let caught = u.stats?.totalCaught || 0;
+            return `
+            <div class="leader-card" onclick="showPlayerProfile('${u.name}')">
+                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #30363d; padding-bottom:8px; margin-bottom:8px;">
+                    <b style="font-size:16px;">${rank} ${u.name}</b>
+                    <span style="color:#60a5fa;">👑 P${u.prestige||0} | ⭐ Lvl ${u.level}</span>
+                </div>
+                <div class="card-stats">
+                    <span>💰 ${Math.floor(u.money).toLocaleString()}$</span>
+                    <span>🐟 ${caught.toLocaleString()} Gefangen</span>
+                </div>
+            </div>`;
+        }).join('');
         openModal("🏆 Leaderboard", html);
     }
 }
+
 window.showPlayerProfile = async function(name) {
     let snap = await get(ref(db,"users/"+name));
     if(snap.exists()) {
         let u = snap.val();
-        let html = `<div class="profile-card"><div><h2>${u.name}</h2><div>Level ${u.level} | Prestige ${u.prestige}</div><div>💰 ${Math.floor(u.money).toLocaleString()}$</div><div>🐟 ${u.stats?.totalCaught||0} Fische</div></div></div><button class="update-btn" onclick="handleLeaderboard()">Zurück</button>`;
-        openModal(`📊 ${u.name}`, html);
+        let html = `
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-avatar">${u.prestige>0?'👑':'🎣'}</div>
+                <div><h2 style="margin:0;">${u.name}</h2><div style="color:#60a5fa;">👑 Prestige ${u.prestige||0} | ⭐ Level ${u.level}</div></div>
+            </div>
+            <div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span> <span>🐟 ${u.stats?.totalCaught||0} Fische</span></div>
+        </div>
+        <button class="update-btn" onclick="handleLeaderboard()">Zurück zum Leaderboard</button>`;
+        openModal(`📊 Profil: ${u.name}`, html);
     }
 }
 
 window.handleDailyMenu = function() {
     let now = Date.now(), DAY=86400000;
     let can = false, streak = gameState.dailyStreak||0;
-    if(gameState.lastDaily===0 || now-gameState.lastDaily>=DAY*2) { can=true; streak=1; }
-    else if(now-gameState.lastDaily>=DAY) { can=true; streak=Math.min(streak+1,7); }
+    let timeDiff = now - gameState.lastDaily;
+    let cooldownText = "";
+
+    if(gameState.lastDaily===0 || timeDiff>=DAY*2) { can=true; streak=1; }
+    else if(timeDiff>=DAY) { can=true; streak=Math.min(streak+1,7); }
+    else {
+        let timeLeft = DAY - timeDiff;
+        let h = Math.floor(timeLeft / 3600000);
+        let m = Math.floor((timeLeft % 3600000) / 60000);
+        cooldownText = `<p style="color:#ef4444; text-align:center; font-weight:bold;">⏳ Nächste Belohnung in: ${h}h ${m}m</p>`;
+    }
+
     let html = `<div style="display:grid; grid-template-columns:repeat(3,1fr); gap:8px;">`;
     for(let i=1;i<=7;i++) {
         let rew = i*100 + gameState.prestige*50;
         let active = (i===streak && can);
-        html += `<div style="background:#0d1117; padding:10px; border-radius:12px; text-align:center; ${active?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div>${active?'🎁':'✅'}</div><div>${rew}$</div></div>`;
+        html += `<div style="background:#0d1117; padding:10px; border-radius:12px; text-align:center; ${active?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:24px;">${active?'🎁':'✅'}</div><div>${rew}$</div></div>`;
     }
-    html += `</div>`;
+    html += `</div>${cooldownText}`;
     openModal("🎁 Daily Bonus", html, can ? `<button class="success-btn" onclick="claimDaily(${streak*100 + gameState.prestige*50},${streak})">Abholen</button>` : '');
 }
+
 window.claimDaily = function(rew, streak) { gameState.money += rew; gameState.stats.totalEarned += rew; gameState.lastDaily=Date.now(); gameState.dailyStreak=streak; updateUI(); saveData(); handleDailyMenu(); }
 
 window.handlePrestigeMenu = function() {
     let reqLvl = 20 + gameState.prestige*5;
     let reqMoney = 5000 * Math.pow(2, gameState.prestige);
     let can = gameState.level >= reqLvl && gameState.money >= reqMoney;
-    openModal("🔁 Prestige", `<p>Reset: Level, Geld, Inventar<br>Bonus: +1% Verkaufswert pro Prestige<br>Voraussetzung: Level ${reqLvl}, ${reqMoney.toLocaleString()}$</p>`, can ? `<button class="danger-btn" onclick="doPrestige()">PRESTIGE</button>` : '');
+    openModal("🔁 Prestige", `<p>Mache Prestige, um einen <b>dauerhaften Verkaufs-Bonus</b> zu erhalten!</p><p>Reset: Level, Geld, Inventar<br>Bonus: <b>+1% Verkaufswert pro Prestige</b><br>Voraussetzung: Level ${reqLvl}, ${reqMoney.toLocaleString()}$</p>`, can ? `<button class="danger-btn" onclick="doPrestige()">PRESTIGE AUSFÜHREN</button>` : '');
 }
 window.doPrestige = function() { gameState.prestige++; gameState.money=0; gameState.level=1; gameState.xp=0; gameState.combo=0; gameState.inventory={}; saveData(); location.reload(); }
 
 window.handleUpdateMenu = function() {
-    openModal("📝 Updates v3.5", `<div>✨ Müll zieht direkt XP ab & Strafe wird beim Verkauf fällig.<br>🐟 Aquarium: Button zum Einsetzen der Fische im Rucksack hinzugefügt.<br>🔧 Aquarium-Crashes (❌) wurden behoben.<br>📱 iPad/Tablet optimiert.</div>`);
+    let html = `
+    <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #0ea5e9; text-align:left; line-height:1.6;">
+        <h3 style="margin-top:0; color:#0ea5e9;">🚀 Version 3.6</h3>
+        <ul style="padding-left:20px; margin-bottom:0;">
+            <li><b>GUI:</b> Rucksack komplett überarbeitet inkl. genauer Kassenbon-Abrechnung.</li>
+            <li><b>Stats:</b> Prestige-Bonus nun dauerhaft in der Stats-Leiste sichtbar.</li>
+            <li><b>Profile & Ranglisten:</b> Neues, detailliertes Karten-Design.</li>
+            <li><b>Tagesbelohnung:</b> Cooldown-Timer hinzugefügt.</li>
+            <li><b>Shop:</b> Zeigt nun auch bereits gekaufte Angeln an.</li>
+            <li><b>Fixes:</b> Ausrüstung und Quest-Menü Bugs behoben. Prestige Button gefixed.</li>
+        </ul>
+    </div>`;
+    openModal("📝 Updates", html);
 }
 
 window.handleAdminMenu = function() {
