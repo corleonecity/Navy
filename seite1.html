@@ -6,7 +6,7 @@
     <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
     <meta name="google" content="notranslate">
     
-    <title>Virtual Fisher PRO v6.2</title>
+    <title>Virtual Fisher PRO v6.3</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -54,6 +54,21 @@
             10% { opacity: 1; }
             90% { opacity: 1; }
             100% { transform: translateY(-110vh) scale(1.5); opacity: 0; }
+        }
+        
+        /* Fisch-Schwarm Animationen für mehr Leben */
+        .fish-swarm { position: fixed; z-index: 1; pointer-events: none; font-size: 18px; white-space: nowrap; animation: swimSwarm 20s linear infinite; opacity: 0.7; }
+        @keyframes swimSwarm {
+            0% { transform: translateX(-10vw) translateY(0); }
+            25% { transform: translateX(30vw) translateY(-5vh); }
+            50% { transform: translateX(70vw) translateY(2vh); }
+            75% { transform: translateX(40vw) translateY(-3vh); }
+            100% { transform: translateX(-10vw) translateY(0); }
+        }
+        .seaweed { position: fixed; bottom: 0; z-index: 1; pointer-events: none; font-size: 40px; animation: swaySeaweed 6s ease-in-out infinite; transform-origin: bottom center; }
+        @keyframes swaySeaweed {
+            0%, 100% { transform: rotate(-5deg); }
+            50% { transform: rotate(5deg); }
         }
         
         #aquarium-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; overflow: hidden; }
@@ -174,19 +189,45 @@
         @keyframes bossShake { 0%,100%{ transform: translate(0,0); } 25%{ transform: translate(2px,2px); } 50%{ transform: translate(-2px,-1px); } 75%{ transform: translate(1px,-2px); } }
         .boss-active { animation: bossShake 0.3s infinite; }
         
-        @media (max-width: 768px) { .inv-grid { grid-template-columns: 1fr; } .admin-grid { grid-template-columns: 1fr; } }
+        /* Schrift-Optimierung für Mobilgeräte */
+        @media (max-width: 768px) { 
+            .inv-grid { grid-template-columns: 1fr; } 
+            .admin-grid { grid-template-columns: 1fr; } 
+            body { font-size: 15px; }
+            button { font-size: 14px; }
+            .modal-body { font-size: 15px; }
+            #log { font-size: 14px; }
+            h3 { font-size: 17px; }
+            h4 { font-size: 15px; }
+        }
         @media (max-width: 550px) {
             .container { padding: 12px; }
             .btn-grid { grid-template-columns: repeat(3, 1fr); }
             .btn-grid-2 { grid-template-columns: repeat(3, 1fr); }
-            button { padding: 10px; font-size: 12px; }
+            button { padding: 10px; font-size: 13px; }
             button span { font-size: 18px; }
+        }
+        /* Fix für verzerrte Schrift auf iOS */
+        @supports (-webkit-touch-callout: none) {
+            body, button, input, select, textarea, .modal-body, #log, h1, h2, h3, h4, h5, h6, p, span, div {
+                -webkit-text-size-adjust: 100%;
+                font-synthesis: none;
+            }
         }
     </style>
 </head>
 <body>
 
 <div class="bubbles-container" id="bubblesContainer"></div>
+
+<!-- Lebendige Hintergrund-Elemente: Fischschwärme und Seegras -->
+<div class="fish-swarm" style="top: 15%; left: -10vw;">🐟🐟🐟🐟🐟</div>
+<div class="fish-swarm" style="top: 35%; left: -10vw; animation-duration: 25s; animation-delay: 5s; font-size: 14px;">🐠🐠🐠🐠🐠🐠</div>
+<div class="fish-swarm" style="top: 60%; left: -10vw; animation-duration: 22s; animation-delay: 10s;">🐡🐡🐡🐡</div>
+<div class="seaweed" style="left: 5%; animation-delay: 0s;">🌿</div>
+<div class="seaweed" style="left: 15%; animation-delay: 1s; font-size: 30px;">🌾</div>
+<div class="seaweed" style="right: 8%; animation-delay: 2s; font-size: 35px;">🌿</div>
+<div class="seaweed" style="right: 18%; animation-delay: 0.5s; font-size: 25px;">🎋</div>
 
 <div id="broadcast-banner">
     📢 <span id="broadcast-text"></span>
@@ -457,6 +498,73 @@ const baitsDB = {
     "b10": { name: "Kunstköder", e: "🐟", cost: 25000, amt: 20, speed: 15, luck: 0, res: 15, trashRed: 0, desc: "+15% Speed, +15% Widerstand" }
 };
 
+// === EVENT-SYSTEM: Automatische Events alle 15 Minuten ===
+function autoEventCycle() {
+    // Jede Minute prüfen, ob eine :00, :15, :30 oder :45 Minute erreicht ist
+    setInterval(async () => {
+        if(!globalState) {
+            try {
+                let snap = await get(ref(db, "global"));
+                globalState = snap.exists() ? snap.val() : null;
+            } catch(e) {}
+        }
+        
+        let now = new Date();
+        let mins = now.getMinutes();
+        let secs = now.getSeconds();
+        
+        // Nur zu den Viertelstunden-Marken (und nur in den ersten 5 Sekunden)
+        if((mins === 0 || mins === 15 || mins === 30 || mins === 45) && secs >= 0 && secs <= 5) {
+            // 50% Chance auf ein Event
+            if(Math.random() < 0.5) {
+                // Prüfen ob schon ein Event aktiv ist
+                if(globalState?.event && Date.now() < globalState.event.exp) {
+                    return; // Es läuft bereits ein Event
+                }
+                
+                // Zufälliges Event auswählen
+                let eventTypes = ['sun', 'rain', 'hai', 'xp', 'money'];
+                let evtType = eventTypes[Math.floor(Math.random() * eventTypes.length)];
+                
+                let evtName = "";
+                let mult = 1;
+                
+                if(evtType === 'sun') { 
+                    evtName = "☀️ Goldene Sonne (3x Shiny)"; 
+                    mult = 3; 
+                } else if(evtType === 'rain') { 
+                    evtName = "🌧️ Monsun (2x Speed)"; 
+                    mult = 2; 
+                } else if(evtType === 'hai') { 
+                    evtName = "🦈 Raubfisch-Woche (2x seltene Fische)"; 
+                    mult = 2; 
+                } else if(evtType === 'xp') { 
+                    evtName = "⭐ XP-Boost (2x)"; 
+                    mult = 2; 
+                } else if(evtType === 'money') { 
+                    evtName = "💰 Geldsegen (2x Verkauf)"; 
+                    mult = 2; 
+                }
+                
+                // 5 Minuten Event-Dauer
+                try {
+                    await set(ref(db, "global/event"), { 
+                        type: evtType, 
+                        mult: mult, 
+                        name: evtName, 
+                        exp: Date.now() + (5 * 60 * 1000) 
+                    });
+                } catch(e) {
+                    console.error("Auto-Event Fehler:", e);
+                }
+            }
+        }
+    }, 1000);
+}
+
+// Starte den Event-Zyklus
+autoEventCycle();
+
 // Globaler Live-Refresh für offene Popups
 function refreshCurrentMenu() {
     if(window.currentOpenMenu === 'sell') window.handleSellMenu();
@@ -682,6 +790,7 @@ async function loadData() {
                 refreshCurrentMenu();
             }
         }
+        // Instant Update für offene Menüs
         refreshCurrentMenu();
     });
 
@@ -727,6 +836,9 @@ async function loadData() {
         } else {
             document.getElementById('broadcast-banner').style.display = 'none';
         }
+        
+        // Instant Update für offene Menüs bei globalen Änderungen
+        refreshCurrentMenu();
     });
     
     onValue(ref(db, "users/" + currentUser), async (snap) => {
@@ -1019,7 +1131,7 @@ function finishMinigame(won) {
         gameState.inventory.push({...mgFishItem});
         updateDex(mgFishItem);
         gameState.xp += finalXp;
-        gameState.stats.totalCaught++; // Stat-Update
+        gameState.stats.totalCaught++;
         gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod] || 0) + 1;
         addQuestProgress('c', 1);
         
@@ -1035,7 +1147,7 @@ function finishMinigame(won) {
     } else {
         let lossXp = Math.floor(Math.abs(mgFishItem.xp) * 2);
         gameState.xp = Math.max(0, gameState.xp - lossXp);
-        log(`💨 Entkommen: ${mgFishItem.baseName} hat sich losgerissen!`); // Fehlender Log
+        log(`💨 Entkommen: ${mgFishItem.baseName} hat sich losgerissen!`);
         saveData();
         refreshCurrentMenu();
     }
@@ -1105,7 +1217,7 @@ function executeFishCatch(btn, scene) {
             else escapeChance = 10 - resilience; 
             
             if(escapeChance > 0 && Math.random() < (escapeChance / 100)) {
-                log(`💨 Entkommen: ${item.baseName} war zu stark!`); // Entkommen Log hinzugefügt
+                log(`💨 Entkommen: ${item.baseName} war zu stark!`);
                 saveData();
                 scene.classList.remove('fishing-active');
                 btn.disabled = false;
@@ -1118,8 +1230,8 @@ function executeFishCatch(btn, scene) {
             let penalty = Math.abs(item.xp); 
             gameState.xp = Math.max(0, gameState.xp - penalty);
             gameState.inventory.push({...item}); 
-            gameState.stats.totalCaught++; // Zählt jetzt auch Müll zur Statistik um mit Inventar gleichzuziehen
-            log(`🗑️ Gefangen: ${item.baseName} (${item.v}$)`); // Müll Log hinzugefügt
+            gameState.stats.totalCaught++;
+            log(`🗑️ Gefangen: ${item.baseName} (${item.v}$)`);
             saveData();
             syncGlobalLeaderboard();
             refreshCurrentMenu();
@@ -1135,7 +1247,6 @@ function executeFishCatch(btn, scene) {
             return;
         }
         
-        // XP-Event Check
         if(event && event.type === 'xp') item.xp = Math.floor(item.xp * event.mult);
 
         gameState.inventory.push({...item});
@@ -1170,6 +1281,7 @@ function executeFishCatch(btn, scene) {
     }
 }
 
+// === VERKAUF MIT NEGATIVEM GELD ERLAUBT ===
 window.handleSellMenu = function() {
     window.currentOpenMenu = 'sell';
     if(!gameState.inventory) gameState.inventory = [];
@@ -1247,8 +1359,8 @@ window.handleSellMenu = function() {
         </div>
     </div>`;
     
-    let sellBtnText = finalTotal < 0 ? "Müll kostenpflichtig entsorgen" : "Alles verkaufen";
-    let sellBtnClass = finalTotal < 0 ? "danger-btn" : "success-btn";
+    let sellBtnText = "Alles verkaufen";
+    let sellBtnClass = "success-btn";
     
     openModal("💰 Rucksack", html, `<button class="${sellBtnClass}" onclick="window.executeSell(${finalTotal})">${sellBtnText}</button>`);
 }
@@ -1259,8 +1371,8 @@ window.executeSell = function(val) {
     let finalVal = Number(val);
     if(isNaN(finalVal)) return;
     
+    // Negatives Geld explizit erlauben - kein Floor zu 0
     gameState.money += finalVal;
-    if(gameState.money < 0) gameState.money = 0; 
     
     if(finalVal > 0) { gameState.stats.totalEarned += finalVal; addQuestProgress('e', finalVal); }
     
@@ -1504,17 +1616,21 @@ window.unequipBait = function() {
     window.handleInvMenu(); 
 }
 
-// === GILDEN SYSTEM ===
+// === GILDEN SYSTEM (Kauf ab 1000$) ===
 window.handleGuildMenu = function() {
     window.currentOpenMenu = 'guild';
+    const GUILD_COST = 1000; // Geändert von 250.000 auf 1.000
     
     if(!gameState.guild) {
+        let canAfford = gameState.money >= GUILD_COST;
+        
         let html = `
         <div style="background:#161b22; padding:15px; border-radius:12px; border:1px solid #eab308; margin-bottom:15px;">
             <h4 style="margin:0 0 10px 0; color:#eab308;">🛡️ Gilde gründen</h4>
-            <p style="font-size:13px; color:#94a3b8;">Eine Gilde kostet <b>250.000$</b>. Verdiene zusammen mit 10 Mitgliedern Gilden-Punkte!</p>
+            <p style="font-size:13px; color:#94a3b8;">Eine Gilde kostet <b>${GUILD_COST.toLocaleString()}$</b>. Verdiene zusammen mit 10 Mitgliedern Gilden-Punkte!</p>
             <input id="createGuildName" placeholder="Gilden-Name (Max 15 Zeichen)" maxlength="15" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px; border:1px solid #30363d; background:#0d1117; color:white;">
-            <button class="success-btn" style="width:100%; background:#eab308;" onclick="window.createGuild()">Gründen (250.000$)</button>
+            <button class="success-btn" style="width:100%; background:#eab308;" onclick="window.createGuild()" ${canAfford ? '' : 'disabled'}>Gründen (${GUILD_COST.toLocaleString()}$)</button>
+            ${!canAfford ? '<p style="color:#ef4444; font-size:12px; text-align:center; margin-top:5px;">Du brauchst mindestens ' + GUILD_COST.toLocaleString() + '$</p>' : ''}
         </div>
         <h4 style="margin-bottom:10px;">🏆 Top Gilden (Offen für Anfragen)</h4>
         <div style="max-height:30vh; overflow-y:auto;">
@@ -1617,12 +1733,12 @@ window.handleGuildMenu = function() {
 }
 
 window.createGuild = async function() {
-    if(gameState.money < 250000) return alert("Du brauchst 250.000$ um eine Gilde zu gründen!");
+    const GUILD_COST = 1000;
+    if(gameState.money < GUILD_COST) return alert(`Du brauchst ${GUILD_COST.toLocaleString()}$ um eine Gilde zu gründen!`);
     let name = document.getElementById("createGuildName").value.trim().replace(/[^a-zA-Z0-9 ]/g, "").substring(0, 15);
     if(name.length < 3) return alert("Der Gildenname muss mindestens 3 Zeichen lang sein (keine Sonderzeichen).");
     if(guildsCache[name]) return alert("Eine Gilde mit diesem Namen existiert bereits!");
 
-    // Set DB First to prevent local cache bug
     await set(ref(db, "global/guilds/" + name), {
         owner: currentUser,
         points: 0,
@@ -1630,7 +1746,7 @@ window.createGuild = async function() {
         requests: []
     });
 
-    gameState.money -= 250000;
+    gameState.money -= GUILD_COST;
     gameState.guild = name;
     saveData();
     syncGlobalLeaderboard();
@@ -2264,14 +2380,17 @@ window.adminSendUpdateToDiscord = function() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
             embeds: [{
-                title: "🚀 Update v6.2 ist online!",
-                description: "Großes Rebalancing & Fixes. Bitte ladet die Seite neu, um die Änderungen zu sehen!",
+                title: "🚀 Update v6.3 ist online!",
+                description: "Große Quality-of-Life Verbesserungen. Bitte ladet die Seite neu!",
                 color: 11027200,
                 fields: [
-                    { name: "⚖️ Wirtschafts-Balancing", value: "Fische in Zone 1 sind nun deutlich mehr wert! Auch Ruten und Köder wurden angepasst." },
-                    { name: "🧠 Skill-Baum Fixes", value: "Der Aquarium-Meister gibt nun exakt die angegebenen Boni. Bugs wurden behoben." },
-                    { name: "💾 Auto-Save Loop", value: "Das Spiel sichert deinen Stand nun garantiert alle 5 Sekunden im Hintergrund. Nie wieder verlorene Fische!" },
-                    { name: "✨ Grafik & Animationen", value: "Der Hintergrund wurde mit schönen aufsteigenden Wasserbläschen lebendiger gestaltet." }
+                    { name: "🛡️ Gilden ab 1.000$", value: "Gilden können jetzt schon ab 1.000$ gegründet werden!" },
+                    { name: "⚡ Automatische Events", value: "Alle 15 Minuten (xx:00, xx:15, xx:30, xx:45) gibt es eine 50% Chance auf ein zufälliges 5-Minuten Event!" },
+                    { name: "🦈 Raubfisch-Event", value: "Erhöht die Chance auf seltene Fische um das 2-fache!" },
+                    { name: "💸 Negativer Verkauf", value: "Auch mit 0$ oder negativem Kontostand kannst du jetzt verkaufen!" },
+                    { name: "🔄 Instant Updates", value: "Menüs und Popups aktualisieren sich jetzt sofort, wenn sich Daten ändern!" },
+                    { name: "📱 iOS Schrift-Fix", value: "Keine verzerrte Schrift mehr auf iPhones und iPads!" },
+                    { name: "🌿 Mehr Leben", value: "Fischschwärme und wogendes Seegras im Hintergrund!" }
                 ],
                 footer: { text: "Virtual Fisher PRO" }
             }]
@@ -2286,17 +2405,20 @@ window.adminSendUpdateToDiscord = function() {
 window.handleUpdateMenu = function() {
     let html = `
     <div style="background:#0d1117; padding:15px; border-radius:12px; border-left:4px solid #10b981; text-align:left; line-height:1.6; max-height:60vh; overflow-y:auto;">
-        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.2 - Balancing & Quality of Life</h3>
+        <h3 style="margin-top:0; color:#10b981;">🌿 Version 6.3 - Community Wünsche</h3>
         <ul style="padding-left:20px;">
-            <li><b>⚖️ Balancing Anpassungen:</b> Zone 1 Fische bringen nun deutlich mehr Geld. Ruten und Köder wurden angepasst.</li>
-            <li><b>🧠 Skill-Bug behoben:</b> Aquarium-Meister gibt nun exakt +0.025% Einkommen pro Level.</li>
-            <li><b>💾 Autosave-System:</b> Es gehen keine Daten mehr verloren! Das Spiel speichert absolut zuverlässig alle 5 Sekunden im Hintergrund.</li>
-            <li><b>✨ Neue Effekte:</b> Aufsteigende Wasserbläschen für eine bessere Unterwasser-Atmosphäre.</li>
+            <li><b>🛡️ Gilden günstiger:</b> Gilden können jetzt schon ab 1.000$ gegründet werden!</li>
+            <li><b>⚡ Automatische Events:</b> Alle 15 Minuten (um :00, :15, :30, :45) gibt es eine 50% Chance auf ein zufälliges 5-Minuten-Event!</li>
+            <li><b>🦈 Raubfisch-Event:</b> Erhöht die Chance auf seltene Fische um das 2-fache!</li>
+            <li><b>💸 Negativer Verkauf:</b> Auch mit 0$ oder Schulden kannst du jetzt deinen Rucksack verkaufen!</li>
+            <li><b>🔄 Instant Updates:</b> Menüs und Popups aktualisieren sich jetzt sofort live!</li>
+            <li><b>📱 iOS Schrift-Fix:</b> Keine verzerrte Schrift mehr auf iPhone und iPad!</li>
+            <li><b>🌿 Mehr Leben:</b> Fischschwärme und wogendes Seegras für eine lebendigere Atmosphäre!</li>
         </ul>
         <hr style="border-color:#30363d;">
         <h3 style="color:#60a5fa;">🚀 Letzte Updates</h3>
+        <p><b>v6.2</b> - Balancing & Skills-Fix.</p>
         <p><b>v6.1</b> - Skills & Gilden System.</p>
-        <p><b>v6.0</b> - Globales Leaderboard & Promo-Codes.</p>
     </div>`;
     openModal("📝 Updates", html);
 }
@@ -2357,7 +2479,7 @@ window.handleAdminMenu = function() {
                 <select id="adminEventSelect" style="width:100%; padding:10px; margin-bottom:5px; border-radius:8px; border:1px solid #30363d; background:#161b22; color:white;">
                     <option value="sun">☀️ Goldene Sonne (3x Shiny)</option>
                     <option value="rain">🌧️ Monsun (2x Speed)</option>
-                    <option value="hai">🦈 Raubfisch-Woche (5x Zander)</option>
+                    <option value="hai">🦈 Raubfisch-Woche (2x Seltene Fische)</option>
                     <option value="xp">⭐ Custom XP-Boost</option>
                     <option value="money">💰 Custom Geld-Verkaufs-Boost</option>
                 </select>
@@ -2369,6 +2491,7 @@ window.handleAdminMenu = function() {
                     <button class="success-btn" style="flex:1;" onclick="window.adminSetEvent()">Starten</button>
                     <button class="danger-btn" style="flex:1;" onclick="window.adminStopEvent()">Beenden</button>
                 </div>
+                <p style="font-size:10px; color:#94a3b8; margin-top:8px; text-align:center;">💡 Events starten auch automatisch alle 15 Minuten (50% Chance)</p>
             </div>
 
             <div style="background:#0d1117; padding:12px; border-radius:12px; border:1px solid #3b82f6;">
@@ -2537,7 +2660,7 @@ window.adminSetEvent = async function() {
     let evtName = "";
     if(evtType === 'sun') { evtName = "☀️ Goldene Sonne (3x Shiny)"; mult = 3; }
     else if(evtType === 'rain') { evtName = "🌧️ Monsun (2x Speed)"; mult = 2; }
-    else if(evtType === 'hai') { evtName = "🦈 Raubfisch-Woche (5x Zander)"; mult = 5; }
+    else if(evtType === 'hai') { evtName = "🦈 Raubfisch-Woche (2x Seltene Fische)"; mult = 2; }
     else if(evtType === 'xp') { evtName = `⭐ Custom XP-Boost (x${mult})`; }
     else if(evtType === 'money') { evtName = `💰 Custom Geld-Verkaufs-Boost (x${mult})`; }
 
