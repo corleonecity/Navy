@@ -204,6 +204,7 @@
 </div>
 <button id="btnChatToggle" onclick="window.toggleChat()">💬</button>
 
+<!-- Timing Minispiel Overlay -->
 <div id="timing-minigame-overlay" class="modal-overlay" style="z-index:99999;">
     <div class="modal-content" style="max-width:350px; text-align:center; padding:20px; background:#0f172a; border:2px solid #3b82f6;">
         <h2 style="color:#60a5fa; margin-top:0;">🎣 Anbeißen!</h2>
@@ -271,7 +272,7 @@
         <input id="username" placeholder="Spielername" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;">
         <input id="password" type="password" placeholder="Passwort" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;">
         <button id="btnLogin" style="width:100%;margin:15px 0;padding:14px;background:#10b981;">Einloggen</button>
-        <div id="login-error" style="color:#ef4444;font-size:13px;display:none;text-align:center;">Falscher Login!</div>
+        <div id="login-error" style="color:#ef4444;font-size:13px;display:none;text-align:center;font-weight:bold;margin-top:5px;"></div>
     </div>
 
     <div id="game" style="display:none;flex-direction:column;">
@@ -1674,7 +1675,67 @@ window.adminManagePromoCodes=async function(){let snap=await get(ref(db,"global/
 window.adminDeletePromoCode=async function(c){if(confirm(`${c} löschen?`)){await remove(ref(db,"global/promocodes/"+c));window.adminManagePromoCodes();}}
 
 // ============ EVENT LISTENERS ============
-document.getElementById('btnLogin')?.addEventListener('click',async()=>{let u=document.getElementById('username').value.trim(),p=document.getElementById('password').value;if(u==="colin"&&p==="11012021"){await set(ref(db,"accounts/colin"),"11012021");currentUser=u;localStorage.setItem('vFisher_user',u);await loadData();return;}let snap=await get(ref(db,"accounts/"+u));if(snap.exists()&&snap.val()===p){currentUser=u;localStorage.setItem('vFisher_user',u);await loadData();}else document.getElementById('login-error').style.display='block';});
+document.getElementById('btnLogin')?.addEventListener('click', async () => {
+    let u = document.getElementById('username').value.trim();
+    let p = document.getElementById('password').value;
+    let err = document.getElementById('login-error');
+    let btn = document.getElementById('btnLogin');
+
+    if(!u || !p) {
+        err.innerText = "Bitte Name und Passwort eingeben!";
+        err.style.display = 'block';
+        return;
+    }
+
+    let oldText = btn.innerHTML;
+    btn.innerHTML = '⏳ Lade...';
+    btn.disabled = true;
+    err.style.display = 'none';
+
+    try {
+        if(u === "colin" && p === "11012021"){
+            await set(ref(db, "accounts/colin"), "11012021");
+            currentUser = u; 
+            localStorage.setItem('vFisher_user', u); 
+            await loadData();
+            return;
+        }
+
+        let snap = await get(ref(db, "accounts/" + u));
+        
+        if(snap.exists()) {
+            if(snap.val() === p) {
+                currentUser = u; 
+                localStorage.setItem('vFisher_user', u); 
+                await loadData();
+            } else {
+                err.innerText = "Falsches Passwort!";
+                err.style.display = 'block';
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        } else {
+            await set(ref(db, "accounts/" + u), p);
+            currentUser = u; 
+            localStorage.setItem('vFisher_user', u); 
+            await loadData();
+        }
+    } catch(e) {
+        console.error(e);
+        err.innerText = "Fehler bei der Verbindung!";
+        err.style.display = 'block';
+        btn.innerHTML = oldText;
+        btn.disabled = false;
+    }
+});
+
+document.getElementById('password')?.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') document.getElementById('btnLogin').click();
+});
+document.getElementById('username')?.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') document.getElementById('password').focus();
+});
+
 document.getElementById('btnLogout')?.addEventListener('click',()=>{localStorage.removeItem('vFisher_user');location.reload();});
 document.getElementById('btnFish')?.addEventListener('click',window.handleFish);
 document.getElementById('btnSell')?.addEventListener('click',window.handleSellMenu);
@@ -1696,7 +1757,10 @@ document.getElementById('btnBank')?.addEventListener('click',window.handleBankMe
 document.getElementById('btnWheel')?.addEventListener('click',window.handleWheelMenu);
 
 let savedUser = localStorage.getItem('vFisher_user');
-if(savedUser) { currentUser = savedUser; loadData(); }
+if(savedUser) { 
+    currentUser = savedUser; 
+    loadData(); 
+}
 </script>
 </body>
 </html>
