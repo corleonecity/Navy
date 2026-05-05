@@ -3,31 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Legend of Vector Slime</title>
+    <title>Legend of Vector Slime - Premium Edition</title>
     <style>
-        /* --- MODERNERES CSS STYLING --- */
         :root {
-            --bg-color: #121212; /* Sehr dunkles Grau */
-            --container-color: #1e1e1e;
+            --bg-color: #0f111a;
+            --container-color: #1a1d29;
             --text-color: #e0e0e0;
-            --accent-color: #00e676; /* Neongrün */
-            --damage-color: #ff1744; /* Hellrot */
+            --accent-color: #00e676;
+            --damage-color: #ff1744;
             --gold-color: #ffea00;
-            --crit-color: #ff9100;
+            --gem-color: #d500f9;
+            --tab-bg: #222636;
         }
 
         body {
-            font-family: 'Poppins', sans-serif; /* Eine modernere Schriftart */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            text-align: center;
             margin: 0;
-            padding: 20px;
-            user-select: none;
+            padding: 10px;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            user-select: none;
         }
 
         #game-container {
@@ -35,407 +34,559 @@
             max-width: 450px;
             background-color: var(--container-color);
             border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-            border: 1px solid #333;
-        }
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: var(--text-color);
-            background: rgba(255,255,255,0.05);
-            padding: 12px 20px;
-            border-radius: 12px;
-        }
-        
-        .header span { display: flex; align-items: center; gap: 8px; }
-        .gold-icon { color: var(--gold-color); font-weight: bold; }
-
-        /* Kampffeld */
-        #battle-field {
-            display: flex;
-            justify-content: space-around;
-            align-items: flex-end; /* Charaktere stehen auf dem Boden */
-            height: 200px;
-            background: linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 100%);
-            border-radius: 15px;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 10px;
-            border: 2px solid #333;
-            cursor: pointer;
-        }
-
-        /* Boden */
-        #battle-field::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            width: 100%;
-            height: 20px;
-            background-color: #333;
-            border-top: 2px solid #444;
-        }
-
-        /* Container für die SVG-Grafiken */
-        .sprite-container {
-            width: 80px;
-            height: 80px;
-            z-index: 2;
-            transition: transform 0.1s ease-out, filter 0.1s;
-            margin-bottom: 15px; /* Abstand zum Boden */
-        }
-
-        /* --- SVG STYLING --- */
-        .slime-svg { fill: var(--accent-color); filter: drop-shadow(0 0 5px rgba(0,230,118,0.5)); }
-        .enemy-svg { fill: var(--damage-color); filter: drop-shadow(0 0 5px rgba(255,23,68,0.5)); }
-        .enemy-svg.boss { fill: #9c27b0; filter: drop-shadow(0 0 8px rgba(156,39,176,0.7)); } /* Lila für Boss */
-
-        /* Animationen */
-        #slime-container.attack { transform: translateX(30px) scale(1.1); }
-        #enemy-container.hit { animation: hitAnim 0.1s ease-in-out; }
-
-        @keyframes hitAnim {
-            0% { transform: translateX(0); filter: brightness(2); }
-            50% { transform: translateX(5px); }
-            100% { transform: translateX(0); filter: brightness(1); }
-        }
-
-        /* HP Balken */
-        #hp-bar-bg {
-            width: 100%;
-            background-color: #333;
-            height: 12px;
-            border-radius: 6px;
-            margin-bottom: 25px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        #hp-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #ff1744, #b71c1c);
-            width: 100%;
-            border-radius: 6px;
-            transition: width 0.1s linear;
-        }
-
-        /* Upgrade Sektion */
-        .upgrades {
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+            border: 2px solid #2a2e40;
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
-        .btn {
-            background-color: #2c2c2c;
-            color: var(--text-color);
-            border: 1px solid #444;
-            padding: 16px 20px;
-            border-radius: 12px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
+        /* Top Bar */
+        .header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            transition: background 0.2s, transform 0.1s, border-color 0.2s;
-        }
-
-        .btn:hover:not(:disabled) { background-color: #383838; border-color: #555; }
-        .btn:active:not(:disabled) { transform: translateY(2px); background-color: #252525; }
-        
-        /* Wenn kaufbar, kriegt der Button einen grünen Akzent */
-        .btn.affordable { border-color: var(--accent-color); }
-
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
-        .btn-info { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
-        .btn-title { font-size: 15px; }
-        .btn-sub { font-size: 12px; color: #aaa; }
-        
-        .btn-cost {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: var(--gold-color);
             font-size: 16px;
-        }
-
-        /* Schadenszahlen */
-        .damage-text {
-            position: absolute;
-            color: var(--text-color);
             font-weight: bold;
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #333;
+        }
+        
+        .currencies { display: flex; gap: 15px; }
+        .gold-icon { color: var(--gold-color); }
+        .gem-icon { color: var(--gem-color); }
+
+        /* Stage Info */
+        .stage-info {
+            text-align: center;
             font-size: 20px;
-            animation: floatUp 0.8s ease-out forwards;
-            pointer-events: none;
-            z-index: 10;
-            left: 70%;
-            bottom: 60px;
+            font-weight: 800;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
         }
 
-        @keyframes floatUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-50px); }
+        /* Kampffeld */
+        #battle-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            height: 200px;
+            background: linear-gradient(180deg, #2b3045 0%, #151824 100%);
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid #3d445c;
+            cursor: pointer;
+            padding: 0 20px;
         }
+
+        #battle-field::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 25px;
+            background-color: #1a1e2b;
+            border-top: 2px solid #2a2f45;
+        }
+
+        .characters {
+            display: flex;
+            align-items: flex-end;
+            z-index: 2;
+            margin-bottom: 20px;
+        }
+
+        /* SVGs */
+        .sprite-container {
+            width: 70px; height: 70px;
+            transition: transform 0.1s ease-out;
+        }
+        
+        .companion-container {
+            width: 40px; height: 40px;
+            position: absolute;
+            left: 10px; bottom: 80px;
+            display: none;
+            animation: hoverAnim 2s infinite ease-in-out;
+        }
+
+        @keyframes hoverAnim {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .slime-svg { fill: var(--accent-color); filter: drop-shadow(0 0 8px rgba(0,230,118,0.4)); }
+        .enemy-svg { fill: var(--damage-color); filter: drop-shadow(0 0 8px rgba(255,23,68,0.4)); }
+        .enemy-svg.boss { fill: #f50057; filter: drop-shadow(0 0 15px rgba(245,0,87,0.7)); transform: scale(1.4) translateY(-10px); }
+        .companion-svg { fill: #00b0ff; filter: drop-shadow(0 0 5px rgba(0,176,255,0.6)); }
+
+        /* Attack Animations */
+        #slime-container.attack { transform: translateX(25px) scale(1.1); }
+        #enemy-container.hit { transform: translateX(5px) scale(0.95) rotate(5deg); filter: brightness(2); }
+
+        /* Skill Animation: Blitzschlag */
+        .lightning-strike {
+            position: absolute;
+            top: 0; right: 20px;
+            width: 60px; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.8), transparent);
+            z-index: 5;
+            animation: strikeAnim 0.3s ease-out forwards;
+        }
+        @keyframes strikeAnim {
+            0% { opacity: 0; transform: scaleY(0); transform-origin: top; }
+            50% { opacity: 1; transform: scaleY(1); background: #fff; }
+            100% { opacity: 0; transform: scaleY(1); }
+        }
+
+        /* HP & Timer Bars */
+        .bars-container { display: flex; flex-direction: column; gap: 5px; }
+        .bar-bg { width: 100%; height: 12px; background-color: #000; border-radius: 6px; overflow: hidden; position: relative; }
+        #hp-bar-fill { height: 100%; background: linear-gradient(90deg, #ff1744, #d50000); width: 100%; transition: width 0.1s; }
+        
+        #boss-timer-bg { display: none; height: 6px; background-color: #333; margin-top: -2px; }
+        #boss-timer-fill { height: 100%; background-color: #00e5ff; width: 100%; }
+
+        /* TABS */
+        .tab-buttons { display: flex; gap: 5px; background: #0f111a; padding: 5px; border-radius: 12px; }
+        .tab-btn {
+            flex: 1; padding: 12px 0; background: transparent; border: none; color: #888;
+            font-weight: bold; cursor: pointer; border-radius: 8px; transition: 0.2s;
+        }
+        .tab-btn.active { background: var(--tab-bg); color: #fff; }
+
+        .tab-content { display: none; flex-direction: column; gap: 10px; background: var(--tab-bg); padding: 15px; border-radius: 12px; }
+        .tab-content.active { display: flex; }
+
+        /* Upgrades */
+        .btn {
+            background-color: #2b3045; color: var(--text-color); border: 1px solid #3d445c;
+            padding: 12px 15px; border-radius: 10px; font-size: 14px; font-weight: bold;
+            cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+        }
+        .btn:hover:not(:disabled) { background-color: #353b52; }
+        .btn:active:not(:disabled) { transform: scale(0.98); }
+        .btn.affordable-gold { border-color: var(--gold-color); }
+        .btn.affordable-gem { border-color: var(--gem-color); }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        
+        .btn-info { display: flex; flex-direction: column; align-items: flex-start; text-align: left; }
+        .btn-title { font-size: 15px; color: #fff; }
+        .btn-desc { font-size: 11px; color: #aaa; margin-top: 2px; }
+        .btn-cost { display: flex; align-items: center; gap: 4px; font-size: 16px; }
+
+        .damage-text {
+            position: absolute; color: #fff; font-weight: 900; font-size: 20px;
+            text-shadow: 2px 2px 0 #000; animation: floatUp 0.6s ease-out forwards;
+            pointer-events: none; z-index: 10;
+        }
+        @keyframes floatUp { 0% { opacity: 1; transform: translateY(0) scale(1); } 100% { opacity: 0; transform: translateY(-40px) scale(1.2); } }
     </style>
 </head>
 <body>
 
     <div id="game-container">
-        <!-- Header -->
+        <!-- Header: Währungen -->
         <div class="header">
-            <span>Stufe: <span id="level-display">1</span></span>
-            <span><span class="gold-icon">G</span> <span id="gold-display">0</span></span>
+            <span>Level <span id="player-level">1</span></span>
+            <div class="currencies">
+                <span><span class="gold-icon">G </span><span id="gold-display">0</span></span>
+                <span><span class="gem-icon">D </span><span id="gem-display">0</span></span>
+            </div>
         </div>
 
-        <!-- Kampffeld mit SVG Grafiken -->
+        <!-- Stage Info -->
+        <div class="stage-info">Stage <span id="stage-display">1-1</span> <span id="boss-warning" style="color:var(--damage-color); display:none;">- BOSS!</span></div>
+
+        <!-- Kampffeld -->
         <div id="battle-field" onclick="playerTapAttack()">
-            <!-- SLIME SVG -->
-            <div id="slime-container" class="sprite-container">
-                <svg class="slime-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10,80 C10,60 30,40 50,40 C70,40 90,60 90,80 C90,90 70,100 50,100 C30,100 10,90 10,80 Z" />
-                    <circle cx="35" cy="65" r="5" fill="#121212"/>
-                    <circle cx="65" cy="65" r="5" fill="#121212"/>
-                    <path d="M40,80 Q50,85 60,80" stroke="#121212" stroke-width="3" fill="none" stroke-linecap="round"/>
-                </svg>
+            <div class="characters">
+                <!-- Companion -->
+                <div id="companion-container" class="companion-container">
+                    <svg class="companion-svg" viewBox="0 0 100 100">
+                        <!-- Fledermaus / Vogel SVG -->
+                        <path d="M10,50 Q30,20 50,50 Q70,20 90,50 L70,60 L50,80 L30,60 Z" />
+                        <circle cx="40" cy="45" r="4" fill="#000"/><circle cx="60" cy="45" r="4" fill="#000"/>
+                    </svg>
+                </div>
+                <!-- Slime -->
+                <div id="slime-container" class="sprite-container">
+                    <svg class="slime-svg" viewBox="0 0 100 100">
+                        <path d="M10,80 C10,50 30,30 50,30 C70,30 90,50 90,80 C90,95 70,100 50,100 C30,100 10,95 10,80 Z" />
+                        <circle cx="35" cy="60" r="5" fill="#121212"/><circle cx="65" cy="60" r="5" fill="#121212"/>
+                    </svg>
+                </div>
             </div>
             
-            <!-- ENEMY SVG (wird per JS verändert) -->
-            <div id="enemy-container" class="sprite-container">
-                <svg id="enemy-svg-element" class="enemy-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Standard Gegner: Ein stachliger Ball -->
-                    <path d="M50,10 L60,35 L85,40 L65,60 L70,85 L50,70 L30,85 L35,60 L15,40 L40,35 Z" />
-                    <circle cx="40" cy="50" r="4" fill="#121212"/>
-                    <circle cx="60" cy="50" r="4" fill="#121212"/>
-                </svg>
+            <div class="characters">
+                <!-- Enemy -->
+                <div id="enemy-container" class="sprite-container">
+                    <svg id="enemy-svg" class="enemy-svg" viewBox="0 0 100 100">
+                        <path d="M20,80 L50,20 L80,80 Z" /> <!-- Standard Dreieck-Monster -->
+                        <circle cx="40" cy="60" r="4" fill="#121212"/><circle cx="60" cy="60" r="4" fill="#121212"/>
+                    </svg>
+                </div>
             </div>
         </div>
 
-        <!-- HP Balken -->
-        <div id="hp-bar-bg">
-            <div id="hp-bar-fill"></div>
+        <!-- Bars -->
+        <div class="bars-container">
+            <div class="bar-bg"><div id="hp-bar-fill"></div></div>
+            <div id="boss-timer-bg" class="bar-bg"><div id="boss-timer-fill"></div></div>
         </div>
 
-        <!-- Upgrade Menü -->
-        <div class="upgrades">
-            <button class="btn" id="btn-atk" onclick="upgrade('atk')">
-                <div class="btn-info">
-                    <span class="btn-title">Angriffskraft</span>
-                    <span class="btn-sub">Aktuell: <span id="atk-val">1</span></span>
-                </div>
-                <div class="btn-cost">G <span id="atk-cost">10</span></div>
+        <!-- TABS Navigation -->
+        <div class="tab-buttons">
+            <button class="tab-btn active" onclick="switchTab('stats')">Stats</button>
+            <button class="tab-btn" onclick="switchTab('skills')">Skills</button>
+            <button class="tab-btn" onclick="switchTab('companions')">Begleiter</button>
+        </div>
+
+        <!-- TAB: Stats (Gold) -->
+        <div id="tab-stats" class="tab-content active">
+            <button class="btn" id="btn-atk" onclick="upgradeStat('atk')">
+                <div class="btn-info"><span class="btn-title">Angriffskraft</span><span class="btn-desc">Erhöht DMG: <span id="atk-val">1</span></span></div>
+                <div class="btn-cost"><span class="gold-icon">G </span><span id="atk-cost">10</span></div>
             </button>
-            <button class="btn" id="btn-speed" onclick="upgrade('speed')">
-                <div class="btn-info">
-                    <span class="btn-title">Angriffs-Tempo</span>
-                    <span class="btn-sub">Intervall: <span id="speed-val">1.5</span>s</span>
-                </div>
-                <div class="btn-cost">G <span id="speed-cost">50</span></div>
+            <button class="btn" id="btn-speed" onclick="upgradeStat('speed')">
+                <div class="btn-info"><span class="btn-title">Angriffs-Tempo</span><span class="btn-desc">Intervall: <span id="speed-val">1.5</span>s</span></div>
+                <div class="btn-cost"><span class="gold-icon">G </span><span id="speed-cost">50</span></div>
             </button>
-            <button class="btn" id="btn-crit" onclick="upgrade('crit')">
-                <div class="btn-info">
-                    <span class="btn-title">Krit. Chance</span>
-                    <span class="btn-sub">Aktuell: <span id="crit-val">5</span>%</span>
-                </div>
-                <div class="btn-cost">G <span id="crit-cost">100</span></div>
+            <button class="btn" id="btn-crit" onclick="upgradeStat('crit')">
+                <div class="btn-info"><span class="btn-title">Kritische Treffer</span><span class="btn-desc">Chance: <span id="crit-val">5</span>%</span></div>
+                <div class="btn-cost"><span class="gold-icon">G </span><span id="crit-cost">100</span></div>
+            </button>
+        </div>
+
+        <!-- TAB: Skills (Gems) -->
+        <div id="tab-skills" class="tab-content">
+            <button class="btn" id="btn-skill" onclick="buySkill()">
+                <div class="btn-info"><span class="btn-title">Blitzschlag</span><span class="btn-desc" id="skill-desc">Nicht freigeschaltet (1000% DMG)</span></div>
+                <div class="btn-cost"><span class="gem-icon">D </span><span id="skill-cost">5</span></div>
+            </button>
+        </div>
+
+        <!-- TAB: Begleiter (Gems) -->
+        <div id="tab-companions" class="tab-content">
+            <button class="btn" id="btn-comp" onclick="buyCompanion()">
+                <div class="btn-info"><span class="btn-title">Fledermaus</span><span class="btn-desc" id="comp-desc">Nicht freigeschaltet (Greift an)</span></div>
+                <div class="btn-cost"><span class="gem-icon">D </span><span id="comp-cost">10</span></div>
             </button>
         </div>
     </div>
 
     <script>
-        /* --- JAVASCRIPT LOGIK (Beibehalten und leicht angepasst) --- */
-
+        // --- GAME STATE ---
         let game = {
             gold: 0,
-            level: 1,
-            atk: 1,
-            atkLvl: 1,
+            gems: 0,
+            playerLevel: 1,
+            
+            // Progression
+            stage: 1,
+            wave: 1, // 1-5 (5 ist Boss)
+            
+            // Stats
+            atk: 2,
             attackSpeedMs: 1500,
-            speedLvl: 1,
             critChance: 5,
-            critMultiplier: 2,
+            costs: { atk: 10, speed: 50, crit: 100 },
+
+            // Gegner
             enemyHp: 10,
             enemyMaxHp: 10,
-            costs: { atk: 10, speed: 50, crit: 100 }
+            
+            // Unlockables
+            skillUnlocked: false,
+            skillLvl: 1,
+            skillCost: 5,
+            
+            compUnlocked: false,
+            compLvl: 1,
+            compCost: 10
         };
 
+        // Timers
         let attackTimer = null;
+        let skillTimer = null;
+        let compTimer = null;
+        let bossTimer = null;
+        let bossTimeRemaining = 10; // 10 Sekunden für Boss
 
-        // HTML Elemente
+        // UI Elemente
         const elGold = document.getElementById('gold-display');
-        const elLevel = document.getElementById('level-display');
+        const elGems = document.getElementById('gem-display');
+        const elStage = document.getElementById('stage-display');
+        const elBossWarning = document.getElementById('boss-warning');
         const elHpFill = document.getElementById('hp-bar-fill');
+        const elBossTimerBg = document.getElementById('boss-timer-bg');
+        const elBossTimerFill = document.getElementById('boss-timer-fill');
+        const elBattleField = document.getElementById('battle-field');
         const elSlime = document.getElementById('slime-container');
         const elEnemy = document.getElementById('enemy-container');
-        const elEnemySvg = document.getElementById('enemy-svg-element');
-        const elBattleField = document.getElementById('battle-field');
+        const elEnemySvg = document.getElementById('enemy-svg');
+        const elCompContainer = document.getElementById('companion-container');
 
-        const buttons = {
-            atk: document.getElementById('btn-atk'),
-            speed: document.getElementById('btn-speed'),
-            crit: document.getElementById('btn-crit')
-        };
-
-        const stats = {
-            atk: document.getElementById('atk-val'),
-            speed: document.getElementById('speed-val'),
-            crit: document.getElementById('crit-val'),
-            atkCost: document.getElementById('atk-cost'),
-            speedCost: document.getElementById('speed-cost'),
-            critCost: document.getElementById('crit-cost')
-        };
-
+        // Initialisierung
         function init() {
             updateUI();
             startAutoAttack();
         }
 
+        // TABS LOGIK
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        // --- KAMPFSYSTEM ---
         function startAutoAttack() {
             if (attackTimer) clearInterval(attackTimer);
-            attackTimer = setInterval(dealDamage, game.attackSpeedMs);
+            attackTimer = setInterval(() => attack(game.atk, 'slime'), game.attackSpeedMs);
         }
 
         function playerTapAttack() {
-            dealDamage();
+            attack(game.atk, 'slime');
         }
 
-        function dealDamage() {
-            let isCrit = Math.random() * 100 < game.critChance;
-            let finalDamage = game.atk;
-            if (isCrit) finalDamage *= game.critMultiplier;
+        // Generische Angriffsfunktion für Slime, Begleiter und Skills
+        function attack(baseDamage, source) {
+            let damage = baseDamage;
+            let isCrit = false;
 
-            game.enemyHp -= finalDamage;
-            if (game.enemyHp < 0) game.enemyHp = 0;
+            // Kritischer Treffer nur bei Slime Basic Attacks
+            if (source === 'slime') {
+                isCrit = Math.random() * 100 < game.critChance;
+                if (isCrit) damage *= 2;
+                playSlimeAnim();
+            } else if (source === 'companion') {
+                damage = game.atk * 0.5 * game.compLvl; // Begleiter macht 50% vom Slime DMG pro Level
+            } else if (source === 'skill') {
+                damage = game.atk * 10 * game.skillLvl; // Skill macht 1000% DMG
+                playSkillAnim();
+            }
 
-            playAttackAnimation();
-            showDamageNumber(finalDamage, isCrit);
-
-            if (game.enemyHp === 0) {
+            game.enemyHp -= damage;
+            if (game.enemyHp <= 0) {
+                game.enemyHp = 0;
                 enemyDefeated();
             }
+
+            playHitAnim();
+            showDamageNumber(damage, isCrit, source);
             updateUI();
         }
 
         function enemyDefeated() {
-            let goldDrop = Math.floor(game.enemyMaxHp * 0.3) + 1;
-            game.gold += goldDrop;
-            game.level++;
-            
-            // HP Skalierung
-            game.enemyMaxHp = Math.floor(10 * Math.pow(1.16, game.level - 1));
-            game.enemyHp = game.enemyMaxHp;
-
-            // Gegner-Optik anpassen
-            updateEnemyVisuals();
-        }
-
-        // Ändert das Aussehen des Gegners basierend auf dem Level
-        function updateEnemyVisuals() {
-            elEnemySvg.classList.remove('boss');
-            
-            if (game.level % 10 === 0) {
-                // Boss Level alle 10 Stufen
-                elEnemySvg.classList.add('boss');
-                elEnemy.style.transform = 'scale(1.3)'; // Boss ist größer
-                // SVG Path für einen "Dämonen-Kopf"
-                elEnemySvg.innerHTML = '<path d="M20,30 L50,10 L80,30 L80,70 L50,90 L20,70 Z M35,45 A5,5 0 1,1 45,45 A5,5 0 1,1 35,45 Z M55,45 A5,5 0 1,1 65,45 A5,5 0 1,1 55,45 Z M40,70 Q50,80 60,70" />';
+            // Belohnungen verteilen
+            if (game.wave === 5) {
+                // Boss besiegt!
+                game.gems += Math.floor(Math.random() * 2) + 1; // 1-2 Gems
+                clearInterval(bossTimer);
+                elBossTimerBg.style.display = 'none';
+                game.stage++;
+                game.wave = 1;
             } else {
-                elEnemy.style.transform = 'scale(1)';
-                // Normaler Stachelball
-                elEnemySvg.innerHTML = '<path d="M50,10 L60,35 L85,40 L65,60 L70,85 L50,70 L30,85 L35,60 L15,40 L40,35 Z" /><circle cx="40" cy="50" r="4" fill="#121212"/><circle cx="60" cy="50" r="4" fill="#121212"/>';
+                // Normaler Gegner
+                game.gold += Math.floor(game.enemyMaxHp * 0.2) + 1;
+                game.wave++;
             }
+
+            game.playerLevel++;
+            spawnEnemy();
         }
 
-        function upgrade(type) {
-            if (game.gold >= game.costs[type]) {
-                game.gold -= game.costs[type];
+        function spawnEnemy() {
+            // HP Skalierung (Boss hat extrem viel HP)
+            let baseScale = Math.pow(1.15, game.playerLevel);
+            game.enemyMaxHp = Math.floor(10 * baseScale);
+            
+            if (game.wave === 5) {
+                game.enemyMaxHp *= 5; // Boss hat 5x HP
+                startBossFight();
+            } else {
+                elBossWarning.style.display = 'none';
+                elEnemySvg.classList.remove('boss');
+                elEnemySvg.innerHTML = '<path d="M20,80 L50,20 L80,80 Z" /><circle cx="40" cy="60" r="4" fill="#121212"/><circle cx="60" cy="60" r="4" fill="#121212"/>';
+            }
+            
+            game.enemyHp = game.enemyMaxHp;
+            updateUI();
+        }
+
+        function startBossFight() {
+            elBossWarning.style.display = 'inline';
+            elEnemySvg.classList.add('boss');
+            // Boss Aussehen (Krone/Schädel)
+            elEnemySvg.innerHTML = '<path d="M10,80 L30,30 L50,50 L70,30 L90,80 Z" /><circle cx="35" cy="65" r="5" fill="#121212"/><circle cx="65" cy="65" r="5" fill="#121212"/>';
+            
+            elBossTimerBg.style.display = 'block';
+            bossTimeRemaining = 10;
+            elBossTimerFill.style.width = '100%';
+
+            if (bossTimer) clearInterval(bossTimer);
+            bossTimer = setInterval(() => {
+                bossTimeRemaining -= 0.1;
+                elBossTimerFill.style.width = (bossTimeRemaining / 10) * 100 + '%';
+                
+                if (bossTimeRemaining <= 0) {
+                    // Boss Zeit abgelaufen!
+                    clearInterval(bossTimer);
+                    failBoss();
+                }
+            }, 100);
+        }
+
+        function failBoss() {
+            // Strafversetzung auf Welle 4
+            game.wave = 4;
+            elBossTimerBg.style.display = 'none';
+            spawnEnemy();
+        }
+
+        // --- UPGRADES ---
+        function upgradeStat(type) {
+            let cost = game.costs[type];
+            if (game.gold >= cost) {
+                game.gold -= cost;
                 if (type === 'atk') {
-                    game.atkLvl++;
-                    game.atk += Math.floor(game.atkLvl * 1.6);
-                    game.costs.atk = Math.floor(10 * Math.pow(1.35, game.atkLvl));
+                    game.atk += Math.floor(game.atk * 0.3) + 2;
+                    game.costs.atk = Math.floor(cost * 1.4);
                 } else if (type === 'speed') {
-                    game.speedLvl++;
-                    game.attackSpeedMs = Math.max(250, game.attackSpeedMs * 0.92);
-                    game.costs.speed = Math.floor(50 * Math.pow(1.6, game.speedLvl));
+                    game.attackSpeedMs = Math.max(300, game.attackSpeedMs * 0.9);
+                    game.costs.speed = Math.floor(cost * 1.6);
                     startAutoAttack();
                 } else if (type === 'crit') {
-                    game.critLvl++;
-                    game.critChance = Math.min(80, game.critChance + 2); // Max 80%
-                    game.costs.crit = Math.floor(100 * Math.pow(1.5, game.critLvl));
+                    game.critChance = Math.min(80, game.critChance + 1.5);
+                    game.costs.crit = Math.floor(cost * 1.5);
                 }
                 updateUI();
             }
         }
 
+        function buySkill() {
+            if (game.gems >= game.skillCost) {
+                game.gems -= game.skillCost;
+                if (!game.skillUnlocked) {
+                    game.skillUnlocked = true;
+                    // Skill löst alle 5 Sekunden aus
+                    skillTimer = setInterval(() => attack(0, 'skill'), 5000);
+                    document.getElementById('skill-desc').innerText = `Lvl ${game.skillLvl} (Automatisch alle 5s)`;
+                } else {
+                    game.skillLvl++;
+                    document.getElementById('skill-desc').innerText = `Lvl ${game.skillLvl} (Automatisch alle 5s)`;
+                }
+                game.skillCost = Math.floor(game.skillCost * 1.5) + 2;
+                updateUI();
+            }
+        }
+
+        function buyCompanion() {
+            if (game.gems >= game.compCost) {
+                game.gems -= game.compCost;
+                if (!game.compUnlocked) {
+                    game.compUnlocked = true;
+                    elCompContainer.style.display = 'block'; // Fledermaus anzeigen
+                    // Begleiter greift alle 1.5s an
+                    compTimer = setInterval(() => attack(0, 'companion'), 1500);
+                    document.getElementById('comp-desc').innerText = `Lvl ${game.compLvl} (Hilft im Kampf)`;
+                } else {
+                    game.compLvl++;
+                    document.getElementById('comp-desc').innerText = `Lvl ${game.compLvl} (Hilft im Kampf)`;
+                }
+                game.compCost = Math.floor(game.compCost * 1.5) + 3;
+                updateUI();
+            }
+        }
+
+        // --- UI & ANIMATIONEN ---
         function updateUI() {
             elGold.innerText = game.gold;
-            elLevel.innerText = game.level;
-            
-            let hpPercent = (game.enemyHp / game.enemyMaxHp) * 100;
-            elHpFill.style.width = hpPercent + '%';
+            elGems.innerText = game.gems;
+            document.getElementById('player-level').innerText = game.playerLevel;
+            elStage.innerText = `${game.stage}-${game.wave}`;
 
-            // Stats Texte
-            stats.atk.innerText = game.atk;
-            stats.speed.innerText = (game.attackSpeedMs / 1000).toFixed(2);
-            stats.crit.innerText = game.critChance;
-            
-            stats.atkCost.innerText = game.costs.atk;
-            stats.speedCost.innerText = game.costs.speed;
-            stats.critCost.innerText = game.costs.crit;
+            elHpFill.style.width = `${(game.enemyHp / game.enemyMaxHp) * 100}%`;
 
-            // Buttons Zustand
-            updateButtonState('atk');
-            updateButtonState('speed', game.attackSpeedMs <= 250);
-            updateButtonState('crit', game.critChance >= 80);
+            // Stats Update
+            document.getElementById('atk-val').innerText = game.atk;
+            document.getElementById('speed-val').innerText = (game.attackSpeedMs / 1000).toFixed(2);
+            document.getElementById('crit-val').innerText = game.critChance.toFixed(1);
+            
+            // Costs Update
+            document.getElementById('atk-cost').innerText = game.costs.atk;
+            document.getElementById('speed-cost').innerText = game.costs.speed;
+            document.getElementById('crit-cost').innerText = game.costs.crit;
+            document.getElementById('skill-cost').innerText = game.skillCost;
+            document.getElementById('comp-cost').innerText = game.compCost;
+
+            // Buttons aktivieren/deaktivieren (Gold)
+            checkBtn('atk', game.gold, game.costs.atk, 'affordable-gold');
+            checkBtn('speed', game.gold, game.costs.speed, 'affordable-gold', game.attackSpeedMs <= 300);
+            checkBtn('crit', game.gold, game.costs.crit, 'affordable-gold', game.critChance >= 80);
+
+            // Buttons aktivieren/deaktivieren (Gems)
+            checkBtn('btn-skill', game.gems, game.skillCost, 'affordable-gem');
+            checkBtn('btn-comp', game.gems, game.compCost, 'affordable-gem');
         }
 
-        function updateButtonState(type, maxed = false) {
-            const btn = buttons[type];
-            const cost = game.costs[type];
-            
-            btn.classList.remove('affordable');
-            
-            if (maxed) {
+        function checkBtn(id, currency, cost, affordClass, isMax = false) {
+            let btn = document.getElementById(id.startsWith('btn') ? id : `btn-${id}`);
+            btn.classList.remove(affordClass);
+            if (isMax) {
                 btn.disabled = true;
                 btn.querySelector('.btn-cost').innerText = "MAX";
-            } else if (game.gold < cost) {
-                btn.disabled = true;
-            } else {
+            } else if (currency >= cost) {
                 btn.disabled = false;
-                btn.classList.add('affordable');
-            }
-        }
-
-        function playAttackAnimation() {
-            elSlime.classList.add('attack');
-            setTimeout(() => {
-                elSlime.classList.remove('attack');
-                elEnemy.classList.add('hit');
-                setTimeout(() => elEnemy.classList.remove('hit'), 100);
-            }, 50);
-        }
-
-        function showDamageNumber(damage, isCrit) {
-            const damageEl = document.createElement('div');
-            damageEl.classList.add('damage-text');
-            damageEl.innerText = Math.ceil(damage);
-            
-            if (isCrit) {
-                damageEl.style.color = 'var(--crit-color)';
-                damageEl.style.fontSize = '26px';
-                damageEl.innerText += "!";
+                btn.classList.add(affordClass);
             } else {
-                damageEl.style.color = 'var(--text-color)';
+                btn.disabled = true;
+            }
+        }
+
+        function playSlimeAnim() {
+            elSlime.classList.add('attack');
+            setTimeout(() => elSlime.classList.remove('attack'), 100);
+        }
+
+        function playHitAnim() {
+            elEnemy.classList.add('hit');
+            setTimeout(() => elEnemy.classList.remove('hit'), 100);
+        }
+
+        function playSkillAnim() {
+            let strike = document.createElement('div');
+            strike.classList.add('lightning-strike');
+            elBattleField.appendChild(strike);
+            setTimeout(() => strike.remove(), 300);
+        }
+
+        function showDamageNumber(damage, isCrit, source) {
+            let el = document.createElement('div');
+            el.classList.add('damage-text');
+            el.innerText = Math.ceil(damage);
+
+            // Zufällige Position auf der rechten Seite (beim Gegner)
+            let posX = 60 + Math.random() * 20; 
+            let posY = 20 + Math.random() * 40;
+            el.style.left = `${posX}%`;
+            el.style.top = `${posY}%`;
+
+            if (isCrit) {
+                el.style.color = '#ff9100'; el.style.fontSize = '28px'; el.innerText += "!";
+            } else if (source === 'skill') {
+                el.style.color = '#00e5ff'; el.style.fontSize = '24px';
+            } else if (source === 'companion') {
+                el.style.color = '#00b0ff'; el.style.fontSize = '16px';
             }
 
-            elBattleField.appendChild(damageEl);
-            setTimeout(() => damageEl.remove(), 800);
+            elBattleField.appendChild(el);
+            setTimeout(() => el.remove(), 600);
         }
 
         init();
