@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legend of Web Slime</title>
+    <style>
+        /* --- CSS STYLING --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1e272e;
+            color: #d2dae2;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            user-select: none;
+        }
+
+        #game-container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #2c3e50;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border: 2px solid #34495e;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #f1c40f;
+            background: #34495e;
+            padding: 10px 15px;
+            border-radius: 10px;
+        }
+
+        #battle-field {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            height: 180px;
+            background: linear-gradient(#7f8c8d, #95a5a6);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 3px solid #2c3e50;
+            cursor: pointer;
+        }
+
+        /* Baumstumpf/Boden-Illusion */
+        #battle-field::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            height: 30px;
+            background-color: #4CAF50;
+            opacity: 0.6;
+        }
+
+        .sprite {
+            font-size: 70px;
+            transition: transform 0.1s;
+            z-index: 2;
+        }
+
+        #slime { transform: translateX(0); }
+        /* Angriffsanimation des Slimes */
+        #slime.attack { transform: translateX(40px) scale(1.1); }
+        
+        /* Trefferanimation des Gegners */
+        #enemy { transition: all 0.1s; }
+        #enemy.hit { filter: brightness(1.5) drop-shadow(0 0 10px red); transform: translateX(10px) scale(0.9); }
+
+        #hp-bar-bg {
+            width: 100%;
+            background-color: #c0392b;
+            height: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            position: relative;
+            border: 2px solid #1e272e;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        #hp-bar-fill {
+            height: 100%;
+            background-color: #2ecc71;
+            width: 100%;
+            border-radius: 8px;
+            transition: width 0.1s linear;
+        }
+
+        #hp-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            top: 0;
+            left: 0;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 25px;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        .upgrades {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .btn {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 0 #1c5980;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #1c5980;
+        }
+
+        .btn:hover:not(:disabled) { background-color: #3498db; }
+        .btn:disabled { background-color: #7f8c8d; box-shadow: 0 4px 0 #5a6667; cursor: not-allowed; color: #bdc3c7; }
+
+        /* Fliegender Schadenstext */
+        .damage-text {
+            position: absolute;
+            color: #ff4757;
+            font-weight: bold;
+            font-size: 24px;
+            text-shadow: 2px 2px 0 #000;
+            animation: floatUp 0.8s ease-out forwards;
+            pointer-events: none;
+            z-index: 10;
+            left: 70%;
+            top: 40%;
+        }
+
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- Kopfzeile mit Stats -->
+        <div class="header">
+            <span>Stufe: <span id="level-display">1</span></span>
+            <span>💰 <span id="gold-display">0</span></span>
+        </div>
+
+        <!-- Kampffeld -->
+        <div id="battle-field" onclick="playerTapAttack()">
+            <div id="slime" class="sprite">🟢</div>
+            <div id="enemy" class="sprite">👹</div>
+        </div>
+
+        <!-- Lebensbalken Gegner -->
+        <div id="hp-bar-bg">
+            <div id="hp-bar-fill"></div>
+            <div id="hp-text"><span id="hp-current">10</span> / <span id="hp-max">10</span></div>
+        </div>
+
+        <!-- Upgrade Menü -->
+        <div class="upgrades">
+            <button class="btn" id="btn-atk" onclick="upgrade('atk')">
+                <span>⚔️ Angriff (Aktuell: <span id="atk-val">1</span>)</span>
+                <span>💰 <span id="atk-cost">10</span></span>
+            </button>
+            <button class="btn" id="btn-speed" onclick="upgrade('speed')">
+                <span>⚡ Angriffs-Tempo</span>
+                <span>💰 <span id="speed-cost">50</span></span>
+            </button>
+            <button class="btn" id="btn-crit" onclick="upgrade('crit')">
+                <span>🎯 Krit-Chance (Aktuell: <span id="crit-val">5</span>%)</span>
+                <span>💰 <span id="crit-cost">100</span></span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- JAVASCRIPT LOGIK ---
+
+        // Spiel-Status (Werte)
+        let game = {
+            gold: 0,
+            level: 1,
+            
+            // Slime Stats
+            atk: 1,
+            atkLvl: 1,
+            attackSpeedMs: 1500, // Startet mit 1.5 Sekunden pro Schlag
+            speedLvl: 1,
+            critChance: 5, // 5%
+            critLvl: 1,
+            critMultiplier: 2,
+
+            // Gegner Stats
+            enemyHp: 10,
+            enemyMaxHp: 10,
+            
+            // Upgrade Kosten
+            costs: {
+                atk: 10,
+                speed: 50,
+                crit: 100
+            }
+        };
+
+        // Gegner-Emojis für Abwechslung
+        const enemySprites = ["👹", "👺", "👻", "👽", "👾", "🦇", "🕷️", "🦂", "🦖"];
+        let attackTimer = null;
+
+        // HTML-Elemente greifen
+        const elGold = document.getElementById('gold-display');
+        const elLevel = document.getElementById('level-display');
+        const elHpFill = document.getElementById('hp-bar-fill');
+        const elHpCurrent = document.getElementById('hp-current');
+        const elHpMax = document.getElementById('hp-max');
+        const elSlime = document.getElementById('slime');
+        const elEnemy = document.getElementById('enemy');
+        const elBattleField = document.getElementById('battle-field');
+
+        // Knöpfe
+        const btnAtk = document.getElementById('btn-atk');
+        const btnSpeed = document.getElementById('btn-speed');
+        const btnCrit = document.getElementById('btn-crit');
+
+        // Start des Spiels
+        function init() {
+            updateUI();
+            startAutoAttack();
+        }
+
+        // Auto-Angriff Loop
+        function startAutoAttack() {
+            if (attackTimer) clearInterval(attackTimer);
+            attackTimer = setInterval(() => {
+                dealDamage();
+            }, game.attackSpeedMs);
+        }
+
+        // Manueller Angriff durch Klicken
+        function playerTapAttack() {
+            dealDamage();
+        }
+
+        // Schaden austeilen
+        function dealDamage() {
+            // Kritischer Treffer berechnen
+            let isCrit = Math.random() * 100 < game.critChance;
+            let finalDamage = game.atk;
+            if (isCrit) finalDamage *= game.critMultiplier;
+
+            // HP abziehen
+            game.enemyHp -= finalDamage;
+            if (game.enemyHp < 0) game.enemyHp = 0;
+
+            // Animationen auslösen
+            playAttackAnimation();
+            showDamageNumber(finalDamage, isCrit);
+
+            // Prüfen ob Gegner tot
+            if (game.enemyHp === 0) {
+                enemyDefeated();
+            }
+
+            updateUI();
+        }
+
+        // Wenn Gegner besiegt ist
+        function enemyDefeated() {
+            // Gold geben (basierend auf Level)
+            let goldDrop = Math.floor(game.enemyMaxHp * 0.2) + 1;
+            game.gold += goldDrop;
+
+            // Level up & Gegner stärker machen
+            game.level++;
+            
+            // HP skaliert exponentiell
+            game.enemyMaxHp = Math.floor(10 * Math.pow(1.15, game.level - 1));
+            game.enemyHp = game.enemyMaxHp;
+
+            // Neues Aussehen für Gegner
+            elEnemy.innerText = enemySprites[(game.level - 1) % enemySprites.length];
+        }
+
+        // Upgrades kaufen
+        function upgrade(type) {
+            if (game.gold >= game.costs[type]) {
+                game.gold -= game.costs[type];
+
+                if (type === 'atk') {
+                    game.atkLvl++;
+                    game.atk += Math.floor(game.atkLvl * 1.5);
+                    game.costs.atk = Math.floor(10 * Math.pow(1.3, game.atkLvl));
+                } 
+                else if (type === 'speed') {
+                    game.speedLvl++;
+                    // Verringert den Cooldown (min. 200ms)
+                    game.attackSpeedMs = Math.max(200, game.attackSpeedMs * 0.9);
+                    game.costs.speed = Math.floor(50 * Math.pow(1.5, game.speedLvl));
+                    startAutoAttack(); // Timer mit neuem Speed neu starten
+                }
+                else if (type === 'crit') {
+                    game.critLvl++;
+                    game.critChance = Math.min(100, game.critChance + 2); // Max 100%
+                    game.costs.crit = Math.floor(100 * Math.pow(1.4, game.critLvl));
+                }
+                updateUI();
+            }
+        }
+
+        // Visuelles Update der Buttons & Balken
+        function updateUI() {
+            // Stats & Balken
+            elGold.innerText = game.gold;
+            elLevel.innerText = game.level;
+            elHpCurrent.innerText = Math.ceil(game.enemyHp);
+            elHpMax.innerText = game.enemyMaxHp;
+            
+            let hpPercent = (game.enemyHp / game.enemyMaxHp) * 100;
+            elHpFill.style.width = hpPercent + '%';
+
+            // Upgrade Buttons Text
+            document.getElementById('atk-val').innerText = game.atk;
+            document.getElementById('atk-cost').innerText = game.costs.atk;
+            document.getElementById('speed-cost').innerText = game.costs.speed;
+            document.getElementById('crit-val').innerText = game.critChance;
+            document.getElementById('crit-cost').innerText = game.costs.crit;
+
+            // Buttons ausgrauen, wenn nicht genug Gold
+            btnAtk.disabled = game.gold < game.costs.atk;
+            btnSpeed.disabled = game.gold < game.costs.speed || game.attackSpeedMs <= 200;
+            btnCrit.disabled = game.gold < game.costs.crit || game.critChance >= 100;
+
+            if(game.attackSpeedMs <= 200) btnSpeed.querySelector('span:first-child').innerText = "⚡ Max Tempo!";
+            if(game.critChance >= 100) btnCrit.querySelector('span:first-child').innerText = "🎯 Max Krit!";
+        }
+
+        // Animation für Slime und Gegner
+        function playAttackAnimation() {
+            elSlime.classList.add('attack');
+            setTimeout(() => {
+                elSlime.classList.remove('attack');
+                elEnemy.classList.add('hit');
+                setTimeout(() => elEnemy.classList.remove('hit'), 100);
+            }, 100);
+        }
+
+        // Fliegende Schadenszahlen generieren
+        function showDamageNumber(damage, isCrit) {
+            const damageEl = document.createElement('div');
+            damageEl.classList.add('damage-text');
+            damageEl.innerText = Math.ceil(damage);
+            
+            if (isCrit) {
+                damageEl.style.color = '#f1c40f'; // Gold für Kritisch
+                damageEl.style.fontSize = '32px';
+                damageEl.innerText = damageEl.innerText + "!";
+            }
+
+            // Leichte zufällige Positionierung, damit Zahlen nicht perfekt übereinander liegen
+            let randomX = Math.floor(Math.random() * 20) - 10;
+            let randomY = Math.floor(Math.random() * 20) - 10;
+            damageEl.style.transform = `translate(${randomX}px, ${randomY}px)`;
+
+            elBattleField.appendChild(damageEl);
+
+            // Nach der Animation (0.8s) das Element wieder löschen, um den Speicher nicht zu überlasten
+            setTimeout(() => {
+                damageEl.remove();
+            }, 800);
+        }
+
+        // Start!
+        init();
+
+    </script>
+</body>
+</html>
