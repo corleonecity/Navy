@@ -2,9 +2,8 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <!-- Verhindert Doppeltipp-Zoom auf dem Handy -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🍪 Keks-Klicker – Suchtmacher Deluxe</title>
+    <title>🍪 Keks-Klicker Ultra – Cloud Edition</title>
     <style>
         body {
             margin: 0;
@@ -26,8 +25,8 @@
             padding: 2rem 2.5rem;
             box-shadow: 0 20px 50px rgba(0,0,0,0.7);
             text-align: center;
-            max-width: 520px;
-            width: 90%;
+            max-width: 540px;
+            width: 92%;
             position: relative;
         }
         .cookie-btn {
@@ -39,17 +38,12 @@
             filter: drop-shadow(0 15px 20px rgba(0,0,0,0.5));
             margin: 0.5rem 0;
             line-height: 1;
-            /* Verhindert Doppeltipp-Zoom auf dem Button selbst */
             touch-action: manipulation;
             position: relative;
         }
         .cookie-btn:active {
             transform: scale(0.85);
             filter: brightness(1.3) drop-shadow(0 25px 30px rgba(0,0,0,0.7));
-        }
-        .cookie-btn:hover {
-            transform: scale(1.05);
-            filter: brightness(1.15) drop-shadow(0 20px 25px rgba(0,0,0,0.6));
         }
         .stats {
             font-size: 2rem;
@@ -65,16 +59,23 @@
         .heavenly {
             color: #ffd966;
             font-size: 1rem;
-            margin-bottom: 0.8rem;
+            margin-bottom: 0.5rem;
         }
-        .upgrade-panel, .click-upgrade-panel {
+        .section-title {
+            font-size: 1.2rem;
+            margin: 1rem 0 0.3rem;
+            color: #deb887;
+            border-bottom: 1px dashed #5f4b34;
+            padding-bottom: 0.2rem;
+        }
+        .upgrade-panel, .click-upgrade-panel, .heavenly-shop-panel {
             display: flex;
             flex-direction: column;
             gap: 0.6rem;
-            margin-top: 0.8rem;
+            margin-top: 0.5rem;
             align-items: stretch;
         }
-        .upgrade, .click-upgrade {
+        .upgrade, .click-upgrade, .heavenly-upgrade {
             background: #4a3828;
             border: none;
             border-radius: 2rem;
@@ -90,35 +91,13 @@
             box-shadow: inset 0 -3px 0 rgba(0,0,0,0.3);
             touch-action: manipulation;
         }
-        .upgrade.locked, .click-upgrade.locked {
+        .upgrade.locked, .click-upgrade.locked, .heavenly-upgrade.locked {
             opacity: 0.5;
             cursor: not-allowed;
             background: #33281e;
         }
-        .upgrade:not(.locked):hover, .click-upgrade:not(.locked):hover {
-            background: #5f4b34;
-        }
-        .upgrade-name, .click-upgrade-name {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        .upgrade-count, .click-upgrade-count {
-            background: rgba(255,255,240,0.2);
-            border-radius: 1rem;
-            padding: 0.1rem 0.7rem;
-            margin-left: 0.3rem;
-            font-size: 0.9rem;
-        }
-        .section-title {
-            font-size: 1.2rem;
-            margin: 1rem 0 0.3rem;
-            color: #deb887;
-            border-bottom: 1px dashed #5f4b34;
-            padding-bottom: 0.2rem;
-        }
         .prestige-btn {
-            margin-top: 1rem;
+            margin-top: 0.8rem;
             background: #e6b422;
             border: none;
             border-radius: 2rem;
@@ -134,9 +113,29 @@
         .prestige-btn:disabled {
             opacity: 0.4;
             cursor: not-allowed;
-            box-shadow: none;
             background: #555;
             color: #ccc;
+            box-shadow: none;
+        }
+        .spell-btn {
+            margin: 0.5rem auto 0;
+            background: #ff7b00;
+            border: none;
+            border-radius: 2rem;
+            color: white;
+            font-weight: bold;
+            padding: 0.7rem 1.8rem;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px rgba(255,123,0,0.5);
+            touch-action: manipulation;
+        }
+        .spell-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            background: #666;
+            box-shadow: none;
         }
         .reset-btn, .hard-reset-btn {
             margin-top: 0.5rem;
@@ -180,7 +179,7 @@
             0% { opacity: 1; transform: translateY(0) scale(1); }
             100% { opacity: 0; transform: translateY(-80px) scale(1.8); }
         }
-        .achievement-toast {
+        .achievement-toast, .weather-toast {
             position: fixed;
             bottom: 20px;
             left: 50%;
@@ -192,8 +191,8 @@
             border-radius: 2rem;
             font-weight: bold;
             z-index: 2000;
-            animation: slideUp 0.4s ease-out, fadeOut 1.5s 2.5s forwards;
             white-space: nowrap;
+            animation: slideUp 0.4s ease-out, fadeOut 1.5s 3s forwards;
         }
         @keyframes slideUp {
             from { bottom: -50px; opacity: 0; }
@@ -202,24 +201,43 @@
         @keyframes fadeOut {
             to { opacity: 0; bottom: 40px; }
         }
-        .achievement-box {
-            margin-top: 0.8rem;
-            background: rgba(255,215,0,0.1);
+        .boss {
+            position: fixed;
+            font-size: 4rem;
+            cursor: pointer;
+            z-index: 1500;
+            animation: bossPulse 0.8s infinite alternate;
+            filter: drop-shadow(0 0 25px red);
+            touch-action: manipulation;
+        }
+        @keyframes bossPulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.2); }
+        }
+        .stat-box {
+            background: rgba(0,0,0,0.4);
             border-radius: 1rem;
             padding: 0.5rem;
-            font-size: 0.9rem;
-            max-height: 120px;
-            overflow-y: auto;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: #bbbbbb;
+            text-align: left;
+        }
+        .detail {
+            display: flex; justify-content: space-between;
+            padding: 0.2rem 0.5rem;
         }
     </style>
 </head>
 <body>
 <div class="game-container">
-    <h1>🍪 Keks-Klicker Deluxe</h1>
+    <h1>🍪 Keks-Klicker Ultra</h1>
     <div class="stats" id="cookieDisplay">0 Kekse</div>
     <div class="cps" id="cpsDisplay">pro Sekunde: 0</div>
     <div class="heavenly" id="heavenlyDisplay"></div>
     <button class="cookie-btn" id="cookieButton">🍪</button>
+
+    <button class="spell-btn" id="spellButton">⚡ Backofen-Schub (abklingend)</button>
 
     <div class="section-title">🏭 Automatisierung</div>
     <div class="upgrade-panel" id="upgradeContainer"></div>
@@ -227,427 +245,635 @@
     <div class="section-title">💪 Klick-Upgrades</div>
     <div class="click-upgrade-panel" id="clickUpgradeContainer"></div>
 
+    <div class="section-title">👼 Himmlischer Shop</div>
+    <div class="heavenly-shop-panel" id="heavenlyShopContainer"></div>
+
     <button class="prestige-btn" id="prestigeButton" disabled>👼 Aufstieg (braucht 1M Kekse)</button>
 
-    <div class="achievement-box" id="achievementBox">
+    <div class="stat-box">
+        <details>
+            <summary>📊 Statistiken</summary>
+            <div class="detail"><span>Klicks:</span><span id="statClicks">0</span></div>
+            <div class="detail"><span>Spielzeit:</span><span id="statPlaytime">0 Min.</span></div>
+            <div class="detail"><span>Gesamte Kekse:</span><span id="statTotalEarned">0</span></div>
+        </details>
+    </div>
+
+    <div class="stat-box" style="margin-top:0.3rem;">
         <details>
             <summary>🏆 Errungenschaften</summary>
             <div id="achievementList">Noch keine...</div>
         </details>
     </div>
 
-    <button class="reset-btn" id="resetButton">🔄 Spiel zurücksetzen (ohne Himmlische)</button>
-    <button class="hard-reset-btn" id="hardResetButton" style="display:none;">💀 Alles löschen (auch Himmlische)</button>
+    <button class="reset-btn" id="resetButton">🔄 Weicher Reset</button>
+    <button class="hard-reset-btn" id="hardResetButton" style="display:none;">💀 Alles löschen</button>
+    <div id="firebaseStatus" style="font-size:0.75rem; margin-top:0.3rem; color:#aaa;"></div>
 </div>
 
-<script>
-    (function() {
-        // ---------- SPIELZUSTAND ----------
-        let cookies = 0;
-        let cookiesPerClick = 1;
-        let totalCookiesPerSecond = 0;
-        let totalCookiesEarned = 0;
-        let heavenlyKekse = 0;
-        let heavenlyMultiplier = 1; // 1 + heavenlyKekse * 0.05
-        let clickUpgradeCount = 0;
-        const clickUpgradeBaseCost = 50;
-        const clickUpgradeCostMult = 1.6;
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-        // Automatisierungs-Upgrades (CPS)
-        const upgrades = [
-            { id: 'cursor',     name: 'Mauszeiger', emoji: '🖱️', baseCost: 15,   baseCps: 0.1, costMult: 1.15 },
-            { id: 'grandma',    name: 'Oma',        emoji: '👵', baseCost: 100,  baseCps: 0.5, costMult: 1.15 },
-            { id: 'farm',       name: 'Bauernhof',  emoji: '🌾', baseCost: 600,  baseCps: 2,   costMult: 1.15 },
-            { id: 'factory',    name: 'Fabrik',     emoji: '🏭', baseCost: 3500, baseCps: 10,  costMult: 1.15 },
-            { id: 'mine',       name: 'Mine',       emoji: '⛏️', baseCost: 12000,baseCps: 40,  costMult: 1.15 },
-            { id: 'spaceship',  name: 'Raumschiff', emoji: '🚀', baseCost: 80000,baseCps: 200, costMult: 1.15 }
-        ];
-        let upgradeCounts = { cursor: 0, grandma: 0, farm: 0, factory: 0, mine: 0, spaceship: 0 };
+    const firebaseConfig = {
+        apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
+        authDomain: "cc-shop-36c3b.firebaseapp.com",
+        databaseURL: "https://cc-shop-36c3b-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "cc-shop-36c3b",
+        storageBucket: "cc-shop-36c3b.firebasestorage.app"
+    };
 
-        // Errungenschaften (Schwelle in gesamten gesammelten Keksen)
-        const achievementDefs = [
-            { threshold: 100, name: "Krümelmonster", emoji: "🐱" },
-            { threshold: 1000, name: "Keks-Lehrling", emoji: "🍪" },
-            { threshold: 10000, name: "Bäckermeister", emoji: "👨‍🍳" },
-            { threshold: 50000, name: "Keks-Fabrikant", emoji: "🏭" },
-            { threshold: 100000, name: "Millionärs-Krümel", emoji: "💰" },
-            { threshold: 1000000, name: "Keks-Mogul", emoji: "🏆" },
-            { threshold: 10000000, name: "Keks-Imperator", emoji: "👑" },
-            { threshold: 100000000, name: "Galaktischer Bäcker", emoji: "🌌" },
-        ];
-        let unlockedAchievements = {}; // key: threshold, value: true
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const FIREBASE_PREFIX = 'KK-users';
 
-        // Goldenes Cookie
-        let goldenCookieActive = false;
-        let goldenCookieTimeout = null;
-        let goldenBonus = null; // { type: 'clickBoost'|'cookieRain', multiplier: number, endTime: timestamp }
-        const GOLDEN_MIN_DELAY = 30; // Sekunden
-        const GOLDEN_MAX_DELAY = 60;
+    // Geräte-ID (stabil im localStorage)
+    let deviceId = localStorage.getItem('KK-deviceId');
+    if (!deviceId) {
+        deviceId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).substr(2);
+        localStorage.setItem('KK-deviceId', deviceId);
+    }
 
-        // ---------- DOM ELEMENTE ----------
-        const cookieDisplay = document.getElementById('cookieDisplay');
-        const cpsDisplay = document.getElementById('cpsDisplay');
-        const heavenlyDisplay = document.getElementById('heavenlyDisplay');
-        const cookieButton = document.getElementById('cookieButton');
-        const upgradeContainer = document.getElementById('upgradeContainer');
-        const clickUpgradeContainer = document.getElementById('clickUpgradeContainer');
-        const prestigeButton = document.getElementById('prestigeButton');
-        const achievementList = document.getElementById('achievementList');
-        const resetButton = document.getElementById('resetButton');
-        const hardResetButton = document.getElementById('hardResetButton');
+    function fbPath() {
+        return FIREBASE_PREFIX + '/' + deviceId;
+    }
 
-        // ---------- HILFSFUNKTIONEN ----------
-        function formatNumber(num) {
-            if (num < 1000) return Math.floor(num).toString();
-            let suffixes = ["", "K", "M", "Mrd", "Bio", "Brd"];
-            let tier = Math.floor(Math.log10(num) / 3);
-            if (tier >= suffixes.length) tier = suffixes.length - 1;
-            let scaled = num / Math.pow(10, tier * 3);
-            return scaled.toFixed(1) + ' ' + suffixes[tier];
+    // ---------- SPIELZUSTAND ----------
+    let cookies = 0;
+    let cookiesPerClick = 1;
+    let totalCookiesPerSecond = 0;
+    let totalCookiesEarned = 0;
+    let heavenlyKekse = 0;
+    let heavenlyMultiplier = 1;
+    let clickUpgradeCount = 0;
+    const clickUpgradeBaseCost = 50;
+    const clickUpgradeCostMult = 1.6;
+
+    // Himmlische Upgrades
+    let heavenlyUpgrades = {
+        strongerClicks: 0,    // +2 Klickstärke pro Level
+        automationBoost: 0,   // +5% Automatisierungs-CPS pro Level
+        prestigeBonus: 0      // +0.5 himmlische Kekse pro Aufstieg pro Level
+    };
+
+    // Statistiken
+    let statClicks = 0;
+    let statPlaytimeSeconds = 0;
+    let statTotalEarned = 0;
+
+    const upgrades = [
+        { id: 'cursor',     name: 'Mauszeiger', emoji: '🖱️', baseCost: 15,   baseCps: 0.1, costMult: 1.15 },
+        { id: 'grandma',    name: 'Oma',        emoji: '👵', baseCost: 100,  baseCps: 0.5, costMult: 1.15 },
+        { id: 'farm',       name: 'Bauernhof',  emoji: '🌾', baseCost: 600,  baseCps: 2,   costMult: 1.15 },
+        { id: 'factory',    name: 'Fabrik',     emoji: '🏭', baseCost: 3500, baseCps: 10,  costMult: 1.15 },
+        { id: 'mine',       name: 'Mine',       emoji: '⛏️', baseCost: 12000,baseCps: 40,  costMult: 1.15 },
+        { id: 'spaceship',  name: 'Raumschiff', emoji: '🚀', baseCost: 80000,baseCps: 200, costMult: 1.15 }
+    ];
+    let upgradeCounts = { cursor: 0, grandma: 0, farm: 0, factory: 0, mine: 0, spaceship: 0 };
+
+    const achievementDefs = [
+        { threshold: 100, name: "Krümelmonster", emoji: "🐱" },
+        { threshold: 1000, name: "Keks-Lehrling", emoji: "🍪" },
+        { threshold: 10000, name: "Bäckermeister", emoji: "👨‍🍳" },
+        { threshold: 50000, name: "Keks-Fabrikant", emoji: "🏭" },
+        { threshold: 100000, name: "Millionärs-Krümel", emoji: "💰" },
+        { threshold: 1000000, name: "Keks-Mogul", emoji: "🏆" },
+        { threshold: 10000000, name: "Keks-Imperator", emoji: "👑" },
+        { threshold: 100000000, name: "Galaktischer Bäcker", emoji: "🌌" },
+    ];
+    let unlockedAchievements = {};
+
+    // Goldenes Cookie
+    let goldenCookieActive = false;
+    let goldenCookieTimeout = null;
+    let goldenBonus = null;
+
+    // Keks-Wetter
+    let weatherBonus = 1; // 0.5 bis 2.0
+    let weatherTimeout = null;
+
+    // Backofen-Schub (Zauber)
+    let spellCooldown = 0;
+    let spellActive = false;
+    const SPELL_COOLDOWN = 60; // Sekunden
+    const SPELL_DURATION = 5;
+    const SPELL_MULTIPLIER = 10;
+
+    // Boss
+    let bossActive = false;
+    let bossHP = 0;
+    let bossMaxHP = 0;
+    let bossTimeout = null;
+
+    // DOM
+    const cookieDisplay = document.getElementById('cookieDisplay');
+    const cpsDisplay = document.getElementById('cpsDisplay');
+    const heavenlyDisplay = document.getElementById('heavenlyDisplay');
+    const cookieButton = document.getElementById('cookieButton');
+    const upgradeContainer = document.getElementById('upgradeContainer');
+    const clickUpgradeContainer = document.getElementById('clickUpgradeContainer');
+    const heavenlyShopContainer = document.getElementById('heavenlyShopContainer');
+    const prestigeButton = document.getElementById('prestigeButton');
+    const spellButton = document.getElementById('spellButton');
+    const achievementList = document.getElementById('achievementList');
+    const resetButton = document.getElementById('resetButton');
+    const hardResetButton = document.getElementById('hardResetButton');
+    const firebaseStatus = document.getElementById('firebaseStatus');
+    const statClicksEl = document.getElementById('statClicks');
+    const statPlaytimeEl = document.getElementById('statPlaytime');
+    const statTotalEarnedEl = document.getElementById('statTotalEarned');
+
+    // ---------- HELFER ----------
+    function formatNumber(num) {
+        if (num < 1000) return Math.floor(num).toString();
+        const suffixes = ["", "K", "M", "Mrd", "Bio", "Brd"];
+        let tier = Math.floor(Math.log10(num) / 3);
+        if (tier >= suffixes.length) tier = suffixes.length - 1;
+        let scaled = num / Math.pow(10, tier * 3);
+        return scaled.toFixed(1) + ' ' + suffixes[tier];
+    }
+
+    function updateHeavenly() {
+        const mult = (1 + heavenlyKekse * 0.05).toFixed(2);
+        if (heavenlyKekse > 0) {
+            heavenlyDisplay.textContent = `👼 Himmlische Kekse: ${formatNumber(heavenlyKekse)} (x${mult} Produktion)`;
+        } else {
+            heavenlyDisplay.textContent = '';
         }
+    }
 
-        function updateHeavenly() {
-            heavenlyMultiplier = 1 + heavenlyKekse * 0.05;
-            if (heavenlyKekse > 0) {
-                heavenlyDisplay.textContent = `👼 Himmlische Kekse: ${formatNumber(heavenlyKekse)} (x${heavenlyMultiplier.toFixed(2)} Produktion)`;
-            } else {
-                heavenlyDisplay.textContent = '';
-            }
-        }
+    function updateStatsUI() {
+        statClicksEl.textContent = formatNumber(statClicks);
+        statTotalEarnedEl.textContent = formatNumber(statTotalEarned);
+        const mins = Math.floor(statPlaytimeSeconds / 60);
+        const secs = statPlaytimeSeconds % 60;
+        statPlaytimeEl.textContent = mins + ' Min. ' + secs + ' Sek.';
+    }
 
-        function updateDisplay() {
-            cookieDisplay.textContent = formatNumber(cookies) + ' Kekse';
-            cpsDisplay.textContent = 'pro Sekunde: ' + formatNumber(totalCookiesPerSecond);
-            updateHeavenly();
-            prestigeButton.disabled = totalCookiesEarned < 1000000;
-            prestigeButton.textContent = totalCookiesEarned < 1000000 
-                ? `👼 Aufstieg (braucht 1M, aktuell ${formatNumber(totalCookiesEarned)})` 
-                : `👼 Aufstieg (${formatNumber(totalCookiesEarned)} gesammelt)`;
-            if (heavenlyKekse > 0) hardResetButton.style.display = 'inline-block';
-            else hardResetButton.style.display = 'none';
-        }
-
-        function calculateCps() {
-            let cps = 0;
-            upgrades.forEach(upg => {
-                cps += upgradeCounts[upg.id] * upg.baseCps;
-            });
-            totalCookiesPerSecond = Math.round(cps * heavenlyMultiplier * 10) / 10;
-        }
-
-        function getUpgradeCost(upg) {
-            let count = upgradeCounts[upg.id];
-            return Math.floor(upg.baseCost * Math.pow(upg.costMult, count));
-        }
-
-        function getClickUpgradeCost() {
-            return Math.floor(clickUpgradeBaseCost * Math.pow(clickUpgradeCostMult, clickUpgradeCount));
-        }
-
-        function canAfford(cost) { return cookies >= cost; }
-
-        function buyUpgrade(upg) {
-            let cost = getUpgradeCost(upg);
-            if (cookies >= cost) {
-                cookies -= cost;
-                upgradeCounts[upg.id] += 1;
-                calculateCps();
-                updateDisplay();
-                renderUpgrades();
-                saveGame();
-            }
-        }
-
-        function buyClickUpgrade() {
-            let cost = getClickUpgradeCost();
-            if (cookies >= cost) {
-                cookies -= cost;
-                clickUpgradeCount += 1;
-                cookiesPerClick = 1 + clickUpgradeCount; // Basis 1 + jede Stufe +1
-                updateDisplay();
-                renderClickUpgrade();
-                saveGame();
-            }
-        }
-
-        function renderUpgrades() {
-            upgradeContainer.innerHTML = '';
-            upgrades.forEach(upg => {
-                let cost = getUpgradeCost(upg);
-                let count = upgradeCounts[upg.id];
-                let affordable = canAfford(cost);
-                let btn = document.createElement('button');
-                btn.className = 'upgrade' + (affordable ? '' : ' locked');
-                btn.innerHTML = `
-                    <span class="upgrade-name">${upg.emoji} ${upg.name} <span class="upgrade-count">${count}</span></span>
-                    <span>${formatNumber(cost)} 🍪</span>
-                `;
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (affordable) buyUpgrade(upg);
-                });
-                upgradeContainer.appendChild(btn);
-            });
-        }
-
-        function renderClickUpgrade() {
-            clickUpgradeContainer.innerHTML = '';
-            let cost = getClickUpgradeCost();
-            let affordable = canAfford(cost);
-            let btn = document.createElement('button');
-            btn.className = 'click-upgrade' + (affordable ? '' : ' locked');
-            btn.innerHTML = `
-                <span class="click-upgrade-name">🖱️ Stärkerer Klick <span class="click-upgrade-count">${clickUpgradeCount}</span></span>
-                <span>${formatNumber(cost)} 🍪</span>
-            `;
-            btn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (affordable) buyClickUpgrade();
-            });
-            clickUpgradeContainer.appendChild(btn);
-        }
-
-        // Errungenschaften prüfen
-        function checkAchievements() {
-            let updated = false;
-            achievementDefs.forEach(a => {
-                if (totalCookiesEarned >= a.threshold && !unlockedAchievements[a.threshold]) {
-                    unlockedAchievements[a.threshold] = true;
-                    updated = true;
-                    showAchievementToast(a.emoji + ' ' + a.name);
-                }
-            });
-            if (updated) {
-                renderAchievements();
-                saveGame();
-            }
-        }
-
-        function showAchievementToast(text) {
-            let toast = document.createElement('div');
-            toast.className = 'achievement-toast';
-            toast.textContent = '🏆 ' + text;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 4000);
-        }
-
-        function renderAchievements() {
-            let listHtml = '';
-            let earned = Object.keys(unlockedAchievements).map(Number).sort((a,b)=>a-b);
-            achievementDefs.forEach(a => {
-                if (unlockedAchievements[a.threshold]) {
-                    listHtml += `<div>${a.emoji} ${a.name} (${formatNumber(a.threshold)}) ✔️</div>`;
-                } else {
-                    listHtml += `<div style="opacity:0.4;">🔒 ??? (${formatNumber(a.threshold)})</div>`;
-                }
-            });
-            if (earned.length === 0) listHtml = 'Noch keine Errungenschaften.';
-            achievementList.innerHTML = listHtml;
-        }
-
-        // Goldenes Cookie spawnen
-        function scheduleGoldenCookie() {
-            if (goldenCookieTimeout) clearTimeout(goldenCookieTimeout);
-            let delay = (GOLDEN_MIN_DELAY + Math.random() * (GOLDEN_MAX_DELAY - GOLDEN_MIN_DELAY)) * 1000;
-            goldenCookieTimeout = setTimeout(spawnGoldenCookie, delay);
-        }
-
-        function spawnGoldenCookie() {
-            if (goldenCookieActive) return;
-            let gc = document.createElement('div');
-            gc.className = 'golden-cookie';
-            gc.textContent = '✨🍪✨';
-            gc.style.left = Math.random() * (window.innerWidth - 80) + 'px';
-            gc.style.top = Math.random() * (window.innerHeight - 80) + 'px';
-            gc.addEventListener('click', (e) => {
-                e.stopPropagation();
-                collectGoldenCookie(gc);
-            });
-            document.body.appendChild(gc);
-            goldenCookieActive = true;
-            // Automatisch verschwinden nach 5 Sekunden
-            setTimeout(() => {
-                if (gc.parentNode) {
-                    gc.remove();
-                    goldenCookieActive = false;
-                    scheduleGoldenCookie();
-                }
-            }, 5000);
-        }
-
-        function collectGoldenCookie(gcElement) {
-            if (!goldenCookieActive) return;
-            gcElement.remove();
-            goldenCookieActive = false;
-            // Zufälliger Bonus
-            if (Math.random() < 0.5) {
-                // Cookie Rain: +15% der aktuellen Kekse, mindestens 100
-                let bonus = Math.floor(cookies * 0.15);
-                if (bonus < 100) bonus = 100;
-                cookies += bonus;
-                totalCookiesEarned += bonus;
-                showAchievementToast('🌧️ +' + formatNumber(bonus) + ' Kekse!');
-            } else {
-                // Click Boost: 7x Klicks für 10 Sekunden
-                goldenBonus = { type: 'clickBoost', multiplier: 7, endTime: Date.now() + 10000 };
-                showAchievementToast('⚡ 7x Klickkraft für 10 Sekunden!');
-                setTimeout(() => {
-                    goldenBonus = null;
-                }, 10000);
-            }
-            updateDisplay();
-            saveGame();
-            scheduleGoldenCookie();
-        }
-
-        // Partikel beim Klicken
-        function spawnParticle(x, y, text) {
-            let p = document.createElement('div');
-            p.className = 'particle';
-            p.textContent = text;
-            p.style.left = x + 'px';
-            p.style.top = y + 'px';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 800);
-        }
-
-        // ---------- KLICK-HANDLER ----------
-        cookieButton.addEventListener('click', (e) => {
-            let bonusMultiplier = (goldenBonus && goldenBonus.type === 'clickBoost') ? goldenBonus.multiplier : 1;
-            let earned = cookiesPerClick * bonusMultiplier;
-            cookies += earned;
-            totalCookiesEarned += earned;
-            // Partikel
-            let rect = cookieButton.getBoundingClientRect();
-            let x = rect.left + rect.width/2 + (Math.random() - 0.5) * 60;
-            let y = rect.top;
-            spawnParticle(x, y, '+' + (earned >= 1 ? formatNumber(earned) : earned.toFixed(1)));
-            updateDisplay();
-            checkAchievements();
-            saveGame();
-            renderUpgrades();
-            renderClickUpgrade();
+    function calculateCps() {
+        let cps = 0;
+        upgrades.forEach(upg => {
+            cps += upgradeCounts[upg.id] * upg.baseCps;
         });
+        // Himmlischer Multiplikator + Automatisierungsboost
+        const automationFactor = 1 + heavenlyUpgrades.automationBoost * 0.05;
+        const finalCps = cps * heavenlyMultiplier * automationFactor * weatherBonus * (spellActive ? SPELL_MULTIPLIER : 1);
+        totalCookiesPerSecond = Math.round(finalCps * 10) / 10;
+        cpsDisplay.textContent = 'pro Sekunde: ' + formatNumber(totalCookiesPerSecond);
+    }
 
-        // Automatischer Zuwachs alle 50ms
-        setInterval(() => {
-            if (totalCookiesPerSecond > 0) {
-                let increment = totalCookiesPerSecond / 20;
-                cookies += increment;
-                totalCookiesEarned += increment;
-                updateDisplay();
-            }
-        }, 50);
+    function getUpgradeCost(upg) {
+        return Math.floor(upg.baseCost * Math.pow(upg.costMult, upgradeCounts[upg.id]));
+    }
 
-        // Alle 2 Sekunden speichern + UI auffrischen
-        setInterval(() => {
-            saveGame();
-            renderUpgrades();
-            renderClickUpgrade();
-            checkAchievements();
-        }, 2000);
+    function getClickUpgradeCost() {
+        return Math.floor(clickUpgradeBaseCost * Math.pow(clickUpgradeCostMult, clickUpgradeCount));
+    }
 
-        // Prestige (Aufstieg)
-        prestigeButton.addEventListener('click', () => {
-            if (totalCookiesEarned < 1000000) return;
-            if (confirm('👼 Aufstieg! Deine gesamten gesammelten Kekse werden in himmlische Kekse umgewandelt (1M = 1 himmlischer Keks). Dein Spiel wird zurückgesetzt, aber himmlische Kekse und Errungenschaften bleiben. Fortfahren?')) {
-                let gained = Math.floor(totalCookiesEarned / 1000000);
-                heavenlyKekse += gained;
-                // Reset Spielstand, außer himmlische Kekse und Errungenschaften
-                cookies = 0;
-                totalCookiesEarned = 0;
-                upgradeCounts = { cursor: 0, grandma: 0, farm: 0, factory: 0, mine: 0, spaceship: 0 };
-                clickUpgradeCount = 0;
-                cookiesPerClick = 1;
-                // Goldenes Cookie zurücksetzen
-                if (goldenCookieTimeout) clearTimeout(goldenCookieTimeout);
-                goldenCookieActive = false;
-                goldenBonus = null;
-                document.querySelectorAll('.golden-cookie').forEach(el => el.remove());
-                calculateCps();
-                updateDisplay();
-                renderUpgrades();
-                renderClickUpgrade();
-                scheduleGoldenCookie();
-                saveGame();
-            }
-        });
+    function canAfford(cost) { return cookies >= cost; }
 
-        // Weicher Reset (behält Himmlische)
-        resetButton.addEventListener('click', () => {
-            if (confirm('🔄 Deinen Fortschritt (Kekse, Upgrades) zurücksetzen? Himmlische Kekse und Errungenschaften bleiben erhalten.')) {
-                cookies = 0;
-                totalCookiesEarned = 0;
-                upgradeCounts = { cursor: 0, grandma: 0, farm: 0, factory: 0, mine: 0, spaceship: 0 };
-                clickUpgradeCount = 0;
-                cookiesPerClick = 1;
-                if (goldenCookieTimeout) clearTimeout(goldenCookieTimeout);
-                goldenCookieActive = false;
-                goldenBonus = null;
-                document.querySelectorAll('.golden-cookie').forEach(el => el.remove());
-                calculateCps();
-                updateDisplay();
-                renderUpgrades();
-                renderClickUpgrade();
-                scheduleGoldenCookie();
-                saveGame();
-            }
-        });
-
-        // Harter Reset (alles)
-        hardResetButton.addEventListener('click', () => {
-            if (confirm('💀 WIRKLICH ALLES LÖSCHEN? Auch himmlische Kekse und Errungenschaften?')) {
-                localStorage.removeItem('keksKlickerDeluxeSave');
-                location.reload();
-            }
-        });
-
-        // ---------- SPEICHERN / LADEN ----------
-        function saveGame() {
-            let data = {
-                cookies, totalCookiesEarned, heavenlyKekse, upgradeCounts,
-                clickUpgradeCount, cookiesPerClick, unlockedAchievements
-            };
-            localStorage.setItem('keksKlickerDeluxeSave', JSON.stringify(data));
-        }
-
-        function loadGame() {
-            let raw = localStorage.getItem('keksKlickerDeluxeSave');
-            if (!raw) return;
-            try {
-                let d = JSON.parse(raw);
-                cookies = d.cookies || 0;
-                totalCookiesEarned = d.totalCookiesEarned || 0;
-                heavenlyKekse = d.heavenlyKekse || 0;
-                upgradeCounts = d.upgradeCounts || { cursor:0,grandma:0,farm:0,factory:0,mine:0,spaceship:0 };
-                clickUpgradeCount = d.clickUpgradeCount || 0;
-                cookiesPerClick = d.cookiesPerClick || 1;
-                unlockedAchievements = d.unlockedAchievements || {};
-            } catch (e) { resetEverything(); }
+    function buyUpgrade(upg) {
+        const cost = getUpgradeCost(upg);
+        if (cookies >= cost) {
+            cookies -= cost;
+            upgradeCounts[upg.id] += 1;
             calculateCps();
-            updateHeavenly();
+            updateDisplay();
+            renderUpgrades();
+            saveGame();
+        }
+    }
+
+    function buyClickUpgrade() {
+        const cost = getClickUpgradeCost();
+        if (cookies >= cost) {
+            cookies -= cost;
+            clickUpgradeCount += 1;
+            cookiesPerClick = 1 + clickUpgradeCount;
+            updateDisplay();
+            renderClickUpgrade();
+            saveGame();
+        }
+    }
+
+    function buyHeavenlyUpgrade(key) {
+        const cost = heavenlyUpgradeCost(key);
+        if (heavenlyKekse >= cost) {
+            heavenlyKekse -= cost;
+            heavenlyUpgrades[key] += 1;
+            calculateCps();
+            updateDisplay();
+            renderHeavenlyShop();
+            saveGame();
+        }
+    }
+
+    function heavenlyUpgradeCost(key) {
+        const level = heavenlyUpgrades[key];
+        if (key === 'strongerClicks') return 1 + level * 2;
+        if (key === 'automationBoost') return 2 + level * 3;
+        if (key === 'prestigeBonus') return 3 + level * 5;
+        return 999;
+    }
+
+    function renderUpgrades() {
+        upgradeContainer.innerHTML = '';
+        upgrades.forEach(upg => {
+            const cost = getUpgradeCost(upg);
+            const count = upgradeCounts[upg.id];
+            const affordable = canAfford(cost);
+            const btn = document.createElement('button');
+            btn.className = 'upgrade' + (affordable ? '' : ' locked');
+            btn.innerHTML = `<span class="upgrade-name">${upg.emoji} ${upg.name} <span class="upgrade-count">${count}</span></span><span>${formatNumber(cost)} 🍪</span>`;
+            btn.addEventListener('click', (e) => { e.stopPropagation(); if (affordable) buyUpgrade(upg); });
+            upgradeContainer.appendChild(btn);
+        });
+    }
+
+    function renderClickUpgrade() {
+        clickUpgradeContainer.innerHTML = '';
+        const cost = getClickUpgradeCost();
+        const affordable = canAfford(cost);
+        const btn = document.createElement('button');
+        btn.className = 'click-upgrade' + (affordable ? '' : ' locked');
+        btn.innerHTML = `<span class="click-upgrade-name">🖱️ Stärkerer Klick <span class="click-upgrade-count">${clickUpgradeCount}</span></span><span>${formatNumber(cost)} 🍪</span>`;
+        btn.addEventListener('click', (e) => { e.stopPropagation(); if (affordable) buyClickUpgrade(); });
+        clickUpgradeContainer.appendChild(btn);
+    }
+
+    function renderHeavenlyShop() {
+        heavenlyShopContainer.innerHTML = '';
+        const items = [
+            { key: 'strongerClicks', name: '💪 Stärkere Klicks', desc: '+2 Klickstärke', level: heavenlyUpgrades.strongerClicks },
+            { key: 'automationBoost', name: '⚙️ Automatisierungsboost', desc: '+5% CPS', level: heavenlyUpgrades.automationBoost },
+            { key: 'prestigeBonus', name: '✨ Prestige-Bonus', desc: '+0.5 himml. Kekse/Aufstieg', level: heavenlyUpgrades.prestigeBonus }
+        ];
+        items.forEach(item => {
+            const cost = heavenlyUpgradeCost(item.key);
+            const affordable = heavenlyKekse >= cost;
+            const btn = document.createElement('button');
+            btn.className = 'heavenly-upgrade' + (affordable ? '' : ' locked');
+            btn.innerHTML = `<span>${item.name} (Stufe ${item.level})</span><span>${cost} 👼</span>`;
+            btn.addEventListener('click', (e) => { e.stopPropagation(); if (affordable) buyHeavenlyUpgrade(item.key); });
+            heavenlyShopContainer.appendChild(btn);
+        });
+    }
+
+    function checkAchievements() {
+        let updated = false;
+        achievementDefs.forEach(a => {
+            if (statTotalEarned >= a.threshold && !unlockedAchievements[a.threshold]) {
+                unlockedAchievements[a.threshold] = true;
+                updated = true;
+                showToast('🏆 ' + a.emoji + ' ' + a.name);
+            }
+        });
+        if (updated) { renderAchievements(); saveGame(); }
+    }
+
+    function showToast(text) {
+        const toast = document.createElement('div');
+        toast.className = 'achievement-toast';
+        toast.textContent = text;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4500);
+    }
+
+    function renderAchievements() {
+        let html = '';
+        achievementDefs.forEach(a => {
+            if (unlockedAchievements[a.threshold]) {
+                html += `<div>${a.emoji} ${a.name} ✔️</div>`;
+            } else {
+                html += `<div style="opacity:0.4;">🔒 ??? (${formatNumber(a.threshold)})</div>`;
+            }
+        });
+        achievementList.innerHTML = html || 'Noch keine...';
+    }
+
+    // ---------- GOLDENES COOKIE ----------
+    function scheduleGoldenCookie() {
+        if (goldenCookieTimeout) clearTimeout(goldenCookieTimeout);
+        const delay = (30 + Math.random() * 30) * 1000;
+        goldenCookieTimeout = setTimeout(spawnGoldenCookie, delay);
+    }
+
+    function spawnGoldenCookie() {
+        if (goldenCookieActive || bossActive) return;
+        const gc = document.createElement('div');
+        gc.className = 'golden-cookie';
+        gc.textContent = '✨🍪✨';
+        gc.style.left = Math.random() * (window.innerWidth - 80) + 'px';
+        gc.style.top = Math.random() * (window.innerHeight - 80) + 'px';
+        gc.addEventListener('click', (e) => {
+            e.stopPropagation();
+            collectGoldenCookie(gc);
+        });
+        document.body.appendChild(gc);
+        goldenCookieActive = true;
+        setTimeout(() => {
+            if (gc.parentNode) { gc.remove(); goldenCookieActive = false; scheduleGoldenCookie(); }
+        }, 6000);
+    }
+
+    function collectGoldenCookie(gcElement) {
+        if (!goldenCookieActive) return;
+        gcElement.remove();
+        goldenCookieActive = false;
+        if (Math.random() < 0.5) {
+            const bonus = Math.max(100, Math.floor(cookies * 0.2));
+            cookies += bonus;
+            statTotalEarned += bonus;
+            showToast('🌧️ +' + formatNumber(bonus) + ' Kekse!');
+        } else {
+            goldenBonus = { type: 'clickBoost', multiplier: 7, endTime: Date.now() + 10000 };
+            showToast('⚡ 7x Klickkraft für 10s!');
+            setTimeout(() => { goldenBonus = null; }, 10000);
+        }
+        updateDisplay();
+        saveGame();
+        scheduleGoldenCookie();
+    }
+
+    // ---------- WETTER ----------
+    function scheduleWeather() {
+        if (weatherTimeout) clearTimeout(weatherTimeout);
+        weatherTimeout = setTimeout(changeWeather, 30000 + Math.random() * 50000);
+    }
+
+    function changeWeather() {
+        weatherBonus = 0.5 + Math.random() * 1.5; // 0.5 - 2.0
+        const desc = weatherBonus >= 1.5 ? '☀️ Sonnenschein' : weatherBonus >= 1.0 ? '🌤️ Mild' : '🌧️ Regen';
+        showToast(`Keks-Wetter: ${desc} (x${weatherBonus.toFixed(1)})`);
+        calculateCps();
+        scheduleWeather();
+    }
+
+    // ---------- ZAUBER ----------
+    function updateSpellButton() {
+        if (spellActive) {
+            spellButton.textContent = '⚡ Backofen-Schub aktiv!';
+            spellButton.disabled = true;
+        } else if (spellCooldown > 0) {
+            spellButton.textContent = `⚡ Abklingzeit: ${spellCooldown}s`;
+            spellButton.disabled = true;
+        } else {
+            spellButton.textContent = '⚡ Backofen-Schub (bereit)';
+            spellButton.disabled = false;
+        }
+    }
+
+    function activateSpell() {
+        if (spellCooldown > 0 || spellActive) return;
+        spellActive = true;
+        showToast('🔥 Backofen-Schub! 10x Produktion für 5s');
+        calculateCps();
+        updateSpellButton();
+        setTimeout(() => {
+            spellActive = false;
+            spellCooldown = SPELL_COOLDOWN;
+            const interval = setInterval(() => {
+                spellCooldown--;
+                updateSpellButton();
+                if (spellCooldown <= 0) { clearInterval(interval); updateSpellButton(); }
+            }, 1000);
+            calculateCps();
+        }, SPELL_DURATION * 1000);
+    }
+
+    // ---------- BOSS ----------
+    function scheduleBoss() {
+        if (bossTimeout) clearTimeout(bossTimeout);
+        bossTimeout = setTimeout(spawnBoss, 120000 + Math.random() * 180000);
+    }
+
+    function spawnBoss() {
+        if (bossActive || goldenCookieActive) { scheduleBoss(); return; }
+        bossActive = true;
+        bossHP = Math.floor(50 + Math.random() * 100);
+        bossMaxHP = bossHP;
+        const bossEl = document.createElement('div');
+        bossEl.className = 'boss';
+        bossEl.textContent = '👾';
+        bossEl.style.left = Math.random() * (window.innerWidth - 100) + 'px';
+        bossEl.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+        bossEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            bossHP--;
+            if (bossHP <= 0) {
+                const reward = Math.floor(cookies * 0.5) + 500;
+                cookies += reward;
+                statTotalEarned += reward;
+                showToast('🎉 Krümel-Boss besiegt! +' + formatNumber(reward) + ' Kekse');
+                bossEl.remove();
+                bossActive = false;
+                updateDisplay();
+                saveGame();
+                scheduleBoss();
+            } else {
+                bossEl.textContent = '👾 ' + bossHP + '/' + bossMaxHP;
+            }
+        });
+        document.body.appendChild(bossEl);
+        showToast('👾 Ein Krümel-Boss erscheint! Klick ihn platt!');
+        setTimeout(() => {
+            if (bossActive && bossEl.parentNode) {
+                bossEl.remove();
+                bossActive = false;
+                showToast('Der Boss ist entkommen...');
+                scheduleBoss();
+            }
+        }, 15000);
+    }
+
+    // ---------- PARTIKEL ----------
+    function spawnParticle(x, y, text) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.textContent = text;
+        p.style.left = x + 'px';
+        p.style.top = y + 'px';
+        document.body.appendChild(p);
+        setTimeout(() => p.remove(), 800);
+    }
+
+    // ---------- KLICK ----------
+    cookieButton.addEventListener('click', (e) => {
+        let bonusMultiplier = (goldenBonus && goldenBonus.type === 'clickBoost') ? goldenBonus.multiplier : 1;
+        const earned = (cookiesPerClick + heavenlyUpgrades.strongerClicks * 2) * bonusMultiplier;
+        cookies += earned;
+        statTotalEarned += earned;
+        statClicks++;
+        const rect = cookieButton.getBoundingClientRect();
+        const x = rect.left + rect.width/2 + (Math.random() - 0.5) * 60;
+        const y = rect.top;
+        spawnParticle(x, y, '+' + (earned >= 1 ? formatNumber(earned) : earned.toFixed(1)));
+        updateDisplay();
+        checkAchievements();
+        saveGame();
+    });
+
+    // ---------- PRESTIGE ----------
+    prestigeButton.addEventListener('click', () => {
+        if (statTotalEarned < 1000000) return;
+        const baseGain = Math.floor(statTotalEarned / 1000000);
+        const bonus = heavenlyUpgrades.prestigeBonus * 0.5 * baseGain;
+        const gained = baseGain + Math.floor(bonus);
+        if (confirm(`👼 Aufstieg! Du erhältst ${gained} himmlische Kekse (Basis: ${baseGain}, Bonus: ${Math.floor(bonus)}). Fortschritt wird zurückgesetzt.`)) {
+            heavenlyKekse += gained;
+            cookies = 0;
+            statTotalEarned = 0;
+            statClicks = 0;
+            upgradeCounts = { cursor:0,grandma:0,farm:0,factory:0,mine:0,spaceship:0 };
+            clickUpgradeCount = 0;
+            cookiesPerClick = 1;
+            goldenBonus = null;
+            document.querySelectorAll('.golden-cookie,.boss').forEach(el => el.remove());
+            goldenCookieActive = false;
+            bossActive = false;
+            calculateCps();
             updateDisplay();
             renderUpgrades();
             renderClickUpgrade();
-            renderAchievements();
+            renderHeavenlyShop();
             scheduleGoldenCookie();
+            scheduleBoss();
+            saveGame();
         }
+    });
 
-        function resetEverything() {
-            cookies = 0; totalCookiesEarned = 0; heavenlyKekse = 0;
+    // ---------- RESETS ----------
+    resetButton.addEventListener('click', () => {
+        if (confirm('🔄 Fortschritt zurücksetzen? Himmlische Kekse und Errungenschaften bleiben.')) {
+            cookies = 0; statTotalEarned = 0; statClicks = 0;
             upgradeCounts = { cursor:0,grandma:0,farm:0,factory:0,mine:0,spaceship:0 };
-            clickUpgradeCount = 0; cookiesPerClick = 1; unlockedAchievements = {};
+            clickUpgradeCount = 0; cookiesPerClick = 1; goldenBonus = null;
+            document.querySelectorAll('.golden-cookie,.boss').forEach(el => el.remove());
+            goldenCookieActive = false; bossActive = false;
+            calculateCps(); updateDisplay();
+            renderUpgrades(); renderClickUpgrade();
+            scheduleGoldenCookie(); scheduleBoss();
+            saveGame();
         }
+    });
 
-        // Start
-        loadGame();
+    hardResetButton.addEventListener('click', () => {
+        if (confirm('💀 ALLES löschen (auch Cloud)?')) {
+            set(ref(db, fbPath()), null).catch(()=>{});
+            localStorage.removeItem('KK-deviceId');
+            location.reload();
+        }
+    });
+
+    spellButton.addEventListener('click', activateSpell);
+
+    // ---------- DISPLAY ----------
+    function updateDisplay() {
+        cookieDisplay.textContent = formatNumber(cookies) + ' Kekse';
+        calculateCps();
+        updateHeavenly();
+        updateStatsUI();
+        prestigeButton.disabled = statTotalEarned < 1000000;
+        prestigeButton.textContent = statTotalEarned < 1000000
+            ? `👼 Aufstieg (braucht 1M, aktuell ${formatNumber(statTotalEarned)})`
+            : `👼 Aufstieg (${formatNumber(statTotalEarned)} gesammelt)`;
+        if (heavenlyKekse > 0) hardResetButton.style.display = 'inline-block';
+        else hardResetButton.style.display = 'none';
+    }
+
+    // ---------- FIREBASE SPEICHER/ LADE ----------
+    function getFullState() {
+        return {
+            cookies, totalCookiesEarned: statTotalEarned, heavenlyKekse,
+            upgradeCounts, clickUpgradeCount, cookiesPerClick,
+            unlockedAchievements, statClicks, statPlaytimeSeconds,
+            heavenlyUpgrades
+        };
+    }
+
+    function setFullState(data) {
+        cookies = data.cookies || 0;
+        statTotalEarned = data.totalCookiesEarned || 0;
+        heavenlyKekse = data.heavenlyKekse || 0;
+        upgradeCounts = data.upgradeCounts || { cursor:0,grandma:0,farm:0,factory:0,mine:0,spaceship:0 };
+        clickUpgradeCount = data.clickUpgradeCount || 0;
+        cookiesPerClick = data.cookiesPerClick || 1;
+        unlockedAchievements = data.unlockedAchievements || {};
+        statClicks = data.statClicks || 0;
+        statPlaytimeSeconds = data.statPlaytimeSeconds || 0;
+        heavenlyUpgrades = data.heavenlyUpgrades || { strongerClicks:0, automationBoost:0, prestigeBonus:0 };
+    }
+
+    let firebaseOnline = true;
+    async function saveGame() {
+        if (!firebaseOnline) return;
+        try {
+            await set(ref(db, fbPath()), getFullState());
+            firebaseStatus.textContent = '☁️ Gespeichert';
+        } catch (e) {
+            firebaseStatus.textContent = '⚠️ Cloud offline – lokal gesichert';
+            firebaseOnline = false;
+            localStorage.setItem('KK-localFallback', JSON.stringify(getFullState()));
+        }
+    }
+
+    async function loadGame() {
+        try {
+            const snap = await get(ref(db, fbPath()));
+            if (snap.exists()) {
+                setFullState(snap.val());
+                firebaseOnline = true;
+                firebaseStatus.textContent = '☁️ Geladen';
+            } else {
+                const local = localStorage.getItem('KK-localFallback');
+                if (local) setFullState(JSON.parse(local));
+                firebaseStatus.textContent = 'ℹ️ Neuer Spielstand';
+            }
+        } catch (e) {
+            const local = localStorage.getItem('KK-localFallback');
+            if (local) setFullState(JSON.parse(local));
+            firebaseOnline = false;
+            firebaseStatus.textContent = '⚠️ Offline – lokal geladen';
+        }
         calculateCps();
         updateDisplay();
         renderUpgrades();
         renderClickUpgrade();
+        renderHeavenlyShop();
         renderAchievements();
         scheduleGoldenCookie();
-    })();
+        scheduleWeather();
+        scheduleBoss();
+        updateSpellButton();
+    }
+
+    // ---------- INTERVALLE ----------
+    setInterval(() => {
+        if (totalCookiesPerSecond > 0) {
+            const increment = totalCookiesPerSecond / 20;
+            cookies += increment;
+            statTotalEarned += increment;
+            updateDisplay();
+        }
+    }, 50);
+
+    setInterval(() => {
+        statPlaytimeSeconds++;
+        updateStatsUI();
+        saveGame();
+        renderUpgrades();
+        renderClickUpgrade();
+        checkAchievements();
+        calculateCps();
+        updateSpellButton();
+    }, 2000);
+
+    window.addEventListener('beforeunload', () => {
+        localStorage.setItem('KK-localFallback', JSON.stringify(getFullState()));
+    });
+
+    // ---------- START ----------
+    loadGame();
 </script>
 </body>
 </html>
