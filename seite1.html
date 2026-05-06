@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
     <meta name="google" content="notranslate">
-    <title>Virtual Fisher PRO v7.2</title>
+    <title>Virtual Fisher PRO v7.3</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -19,7 +19,7 @@
             color: #e6f0ff; display: flex; justify-content: center; align-items: center;
             min-height: 100vh; transition: background 1s ease-in-out; padding: 10px;
             background-size: 400% 400%; animation: gradientBG 15s ease infinite;
-            font-variant-numeric: tabular-nums; /* Fix für iOS Zahlen-Kerning */
+            font-variant-numeric: tabular-nums;
             -webkit-font-smoothing: antialiased;
         }
         
@@ -29,7 +29,7 @@
         body.zone-bg-0.time-dusk { background: linear-gradient(180deg, #FF6B6B 0%, #FFD93D 25%, #1a3f2a 70%, #0f2b1c 100%); }
         body.zone-bg-0.time-night { background: linear-gradient(180deg, #0F0C29 0%, #1a1a3e 25%, #0a1a12 70%, #050d08 100%); }
         
-        /* Zone 1 (Bach) Backgrounds - Flacheres, klareres Gewässer Design */
+        /* Zone 1 (Bach) Backgrounds */
         body.zone-bg-1.time-dawn { background: linear-gradient(180deg, #ffb347 0%, #ffcc33 30%, #206a5d 70%, #104a3e 100%); }
         body.zone-bg-1.time-day { background: linear-gradient(180deg, #74ebd5 0%, #ACB6E5 30%, #3ca55c 70%, #1b5e20 100%); }
         body.zone-bg-1.time-dusk { background: linear-gradient(180deg, #ff7e5f 0%, #feb47b 30%, #2e7d32 70%, #124016 100%); }
@@ -40,18 +40,16 @@
         body.time-night #fishing-scene { background: rgba(0,0,0,0.4); }
         body.time-night .log-entry { color: #b0c4de; }
         
-        /* Water Colors Teich vs Bach */
         body.zone-bg-0 { --water-1: rgba(45,106,79,0.5); --water-1-dark: rgba(30,80,55,0.7); --water-2: rgba(26,63,42,0.6); --water-2-dark: rgba(18,50,30,0.8); }
         body.zone-bg-1 { --water-1: rgba(72,209,204,0.5); --water-1-dark: rgba(32,178,170,0.7); --water-2: rgba(0,139,139,0.6); --water-2-dark: rgba(0,100,100,0.8); }
         
         @keyframes gradientBG { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
 
-        .particles-container { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden; }
+        .particles-container, .bubbles-container { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden; }
         .particle { position:absolute; border-radius:50%; pointer-events:none; animation:particleFloat linear infinite; }
         @keyframes particleFloat { 0%{transform:translateY(100vh)translateX(0)scale(0);opacity:0}10%{opacity:1}50%{transform:translateY(50vh)translateX(20px)scale(1)}90%{opacity:1}100%{transform:translateY(-20vh)translateX(-20px)scale(0);opacity:0} }
         .particle-golden { background:radial-gradient(circle,#FFD700,#FFA500); box-shadow:0 0 8px #FFD700,0 0 15px #FFA500; animation-name:particleGoldenFloat; }
         @keyframes particleGoldenFloat { 0%{transform:translateY(60vh)translateX(0)scale(0);opacity:0}20%{opacity:1;transform:scale(1.2)}100%{transform:translateY(-10vh)translateX(30px)scale(0.3);opacity:0} }
-        .bubbles-container { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden; }
         .bubble { position:absolute; bottom:-50px; background:rgba(255,255,255,0.15); border-radius:50%; animation:floatUp linear infinite; backdrop-filter:blur(2px); }
         @keyframes floatUp { 0%{transform:translateY(0)scale(1);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-110vh)scale(1.5);opacity:0} }
         .fish-swarm { position:fixed; z-index:1; pointer-events:none; font-size:18px; white-space:nowrap; animation:swimSwarm 20s linear infinite; opacity:0.5; }
@@ -113,7 +111,7 @@
         button span { font-size:20px; }
         button:hover:not(:disabled) { filter:brightness(1.1); transform:translateY(-2px); }
         button:active:not(:disabled) { transform:translateY(1px); }
-        button:disabled { background:#334155; cursor:not-allowed; opacity:0.6; }
+        button:disabled { background:#334155; cursor:not-allowed; opacity:0.6; transform: none !important; }
         .danger-btn { background:#ef4444; flex-direction:row; }
         .prestige-btn { background:#8b5cf6; flex-direction:row; justify-content:center; font-size:16px; }
         .success-btn { background:#10b981; flex-direction:row; }
@@ -136,6 +134,9 @@
         .quest-footer { display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#94a3b8; }
         .inv-group-card { background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
         .inv-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+        .inv-col { max-height:60vh; overflow-y:auto; padding-right:8px; }
+        .inv-col::-webkit-scrollbar { width:5px; }
+        .inv-col::-webkit-scrollbar-thumb { background:#30363d; border-radius:5px; }
         .inv-card { background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:15px; margin-bottom:10px; display:flex; flex-direction:column; gap:5px; }
         .inv-card h4 { margin:0 0 5px 0; color:#60a5fa; border-bottom:1px solid #30363d; padding-bottom:5px; }
         .inv-stat { display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; }
@@ -160,12 +161,18 @@
         #chatContainer { position:fixed; bottom:80px; right:10px; z-index:9999; display:none; flex-direction:column; width:300px; max-height:400px; background:rgba(22,27,34,0.95); border-radius:12px; border:1px solid #30363d; backdrop-filter:blur(10px); }
         #chatMessages { flex:1; overflow-y:auto; padding:10px; font-size:12px; min-height:200px; max-height:300px; }
         #chatInput { width:100%; padding:10px; border:none; border-top:1px solid #30363d; background:#0d1117; color:white; border-radius:0 0 12px 12px; font-size:13px; outline:none; }
-        .chat-msg { margin-bottom:5px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .chat-msg { margin-bottom:5px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:space-between; gap:5px; }
+        .chat-msg-content { flex: 1; word-break: break-word; }
         .chat-msg .chat-user { color:#60a5fa; font-weight:bold; }
-        .chat-msg .chat-time { color:#64748b; font-size:9px; }
+        .chat-msg .chat-time { color:#64748b; font-size:9px; white-space:nowrap; }
         #btnChatToggle { position:fixed; bottom:80px; right:10px; z-index:10000; background:#2563eb; border:2px solid #1d4ed8; border-radius:50%; width:45px; height:45px; font-size:20px; cursor:pointer; display:none; justify-content:center; align-items:center; box-shadow:0 0 15px rgba(37,99,235,0.5); }
+        
+        #toast-container { position:fixed; top:20px; right:20px; z-index:999999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
+        .toast { background:#1e293b; color:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.5); border-left:4px solid #3b82f6; font-size:14px; animation:slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards; pointer-events:auto; }
+        @keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+        @keyframes fadeOut { to{opacity:0; visibility:hidden} }
 
-        @media (max-width:768px) { .inv-grid{grid-template-columns:1fr}.admin-grid{grid-template-columns:1fr} body{font-size:15px}button{font-size:14px}.modal-body{font-size:15px}#log{font-size:14px}h3{font-size:17px}h4{font-size:15px}#chatContainer{width:250px;right:5px} }
+        @media (max-width:768px) { .inv-grid{grid-template-columns:1fr} .inv-col{max-height:unset; overflow:visible;} .admin-grid{grid-template-columns:1fr} body{font-size:15px}button{font-size:14px}.modal-body{font-size:15px}#log{font-size:14px}h3{font-size:17px}h4{font-size:15px}#chatContainer{width:250px;right:5px} }
         @media (max-width:550px) { .container{padding:12px}.btn-grid{grid-template-columns:repeat(3,1fr)}.btn-grid-2{grid-template-columns:repeat(3,1fr)}button{padding:10px;font-size:13px}button span{font-size:18px} }
         @supports (-webkit-touch-callout:none) { body,button,input,select,textarea,.modal-body,#log,h1,h2,h3,h4,h5,h6,p,span,div{-webkit-text-size-adjust:100%;font-synthesis:none} }
     </style>
@@ -175,6 +182,7 @@
 <div class="particles-container" id="particlesContainer"></div>
 <div class="bubbles-container" id="bubblesContainer"></div>
 <div class="stars-container" id="starsContainer"></div>
+<div id="toast-container"></div>
 
 <div class="fish-swarm" style="top:15%;left:-10vw;">🐟🐟🐟🐟🐟</div>
 <div class="fish-swarm" style="top:35%;left:-10vw;animation-duration:25s;animation-delay:5s;font-size:14px;">🐠🐠🐠🐠🐠🐠</div>
@@ -206,7 +214,6 @@
 </div>
 <button id="btnChatToggle" onclick="window.toggleChat()">💬</button>
 
-<!-- Neues verbessertes Timing Minispiel Overlay -->
 <div id="timing-minigame-overlay" class="modal-overlay" style="z-index:99999;">
     <div class="modal-content" style="max-width:350px; text-align:center; padding:20px; background:radial-gradient(circle, #1e293b 0%, #0f172a 100%); border:2px solid #3b82f6; border-radius: 20px; box-shadow: 0 0 20px rgba(59,130,246,0.5);">
         <h2 style="color:#60a5fa; margin-top:0; text-transform: uppercase; letter-spacing: 2px;">🎣 Anbeißen!</h2>
@@ -339,6 +346,17 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
+window.showToast = function(msg, color="#3b82f6") {
+    let tc = document.getElementById('toast-container');
+    if(!tc) return;
+    let t = document.createElement('div');
+    t.className = 'toast';
+    t.style.borderLeftColor = color;
+    t.innerHTML = msg;
+    tc.appendChild(t);
+    setTimeout(() => { if(t.parentElement) t.remove(); }, 3000);
+}
 
 // ============ INITIALISIERUNG ============
 function initBubbles() {
@@ -510,7 +528,6 @@ window.handleAchieveMenu = function() {
 window.handleBankMenu = function() {
     window.currentOpenMenu = 'bank';
     
-    // Bank Freischaltung Check
     if(!gameState.bankUnlocked) {
         let canUnlock = gameState.money >= 25000 && gameState.prestige >= 1;
         let html = `
@@ -530,7 +547,7 @@ window.handleBankMenu = function() {
     const dep = gameState.bank.deposited || 0;
     const interestEarned = gameState.bank.interestEarned || 0;
     const lastInt = gameState.bank.lastInterest || 0;
-    const INTERVAL = 7200000; // 2 Stunden
+    const INTERVAL = 7200000;
     const now = Date.now();
     const timeSince = now - lastInt;
     const timeLeft = Math.max(0, INTERVAL - timeSince);
@@ -582,8 +599,8 @@ window.unlockBank = function() {
 
 window.bankDeposit = function() {
     const amt = parseInt(document.getElementById('bankDepositAmt').value);
-    if(isNaN(amt)||amt<=0) return alert("Gültigen Betrag eingeben!");
-    if(amt > gameState.money) return alert("So viel Geld hast du nicht!");
+    if(isNaN(amt)||amt<=0) return window.showToast("Gültigen Betrag eingeben!", "#ef4444");
+    if(amt > gameState.money) return window.showToast("So viel Geld hast du nicht!", "#ef4444");
     gameState.money -= amt;
     gameState.bank.deposited = (gameState.bank.deposited||0) + amt;
     if(!gameState.bank.lastInterest) gameState.bank.lastInterest = Date.now();
@@ -593,8 +610,8 @@ window.bankDeposit = function() {
 }
 window.bankWithdraw = function() {
     const amt = parseInt(document.getElementById('bankWithdrawAmt').value);
-    if(isNaN(amt)||amt<=0) return alert("Gültigen Betrag eingeben!");
-    if(amt > (gameState.bank.deposited||0)) return alert("So viel hast du nicht auf der Bank!");
+    if(isNaN(amt)||amt<=0) return window.showToast("Gültigen Betrag eingeben!", "#ef4444");
+    if(amt > (gameState.bank.deposited||0)) return window.showToast("So viel hast du nicht auf der Bank!", "#ef4444");
     gameState.money += amt;
     gameState.bank.deposited -= amt;
     saveData();
@@ -658,7 +675,11 @@ window.handleWheelMenu = function() {
 
     setTimeout(() => {
         const canvas = document.getElementById('wheelCanvas');
-        if(canvas) drawWheel(canvas, wheelPrizes, 0);
+        // Redraw wheel initially
+        if(canvas) {
+            canvas.style.transform = `rotate(${window.currentWheelRotation || 0}deg)`;
+            drawWheel(canvas, wheelPrizes, 0);
+        }
     }, 100);
 }
 
@@ -699,7 +720,7 @@ function drawWheel(canvas, prizes, rotation) {
 window.spinWheel = function() {
     if(!gameState.lastWheelSpin) gameState.lastWheelSpin = 0;
     const now = Date.now();
-    if(now - gameState.lastWheelSpin < 86400000) return alert("Heute schon gedreht!");
+    if(now - gameState.lastWheelSpin < 86400000) return window.showToast("Heute schon gedreht!", "#ef4444");
 
     const prizes = [
         { label:"100$", color:"#10b981", rew:(gs)=>{gs.money+=100;gs.stats.totalEarned+=100;log("🎰 +100$!");} },
@@ -722,41 +743,31 @@ window.spinWheel = function() {
 
     const targetIdx = Math.floor(Math.random()*prizes.length);
     const slices = prizes.length;
-    const arcSize = (2*Math.PI)/slices;
-    const targetAngle = targetIdx*arcSize + Math.random()*arcSize;
-    const totalSpin = 2*Math.PI*8 + targetAngle;
+    const arcSize = 360 / slices;
+    const targetAngle = targetIdx * arcSize + (arcSize/2);
+    const finalRot = 360 * 8 + (270 - targetAngle); // 8 spins + offset to land top
+    
+    window.currentWheelRotation = (window.currentWheelRotation || 0) + finalRot;
+    
+    canvas.style.transition = 'transform 4s cubic-bezier(0.25, 0.1, 0.25, 1)';
+    canvas.style.transform = `rotate(${window.currentWheelRotation}deg)`;
 
-    let currentRot = 0;
-    const duration = 4000;
-    const startTime = performance.now();
-
-    function animateSpin(ts) {
-        const elapsed = ts - startTime;
-        const progress = Math.min(elapsed/duration, 1);
-        const eased = 1 - Math.pow(1-progress, 3);
-        currentRot = eased * totalSpin;
-        drawWheel(canvas, prizes, currentRot);
-        if(progress < 1) requestAnimationFrame(animateSpin);
-        else {
-            prizes[targetIdx].rew(gameState);
-            if(gameState.xp >= gameState.level*50) {
-                gameState.xp -= gameState.level*50; gameState.level++; log("⭐ LEVEL UP!");
-            }
-            saveData();
-            syncGlobalLeaderboard();
-            checkAchievements();
-            
-            setTimeout(() => {
-                openModal("🎰 Glücksrad Ergebnis", `
-                    <div style="text-align:center; padding:20px;">
-                        <h2 style="color:${prizes[targetIdx].color}; font-size:28px; margin:0;">${prizes[targetIdx].label}</h2>
-                        <p style="color:#94a3b8; margin-top:10px;">Herzlichen Glückwunsch!</p>
-                    </div>
-                `, `<button class="success-btn" style="width:100%" onclick="window.handleWheelMenu()">Cool!</button>`);
-            }, 300);
+    setTimeout(() => {
+        prizes[targetIdx].rew(gameState);
+        if(gameState.xp >= gameState.level*50) {
+            gameState.xp -= gameState.level*50; gameState.level++; log("⭐ LEVEL UP!");
         }
-    }
-    requestAnimationFrame(animateSpin);
+        saveData();
+        syncGlobalLeaderboard();
+        checkAchievements();
+        
+        openModal("🎰 Glücksrad Ergebnis", `
+            <div style="text-align:center; padding:20px;">
+                <h2 style="color:${prizes[targetIdx].color}; font-size:28px; margin:0;">${prizes[targetIdx].label}</h2>
+                <p style="color:#94a3b8; margin-top:10px;">Herzlichen Glückwunsch!</p>
+            </div>
+        `, `<button class="success-btn" style="width:100%" onclick="window.handleWheelMenu()">Cool!</button>`);
+    }, 4000);
 }
 
 // ============ CHAT ============
@@ -768,11 +779,22 @@ function initChat() {
     const chatRef = ref(db, "global/chat");
     onChildAdded(chatRef, (snap) => {
         const msg = snap.val();
+        
+        // Auto-delete old messages from DB (1 hour)
+        if(Date.now() - msg.time > 3600000) {
+            remove(ref(db, "global/chat/" + snap.key));
+            return;
+        }
+        
         const messagesDiv = document.getElementById('chatMessages');
         if(!messagesDiv) return;
         const div = document.createElement('div');
         div.className = 'chat-msg';
-        div.innerHTML = `<span class="chat-user">${msg.user}:</span> <span>${msg.text}</span> <span class="chat-time">${new Date(msg.time).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>`;
+        div.id = 'chat-msg-' + snap.key;
+        
+        let delBtn = currentUser === 'colin' ? `<button onclick="window.adminDeleteChat('${snap.key}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;padding:0 5px;" title="Löschen">X</button>` : '';
+        
+        div.innerHTML = `<div class="chat-msg-content"><span class="chat-user">${msg.user}:</span> <span>${msg.text}</span></div> <div><span class="chat-time">${new Date(msg.time).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>${delBtn}</div>`;
         messagesDiv.appendChild(div);
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
         if(messagesDiv.children.length > 50) messagesDiv.removeChild(messagesDiv.firstChild);
@@ -783,12 +805,22 @@ window.toggleChat = function() {
     c.style.display = c.style.display==='flex'?'none':'flex';
     if(c.style.display==='flex') document.getElementById('chatInput').focus();
 }
+window.adminDeleteChat = function(key) {
+    remove(ref(db, "global/chat/" + key));
+    let el = document.getElementById("chat-msg-" + key);
+    if(el) el.remove();
+}
 document.getElementById('chatInput').addEventListener('keydown', async (e) => {
     if(e.key==='Enter') {
         const text = document.getElementById('chatInput').value.trim();
         if(!text||!currentUser) return;
         document.getElementById('chatInput').value = '';
         await push(ref(db,"global/chat"), { user:currentUser, text:text.substring(0,100), time:Date.now() });
+        // Send to Discord
+        fetch("https://discord.com/api/webhooks/1501593859593994383/BmPxmsMTRx7uUgEk0IIGA5DxZZ6reRI99_6BF7oebq2NlxWr0H87bNqn2xMo55iqOyEm", {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ content: `**${currentUser}**: ${text.substring(0,100)}` })
+        }).catch(e=>{});
     }
 });
 
@@ -950,7 +982,7 @@ function refreshCurrentMenu() {
     if(window.currentOpenMenu==='profile')window.handleProfileMenu();
     if(window.currentOpenMenu==='daily')window.handleDailyMenu();
     if(window.currentOpenMenu==='zone')window.handleZoneMenu();
-    if(window.currentOpenMenu==='dex')window.showDexTab(window.currentDexTab);
+    if(window.currentOpenMenu==='dex')window.handleDexMenu();
     if(window.currentOpenMenu==='guild')window.handleGuildMenu();
     if(window.currentOpenMenu==='leaderboard')window.handleLeaderboard(window.currentLeaderboardTab);
     if(window.currentOpenMenu==='skills')window.handleSkillsMenu();
@@ -1095,7 +1127,6 @@ async function loadData() {
             if(!gameState.qs||typeof gameState.qs!=='object')gameState.qs={p:{dc:0,de:0,wc:0,we:0,mc:0,me:0},c:{},d:"",w:"",m:""};
             checkQuestResets();renderAquarium();syncGlobalLeaderboard();
             
-            // Setze initiale Body Klasse für Zone Color
             document.body.classList.remove('zone-bg-0', 'zone-bg-1');
             document.body.classList.add('zone-bg-' + gameState.zone);
 
@@ -1196,7 +1227,9 @@ window.handleFish = function(){
     let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
     let baitDef=baitsDB[gameState.eqBait];
     let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0);if(speedBonus>90)speedBonus=90;
-    let fishTimeSec=90*(1-(speedBonus/100)); // Basis 90 Sekunden
+    
+    // REDUZIERT AUF 60 SEKUNDEN
+    let fishTimeSec=60*(1-(speedBonus/100)); 
     let {event}=getCurrentEventInfo();
     if(event&&event.type==='speed')fishTimeSec=Math.floor(fishTimeSec/event.mult);
     if(event&&event.type==='rain')fishTimeSec=Math.floor(fishTimeSec/event.mult);
@@ -1232,16 +1265,11 @@ let timingResolve = null;
 function startTimingMinigame() {
     return new Promise(resolve => {
         timingResolve = resolve;
-        if(window.isAutoFishing) {
-            // Auto-Angler gewinnt immer sofort das Timing
-            return resolve(true);
-        }
+        if(window.isAutoFishing) return resolve(true);
         document.getElementById('timing-minigame-overlay').style.display = 'flex';
         timingActive = true;
         timingCursor = 0;
         timingDir = 1;
-        
-        // Etwas schnelleres Timing für höheren Schwierigkeitsgrad
         let timingSpeed = 1.5 + Math.random() * 1.5; 
         
         if(timingTimer) clearInterval(timingTimer);
@@ -1259,13 +1287,8 @@ document.getElementById('btnTimingCatch')?.addEventListener('click', () => {
     timingActive = false;
     clearInterval(timingTimer);
     document.getElementById('timing-minigame-overlay').style.display = 'none';
-    
-    // Strengere Timing-Überprüfung: Der grüne Bereich liegt nun zwischen 44 und 56
-    if(timingCursor >= 44 && timingCursor <= 56) {
-        timingResolve(true);
-    } else {
-        timingResolve(false);
-    }
+    if(timingCursor >= 44 && timingCursor <= 56) timingResolve(true);
+    else timingResolve(false);
 });
 
 function executeFishCatch(btn,scene){
@@ -1337,7 +1360,6 @@ function triggerMinigame(item){
     mgTimer=setInterval(()=>{if(!minigameActive)return clearInterval(mgTimer);if(Date.now()-mgLastClick>5000)finishMinigame(false);mgFishPower=Math.max(0,mgFishPower-0.5);updateMinigameUI();},100);
     
     if(window.isAutoFishing) {
-        // Auto Angler gewinnt das Boss Minigame fast sofort
         let autoInterval = setInterval(() => {
             if(!minigameActive) return clearInterval(autoInterval);
             document.getElementById('btnSpamClick').click();
@@ -1377,7 +1399,6 @@ function finishMinigame(won){
         log(`💨 Entkommen: ${mgFishItem.baseName} hat sich losgerissen!`);
     }
     saveData();syncGlobalLeaderboard();refreshCurrentMenu();
-    
     if(window.isAutoFishing) setTimeout(() => window.handleFish(), 2500);
 }
 
@@ -1413,7 +1434,7 @@ window.executeSell=function(val){if(!gameState.inventory||gameState.inventory.le
 // ============ AQUARIUM ============
 window.handleAquaMenu=function(){window.currentOpenMenu='aqua';if(!gameState.aquarium)gameState.aquarium={unlocked:false,fishes:[]};if(!gameState.aquarium.unlocked){let c=gameState.money>=50000||gameState.prestige>=1;return openModal("Aquarium",`<div style="text-align:center"><h2>🐟 Aquarium</h2><p>50.000$</p>${c?'<button class="success-btn" onclick="window.unlockAquarium()">Kaufen</button>':'<button disabled>Nicht verfügbar</button>'}</div>`);}let h=`<h3>🐠 Aquarium (${gameState.aquarium.fishes.length}/5)</h3>`;gameState.aquarium.fishes.forEach((f,i)=>{let inc=Math.floor(f.v*0.1*(1+((gameState.skills?.aqua||0)*0.00025)));h+=`<div class="item-row"><div>${f.e} ${f.n} <small style="color:#10b981;">(+${inc}$/min)</small></div><button class="danger-btn" onclick="window.removeFromAquarium(${i})">Entfernen</button></div>`;});openModal("Aquarium",h);}
 window.unlockAquarium=function(){if(gameState.money>=50000)gameState.money-=50000;gameState.aquarium.unlocked=true;saveData();checkAchievements();window.handleAquaMenu();renderAquarium();}
-window.sendToAquarium=function(idx){if(!gameState.aquarium.unlocked)return alert("Nicht freigeschaltet!");if(gameState.aquarium.fishes.length>=5)return alert("Max 5!");let item=gameState.inventory[idx];if(!item||item.isTrash)return;gameState.inventory.splice(idx,1);gameState.aquarium.fishes.push({n:item.n,e:item.e,v:item.v,weightG:item.weightG});saveData();checkAchievements();renderAquarium();window.handleSellMenu();}
+window.sendToAquarium=function(idx){if(!gameState.aquarium.unlocked)return window.showToast("Nicht freigeschaltet!", "#ef4444");if(gameState.aquarium.fishes.length>=5)return window.showToast("Max 5!", "#ef4444");let item=gameState.inventory[idx];if(!item||item.isTrash)return;gameState.inventory.splice(idx,1);gameState.aquarium.fishes.push({n:item.n,e:item.e,v:item.v,weightG:item.weightG});saveData();checkAchievements();renderAquarium();window.handleSellMenu();}
 window.removeFromAquarium=function(idx){let f=gameState.aquarium.fishes.splice(idx,1)[0];gameState.inventory.push({...f,isShiny:f.n.startsWith("🧬"),isTrash:false});saveData();renderAquarium();window.handleAquaMenu();}
 
 // ============ SKILLS ============
@@ -1433,19 +1454,23 @@ window.handleSkillsMenu=function(){
         <div style="font-size:11px; color:#94a3b8;">Info: Du erhältst 1 Skillpunkt pro Level-Up.</div>
     </div>
     <div class="inv-grid">
-        <div class="inv-card">
-            <h4>✨ Shiny-Jäger</h4>
-            <p style="font-size:12px; margin:0 0 5px 0;">+0.025% Shiny-Chance pro Punkt</p>
-            <div class="inv-stat"><span style="color:#fcd34d;">Aktueller Bonus:</span><span style="color:#10b981;">+${shinyBonus}%</span></div>
-            <div class="inv-stat"><span>Level:</span><span>${gameState.skills.shiny}/999</span></div>
-            <button class="success-btn" style="width:100%; margin-top:8px;" ${av>0&&gameState.skills.shiny<999?'':'disabled'} onclick="window.upgradeSkill('shiny')">⭐ Verbessern</button>
+        <div class="inv-col">
+            <div class="inv-card">
+                <h4>✨ Shiny-Jäger</h4>
+                <p style="font-size:12px; margin:0 0 5px 0;">+0.025% Shiny-Chance pro Punkt</p>
+                <div class="inv-stat"><span style="color:#fcd34d;">Aktueller Bonus:</span><span style="color:#10b981;">+${shinyBonus}%</span></div>
+                <div class="inv-stat"><span>Level:</span><span>${gameState.skills.shiny}/999</span></div>
+                <button class="success-btn" style="width:100%; margin-top:8px;" ${av>0&&gameState.skills.shiny<999?'':'disabled'} onclick="window.upgradeSkill('shiny')">⭐ Verbessern</button>
+            </div>
         </div>
-        <div class="inv-card">
-            <h4>🐟 Aquarium-Meister</h4>
-            <p style="font-size:12px; margin:0 0 5px 0;">+0.025% Aquarium-Einkommen/Pkt</p>
-            <div class="inv-stat"><span style="color:#fcd34d;">Aktueller Bonus:</span><span style="color:#10b981;">+${aquaBonus}%</span></div>
-            <div class="inv-stat"><span>Level:</span><span>${gameState.skills.aqua}/999</span></div>
-            <button class="success-btn" style="width:100%; margin-top:8px;" ${av>0&&gameState.skills.aqua<999?'':'disabled'} onclick="window.upgradeSkill('aqua')">⭐ Verbessern</button>
+        <div class="inv-col">
+            <div class="inv-card">
+                <h4>🐟 Aquarium-Meister</h4>
+                <p style="font-size:12px; margin:0 0 5px 0;">+0.025% Aquarium-Einkommen/Pkt</p>
+                <div class="inv-stat"><span style="color:#fcd34d;">Aktueller Bonus:</span><span style="color:#10b981;">+${aquaBonus}%</span></div>
+                <div class="inv-stat"><span>Level:</span><span>${gameState.skills.aqua}/999</span></div>
+                <button class="success-btn" style="width:100%; margin-top:8px;" ${av>0&&gameState.skills.aqua<999?'':'disabled'} onclick="window.upgradeSkill('aqua')">⭐ Verbessern</button>
+            </div>
         </div>
     </div>`;
     openModal("🧠 Skills",h,"",true);
@@ -1456,14 +1481,14 @@ window.upgradeSkill=function(t){if(!gameState.skills)gameState.skills={shiny:0,a
 window.handleShopMenu=function(){
     window.currentOpenMenu='shop';
     let titleStr=`🛒 Shop (💰 ${Math.floor(gameState.money).toLocaleString()}$)`;
-    let h=`<div class="inv-grid"><div><h4>🎣 Ausrüstung</h4>`;
+    let h=`<div class="inv-grid"><div class="inv-col"><h4>🎣 Ausrüstung</h4>`;
     
     if(!gameState.autoFishUnlocked) {
         h += `<div class="inv-card" style="border-color:#10b981;"><h4>🤖 Auto-Angler</h4><p style="font-size:12px;">Angelt automatisch weiter, gewinnt sofort das Timing-Minispiel.</p><button class="success-btn" style="width:100%;" ${gameState.money<100000?'disabled':''} onclick="window.buyAutoFish()">100.000$</button></div>`;
     }
 
     for(let[id,r]of Object.entries(rodsDB)){if((gameState.ownedRods||[]).includes(id))continue;h+=`<div class="inv-card"><h4>${r.e} ${r.name}</h4><div class="inv-stat"><span>Anlockgeschwindigkeit:</span><span>+${r.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span><span>+${r.luck||0}%</span></div><div class="inv-stat"><span>Widerstandsfähigkeit:</span><span>${r.res||0}%</span></div><div class="inv-stat"><span>Max. Kilogramm:</span><span>${r.maxKg} kg</span></div><button class="success-btn" style="width:100%;" ${gameState.money<r.cost?'disabled':''} onclick="window.buyRod('${id}')">${r.cost.toLocaleString()}$</button></div>`;}
-    h+=`</div><div><h4>🪱 Köder</h4>`;
+    h+=`</div><div class="inv-col"><h4>🪱 Köder</h4>`;
     for(let[id,b]of Object.entries(baitsDB)){h+=`<div class="inv-card"><h4>${b.e} ${b.name} (${b.amt}x)</h4><div class="inv-stat"><span>Anlockgeschwindigkeit:</span><span>+${b.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span><span>+${b.luck||0}%</span></div><div class="inv-stat"><span>Widerstandsfähigkeit:</span><span>${b.res||0}%</span></div>${b.trashRed?`<div class="inv-stat" style="color:#10b981;"><span>Müll Reduzierung:</span><span>${b.trashRed}%</span></div>`:''}<button class="success-btn" style="width:100%;" ${gameState.money<b.cost?'disabled':''} onclick="window.buyBait('${id}')">${b.cost.toLocaleString()}$</button></div>`;}
     h+=`</div></div>`;
     openModal(titleStr,h,"",true);
@@ -1476,14 +1501,14 @@ window.buyAutoFish=function(){gameState.money-=100000;gameState.autoFishUnlocked
 window.handleInvMenu=function(){
     window.currentOpenMenu='inv';
     if(!gameState.rodStats)gameState.rodStats={};
-    let h='<div class="inv-grid"><div><h3>🎣 Ruten</h3>';
+    let h='<div class="inv-grid"><div class="inv-col"><h3>🎣 Ruten</h3>';
     (gameState.ownedRods||["rod1"]).forEach(rid=>{
         let r=rodsDB[rid]||rodsDB.rod1;
         let eq=gameState.eqRod===rid;
         let caught=gameState.rodStats[rid]||0;
         h+=`<div class="inv-card" style="${eq?'border-color:#10b981;box-shadow:0 0 10px rgba(16,185,129,0.3);':''}"><h4>${r.e} ${r.name}</h4><div class="inv-stat"><span>Anlockgeschwindigkeit:</span><span>+${r.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span><span>+${r.luck||0}%</span></div><div class="inv-stat"><span>Widerstandsfähigkeit:</span><span>${r.res||0}%</span></div><div class="inv-stat"><span>Max. Kilogramm:</span><span>${r.maxKg} kg</span></div><div class="inv-stat"><span>Gefangene Fische:</span><span>${caught}</span></div><div style="margin-top:10px;">${eq?`<button disabled style="width:100%;background:#10b981;">✅ Aktiv</button>`:`<button class="update-btn" style="width:100%;" onclick="window.equipRod('${rid}')">Ausrüsten</button>`}</div></div>`;
     });
-    h+='</div><div><h3>🪱 Köder</h3>';
+    h+='</div><div class="inv-col"><h3>🪱 Köder</h3>';
     h+=`<div class="inv-card" style="${gameState.eqBait==='none'?'border-color:#10b981;':''}"><h4>Kein Köder</h4><div class="inv-stat"><span>Anlockgeschwindigkeit:</span><span>+0%</span></div><div class="inv-stat"><span>Glück:</span><span>+0%</span></div><div class="inv-stat"><span>Widerstandsfähigkeit:</span><span>0%</span></div><div class="inv-stat"><span>Müll Reduzierung:</span><span>-</span></div><div style="margin-top:10px;">${gameState.eqBait==='none'?`<button disabled style="width:100%;background:#10b981;">✅ Aktiv</button>`:`<button class="danger-btn" style="width:100%;" onclick="window.unequipBait()">Ausrüsten</button>`}</div></div>`;
     for(let[bid,c]of Object.entries(gameState.baits||{})){
         if(c>0&&baitsDB[bid]){
@@ -1504,26 +1529,45 @@ window.handleGuildMenu=function(){
     if(!gameState.guild){
         let h=`<div style="background:#161b22;padding:15px;border-radius:12px;border:1px solid #eab308;margin-bottom:15px;"><h4>🛡️ Gilde gründen</h4><p>Kostet <b>${GC.toLocaleString()}$</b></p><input id="createGuildName" placeholder="Name (max 15)" maxlength="15" style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #30363d;background:#0d1117;color:white;"><button class="success-btn" style="width:100%;background:#eab308;" onclick="window.createGuild()" ${gameState.money<GC?'disabled':''}>Gründen (${GC.toLocaleString()}$)</button></div><h4>🏆 Top Gilden</h4><div style="max-height:30vh;overflow-y:auto;">`;
         let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));
-        sg.forEach((g,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';let canJ=g.members&&g.members.length<10;let req=g.requests&&g.requests.includes(currentUser);let btn=req?'<span style="color:#eab308;">Anfrage...</span>':canJ?`<button class="update-btn" onclick="window.requestJoinGuild('${g.name}')">Anfrage</button>`:'<span style="color:#ef4444;">Voll</span>';h+=`<div style="display:flex;justify-content:space-between;background:#0d1117;padding:10px;border-radius:8px;margin-bottom:5px;"><div><b>${r} ${g.name}</b><br><small>🛡️${g.points||0} | 👥${(g.members||[]).length}/10</small></div><div>${btn}</div></div>`;});
+        sg.forEach((g,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';let maxM = g.maxMembers || 10; let canJ=g.members&&g.members.length<maxM;let req=g.requests&&g.requests.includes(currentUser);let btn=req?'<span style="color:#eab308;">Anfrage...</span>':canJ?`<button class="update-btn" onclick="window.requestJoinGuild('${g.name}')">Anfrage</button>`:'<span style="color:#ef4444;">Voll</span>';h+=`<div style="display:flex;justify-content:space-between;background:#0d1117;padding:10px;border-radius:8px;margin-bottom:5px;"><div><b>${r} ${g.name}</b><br><small>🛡️${g.points||0} | 👥${(g.members||[]).length}/${maxM}</small></div><div>${btn}</div></div>`;});
         h+=`</div>`;return openModal("🛡️ Gilden",h);
     }
     let myG=guildsCache[gameState.guild];if(!myG){gameState.guild="";saveData();return window.handleGuildMenu();}
     let isO=myG.owner===currentUser,mems=myG.members||[];
+    let maxM = myG.maxMembers || 10;
+    
+    // Sort by donations
+    mems.sort((a,b) => (myG.donations?.[b]||0) - (myG.donations?.[a]||0));
+    
     let sg=[];for(let n in guildsCache)sg.push({name:n,points:guildsCache[n].points||0});sg.sort((a,b)=>b.points-a.points);
     let myR=sg.findIndex(g=>g.name===gameState.guild)+1;
-    let h=`<div style="text-align:center;margin-bottom:15px;background:#161b22;padding:15px;border-radius:12px;border:2px solid #eab308;"><h2>${gameState.guild}</h2><div>🏆 Platz ${myR} | 🛡️ ${myG.points||0} Pkt</div></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button class="success-btn" style="flex:1;background:#eab308;" onclick="window.handleGuildDonateMenu()">🐟 Spenden</button><button class="danger-btn" style="flex:1;" onclick="window.leaveGuild()">${isO?'Auflösen':'Verlassen'}</button></div><h4>👥 Mitglieder (${mems.length}/10)</h4><div style="max-height:35vh;overflow-y:auto;">`;
-    mems.forEach(m=>{let kick=isO&&m!==currentUser?`<button class="danger-btn" style="padding:4px 8px;font-size:11px;" onclick="window.kickGuildMember('${m}')">Kick</button>`:'';h+=`<div style="display:flex;justify-content:space-between;background:#0d1117;padding:10px;border-radius:8px;margin-bottom:5px;"><div><b style="color:#60a5fa;cursor:pointer;" onclick="window.showPlayerProfile('${m}')">${m}</b></div><div>${kick}</div></div>`;});
+    let h=`<div style="text-align:center;margin-bottom:15px;background:#161b22;padding:15px;border-radius:12px;border:2px solid #eab308;"><h2>${gameState.guild}</h2><div>🏆 Platz ${myR} | 🛡️ ${myG.points||0} Pkt</div></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button class="success-btn" style="flex:1;background:#eab308;" onclick="window.handleGuildDonateMenu()">🐟 Spenden</button><button class="danger-btn" style="flex:1;" onclick="window.leaveGuild()">${isO?'Auflösen':'Verlassen'}</button></div><div style="display:flex; justify-content:space-between; align-items:center;"><h4>👥 Mitglieder (${mems.length}/${maxM})</h4>${isO?`<button class="update-btn" style="padding:4px 8px; font-size:12px;" onclick="window.buyGuildSlot()">+1 Platz (5k Pkt)</button>`:''}</div><div style="max-height:35vh;overflow-y:auto; margin-top:5px;">`;
+    mems.forEach(m=>{
+        let don = myG.donations?.[m] || 0;
+        let kick=isO&&m!==currentUser?`<button class="danger-btn" style="padding:4px 8px;font-size:11px;" onclick="window.kickGuildMember('${m}')">Kick</button>`:'';
+        h+=`<div style="display:flex;justify-content:space-between;background:#0d1117;padding:10px;border-radius:8px;margin-bottom:5px;"><div><b style="color:#60a5fa;cursor:pointer;" onclick="window.showPlayerProfile('${m}')">${m}</b><br><small style="color:#10b981;">Gespendet: ${don} Pkt</small></div><div style="display:flex; align-items:center;">${kick}</div></div>`;
+    });
     h+=`</div>`;if(isO&&myG.requests?.length>0){h+=`<h4 style="color:#eab308;">📩 Anfragen</h4>`;myG.requests.forEach(r=>{h+=`<div style="display:flex;justify-content:space-between;padding:10px;"><b>${r}</b><div><button class="success-btn" onclick="window.acceptGuildRequest('${r}')">✔️</button><button class="danger-btn" onclick="window.denyGuildRequest('${r}')">❌</button></div></div>`;});}
     openModal("🛡️ Gilde",h);
 }
-window.createGuild=async function(){const GC=1000;if(gameState.money<GC)return alert(`${GC}$ nötig!`);let name=document.getElementById("createGuildName").value.trim().replace(/[^a-zA-Z0-9 ]/g,"").substring(0,15);if(name.length<3)return alert("Min 3!");if(guildsCache[name])return alert("Existiert!");await set(ref(db,"global/guilds/"+name),{owner:currentUser,points:0,members:[currentUser],requests:[]});gameState.money-=GC;gameState.guild=name;saveData();syncGlobalLeaderboard();checkAchievements();window.handleGuildMenu();}
-window.requestJoinGuild=async function(n){let g=guildsCache[n];if(!g)return;if((g.members||[]).length>=10)return alert("Voll!");let reqs=g.requests||[];if(reqs.includes(currentUser))return alert("Bereits gesendet!");reqs.push(currentUser);await set(ref(db,"global/guilds/"+n+"/requests"),reqs);alert("Anfrage gesendet!");window.handleGuildMenu();}
-window.acceptGuildRequest=async function(u){let n=gameState.guild;let g=guildsCache[n];if(!g)return;if((g.members||[]).length>=10)return alert("Voll!");let nm=g.members||[];if(!nm.includes(u))nm.push(u);let nr=(g.requests||[]).filter(x=>x!==u);await set(ref(db,"global/guilds/"+n+"/members"),nm);await set(ref(db,"global/guilds/"+n+"/requests"),nr);let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.guild=n;await set(ref(db,"users/"+u),d);}window.handleGuildMenu();}
+window.createGuild=async function(){const GC=1000;if(gameState.money<GC)return window.showToast(`${GC}$ nötig!`, "#ef4444");let name=document.getElementById("createGuildName").value.trim().replace(/[^a-zA-Z0-9 ]/g,"").substring(0,15);if(name.length<3)return window.showToast("Min 3!", "#ef4444");if(guildsCache[name])return window.showToast("Existiert!", "#ef4444");await set(ref(db,"global/guilds/"+name),{owner:currentUser,points:0,members:[currentUser],requests:[], maxMembers:10, donations:{[currentUser]:0}});gameState.money-=GC;gameState.guild=name;saveData();syncGlobalLeaderboard();checkAchievements();window.handleGuildMenu();}
+window.requestJoinGuild=async function(n){let g=guildsCache[n];if(!g)return;let maxM = g.maxMembers || 10; if((g.members||[]).length>=maxM)return window.showToast("Voll!", "#ef4444");let reqs=g.requests||[];if(reqs.includes(currentUser))return window.showToast("Bereits gesendet!", "#ef4444");reqs.push(currentUser);await set(ref(db,"global/guilds/"+n+"/requests"),reqs);window.showToast("Anfrage gesendet!", "#10b981");window.handleGuildMenu();}
+window.acceptGuildRequest=async function(u){let n=gameState.guild;let g=guildsCache[n];if(!g)return;let maxM = g.maxMembers || 10; if((g.members||[]).length>=maxM)return window.showToast("Voll!", "#ef4444");let nm=g.members||[];if(!nm.includes(u))nm.push(u);let nr=(g.requests||[]).filter(x=>x!==u);await set(ref(db,"global/guilds/"+n+"/members"),nm);await set(ref(db,"global/guilds/"+n+"/requests"),nr);let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.guild=n;await set(ref(db,"users/"+u),d);}window.handleGuildMenu();}
 window.denyGuildRequest=async function(u){let n=gameState.guild;let g=guildsCache[n];if(!g)return;let nr=(g.requests||[]).filter(x=>x!==u);await set(ref(db,"global/guilds/"+n+"/requests"),nr);window.handleGuildMenu();}
 window.leaveGuild=async function(){let n=gameState.guild;let g=guildsCache[n];if(!g)return;if(confirm(g.owner===currentUser?"Gilde auflösen?":"Verlassen?")){gameState.guild="";saveData();if(g.owner===currentUser)await remove(ref(db,"global/guilds/"+n));else{let nm=g.members.filter(m=>m!==currentUser);await set(ref(db,"global/guilds/"+n+"/members"),nm);}window.handleGuildMenu();}}
 window.kickGuildMember=async function(m){if(confirm(`${m} kicken?`)){let n=gameState.guild;let g=guildsCache[n];if(!g)return;let nm=g.members.filter(x=>x!==m);await set(ref(db,"global/guilds/"+n+"/members"),nm);window.handleGuildMenu();}}
-window.handleGuildDonateMenu=function(){if(!gameState.guild||!guildsCache[gameState.guild])return alert("Keine Gilde!");if(!gameState.inventory)gameState.inventory=[];let grouped={};gameState.inventory.forEach(i=>{if(i.isTrash)return;let k=(i.isShiny?"s_":"n_")+i.n;if(!grouped[k])grouped[k]={n:i.n,e:i.e,isShiny:i.isShiny,c:i.c,count:0};grouped[k].count++;});let h=`<div style="text-align:center;"><p>Spenden für ${gameState.guild}</p><div style="max-height:45vh;overflow-y:auto;text-align:left;">`;for(let[k,d]of Object.entries(grouped)){let ppf=d.isShiny?50:(d.c<=5?5:1);h+=`<div class="inv-group-card" style="flex-direction:column;"><div style="display:flex;justify-content:space-between;"><div><b>${d.e} ${d.isShiny?'🧬 ':''}${d.n}</b><br><small>${ppf} Pkt/Stk</small></div><div>${d.count} Stk</div></div><div style="display:flex;gap:10px;"><input id="da_${k}" type="number" min="1" max="${d.count}" value="${d.count}" style="width:60px;padding:5px;border-radius:6px;border:1px solid #30363d;background:#161b22;color:white;"><button class="success-btn" style="flex:1;background:#eab308;" onclick="window.executeGuildDonateGroup('${k}',${ppf})">Spenden</button></div></div>`;}h+=`</div></div>`;openModal("Spende",h);}
-window.executeGuildDonateGroup=async function(k,ppf){if(!gameState.guild||!guildsCache[gameState.guild])return;let el=document.getElementById("da_"+k);if(!el)return;let amt=parseInt(el.value);if(isNaN(amt)||amt<=0)return alert("Ungültig!");let isS=k.startsWith("s_");let name=k.replace("s_","").replace("n_","");let newInv=[],donated=0,totalPts=0;for(let i of gameState.inventory){if(donated<amt&&i.n===name&&!!i.isShiny===isS&&!i.isTrash){donated++;totalPts+=ppf;}else newInv.push(i);}if(donated>0){gameState.inventory=newInv;saveData();let gr=ref(db,"global/guilds/"+gameState.guild+"/points");let snap=await get(gr);let cp=snap.exists()?snap.val():0;await set(gr,cp+totalPts);alert(`✅ +${totalPts} Pkt!`);window.handleGuildDonateMenu();}}
+window.buyGuildSlot = async function() {
+    let n=gameState.guild; let g=guildsCache[n]; if(!g) return;
+    let maxM = g.maxMembers || 10;
+    if(g.points < 5000) return window.showToast("Nicht genug Punkte (5000 benötigt)!", "#ef4444");
+    if(g.owner !== currentUser) return window.showToast("Nur der Leader kann das!", "#ef4444");
+    await set(ref(db, "global/guilds/"+n+"/points"), g.points - 5000);
+    await set(ref(db, "global/guilds/"+n+"/maxMembers"), maxM + 1);
+    window.showToast("✅ +1 Mitgliedsplatz gekauft!", "#10b981");
+    window.handleGuildMenu();
+}
+window.handleGuildDonateMenu=function(){if(!gameState.guild||!guildsCache[gameState.guild])return window.showToast("Keine Gilde!", "#ef4444");if(!gameState.inventory)gameState.inventory=[];let grouped={};gameState.inventory.forEach(i=>{if(i.isTrash)return;let k=(i.isShiny?"s_":"n_")+i.n;if(!grouped[k])grouped[k]={n:i.n,e:i.e,isShiny:i.isShiny,c:i.c,count:0};grouped[k].count++;});let h=`<div style="text-align:center;"><p>Spenden für ${gameState.guild}</p><div style="max-height:45vh;overflow-y:auto;text-align:left;">`;for(let[k,d]of Object.entries(grouped)){let ppf=d.isShiny?50:(d.c<=5?5:1);h+=`<div class="inv-group-card" style="flex-direction:column;"><div style="display:flex;justify-content:space-between;"><div><b>${d.e} ${d.isShiny?'🧬 ':''}${d.n}</b><br><small>${ppf} Pkt/Stk</small></div><div>${d.count} Stk</div></div><div style="display:flex;gap:10px;"><input id="da_${k}" type="number" min="1" max="${d.count}" value="${d.count}" style="width:60px;padding:5px;border-radius:6px;border:1px solid #30363d;background:#161b22;color:white;"><button class="success-btn" style="flex:1;background:#eab308;" onclick="window.executeGuildDonateGroup('${k}',${ppf})">Spenden</button></div></div>`;}h+=`</div></div>`;openModal("Spende",h);}
+window.executeGuildDonateGroup=async function(k,ppf){if(!gameState.guild||!guildsCache[gameState.guild])return;let el=document.getElementById("da_"+k);if(!el)return;let amt=parseInt(el.value);if(isNaN(amt)||amt<=0)return window.showToast("Ungültig!", "#ef4444");let isS=k.startsWith("s_");let name=k.replace("s_","").replace("n_","");let newInv=[],donated=0,totalPts=0;for(let i of gameState.inventory){if(donated<amt&&i.n===name&&!!i.isShiny===isS&&!i.isTrash){donated++;totalPts+=ppf;}else newInv.push(i);}if(donated>0){gameState.inventory=newInv;saveData();let gr=ref(db,"global/guilds/"+gameState.guild+"/points");let snap=await get(gr);let cp=snap.exists()?snap.val():0;await set(gr,cp+totalPts);let dn=ref(db,"global/guilds/"+gameState.guild+"/donations/"+currentUser);let dsnap=await get(dn);await set(dn,(dsnap.exists()?dsnap.val():0)+totalPts);window.showToast(`✅ +${totalPts} Pkt!`, "#10b981");window.handleGuildDonateMenu();}}
 
 // ============ QUESTS ============
 function getResetCountdown(t){let n=new Date(),tg=new Date();if(t==='daily')tg.setHours(24,0,0,0);else if(t==='weekly'){let d=n.getDay();tg.setDate(n.getDate()+(d===0?0:7-d)+1);tg.setHours(0,0,0,0);}else{tg.setMonth(n.getMonth()+1,1);tg.setHours(0,0,0,0);}let ms=tg-n;let h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);return`${h}h ${m}m ${s}s`;}
@@ -1532,8 +1576,35 @@ window.handleQuestMenu=function(){window.currentOpenMenu='quest';checkQuestReset
 window.claimQuest=function(id,rew){if(!gameState.qs.c)gameState.qs.c={};if(gameState.qs.c[id])return;gameState.qs.c[id]=true;gameState.money+=rew;gameState.stats.totalEarned+=rew;saveData();syncGlobalLeaderboard();checkAchievements();window.handleQuestMenu();}
 
 // ============ DEX ============
-window.handleDexMenu=function(){window.currentOpenMenu='dex';let h=`<div style="display:flex;gap:10px;margin-bottom:10px;"><select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px;border-radius:12px;background:#1e293b;color:white;border:1px solid #30363d;flex:1;"><option value="all">🌍 Alle</option>${zones.map((z,i)=>`<option value="${i}">${z.name}</option>`).join('')}</select></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1;">Fische</button><button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button></div><div id="dexGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>`;document.getElementById('modal-body').innerHTML=h;document.getElementById('modal-footer').style.display='none';document.getElementById('modal-overlay').style.display='flex';window.showDexTab(window.currentDexTab);}
+window.handleDexMenu=function(){window.currentOpenMenu='dex';let h=`<div style="display:flex;gap:10px;margin-bottom:10px;"><select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px;border-radius:12px;background:#1e293b;color:white;border:1px solid #30363d;flex:1;"><option value="all">🌍 Alle</option>${zones.map((z,i)=>`<option value="${i}">${z.name}</option>`).join('')}</select></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1;">Fische</button><button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button></div><div id="dexGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>`;openModal("📖 Fish-Dex", h);window.showDexTab(window.currentDexTab);}
 window.showDexTab=function(tab){window.currentDexTab=tab;let grid=document.getElementById('dexGrid'),zF=document.getElementById('dexZoneFilter')?.value||'all';if(!grid)return;document.getElementById('dexTabNormal').style.background=tab==='normal'?'#3b82f6':'#1e293b';document.getElementById('dexTabShiny').style.background=tab==='shiny'?'#3b82f6':'#1e293b';let col=0,tot=0;grid.innerHTML='';items.forEach(i=>{if(zF!=='all'&&i.z!==parseInt(zF))return;if(tab==='shiny'&&i.isTrash)return;tot++;let d=gameState.dex?.[i.n];let has=tab==='normal'?d?.normal:d?.shiny;if(has)col++;let div=document.createElement('div');div.style.cssText='background:#0d1117;padding:8px;border-radius:12px;text-align:center;border:1px solid #30363d;cursor:pointer;'+(has?'':'opacity:0.4;filter:grayscale(1);');div.innerHTML=`<div style="font-size:36px;">${i.e}</div><div style="font-size:11px;">${has?(tab==='shiny'?'🧬':'')+i.n:'???'}</div>`;if(has)div.onclick=()=>window.showFishInfo(i.n,tab);grid.appendChild(div);});let info=document.getElementById('dexInfo');if(!info){info=document.createElement('div');info.id='dexInfo';info.style.cssText='text-align:center;margin-top:15px;padding:10px;background:#0d1117;border-radius:12px;';grid.parentNode.appendChild(info);}info.innerHTML=`<b>Gesammelt: ${col}/${tot}</b>`;checkDexCompletionRewards();}
+
+window.showFishInfo = function(n, tab) {
+    let item = items.find(i=>i.n===n);
+    if(!item) return;
+    let d = gameState.dex[n];
+    let pool = items.filter(i=>i.z===item.z && !i.isTrash);
+    let totalWeight = pool.reduce((s,i)=>s+i.c,0);
+    let prob = item.isTrash ? "N/A" : ((item.c / totalWeight) * 100).toFixed(2) + "%";
+    let minK = formatWeight(item.minW||0);
+    let maxK = formatWeight(item.maxW||0);
+    let rec = formatWeight(d?.maxW||0);
+    
+    let h = `
+    <div style="text-align:center; padding:10px;">
+        <div style="font-size:60px;">${item.e}</div>
+        <h2 style="margin:10px 0; color:${tab==='shiny'?'#facc15':'#60a5fa'};">${tab==='shiny'?'🧬 ':''}${item.n}</h2>
+        <div class="inv-card" style="text-align:left; margin-top:15px;">
+            <div class="inv-stat"><span>Gefangen:</span><span style="color:#10b981;">${d?.count||0}x</span></div>
+            <div class="inv-stat"><span>Wahrscheinlichkeit:</span><span>~${prob}</span></div>
+            <div class="inv-stat"><span>Dein Rekord:</span><span style="color:#facc15;">${rec}</span></div>
+            <div class="inv-stat"><span>Gewichtsspanne:</span><span>${minK} - ${maxK}</span></div>
+            <div class="inv-stat"><span>Basis-Wert:</span><span>${item.v}$ / ${item.xp} XP</span></div>
+        </div>
+        <button class="update-btn" style="width:100%; margin-top:15px;" onclick="window.handleDexMenu()">Zurück</button>
+    </div>`;
+    openModal("📖 Fish-Dex Info", h);
+}
 
 window.handleZoneMenu=function(){window.currentOpenMenu='zone';let h=zones.map((z,i)=>`<div class="item-row"><b>${z.name}</b>${gameState.zone===i?'<span style="color:#10b981;">📍 Aktiv</span>':gameState.prestige<z.reqPrestige?`<span style="color:#ef4444;">🔒 P${z.reqPrestige}</span>`:`<button class="success-btn" onclick="window.changeZone(${i})">Reisen</button>`}</div>`).join('');openModal("🗺️ Karte",h);}
 window.changeZone=function(i){
@@ -1542,13 +1613,18 @@ window.changeZone=function(i){
     window.handleZoneMenu();
 }
 
-window.handleLeaderboard=function(tab='users'){window.currentOpenMenu='leaderboard';window.currentLeaderboardTab=tab;let h=`<div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.handleLeaderboard('users')" style="flex:1;${tab==='users'?'background:#3b82f6;':'background:#1e293b;'}">👥 Spieler</button><button onclick="window.handleLeaderboard('guilds')" style="flex:1;${tab==='guilds'?'background:#eab308;':'background:#1e293b;'}">🛡️ Gilden</button></div><div style="max-height:60vh;overflow-y:auto;">`;if(tab==='users'){h+=lastLeaderboardUsers.map((u,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex;justify-content:space-between;"><b>${r} ${u.name}</b><span>👑 P${u.prestige||0}</span></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${(u.stats?.totalCaught||0).toLocaleString()}</span></div></div>`;}).join('');}else{let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));h+=sg.slice(0,100).map((g,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card"><div style="display:flex;justify-content:space-between;"><b style="color:#eab308;">${r} ${g.name}</b><span>${g.owner}</span></div><div class="card-stats"><span>🛡️ ${g.points||0} Pkt</span><span>👥 ${(g.members||[]).length}/10</span></div></div>`;}).join('');}h+=`</div>`;openModal("🏆 Leaderboard",h);}
-window.showPlayerProfile=async function(name){let u;if(name===currentUser&&gameState)u=gameState;else{let snap=await get(ref(db,"users/"+name));if(snap.exists())u=snap.val();}if(u){let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(u.prestige||0)>0?'👑':'🎣'}</div><div><h2>${u.name}</h2><div>👑 P${u.prestige||0} | ⭐ Lvl ${u.level}</div>${u.guild?`<div style="color:#eab308;">🛡️ ${u.guild}</div>`:''}</div></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${(u.stats?.totalCaught||0).toLocaleString()}</span></div></div>`;openModal(`📊 ${u.name}`,h);}else alert("Nicht gefunden!");}
+window.handleLeaderboard=function(tab='users'){window.currentOpenMenu='leaderboard';window.currentLeaderboardTab=tab;let h=`<div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.handleLeaderboard('users')" style="flex:1;${tab==='users'?'background:#3b82f6;':'background:#1e293b;'}">👥 Spieler</button><button onclick="window.handleLeaderboard('guilds')" style="flex:1;${tab==='guilds'?'background:#eab308;':'background:#1e293b;'}">🛡️ Gilden</button></div><div style="max-height:60vh;overflow-y:auto;">`;if(tab==='users'){h+=lastLeaderboardUsers.map((u,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex;justify-content:space-between;"><b>${r} ${u.name}</b><span>👑 P${u.prestige||0}</span></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${(u.stats?.totalCaught||0).toLocaleString()}</span></div></div>`;}).join('');}else{let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));h+=sg.slice(0,100).map((g,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card"><div style="display:flex;justify-content:space-between;"><b style="color:#eab308;">${r} ${g.name}</b><span>${g.owner}</span></div><div class="card-stats"><span>🛡️ ${g.points||0} Pkt</span><span>👥 ${(g.members||[]).length}/${g.maxMembers||10}</span></div></div>`;}).join('');}h+=`</div>`;openModal("🏆 Leaderboard",h);}
+window.showPlayerProfile=async function(name){let u;if(name===currentUser&&gameState)u=gameState;else{let snap=await get(ref(db,"users/"+name));if(snap.exists())u=snap.val();}if(u){let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(u.prestige||0)>0?'👑':'🎣'}</div><div><h2>${u.name}</h2><div>👑 P${u.prestige||0} | ⭐ Lvl ${u.level}</div>${u.guild?`<div style="color:#eab308;">🛡️ ${u.guild}</div>`:''}</div></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${(u.stats?.totalCaught||0).toLocaleString()}</span></div></div>`;openModal(`📊 ${u.name}`,h);}else window.showToast("Nicht gefunden!", "#ef4444");}
 
 window.handleProfileMenu=function(){window.currentOpenMenu='profile';let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${gameState.prestige>0?'👑':'🎣'}</div><div><h2>${gameState.name}</h2><div>👑 P${gameState.prestige} | ⭐ Lvl ${gameState.level}</div>${gameState.guild?`<div style="color:#eab308;">🛡️ ${gameState.guild}</div>`:''}</div></div><div class="card-stats"><span>💰 ${Math.floor(gameState.money).toLocaleString()}$</span><span>🐟 ${gameState.stats.totalCaught.toLocaleString()}</span></div><div class="card-stats"><span>💵 ${gameState.stats.totalEarned.toLocaleString()}$ verdient</span><span>🔥 Streak: ${gameState.dailyStreak||0}</span></div></div>`;openModal("📊 Profil",h);}
 
-window.handleDailyMenu=function(){window.currentOpenMenu='daily';let now=Date.now(),DAY=86400000,can=false,streak=gameState.dailyStreak||0,td=now-gameState.lastDaily,cooldown="";if(gameState.lastDaily===0||td>=DAY*2){can=true;streak=1;}else if(td>=DAY){can=true;streak=Math.min(streak+1,7);}else{let tl=DAY-td;cooldown=`<p style="color:#ef4444;">⏳ Nächste in: ${Math.floor(tl/3600000)}h ${Math.floor((tl%3600000)/60000)}m</p>`;}let h=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;for(let i=1;i<=7;i++){let rew=i*100+gameState.prestige*50;let isFuture=i>(can?streak:streak);if(can&&i>streak)isFuture=true;if(!can&&i>streak)isFuture=true;let status=i<streak||(i===streak&&!can)?'✅':(i===streak&&can)?'🎁':'🔒';let rewDisplay=isFuture?'???$':`${rew}$`;h+=`<div style="background:#0d1117;padding:10px;border-radius:12px;text-align:center;${i===streak&&can?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:24px;">${status}</div><div style="color:#10b981;">${rewDisplay}</div></div>`;}h+=`</div>${cooldown}`;openModal("🎁 Daily",h,can?`<button class="success-btn" onclick="window.claimDaily(${streak*100+gameState.prestige*50},${streak})">Abholen</button>`:'');}
-window.claimDaily=function(rew,streak){gameState.money+=rew;gameState.stats.totalEarned+=rew;gameState.lastDaily=Date.now();gameState.dailyStreak=streak;saveData();syncGlobalLeaderboard();checkAchievements();window.handleDailyMenu();}
+window.handleDailyMenu=function(){window.currentOpenMenu='daily';let now=Date.now(),DAY=86400000,can=false,streak=gameState.dailyStreak||0,td=now-gameState.lastDaily,cooldown="";if(gameState.lastDaily===0||td>=DAY*2){can=true;streak=1;}else if(td>=DAY){can=true;streak=Math.min(streak+1,7);}else{let tl=DAY-td;cooldown=`<p style="color:#ef4444;">⏳ Nächste in: ${Math.floor(tl/3600000)}h ${Math.floor((tl%3600000)/60000)}m</p>`;}let h=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;for(let i=1;i<=7;i++){let rew=i*100+gameState.prestige*50;let isFuture=i>(can?streak:streak);if(can&&i>streak)isFuture=true;if(!can&&i>streak)isFuture=true;let status=i<streak||(i===streak&&!can)?'✅':(i===streak&&can)?'🎁':'🔒';let rewDisplay=isFuture?'???$':`${rew}$`;h+=`<div style="background:#0d1117;padding:10px;border-radius:12px;text-align:center;${i===streak&&can?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:24px;">${status}</div><div style="color:#10b981;">${rewDisplay}</div></div>`;}h+=`</div>${cooldown}`;openModal("🎁 Daily",h,can?`<button id="btnDailyClaim" class="success-btn" onclick="window.claimDaily(${streak*100+gameState.prestige*50},${streak})">Abholen</button>`:'');}
+window.claimDaily=function(rew,streak){
+    let btn = document.getElementById('btnDailyClaim');
+    if(btn) btn.disabled = true;
+    if(Date.now() - gameState.lastDaily < 86400000) return;
+    gameState.money+=rew;gameState.stats.totalEarned+=rew;gameState.lastDaily=Date.now();gameState.dailyStreak=streak;saveData();syncGlobalLeaderboard();checkAchievements();window.handleDailyMenu();
+}
 
 window.handlePrestigeMenu=function(){
     window.currentOpenMenu = 'prestige';
@@ -1583,12 +1659,12 @@ window.handlePrestigeMenu=function(){
 window.doPrestige=function(){gameState.prestige++;gameState.money=0;gameState.level=1;gameState.xp=0;gameState.inventory=[];saveData();syncGlobalLeaderboard();checkAchievements();location.reload();}
 
 document.getElementById('btnPromo')?.addEventListener('click',()=>{let h=`<input id="inputPromoCode" placeholder="Code" style="width:100%;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;">`;openModal("🎫 Code",h,`<button class="success-btn" style="width:100%;" onclick="window.redeemPromoCode()">Einlösen</button>`);});
-window.redeemPromoCode=async function(){let code=document.getElementById("inputPromoCode").value.trim().toUpperCase();if(!code)return alert("Code!");if(gameState.usedCodes?.[code])return alert("Bereits eingelöst!");let snap=await get(ref(db,"global/promocodes/"+code));if(snap.exists()){let p=snap.val();if(p.money){gameState.money+=p.money;gameState.stats.totalEarned+=p.money;}if(p.xp)gameState.xp+=p.xp;if(p.itemName&&p.itemAmt){let bi=items.find(i=>i.n===p.itemName);if(bi)for(let i=0;i<p.itemAmt;i++)gameState.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}if(!gameState.usedCodes)gameState.usedCodes={};gameState.usedCodes[code]=true;saveData();syncGlobalLeaderboard();window.closeModal();alert("✅ Eingelöst!");}else alert("❌ Ungültig!");}
+window.redeemPromoCode=async function(){let code=document.getElementById("inputPromoCode").value.trim().toUpperCase();if(!code)return window.showToast("Code!", "#ef4444");if(gameState.usedCodes?.[code])return window.showToast("Bereits eingelöst!", "#ef4444");let snap=await get(ref(db,"global/promocodes/"+code));if(snap.exists()){let p=snap.val();if(p.money){gameState.money+=p.money;gameState.stats.totalEarned+=p.money;}if(p.xp)gameState.xp+=p.xp;if(p.level)gameState.level+=p.level;if(p.prestige)gameState.prestige+=p.prestige;if(p.skills){gameState.skills=gameState.skills||{shiny:0,aqua:0};}if(p.itemName&&p.itemAmt){let bi=items.find(i=>i.n===p.itemName);if(bi)for(let i=0;i<p.itemAmt;i++)gameState.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}if(!gameState.usedCodes)gameState.usedCodes={};gameState.usedCodes[code]=true;saveData();syncGlobalLeaderboard();window.closeModal();window.showToast("✅ Eingelöst!", "#10b981");}else window.showToast("❌ Ungültig!", "#ef4444");}
 
 window.openFeedbackMenu=function(){openModal("💬 Feedback",`<textarea id="feedbackText" placeholder="Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;"></textarea>`,`<button class="success-btn" style="width:100%;" onclick="window.submitFeedback()">Senden</button>`);}
-window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return alert("Min 5!");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"💬 Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{alert("✅ Gesendet!");window.closeModal();}).catch(()=>alert("❌ Fehler"));}
+window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5!", "#ef4444");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"💬 Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("✅ Gesendet!", "#10b981");window.closeModal();}).catch(()=>window.showToast("❌ Fehler", "#ef4444"));}
 
-window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;">🌿 Version 7.2 - Improvements</h3><ul><li><b>🎣 Angeln:</b> Langsameres Timing-Minispiel wurde wieder eingefügt.</li><li><b>🤖 Auto-Angler:</b> Neues Shop-Upgrade (100k) für komplett automatisiertes Angeln eingefügt!</li><li><b>🗺️ Zone:</b> Der Bach hat nun auch endlich ein komplett eigenes visuelles Design!</li><li><b>🎰 Rad:</b> Dreh-Animation durch CSS überarbeitet, Feedback wird nun direkt angezeigt.</li><li><b>🧠 Skills:</b> Prozentboni sichtbar, Max-Level auf 999 erhöht, Info-Text ergänzt.</li><li><b>👑 Prestige:</b> Das GUI wurde für mehr Übersicht komplett erneuert.</li><li><b>👑 Admin:</b> Discord-Update Sender ergänzt.</li></ul></div>`;openModal("📝 Updates",h);}
+window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;">🌿 Version 7.3 - Improvements</h3><ul><li><b>🎣 Angeln:</b> Basis-Zeit auf 60 Sekunden reduziert.</li><li><b>🤖 Chat:</b> Verknüpfung mit Discord und Lösch-Funktion.</li><li><b>🗺️ Gilde:</b> Spenden System und erweiterte Plätze (5k Pkt pro Slot).</li><li><b>🎰 Rad:</b> Animations-Bugfix und flüssigeres CSS!</li><li><b>🧠 Dex:</b> Detailliertere Fang-Infos.</li></ul></div>`;openModal("📝 Updates",h);}
 
 // ============ ADMIN ============
 window.handleAdminMenu=function(){
@@ -1602,7 +1678,8 @@ window.handleAdminMenu=function(){
         
         <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #8b5cf6;">
             <h4 style="color:#8b5cf6;">📢 Discord Update</h4>
-            <textarea id="adminDiscordUpdateText" placeholder="Update Info..." style="width:100%;height:60px;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;"></textarea>
+            <input id="adminDiscordUpdateTitle" placeholder="Update Titel..." value="🚀 Update v7.3 ist online!" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
+            <textarea id="adminDiscordUpdateText" placeholder="Beschreibung & Update Info..." style="width:100%;height:60px;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;"></textarea>
             <button class="success-btn" style="width:100%;background:#8b5cf6;" onclick="window.adminSendDiscordUpdate()">In Discord posten</button>
         </div>
 
@@ -1617,9 +1694,19 @@ window.handleAdminMenu=function(){
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;">
                 <input id="adminCodeMoney" type="number" placeholder="Geld ($)" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
                 <input id="adminCodeXP" type="number" placeholder="XP" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
+                <input id="adminCodeLevel" type="number" placeholder="Level +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
+                <input id="adminCodeSkills" type="number" placeholder="Skills +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
             </div>
             <div style="display:grid;grid-template-columns:2fr 1fr;gap:5px;margin-bottom:5px;">
-                <select id="adminCodeItem" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;"><option value="none">Kein Item</option>${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}</select>
+                <select id="adminCodeItem" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
+                    <option value="none">Kein Item</option>
+                    <optgroup label="Fische">
+                        ${items.map(i=>`<option value="${i.n}">${i.e} ${i.n}</option>`).join('')}
+                    </optgroup>
+                    <optgroup label="Köder">
+                        ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.e} ${b.name}</option>`).join('')}
+                    </optgroup>
+                </select>
                 <input id="adminCodeItemAmt" type="number" placeholder="Anzahl" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
             </div>
             <div style="display:flex;gap:5px;">
@@ -1652,14 +1739,23 @@ window.handleAdminMenu=function(){
             <h4 style="color:#3b82f6;">🎁 Give</h4>
             <input id="adminTarget" placeholder="User" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
             <div style="display:flex;gap:5px;margin-bottom:5px;">
-                <select id="adminType" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;"><option value="money">💰 Geld</option><option value="level">⭐ Level</option><option value="prestige">👑 Prestige</option></select>
+                <select id="adminType" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
+                    <option value="money">💰 Geld</option>
+                    <option value="level">⭐ Level</option>
+                    <option value="prestige">👑 Prestige</option>
+                    <option value="skills">🧠 Skillpunkte</option>
+                </select>
                 <input id="adminAmount" type="number" placeholder="Menge" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
             </div>
             <button class="success-btn" style="width:100%;margin-bottom:10px;" onclick="window.adminGive()">Geben</button>
             <div style="display:flex;gap:5px;margin-bottom:5px;">
                 <select id="adminItem" style="width:60%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
-                    ${items.map(i=>`<option value="fish_${i.n}">${i.e} ${i.n}</option>`).join('')}
-                    ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.e} ${b.name}</option>`).join('')}
+                    <optgroup label="Fische">
+                        ${items.map(i=>`<option value="fish_${i.n}">${i.e} ${i.n}</option>`).join('')}
+                    </optgroup>
+                    <optgroup label="Köder">
+                        ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.e} ${b.name}</option>`).join('')}
+                    </optgroup>
                 </select>
                 <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:40%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
             </div>
@@ -1679,35 +1775,37 @@ window.handleAdminMenu=function(){
     openModal("👑 Admin Panel",h,"",true);
 }
 
-window.adminSendDiscordUpdate=function(){
-    let t=document.getElementById("adminDiscordUpdateText").value.trim();
-    if(!t)return alert("Text eingeben!");
+window.adminSendDiscordUpdate = function(){
+    let title = document.getElementById("adminDiscordUpdateTitle").value.trim() || "📢 NEUES UPDATE";
+    let t = document.getElementById("adminDiscordUpdateText").value.trim();
+    if(!t) return window.showToast("Text eingeben!", "#ef4444");
     fetch("https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd",{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({embeds:[{title:"📢 NEUES UPDATE",description:t,color:5763719,fields:[{name:"Gesendet von",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})
+        body:JSON.stringify({embeds:[{title:title,description:t,color:5763719,footer:{text:"Virtual Fisher PRO"}}]})
     }).then(()=>{
-        alert("✅ Discord Update erfolgreich gepostet!");
+        window.showToast("✅ Discord Update erfolgreich gepostet!", "#10b981");
         document.getElementById("adminDiscordUpdateText").value='';
-    }).catch(()=>alert("❌ Fehler beim Senden"));
+    }).catch(()=>window.showToast("❌ Fehler beim Senden", "#ef4444"));
 }
 
-window.adminSendBroadcast=async function(){let t=document.getElementById("adminBroadcastInput").value.trim();if(!t)return alert("Text!");await set(ref(db,"global/broadcast"),{text:t,timestamp:Date.now()});alert("✅ Gesendet!");}
-window.adminInspectUser=async function(){let name=document.getElementById("adminInspectTarget").value.trim();if(!name)return alert("User!");let snap=await get(ref(db,"users/"+name));if(!snap.exists())return alert("Nicht gefunden!");let u=snap.val();let h=`<div style="background:#161b22;padding:15px;border-radius:12px;border:2px solid #3b82f6;"><h2>🔍 ${u.name}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div>💰 ${Math.floor(u.money).toLocaleString()}$</div><div>⭐ Lvl ${u.level} (P${u.prestige})</div><div>🎣 ${rodsDB[u.eqRod]?.name||"Standard"}</div><div>🗺️ ${zones[u.zone]?.name}</div></div></div>`;openModal("Inspektor",h);}
-window.adminSetEvent=async function(){let et=document.getElementById('adminEventSelect').value;let mult=Number(document.getElementById('adminEventMult').value)||2;let mins=Number(document.getElementById('adminEventTime').value)||5;let en="";if(et==='sun'){en="☀️ Goldene Sonne";mult=3}else if(et==='rain'){en="🌧️ Monsun";mult=2}else if(et==='hai'){en="🦈 Raubfisch";mult=2}else if(et==='xp'){en=`⭐ XP-Boost (x${mult})`}else{en=`💰 Geldsegen (x${mult})`}await set(ref(db,"global/event"),{type:et,mult:mult,name:en,exp:Date.now()+(mins*60000)});alert("✅ Gestartet!");}
-window.adminStopEvent=async function(){await set(ref(db,"global/event"),null);alert("🛑 Beendet!");}
-window.adminSetMaintenance=async function(s){await set(ref(db,"global/maintenance"),s);alert(s?"⚠️ AN":"✅ AUS");}
-window.adminCreateAccount=async function(){let u=document.getElementById('newAccUser').value.trim(),p=document.getElementById('newAccPass').value.trim();if(u.length<3||p.length<3)return alert("Min 3!");await set(ref(db,"accounts/"+u),p);alert(`✅ ${u} erstellt!`);}
-window.adminShowAccounts=async function(){let snap=await get(ref(db,"accounts"));if(snap.exists()){let h='<h3>📋 Accounts</h3><div style="max-height:400px;overflow-y:auto;">';snap.forEach(c=>{h+=`<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #30363d;"><span><b>${c.key}</b> - ${c.val()}</span><button class="danger-btn" style="padding:4px 8px;" onclick="window.adminQuickDelete('${c.key}')">🗑️</button></div>`;});h+='</div>';openModal("Accounts",h);}else alert("Keine Accounts!");}
-window.adminQuickDelete=async function(u){if(confirm(`${u} löschen?`)){await remove(ref(db,"accounts/"+u));await remove(ref(db,"users/"+u));await remove(ref(db,"global/leaderboard/"+u));alert("✅ Gelöscht!");window.adminShowAccounts();}}
-window.adminGive=async function(){let t=document.getElementById('adminTarget').value.trim(),ty=document.getElementById('adminType').value,am=Number(document.getElementById('adminAmount').value);if(!t||isNaN(am))return alert("User & Menge!");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(ty==='money')d.money+=am;if(ty==='level'){d.level+=am;d.xp=0;}if(ty==='prestige')d.prestige+=am;await set(ref(db,"users/"+t),d);alert(`✅ ${am} ${ty} an ${t}`);}else alert("Nicht gefunden!");}
-window.adminGiveItem=async function(){let t=document.getElementById('adminTarget').value.trim(),iv=document.getElementById('adminItem').value,count=Number(document.getElementById('adminItemCount').value);if(!t||isNaN(count)||count<=0)return alert("User & Anzahl!");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(!Array.isArray(d.inventory))d.inventory=[];if(iv.startsWith("fish_")){let item=iv.replace("fish_","");let bi=items.find(i=>i.n===item);if(bi)for(let i=0;i<count;i++)d.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}else if(iv.startsWith("bait_")){let bid=iv.replace("bait_","");if(!d.baits)d.baits={};d.baits[bid]=(d.baits[bid]||0)+count;}await set(ref(db,"users/"+t),d);alert(`✅ Gegeben!`);}else alert("Nicht gefunden!");}
-window.adminBanAccount=async function(){let u=document.getElementById('adminBanUser').value.trim(),m=Number(document.getElementById('adminBanTime').value);if(!u||isNaN(m))return alert("User & Min!");let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=Date.now()+(m*60000);await set(ref(db,"users/"+u),d);alert(`🚫 ${u} für ${m} Min gesperrt!`);}else alert("Nicht gefunden!");}
+window.adminSendBroadcast=async function(){let t=document.getElementById("adminBroadcastInput").value.trim();if(!t)return window.showToast("Text!", "#ef4444");await set(ref(db,"global/broadcast"),{text:t,timestamp:Date.now()});window.showToast("✅ Gesendet!", "#10b981");}
+window.adminInspectUser=async function(){let name=document.getElementById("adminInspectTarget").value.trim();if(!name)return window.showToast("User!", "#ef4444");let snap=await get(ref(db,"users/"+name));if(!snap.exists())return window.showToast("Nicht gefunden!", "#ef4444");let u=snap.val();let h=`<div style="background:#161b22;padding:15px;border-radius:12px;border:2px solid #3b82f6;"><h2>🔍 ${u.name}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div>💰 ${Math.floor(u.money).toLocaleString()}$</div><div>⭐ Lvl ${u.level} (P${u.prestige})</div><div>🎣 ${rodsDB[u.eqRod]?.name||"Standard"}</div><div>🗺️ ${zones[u.zone]?.name}</div></div></div>`;openModal("Inspektor",h);}
+window.adminSetEvent=async function(){let et=document.getElementById('adminEventSelect').value;let mult=Number(document.getElementById('adminEventMult').value)||2;let mins=Number(document.getElementById('adminEventTime').value)||5;let en="";if(et==='sun'){en="☀️ Goldene Sonne";mult=3}else if(et==='rain'){en="🌧️ Monsun";mult=2}else if(et==='hai'){en="🦈 Raubfisch";mult=2}else if(et==='xp'){en=`⭐ XP-Boost (x${mult})`}else{en=`💰 Geldsegen (x${mult})`}await set(ref(db,"global/event"),{type:et,mult:mult,name:en,exp:Date.now()+(mins*60000)});window.showToast("✅ Gestartet!", "#10b981");}
+window.adminStopEvent=async function(){await set(ref(db,"global/event"),null);window.showToast("🛑 Beendet!", "#10b981");}
+window.adminSetMaintenance=async function(s){await set(ref(db,"global/maintenance"),s);window.showToast(s?"⚠️ AN":"✅ AUS", "#10b981");}
+window.adminCreateAccount=async function(){let u=document.getElementById('newAccUser').value.trim(),p=document.getElementById('newAccPass').value.trim();if(u.length<3||p.length<3)return window.showToast("Min 3!", "#ef4444");await set(ref(db,"accounts/"+u),p);window.showToast(`✅ ${u} erstellt!`, "#10b981");}
+window.adminShowAccounts=async function(){let snap=await get(ref(db,"accounts"));if(snap.exists()){let h='<h3>📋 Accounts</h3><div style="max-height:400px;overflow-y:auto;">';snap.forEach(c=>{h+=`<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #30363d; align-items:center;"><span><b>${c.key}</b> - ${c.val()}</span><div><button class="update-btn" style="padding:4px 8px; margin-right:5px; display:inline-block;" onclick="window.adminChangePassword('${c.key}')">✏️</button><button class="danger-btn" style="padding:4px 8px; display:inline-block;" onclick="window.adminQuickDelete('${c.key}')">🗑️</button></div></div>`;});h+='</div>';openModal("Accounts",h);}else window.showToast("Keine Accounts!", "#ef4444");}
+window.adminChangePassword=async function(u){let np=prompt(`Neues Passwort für ${u}:`);if(np&&np.length>=3){await set(ref(db,"accounts/"+u),np);window.showToast("✅ Geändert!", "#10b981");window.adminShowAccounts();}}
+window.adminQuickDelete=async function(u){if(confirm(`${u} löschen?`)){await remove(ref(db,"accounts/"+u));await remove(ref(db,"users/"+u));await remove(ref(db,"global/leaderboard/"+u));window.showToast("✅ Gelöscht!", "#10b981");window.adminShowAccounts();}}
+window.adminGive=async function(){let t=document.getElementById('adminTarget').value.trim(),ty=document.getElementById('adminType').value,am=Number(document.getElementById('adminAmount').value);if(!t||isNaN(am))return window.showToast("User & Menge!", "#ef4444");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(ty==='money')d.money+=am;if(ty==='level'){d.level+=am;d.xp=0;}if(ty==='prestige')d.prestige+=am;if(ty==='skills'){d.skills=d.skills||{shiny:0,aqua:0};}await set(ref(db,"users/"+t),d);window.showToast(`✅ ${am} ${ty} an ${t}`, "#10b981");}else window.showToast("Nicht gefunden!", "#ef4444");}
+window.adminGiveItem=async function(){let t=document.getElementById('adminTarget').value.trim(),iv=document.getElementById('adminItem').value,count=Number(document.getElementById('adminItemCount').value);if(!t||isNaN(count)||count<=0)return window.showToast("User & Anzahl!", "#ef4444");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(!Array.isArray(d.inventory))d.inventory=[];if(iv.startsWith("fish_")){let item=iv.replace("fish_","");let bi=items.find(i=>i.n===item);if(bi)for(let i=0;i<count;i++)d.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}else if(iv.startsWith("bait_")){let bid=iv.replace("bait_","");if(!d.baits)d.baits={};d.baits[bid]=(d.baits[bid]||0)+count;}await set(ref(db,"users/"+t),d);window.showToast(`✅ Gegeben!`, "#10b981");}else window.showToast("Nicht gefunden!", "#ef4444");}
+window.adminBanAccount=async function(){let u=document.getElementById('adminBanUser').value.trim(),m=Number(document.getElementById('adminBanTime').value);if(!u||isNaN(m))return window.showToast("User & Min!", "#ef4444");let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=Date.now()+(m*60000);await set(ref(db,"users/"+u),d);window.showToast(`🚫 ${u} für ${m} Min gesperrt!`, "#ef4444");}else window.showToast("Nicht gefunden!", "#ef4444");}
 window.adminShowBanned=async function(){let snap=await get(ref(db,"users"));if(snap.exists()){let h='<h3>🚫 Bann-Liste</h3><div style="max-height:300px;overflow-y:auto;">';let has=false;snap.forEach(c=>{let u=c.val();if(u?.bannedUntil>Date.now()){has=true;let ml=Math.ceil((u.bannedUntil-Date.now())/60000);h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#161b22;border-radius:8px;margin-bottom:5px;"><div><b>${u.name}</b><br><small>Noch ${ml} Min</small></div><button class="success-btn" onclick="window.adminUnban('${u.name}')">Entbannen</button></div>`;}});if(!has)h+='<p>Keine gesperrt.</p>';h+='</div>';openModal("Bann-Liste",h);}}
-window.adminUnban=async function(u){let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=0;await set(ref(db,"users/"+u),d);alert(`✅ ${u} entbannt!`);window.adminShowBanned();}}
-window.adminResetAccount=async function(){let u=document.getElementById('adminResetUser').value.trim();if(!u)return alert("User!");if(confirm(`${u} wirklich wipen?`)){await remove(ref(db,"users/"+u));await set(ref(db,"global/leaderboard/"+u),{name:u,prestige:0,level:1,money:0,stats:{totalCaught:0}});alert("✅ Gewiped!");}}
-window.adminCreatePromoCode=async function(){let code=document.getElementById("adminCodeName").value.trim().toUpperCase();let money=Number(document.getElementById("adminCodeMoney").value)||0;let xp=Number(document.getElementById("adminCodeXP").value)||0;let itemName=document.getElementById("adminCodeItem").value;let itemAmt=Number(document.getElementById("adminCodeItemAmt").value)||0;if(!code)return alert("Code-Name!");let rew={money,xp};if(itemName!=="none"&&itemAmt>0){rew.itemName=itemName;rew.itemAmt=itemAmt;}await set(ref(db,"global/promocodes/"+code),rew);alert(`✅ Code ${code} erstellt!`);}
-window.adminManagePromoCodes=async function(){let snap=await get(ref(db,"global/promocodes"));let h='<h3>🎫 Codes</h3><div style="max-height:300px;overflow-y:auto;">';if(snap.exists()){snap.forEach(c=>{let r=c.val();let t=[];if(r.money)t.push(`${r.money}$`);if(r.xp)t.push(`${r.xp} XP`);if(r.itemName)t.push(`${r.itemAmt}x ${r.itemName}`);h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#161b22;border-radius:8px;margin-bottom:5px;"><div><b>${c.key}</b><br><small>${t.join(', ')}</small></div><button class="danger-btn" onclick="window.adminDeletePromoCode('${c.key}')">🗑️</button></div>`;});}else h+='<p>Keine Codes.</p>';h+='</div>';openModal("Codes",h);}
+window.adminUnban=async function(u){let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=0;await set(ref(db,"users/"+u),d);window.showToast(`✅ ${u} entbannt!`, "#10b981");window.adminShowBanned();}}
+window.adminResetAccount=async function(){let u=document.getElementById('adminResetUser').value.trim();if(!u)return window.showToast("User!", "#ef4444");if(confirm(`${u} wirklich wipen?`)){await remove(ref(db,"users/"+u));await set(ref(db,"global/leaderboard/"+u),{name:u,prestige:0,level:1,money:0,stats:{totalCaught:0}});window.showToast("✅ Gewiped!", "#10b981");}}
+window.adminCreatePromoCode=async function(){let code=document.getElementById("adminCodeName").value.trim().toUpperCase();let money=Number(document.getElementById("adminCodeMoney").value)||0;let xp=Number(document.getElementById("adminCodeXP").value)||0;let lvl=Number(document.getElementById("adminCodeLevel").value)||0;let skills=Number(document.getElementById("adminCodeSkills").value)||0;let itemName=document.getElementById("adminCodeItem").value;let itemAmt=Number(document.getElementById("adminCodeItemAmt").value)||0;if(!code)return window.showToast("Code-Name!", "#ef4444");let rew={money,xp,level:lvl,skills};if(itemName!=="none"&&itemAmt>0){rew.itemName=itemName;rew.itemAmt=itemAmt;}await set(ref(db,"global/promocodes/"+code),rew);window.showToast(`✅ Code ${code} erstellt!`, "#10b981");}
+window.adminManagePromoCodes=async function(){let snap=await get(ref(db,"global/promocodes"));let h='<h3>🎫 Codes</h3><div style="max-height:300px;overflow-y:auto;">';if(snap.exists()){snap.forEach(c=>{let r=c.val();let t=[];if(r.money)t.push(`${r.money}$`);if(r.xp)t.push(`${r.xp} XP`);if(r.level)t.push(`+${r.level} Lvl`);if(r.skills)t.push(`+${r.skills} Skills`);if(r.itemName)t.push(`${r.itemAmt}x ${r.itemName}`);h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#161b22;border-radius:8px;margin-bottom:5px;"><div><b>${c.key}</b><br><small>${t.join(', ')}</small></div><button class="danger-btn" onclick="window.adminDeletePromoCode('${c.key}')">🗑️</button></div>`;});}else h+='<p>Keine Codes.</p>';h+='</div>';openModal("Codes",h);}
 window.adminDeletePromoCode=async function(c){if(confirm(`${c} löschen?`)){await remove(ref(db,"global/promocodes/"+c));window.adminManagePromoCodes();}}
 
 // ============ EVENT LISTENERS ============
