@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
     <meta name="google" content="notranslate">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="vFisher PRO">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href='data:application/manifest+json,{"name":"Virtual Fisher PRO","short_name":"vFisher","start_url":".","display":"standalone","background_color":"#0f172a","theme_color":"#0f172a","icons":[{"src":"data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎣</text></svg>","sizes":"192x192","type":"image/svg+xml"}]}'>
+
     <title>Virtual Fisher PRO v7.4.2</title>
     <style>
         :root {
@@ -195,7 +203,6 @@
 </head>
 <body class="zone-bg-0">
 
-<!-- Szene-Effekte -->
 <div class="particles-container" id="particlesContainer"></div>
 <div class="bubbles-container" id="bubblesContainer"></div>
 <div class="stars-container" id="starsContainer"></div>
@@ -219,7 +226,6 @@
 
 <div id="aquarium-bg"></div>
 
-<!-- Fixierte Buttons -->
 <button id="btnFeedbackFixed" onclick="window.openFeedbackMenu()" title="Feedback senden">💬</button>
 <button id="btnDiscordFixed" onclick="window.open('https://discord.gg/C38hGU9eXq','_blank')" title="Zum Discord Server">🎮</button>
 
@@ -229,7 +235,6 @@
 </div>
 <button id="btnChatToggle" onclick="window.toggleChat()">💬</button>
 
-<!-- Timing Minigame -->
 <div id="timing-minigame-overlay" class="modal-overlay" style="z-index:99999;">
     <div class="modal-content" style="max-width:350px; text-align:center; padding:20px; background:radial-gradient(circle, #1e293b 0%, #0f172a 100%); border:2px solid #3b82f6; border-radius: 20px; box-shadow: 0 0 20px rgba(59,130,246,0.5);">
         <h2 style="color:#60a5fa; margin-top:0; text-transform: uppercase; letter-spacing: 2px;">🎣 Anbeißen!</h2>
@@ -242,7 +247,6 @@
     </div>
 </div>
 
-<!-- Boss Minigame -->
 <div id="minigame-overlay" class="modal-overlay" style="z-index:99998;">
     <div id="minigame-container">
         <h1 style="color:#ef4444;margin:0 0 5px;">⚔️ KAMPF! ⚔️</h1>
@@ -260,7 +264,6 @@
     </div>
 </div>
 
-<!-- Main Modal -->
 <div id="modal-overlay" class="modal-overlay">
     <div id="modal-content" class="modal-content">
         <div class="modal-header"><span id="modal-title"></span><button class="close-btn" onclick="window.closeModal()">✖</button></div>
@@ -290,7 +293,6 @@
         <svg id="fishing-line-svg"><line id="line-element" x1="0" y1="0" x2="0" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-dasharray="3,3" /></svg>
         <div class="boat-container" id="boatContainer"><div class="fisher-emoji">🚣</div></div>
         
-        <!-- Auto-Angler Boot -->
         <div class="boat-container auto-boat" id="autoBoatContainer" title="Auto-Angler arbeitet im Hintergrund"><div class="fisher-emoji">🤖</div></div>
 
         <div class="bobber" id="bobber"></div>
@@ -298,7 +300,6 @@
         <div class="water-layer-1"></div>
     </div>
 
-    <!-- Login -->
     <div id="authBox">
         <h3 style="text-align:center;">🔐 Virtual Fisher Login</h3>
         <input id="username" placeholder="Spielername" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;">
@@ -307,7 +308,6 @@
         <div id="login-error" style="color:#ef4444;font-size:13px;display:none;text-align:center;font-weight:bold;margin-top:5px;"></div>
     </div>
 
-    <!-- Hauptspiel -->
     <div id="game" style="display:none;flex-direction:column;">
         <div id="top-info">
             <span id="zoneDisplay" style="color:#60a5fa;">🍃 Naturteich</span>
@@ -669,6 +669,7 @@ function refreshCurrentMenu() {
     if(window.currentOpenMenu==='zone')window.handleZoneMenu();
     if(window.currentOpenMenu==='dex')window.handleDexMenu();
     if(window.currentOpenMenu==='guild')window.handleGuildMenu();
+    if(window.currentOpenMenu==='guildShop')window.handleGuildShopMenu();
     if(window.currentOpenMenu==='leaderboard')window.handleLeaderboard(window.currentLeaderboardTab);
     if(window.currentOpenMenu==='skills')window.handleSkillsMenu();
     if(window.currentOpenMenu==='achieve')window.handleAchieveMenu();
@@ -796,7 +797,13 @@ window.closeBroadcast = function() {
 
 async function loadData() {
     if(!currentUser)return;
-    onValue(ref(db,"accounts/"+currentUser),(snap)=>{if(!snap.exists()&&currentUser){localStorage.removeItem('vFisher_user');currentUser=null;alert("⚠️ Account gelöscht!");location.reload();}});
+    onValue(ref(db,"accounts/"+currentUser),(snap)=>{
+        if(!snap.exists()&&currentUser){
+            localStorage.removeItem('vFisher_user');
+            currentUser=null;
+            document.body.innerHTML=`<div style="text-align:center;background:#161b22;padding:30px;border-radius:15px;border:2px solid #ef4444;max-width:400px;margin:auto;"><h1 style="color:#ef4444;">⚠️ Account gelöscht</h1><p>Dein Account wurde administrativ entfernt.</p><button onclick="location.reload()" style="padding:12px;background:#3b82f6;border:none;border-radius:8px;color:white;width:100%;">OK</button></div>`;
+        }
+    });
     onValue(ref(db,"global/guilds"),(snap)=>{guildsCache=snap.exists()?snap.val():{};if(gameState?.guild){let myG=guildsCache[gameState.guild];if(!myG||!myG.members||!myG.members.includes(currentUser)){gameState.guild="";saveData();}}refreshCurrentMenu();});
     onValue(ref(db,"global/leaderboard"),(snap)=>{if(snap.exists()){let d=snap.val();let ua=[];for(let k in d)ua.push(d[k]);ua.sort((a,b)=>(b.stats?.totalCaught||0)-(a.stats?.totalCaught||0));lastLeaderboardUsers=ua;if(window.currentOpenMenu==='leaderboard')refreshCurrentMenu();}});
     onValue(ref(db,"global"),(snap)=>{globalState=snap.exists()?snap.val():null;let im=globalState?.maintenance;if(im&&currentUser!=="colin"){document.getElementById('maintenance-overlay').style.display='flex';wasMaintenance=true;}else{document.getElementById('maintenance-overlay').style.display='none';if(wasMaintenance&&currentUser!=="colin")location.reload();}if(globalState?.broadcast&&Date.now()-globalState.broadcast.timestamp<300000&&(!gameState||gameState.lastBroadcast!==globalState.broadcast.timestamp)){document.getElementById('broadcast-text').innerText=globalState.broadcast.text;document.getElementById('broadcast-banner').style.display='block';}else document.getElementById('broadcast-banner').style.display='none';refreshCurrentMenu();});
@@ -914,6 +921,7 @@ window.handleFish = function(){
     let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
     let baitDef=baitsDB[gameState.eqBait];
     let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0);if(speedBonus>90)speedBonus=90;
+    let resBonus = (rodDef.res||0) + (baitDef?.res||0);
     
     let fishTimeSec=60*(1-(speedBonus/100)); 
     let {event}=getCurrentEventInfo();
@@ -927,7 +935,7 @@ window.handleFish = function(){
         if(timeLeft>0)btn.innerHTML=`🎣 Angeln... (${timeLeft}s)`;
         else{
             clearInterval(fishInterval);
-            startTimingMinigame().then((success) => {
+            startTimingMinigame(resBonus).then((success) => {
                 if(success) {
                     executeFishCatch(btn, scene);
                 } else {
@@ -944,11 +952,24 @@ window.handleFish = function(){
 
 let timingActive = false, timingCursor = 0, timingDir = 1, timingTimer = null, timingResolve = null;
 
-function startTimingMinigame() {
+function startTimingMinigame(resBonus) {
     return new Promise(resolve => {
         timingResolve = resolve;
         document.getElementById('timing-minigame-overlay').style.display = 'flex';
         timingActive = true; timingCursor = 0; timingDir = 1;
+        
+        let baseWidth = 10;
+        let extraWidth = (resBonus || 0) * 0.25; 
+        let targetWidth = Math.min(80, baseWidth + extraWidth); 
+        let targetLeft = 50 - (targetWidth / 2);
+        
+        let targetEl = document.getElementById('timing-target');
+        targetEl.style.width = targetWidth + '%';
+        targetEl.style.left = targetLeft + '%';
+        
+        window.timingWinMin = targetLeft - 1;
+        window.timingWinMax = targetLeft + targetWidth + 1;
+        
         let timingSpeed = 1.5 + Math.random() * 1.5; 
         
         if(timingTimer) clearInterval(timingTimer);
@@ -965,7 +986,7 @@ document.getElementById('btnTimingCatch')?.addEventListener('click', () => {
     if(!timingActive) return;
     timingActive = false; clearInterval(timingTimer);
     document.getElementById('timing-minigame-overlay').style.display = 'none';
-    if(timingCursor >= 44 && timingCursor <= 56) timingResolve(true);
+    if(timingCursor >= window.timingWinMin && timingCursor <= window.timingWinMax) timingResolve(true);
     else timingResolve(false);
 });
 
@@ -1245,19 +1266,26 @@ window.handleGuildMenu=function(){
     if(!gameState.guild){
         let h=`<div style="background:#161b22;padding:15px;border-radius:12px;border:1px solid #eab308;margin-bottom:15px;"><h4>🛡️ Gilde gründen</h4><p>Kostet <b>${GC.toLocaleString()}$</b></p><input id="createGuildName" placeholder="Name (max 15)" maxlength="15" style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #30363d;background:#0d1117;color:white;"><button class="success-btn" style="width:100%;background:#eab308;" onclick="window.createGuild()" ${gameState.money<GC?'disabled':''}>Gründen (${GC.toLocaleString()}$)</button></div><h4>🏆 Top Gilden</h4><div style="max-height:30vh;overflow-y:auto;">`;
         let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));
-        sg.forEach((g,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';let maxM = g.maxMembers || 10; let canJ=g.members&&g.members.length<maxM;let req=g.requests&&g.requests.includes(currentUser);let btn=req?'<span style="color:#eab308;">Anfrage...</span>':canJ?`<button class="update-btn" onclick="window.requestJoinGuild('${g.name}')">Anfrage</button>`:'<span style="color:#ef4444;">Voll</span>';h+=`<div style="display:flex;justify-content:space-between;background:#0d1117;padding:10px;border-radius:8px;margin-bottom:5px;"><div><b>${r} ${g.name}</b><br><small>🛡️${g.points||0} | 👥${(g.members||[]).length}/${maxM}</small></div><div>${btn}</div></div>`;});
+        sg.forEach((g,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';let maxM = g.maxMembers || 3; let canJ=g.members&&g.members.length<maxM;let req=g.requests&&g.requests.includes(currentUser);let btn=req?'<span style="color:#eab308;">Anfrage...</span>':canJ?`<button class="update-btn" onclick="window.requestJoinGuild('${g.name}')">Anfrage</button>`:'<span style="color:#ef4444;">Voll</span>';h+=`<div style="display:flex;justify-content:space-between;background:#0d1117;padding:10px;border-radius:8px;margin-bottom:5px;"><div><b>${r} ${g.name}</b><br><small>🛡️${g.points||0} | 👥${(g.members||[]).length}/${maxM}</small></div><div>${btn}</div></div>`;});
         h+=`</div>`;return openModal("🛡️ Gilden",h);
     }
     let myG=guildsCache[gameState.guild];if(!myG){gameState.guild="";saveData();return window.handleGuildMenu();}
     let isO=myG.owner===currentUser,mems=myG.members||[];
-    let maxM = myG.maxMembers || 10;
+    let maxM = myG.maxMembers || 3;
+    let mult = myG.multiplier || 1;
     
     // Sort by donations
     mems.sort((a,b) => (myG.donations?.[b]||0) - (myG.donations?.[a]||0));
     
     let sg=[];for(let n in guildsCache)sg.push({name:n,points:guildsCache[n].points||0});sg.sort((a,b)=>b.points-a.points);
     let myR=sg.findIndex(g=>g.name===gameState.guild)+1;
-    let h=`<div style="text-align:center;margin-bottom:15px;background:#161b22;padding:15px;border-radius:12px;border:2px solid #eab308;"><h2>${gameState.guild}</h2><div>🏆 Platz ${myR} | 🛡️ ${myG.points||0} Pkt</div></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button class="success-btn" style="flex:1;background:#eab308;" onclick="window.handleGuildDonateMenu()">🐟 Spenden</button><button class="danger-btn" style="flex:1;" onclick="window.leaveGuild()">${isO?'Auflösen':'Verlassen'}</button></div><div style="display:flex; justify-content:space-between; align-items:center;"><h4>👥 Mitglieder (${mems.length}/${maxM})</h4>${isO?`<button class="update-btn" style="padding:4px 8px; font-size:12px;" onclick="window.buyGuildSlot()">+1 Platz (5k Pkt)</button>`:''}</div><div style="max-height:35vh;overflow-y:auto; margin-top:5px;">`;
+    let h=`<div style="text-align:center;margin-bottom:15px;background:#161b22;padding:15px;border-radius:12px;border:2px solid #eab308;"><h2>${gameState.guild}</h2><div>🏆 Platz ${myR} | 🛡️ ${myG.points||0} Pkt | ⚡ x${mult.toFixed(1)}</div></div>
+    <div style="display:flex;gap:10px;margin-bottom:15px;">
+        <button class="success-btn" style="flex:1;background:#eab308;" onclick="window.handleGuildDonateMenu()">🐟 Spenden</button>
+        <button class="update-btn" style="flex:1;background:#3b82f6;" onclick="window.handleGuildShopMenu()">🛒 Shop</button>
+        <button class="danger-btn" style="flex:1;" onclick="window.leaveGuild()">${isO?'Auflösen':'Verlassen'}</button>
+    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center;"><h4>👥 Mitglieder (${mems.length}/${maxM})</h4></div><div style="max-height:35vh;overflow-y:auto; margin-top:5px;">`;
     mems.forEach(m=>{
         let don = myG.donations?.[m] || 0;
         let kick=isO&&m!==currentUser?`<button class="danger-btn" style="padding:4px 8px;font-size:11px;" onclick="window.kickGuildMember('${m}')">Kick</button>`:'';
@@ -1266,24 +1294,70 @@ window.handleGuildMenu=function(){
     h+=`</div>`;if(isO&&myG.requests?.length>0){h+=`<h4 style="color:#eab308;">📩 Anfragen</h4>`;myG.requests.forEach(r=>{h+=`<div style="display:flex;justify-content:space-between;padding:10px;"><b>${r}</b><div><button class="success-btn" onclick="window.acceptGuildRequest('${r}')">✔️</button><button class="danger-btn" onclick="window.denyGuildRequest('${r}')">❌</button></div></div>`;});}
     openModal("🛡️ Gilde",h);
 }
-window.createGuild=async function(){const GC=1000;if(gameState.money<GC)return window.showToast(`${GC}$ nötig!`, "#ef4444");let name=document.getElementById("createGuildName").value.trim().replace(/[^a-zA-Z0-9 ]/g,"").substring(0,15);if(name.length<3)return window.showToast("Min 3!", "#ef4444");if(guildsCache[name])return window.showToast("Existiert!", "#ef4444");await set(ref(db,"global/guilds/"+name),{owner:currentUser,points:0,members:[currentUser],requests:[], maxMembers:10, donations:{[currentUser]:0}});gameState.money-=GC;gameState.guild=name;saveData();syncGlobalLeaderboard();checkAchievements();window.handleGuildMenu();}
-window.requestJoinGuild=async function(n){let g=guildsCache[n];if(!g)return;let maxM = g.maxMembers || 10; if((g.members||[]).length>=maxM)return window.showToast("Voll!", "#ef4444");let reqs=g.requests||[];if(reqs.includes(currentUser))return window.showToast("Bereits gesendet!", "#ef4444");reqs.push(currentUser);await set(ref(db,"global/guilds/"+n+"/requests"),reqs);window.showToast("Anfrage gesendet!", "#10b981");window.handleGuildMenu();}
-window.acceptGuildRequest=async function(u){let n=gameState.guild;let g=guildsCache[n];if(!g)return;let maxM = g.maxMembers || 10; if((g.members||[]).length>=maxM)return window.showToast("Voll!", "#ef4444");let nm=g.members||[];if(!nm.includes(u))nm.push(u);let nr=(g.requests||[]).filter(x=>x!==u);await set(ref(db,"global/guilds/"+n+"/members"),nm);await set(ref(db,"global/guilds/"+n+"/requests"),nr);let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.guild=n;await set(ref(db,"users/"+u),d);}window.handleGuildMenu();}
+
+window.handleGuildShopMenu = function() {
+    window.currentOpenMenu = 'guildShop';
+    let n = gameState.guild; let g = guildsCache[n]; if(!g) return;
+    let maxM = g.maxMembers || 3;
+    let mult = g.multiplier || 1;
+    let isO = g.owner === currentUser;
+
+    let slotCost = 500 + (maxM - 3) * 500;
+    let multCost = 1000 + Math.round((mult - 1) / 0.1) * 1000;
+
+    let h = `
+    <div style="text-align:center;margin-bottom:15px;">
+        <h3 style="color:#eab308;margin:0;">🛒 Gilden-Shop</h3>
+        <p style="font-size:12px;color:#94a3b8;">Gilden-Punkte: <b style="color:#10b981;">${g.points || 0} Pkt</b></p>
+    </div>
+    <div class="inv-grid">
+        <div class="inv-card" style="border-color:#3b82f6;">
+            <h4 style="color:#60a5fa;">👥 Mitgliedsplatz</h4>
+            <p style="font-size:12px;">Erhöht das Gilden-Limit (Aktuell: ${maxM})</p>
+            <div class="inv-stat"><span>Kosten:</span><span style="color:${(g.points||0)>=slotCost?'#10b981':'#ef4444'}">${slotCost} Pkt</span></div>
+            <button class="success-btn" style="width:100%;margin-top:10px;" ${!isO || (g.points||0)<slotCost ? 'disabled' : ''} onclick="window.buyGuildSlot(${slotCost})">Kaufen</button>
+        </div>
+        <div class="inv-card" style="border-color:#8b5cf6;">
+            <h4 style="color:#a855f7;">⚡ Punkte-Multiplikator</h4>
+            <p style="font-size:12px;">Mehr Punkte beim Spenden (+10%)</p>
+            <div class="inv-stat"><span>Aktuell:</span><span style="color:#facc15;">x${mult.toFixed(1)}</span></div>
+            <div class="inv-stat"><span>Kosten:</span><span style="color:${(g.points||0)>=multCost?'#10b981':'#ef4444'}">${multCost} Pkt</span></div>
+            <button class="success-btn" style="width:100%;margin-top:10px;background:#8b5cf6;" ${!isO || (g.points||0)<multCost ? 'disabled' : ''} onclick="window.buyGuildMultiplier(${multCost})">Kaufen</button>
+        </div>
+    </div>
+    <button class="update-btn" style="width:100%;margin-top:15px;" onclick="window.handleGuildMenu()">Zurück zur Gilde</button>
+    `;
+    openModal("🛒 Gilden-Shop", h);
+}
+
+window.createGuild=async function(){const GC=1000;if(gameState.money<GC)return window.showToast(`${GC}$ nötig!`, "#ef4444");let name=document.getElementById("createGuildName").value.trim().replace(/[^a-zA-Z0-9 ]/g,"").substring(0,15);if(name.length<3)return window.showToast("Min 3!", "#ef4444");if(guildsCache[name])return window.showToast("Existiert!", "#ef4444");await set(ref(db,"global/guilds/"+name),{owner:currentUser,points:0,members:[currentUser],requests:[], maxMembers:3, multiplier:1, donations:{[currentUser]:0}});gameState.money-=GC;gameState.guild=name;saveData();syncGlobalLeaderboard();checkAchievements();window.handleGuildMenu();}
+window.requestJoinGuild=async function(n){let g=guildsCache[n];if(!g)return;let maxM = g.maxMembers || 3; if((g.members||[]).length>=maxM)return window.showToast("Voll!", "#ef4444");let reqs=g.requests||[];if(reqs.includes(currentUser))return window.showToast("Bereits gesendet!", "#ef4444");reqs.push(currentUser);await set(ref(db,"global/guilds/"+n+"/requests"),reqs);window.showToast("Anfrage gesendet!", "#10b981");window.handleGuildMenu();}
+window.acceptGuildRequest=async function(u){let n=gameState.guild;let g=guildsCache[n];if(!g)return;let maxM = g.maxMembers || 3; if((g.members||[]).length>=maxM)return window.showToast("Voll!", "#ef4444");let nm=g.members||[];if(!nm.includes(u))nm.push(u);let nr=(g.requests||[]).filter(x=>x!==u);await set(ref(db,"global/guilds/"+n+"/members"),nm);await set(ref(db,"global/guilds/"+n+"/requests"),nr);let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.guild=n;await set(ref(db,"users/"+u),d);}window.handleGuildMenu();}
 window.denyGuildRequest=async function(u){let n=gameState.guild;let g=guildsCache[n];if(!g)return;let nr=(g.requests||[]).filter(x=>x!==u);await set(ref(db,"global/guilds/"+n+"/requests"),nr);window.handleGuildMenu();}
 window.leaveGuild=async function(){let n=gameState.guild;let g=guildsCache[n];if(!g)return;if(confirm(g.owner===currentUser?"Gilde auflösen?":"Verlassen?")){gameState.guild="";saveData();if(g.owner===currentUser)await remove(ref(db,"global/guilds/"+n));else{let nm=g.members.filter(m=>m!==currentUser);await set(ref(db,"global/guilds/"+n+"/members"),nm);}window.handleGuildMenu();}}
 window.kickGuildMember=async function(m){if(confirm(`${m} kicken?`)){let n=gameState.guild;let g=guildsCache[n];if(!g)return;let nm=g.members.filter(x=>x!==m);await set(ref(db,"global/guilds/"+n+"/members"),nm);window.handleGuildMenu();}}
-window.buyGuildSlot = async function() {
+window.buyGuildSlot = async function(cost) {
     let n=gameState.guild; let g=guildsCache[n]; if(!g) return;
-    let maxM = g.maxMembers || 10;
-    if(g.points < 5000) return window.showToast("Nicht genug Punkte (5000 benötigt)!", "#ef4444");
     if(g.owner !== currentUser) return window.showToast("Nur der Leader kann das!", "#ef4444");
-    await set(ref(db, "global/guilds/"+n+"/points"), g.points - 5000);
+    if(g.points < cost) return window.showToast("Nicht genug Punkte!", "#ef4444");
+    let maxM = g.maxMembers || 3;
+    await set(ref(db, "global/guilds/"+n+"/points"), g.points - cost);
     await set(ref(db, "global/guilds/"+n+"/maxMembers"), maxM + 1);
     window.showToast("✅ +1 Mitgliedsplatz gekauft!", "#10b981");
-    window.handleGuildMenu();
+    window.handleGuildShopMenu();
+}
+window.buyGuildMultiplier = async function(cost) {
+    let n=gameState.guild; let g=guildsCache[n]; if(!g) return;
+    if(g.owner !== currentUser) return window.showToast("Nur der Leader kann das!", "#ef4444");
+    if(g.points < cost) return window.showToast("Nicht genug Punkte!", "#ef4444");
+    let mult = g.multiplier || 1;
+    await set(ref(db, "global/guilds/"+n+"/points"), g.points - cost);
+    await set(ref(db, "global/guilds/"+n+"/multiplier"), mult + 0.1);
+    window.showToast("✅ Multiplikator erhöht!", "#10b981");
+    window.handleGuildShopMenu();
 }
 window.handleGuildDonateMenu=function(){if(!gameState.guild||!guildsCache[gameState.guild])return window.showToast("Keine Gilde!", "#ef4444");if(!gameState.inventory)gameState.inventory=[];let grouped={};gameState.inventory.forEach(i=>{if(i.isTrash)return;let k=(i.isShiny?"s_":"n_")+i.n;if(!grouped[k])grouped[k]={n:i.n,e:i.e,isShiny:i.isShiny,c:i.c,count:0};grouped[k].count++;});let h=`<div style="text-align:center;"><p>Spenden für ${gameState.guild}</p><div style="max-height:45vh;overflow-y:auto;text-align:left;">`;for(let[k,d]of Object.entries(grouped)){let ppf=d.isShiny?50:(d.c<=5?5:1);h+=`<div class="inv-group-card" style="flex-direction:column;"><div style="display:flex;justify-content:space-between;"><div><b>${d.e} ${d.isShiny?'🧬 ':''}${d.n}</b><br><small>${ppf} Pkt/Stk</small></div><div>${d.count} Stk</div></div><div style="display:flex;gap:10px;"><input id="da_${k}" type="number" min="1" max="${d.count}" value="${d.count}" style="width:60px;padding:5px;border-radius:6px;border:1px solid #30363d;background:#161b22;color:white;"><button class="success-btn" style="flex:1;background:#eab308;" onclick="window.executeGuildDonateGroup('${k}',${ppf})">Spenden</button></div></div>`;}h+=`</div></div>`;openModal("Spende",h);}
-window.executeGuildDonateGroup=async function(k,ppf){if(!gameState.guild||!guildsCache[gameState.guild])return;let el=document.getElementById("da_"+k);if(!el)return;let amt=parseInt(el.value);if(isNaN(amt)||amt<=0)return window.showToast("Ungültig!", "#ef4444");let isS=k.startsWith("s_");let name=k.replace("s_","").replace("n_","");let newInv=[],donated=0,totalPts=0;for(let i of gameState.inventory){if(donated<amt&&i.n===name&&!!i.isShiny===isS&&!i.isTrash){donated++;totalPts+=ppf;}else newInv.push(i);}if(donated>0){gameState.inventory=newInv;saveData();let gr=ref(db,"global/guilds/"+gameState.guild+"/points");let snap=await get(gr);let cp=snap.exists()?snap.val():0;await set(gr,cp+totalPts);let dn=ref(db,"global/guilds/"+gameState.guild+"/donations/"+currentUser);let dsnap=await get(dn);await set(dn,(dsnap.exists()?dsnap.val():0)+totalPts);window.showToast(`✅ +${totalPts} Pkt!`, "#10b981");window.handleGuildDonateMenu();}}
+window.executeGuildDonateGroup=async function(k,ppf){if(!gameState.guild||!guildsCache[gameState.guild])return;let el=document.getElementById("da_"+k);if(!el)return;let amt=parseInt(el.value);if(isNaN(amt)||amt<=0)return window.showToast("Ungültig!", "#ef4444");let isS=k.startsWith("s_");let name=k.replace("s_","").replace("n_","");let newInv=[],donated=0,totalPts=0;for(let i of gameState.inventory){if(donated<amt&&i.n===name&&!!i.isShiny===isS&&!i.isTrash){donated++;totalPts+=ppf;}else newInv.push(i);}if(donated>0){let g=guildsCache[gameState.guild];let mult=g.multiplier||1;let finalPts=Math.floor(totalPts*mult);gameState.inventory=newInv;saveData();let gr=ref(db,"global/guilds/"+gameState.guild+"/points");let snap=await get(gr);let cp=snap.exists()?snap.val():0;await set(gr,cp+finalPts);let dn=ref(db,"global/guilds/"+gameState.guild+"/donations/"+currentUser);let dsnap=await get(dn);await set(dn,(dsnap.exists()?dsnap.val():0)+finalPts);window.showToast(`✅ +${finalPts} Pkt!`, "#10b981");window.handleGuildDonateMenu();}}
 
 // --- MODULE: ACHIVEMENTS ---
 window.handleAchieveMenu = function() {
@@ -1589,7 +1663,7 @@ window.changeZone=function(i){
     window.handleZoneMenu(); 
 }
 
-window.handleLeaderboard=function(tab='users'){window.currentOpenMenu='leaderboard';window.currentLeaderboardTab=tab;let h=`<div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.handleLeaderboard('users')" style="flex:1;${tab==='users'?'background:#3b82f6;':'background:#1e293b;'}">👥 Spieler</button><button onclick="window.handleLeaderboard('guilds')" style="flex:1;${tab==='guilds'?'background:#eab308;':'background:#1e293b;'}">🛡️ Gilden</button></div><div style="max-height:60vh;overflow-y:auto;">`;if(tab==='users'){h+=lastLeaderboardUsers.map((u,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex;justify-content:space-between;"><b>${r} ${u.name}</b><span>👑 P${u.prestige||0}</span></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${(u.stats?.totalCaught||0).toLocaleString()}</span></div></div>`;}).join('');}else{let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));h+=sg.slice(0,100).map((g,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card"><div style="display:flex;justify-content:space-between;"><b style="color:#eab308;">${r} ${g.name}</b><span>${g.owner}</span></div><div class="card-stats"><span>🛡️ ${g.points||0} Pkt</span><span>👥 ${(g.members||[]).length}/${g.maxMembers||10}</span></div></div>`;}).join('');}h+=`</div>`;openModal("🏆 Leaderboard",h);}
+window.handleLeaderboard=function(tab='users'){window.currentOpenMenu='leaderboard';window.currentLeaderboardTab=tab;let h=`<div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.handleLeaderboard('users')" style="flex:1;${tab==='users'?'background:#3b82f6;':'background:#1e293b;'}">👥 Spieler</button><button onclick="window.handleLeaderboard('guilds')" style="flex:1;${tab==='guilds'?'background:#eab308;':'background:#1e293b;'}">🛡️ Gilden</button></div><div style="max-height:60vh;overflow-y:auto;">`;if(tab==='users'){h+=lastLeaderboardUsers.map((u,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex;justify-content:space-between;"><b>${r} ${u.name}</b><span>👑 P${u.prestige||0}</span></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${(u.stats?.totalCaught||0).toLocaleString()}</span></div></div>`;}).join('');}else{let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));h+=sg.slice(0,100).map((g,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card"><div style="display:flex;justify-content:space-between;"><b style="color:#eab308;">${r} ${g.name}</b><span>${g.owner}</span></div><div class="card-stats"><span>🛡️ ${g.points||0} Pkt</span><span>👥 ${(g.members||[]).length}/${g.maxMembers||3}</span></div></div>`;}).join('');}h+=`</div>`;openModal("🏆 Leaderboard",h);}
 window.showPlayerProfile=async function(name){let u;if(name===currentUser&&gameState)u=gameState;else{let snap=await get(ref(db,"users/"+name));if(snap.exists())u=snap.val();}if(u){let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(u.prestige||0)>0?'👑':'🎣'}</div><div><h2>${u.name}</h2><div>👑 P${u.prestige||0} | ⭐ Lvl ${u.level}</div>${u.guild?`<div style="color:#eab308;">🛡️ ${u.guild}</div>`:''}</div></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${(u.stats?.totalCaught||0).toLocaleString()}</span></div></div>`;openModal(`📊 ${u.name}`,h);}else window.showToast("Nicht gefunden!", "#ef4444");}
 
 window.handleProfileMenu=function(){window.currentOpenMenu='profile';let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${gameState.prestige>0?'👑':'🎣'}</div><div><h2>${gameState.name}</h2><div>👑 P${gameState.prestige} | ⭐ Lvl ${gameState.level}</div>${gameState.guild?`<div style="color:#eab308;">🛡️ ${gameState.guild}</div>`:''}</div></div><div class="card-stats"><span>💰 ${Math.floor(gameState.money).toLocaleString()}$</span><span>🐟 ${gameState.stats.totalCaught.toLocaleString()}</span></div><div class="card-stats"><span>💵 ${gameState.stats.totalEarned.toLocaleString()}$ verdient</span><span>🔥 Streak: ${gameState.dailyStreak||0}</span></div></div>`;openModal("📊 Profil",h);}
