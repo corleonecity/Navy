@@ -15,10 +15,12 @@
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; letter-spacing: normal; word-spacing: normal; }
         body {
-            margin: 0; font-family: 'Segoe UI', 'Apple Color Emoji', 'Segoe UI Emoji', Tahoma, sans-serif;
+            margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
             color: #e6f0ff; display: flex; justify-content: center; align-items: center;
             min-height: 100vh; transition: background 1s ease-in-out; padding: 10px;
             background-size: 400% 400%; animation: gradientBG 15s ease infinite;
+            font-variant-numeric: tabular-nums; /* Fix für iOS Zahlen-Kerning */
+            -webkit-font-smoothing: antialiased;
         }
         
         /* Zone 0 (Teich) Backgrounds */
@@ -204,16 +206,16 @@
 </div>
 <button id="btnChatToggle" onclick="window.toggleChat()">💬</button>
 
-<!-- Timing Minispiel Overlay -->
+<!-- Neues verbessertes Timing Minispiel Overlay -->
 <div id="timing-minigame-overlay" class="modal-overlay" style="z-index:99999;">
-    <div class="modal-content" style="max-width:350px; text-align:center; padding:20px; background:#0f172a; border:2px solid #3b82f6;">
-        <h2 style="color:#60a5fa; margin-top:0;">🎣 Anbeißen!</h2>
-        <p>Klicke, wenn der Balken im grünen Bereich ist!</p>
-        <div style="width:100%; height:30px; background:#1e293b; border-radius:15px; position:relative; overflow:hidden; margin:15px 0;">
-            <div id="timing-target" style="position:absolute; left:40%; width:20%; height:100%; background:rgba(16,185,129,0.6);"></div>
-            <div id="timing-cursor" style="position:absolute; left:0%; width:6px; height:100%; background:#facc15;"></div>
+    <div class="modal-content" style="max-width:350px; text-align:center; padding:20px; background:radial-gradient(circle, #1e293b 0%, #0f172a 100%); border:2px solid #3b82f6; border-radius: 20px; box-shadow: 0 0 20px rgba(59,130,246,0.5);">
+        <h2 style="color:#60a5fa; margin-top:0; text-transform: uppercase; letter-spacing: 2px;">🎣 Anbeißen!</h2>
+        <p style="color:#cbd5e1; font-size: 14px;">Klicke genau im <span style="color:#10b981; font-weight:bold;">grünen</span> Bereich!</p>
+        <div style="width:100%; height:40px; background:#0f172a; border-radius:20px; position:relative; overflow:hidden; margin:20px 0; border: 2px solid #334155; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
+            <div id="timing-target" style="position:absolute; left:45%; width:10%; height:100%; background:linear-gradient(90deg, rgba(16,185,129,0.4), rgba(16,185,129,0.8), rgba(16,185,129,0.4)); box-shadow: 0 0 10px rgba(16,185,129,0.5);"></div>
+            <div id="timing-cursor" style="position:absolute; left:0%; width:4px; height:100%; background:#facc15; box-shadow: 0 0 8px #facc15, 0 0 15px #facc15;"></div>
         </div>
-        <button id="btnTimingCatch" class="success-btn" style="width:100%; height:50px; font-size:18px;">🖱️ Einholen!</button>
+        <button id="btnTimingCatch" class="success-btn" style="width:100%; height:55px; font-size:20px; background: linear-gradient(180deg, #10b981 0%, #059669 100%); border: 1px solid #047857; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s;">🖱️ EINHOLEN!</button>
     </div>
 </div>
 
@@ -507,6 +509,23 @@ window.handleAchieveMenu = function() {
 // ============ BANK ============
 window.handleBankMenu = function() {
     window.currentOpenMenu = 'bank';
+    
+    // Bank Freischaltung Check
+    if(!gameState.bankUnlocked) {
+        let canUnlock = gameState.money >= 25000 && gameState.prestige >= 1;
+        let html = `
+        <div style="text-align:center; padding:20px;">
+            <h3 style="color:#facc15; font-size:24px;">🏦 Bank Zugang</h3>
+            <p style="color:#94a3b8; font-size:14px; margin-bottom: 20px;">Du musst den Zugriff auf die Bank erst freischalten. Dein eingezahltes Geld verzinst sich dann automatisch über Zeit und wird direkt deinem Bankkonto gutgeschrieben.</p>
+            <div class="inv-card" style="border-color:${canUnlock?'#10b981':'#ef4444'}">
+                <div class="inv-stat"><span>Kosten:</span><span style="color:${gameState.money>=25000?'#10b981':'#ef4444'}">25.000$</span></div>
+                <div class="inv-stat"><span>Benötigtes Prestige:</span><span style="color:${gameState.prestige>=1?'#10b981':'#ef4444'}">1</span></div>
+            </div>
+            <button class="${canUnlock?'success-btn':'danger-btn'}" style="width:100%; margin-top:15px; padding:15px; font-size:16px;" ${canUnlock?'':'disabled'} onclick="window.unlockBank()">Freischalten</button>
+        </div>`;
+        return openModal("🏦 Bank", html);
+    }
+    
     if(!gameState.bank) gameState.bank = { deposited:0, interestEarned:0, lastInterest:0 };
     const dep = gameState.bank.deposited || 0;
     const interestEarned = gameState.bank.interestEarned || 0;
@@ -522,13 +541,13 @@ window.handleBankMenu = function() {
     let html = `
     <div style="text-align:center;margin-bottom:15px;">
         <h3 style="color:#facc15;margin:0;">🏦 Bank</h3>
-        <p style="font-size:12px;color:#94a3b8;">5% Zinsen alle 2 Stunden</p>
+        <p style="font-size:12px;color:#94a3b8;">5% Zinsen alle 2 Stunden wachsen automatisch an!</p>
         ${dep > 0 ? `<p style="font-size:12px;color:#60a5fa;">⏳ Nächste Zinszahlung in: <b>${hLeft}h ${mLeft}m ${sLeft}s</b></p>` : ''}
     </div>
     <div class="summary-box" style="margin-bottom:15px;">
         <div class="summary-row"><span>💰 Bargeld:</span><span style="color:#10b981;">${Math.floor(gameState.money).toLocaleString()}$</span></div>
-        <div class="summary-row"><span>🏦 Einlage:</span><span style="color:#facc15;">${dep.toLocaleString()}$</span></div>
-        <div class="summary-row"><span>💵 Zinsertrag gesamt:</span><span style="color:#60a5fa;">${Math.floor(interestEarned).toLocaleString()}$</span></div>
+        <div class="summary-row"><span>🏦 Einlage (Inkl. Zins):</span><span style="color:#facc15;">${dep.toLocaleString()}$</span></div>
+        <div class="summary-row"><span>💵 Bisher erwirtschaftet:</span><span style="color:#60a5fa;">${Math.floor(interestEarned).toLocaleString()}$</span></div>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:10px;">
         <div style="flex:1;">
@@ -550,6 +569,15 @@ window.handleBankMenu = function() {
         const cdEl = document.querySelector('#modal-body p b');
         if(cdEl) cdEl.innerText = `${h}h ${m}m ${s}s`;
     }, 1000);
+}
+
+window.unlockBank = function() {
+    if(gameState.money >= 25000 && gameState.prestige >= 1) {
+        gameState.money -= 25000;
+        gameState.bankUnlocked = true;
+        saveData();
+        window.handleBankMenu();
+    }
 }
 
 window.bankDeposit = function() {
@@ -1053,12 +1081,13 @@ async function loadData() {
         if(!currentUser)return;
         let acc=await get(ref(db,"accounts/"+currentUser));if(!acc.exists())return;
         if(snap.exists())gameState=snap.val();
-        else{gameState={name:currentUser,money:0,xp:0,level:1,zone:0,inventory:[],dex:{},aquarium:{unlocked:false,fishes:[]},lastDaily:0,dailyStreak:0,prestige:0,stats:{totalCaught:0,totalEarned:0},ownedRods:["rod1"],eqRod:"rod1",baits:{},eqBait:"none",bannedUntil:0,rodStats:{},usedCodes:{},guild:"",skills:{shiny:0,aqua:0},achievements:{},bank:{deposited:0,interestEarned:0,lastInterest:0},lastWheelSpin:0,dexRewards:{},boatUpgraded:false,autoFishUnlocked:false};saveData();}
+        else{gameState={name:currentUser,money:0,xp:0,level:1,zone:0,inventory:[],dex:{},aquarium:{unlocked:false,fishes:[]},lastDaily:0,dailyStreak:0,prestige:0,stats:{totalCaught:0,totalEarned:0},ownedRods:["rod1"],eqRod:"rod1",baits:{},eqBait:"none",bannedUntil:0,rodStats:{},usedCodes:{},guild:"",skills:{shiny:0,aqua:0},achievements:{},bank:{deposited:0,interestEarned:0,lastInterest:0},lastWheelSpin:0,dexRewards:{},boatUpgraded:false,autoFishUnlocked:false,bankUnlocked:false};saveData();}
         if(gameState?.bannedUntil>Date.now()){let mins=Math.ceil((gameState.bannedUntil-Date.now())/60000);document.body.innerHTML=`<div style="text-align:center;background:#161b22;padding:30px;border-radius:15px;border:2px solid #ef4444;"><h1 style="color:#ef4444;">🚫 GESPERRT</h1><p>Noch ${mins} Min</p><button onclick="localStorage.removeItem('vFisher_user');location.reload()" style="padding:12px;background:#3b82f6;border:none;border-radius:8px;color:white;width:100%;">Abmelden</button></div>`;return;}
         if(gameState){
             if(!Array.isArray(gameState.inventory))gameState.inventory=[];
             if(!gameState.achievements)gameState.achievements={};
             if(!gameState.bank)gameState.bank={deposited:0,interestEarned:0,lastInterest:0};
+            if(gameState.bankUnlocked===undefined)gameState.bankUnlocked=false;
             if(!gameState.dexRewards)gameState.dexRewards={};
             if(gameState.lastWheelSpin===undefined)gameState.lastWheelSpin=0;
             if(gameState.boatUpgraded===undefined)gameState.boatUpgraded=false;
@@ -1211,11 +1240,14 @@ function startTimingMinigame() {
         timingActive = true;
         timingCursor = 0;
         timingDir = 1;
-        let timingSpeed = 1.0 + Math.random(); // Langsamer als früher
+        
+        // Etwas schnelleres Timing für höheren Schwierigkeitsgrad
+        let timingSpeed = 1.5 + Math.random() * 1.5; 
+        
         if(timingTimer) clearInterval(timingTimer);
         timingTimer = setInterval(() => {
             timingCursor += timingDir * timingSpeed;
-            if(timingCursor >= 94) timingDir = -1;
+            if(timingCursor >= 96) timingDir = -1;
             if(timingCursor <= 0) timingDir = 1;
             document.getElementById('timing-cursor').style.left = timingCursor + '%';
         }, 20);
@@ -1227,7 +1259,9 @@ document.getElementById('btnTimingCatch')?.addEventListener('click', () => {
     timingActive = false;
     clearInterval(timingTimer);
     document.getElementById('timing-minigame-overlay').style.display = 'none';
-    if(timingCursor >= 35 && timingCursor <= 65) {
+    
+    // Strengere Timing-Überprüfung: Der grüne Bereich liegt nun zwischen 44 und 56
+    if(timingCursor >= 44 && timingCursor <= 56) {
         timingResolve(true);
     } else {
         timingResolve(false);
@@ -1644,10 +1678,11 @@ window.handleAdminMenu=function(){
     </div></div>`;
     openModal("👑 Admin Panel",h,"",true);
 }
+
 window.adminSendDiscordUpdate=function(){
     let t=document.getElementById("adminDiscordUpdateText").value.trim();
     if(!t)return alert("Text eingeben!");
-    fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{
+    fetch("https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd",{
         method:'POST',
         headers:{'Content-Type':'application/json'},
         body:JSON.stringify({embeds:[{title:"📢 NEUES UPDATE",description:t,color:5763719,fields:[{name:"Gesendet von",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})
@@ -1656,6 +1691,7 @@ window.adminSendDiscordUpdate=function(){
         document.getElementById("adminDiscordUpdateText").value='';
     }).catch(()=>alert("❌ Fehler beim Senden"));
 }
+
 window.adminSendBroadcast=async function(){let t=document.getElementById("adminBroadcastInput").value.trim();if(!t)return alert("Text!");await set(ref(db,"global/broadcast"),{text:t,timestamp:Date.now()});alert("✅ Gesendet!");}
 window.adminInspectUser=async function(){let name=document.getElementById("adminInspectTarget").value.trim();if(!name)return alert("User!");let snap=await get(ref(db,"users/"+name));if(!snap.exists())return alert("Nicht gefunden!");let u=snap.val();let h=`<div style="background:#161b22;padding:15px;border-radius:12px;border:2px solid #3b82f6;"><h2>🔍 ${u.name}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div>💰 ${Math.floor(u.money).toLocaleString()}$</div><div>⭐ Lvl ${u.level} (P${u.prestige})</div><div>🎣 ${rodsDB[u.eqRod]?.name||"Standard"}</div><div>🗺️ ${zones[u.zone]?.name}</div></div></div>`;openModal("Inspektor",h);}
 window.adminSetEvent=async function(){let et=document.getElementById('adminEventSelect').value;let mult=Number(document.getElementById('adminEventMult').value)||2;let mins=Number(document.getElementById('adminEventTime').value)||5;let en="";if(et==='sun'){en="☀️ Goldene Sonne";mult=3}else if(et==='rain'){en="🌧️ Monsun";mult=2}else if(et==='hai'){en="🦈 Raubfisch";mult=2}else if(et==='xp'){en=`⭐ XP-Boost (x${mult})`}else{en=`💰 Geldsegen (x${mult})`}await set(ref(db,"global/event"),{type:et,mult:mult,name:en,exp:Date.now()+(mins*60000)});alert("✅ Gestartet!");}
