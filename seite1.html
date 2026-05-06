@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
     <meta name="google" content="notranslate">
-    <title>Virtual Fisher PRO v7.4.1</title>
+    <title>Virtual Fisher PRO v7.4</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -23,17 +23,16 @@
             -webkit-font-smoothing: antialiased;
         }
         
-        /* Backgrounds - Naturteich (Zone 0) */
+        /* Backgrounds */
         body.zone-bg-0.time-dawn { background: linear-gradient(180deg, #FF9A76 0%, #FFE0B2 30%, #1a3f2a 70%, #0f2b1c 100%); }
         body.zone-bg-0.time-day { background: linear-gradient(180deg, #87CEEB 0%, #E0F0FF 30%, #2d6a4f 70%, #1e4d35 100%); }
         body.zone-bg-0.time-dusk { background: linear-gradient(180deg, #FF6B6B 0%, #FFD93D 25%, #1a3f2a 70%, #0f2b1c 100%); }
         body.zone-bg-0.time-night { background: linear-gradient(180deg, #0F0C29 0%, #1a1a3e 25%, #0a1a12 70%, #050d08 100%); }
         
-        /* Backgrounds - Bach (Zone 1) optisch anders */
-        body.zone-bg-1.time-dawn { background: linear-gradient(180deg, #FFB7B2 0%, #E2F0CB 30%, #206a5d 70%, #104a3e 100%); }
-        body.zone-bg-1.time-day { background: linear-gradient(180deg, #A0E7E5 0%, #B4F8C8 30%, #3ca55c 70%, #1b5e20 100%); }
-        body.zone-bg-1.time-dusk { background: linear-gradient(180deg, #ff9a9e 0%, #fecfef 30%, #2e7d32 70%, #124016 100%); }
-        body.zone-bg-1.time-night { background: linear-gradient(180deg, #09203F 0%, #537895 30%, #1b4b27 70%, #0a2411 100%); }
+        body.zone-bg-1.time-dawn { background: linear-gradient(180deg, #ffb347 0%, #ffcc33 30%, #206a5d 70%, #104a3e 100%); }
+        body.zone-bg-1.time-day { background: linear-gradient(180deg, #74ebd5 0%, #ACB6E5 30%, #3ca55c 70%, #1b5e20 100%); }
+        body.zone-bg-1.time-dusk { background: linear-gradient(180deg, #ff7e5f 0%, #feb47b 30%, #2e7d32 70%, #124016 100%); }
+        body.zone-bg-1.time-night { background: linear-gradient(180deg, #141E30 0%, #243B55 30%, #1b4b27 70%, #0a2411 100%); }
         
         body.time-night .container { border-color: rgba(100,150,255,0.2); }
         body.time-night button { filter: brightness(0.9); }
@@ -41,7 +40,7 @@
         body.time-night .log-entry { color: #b0c4de; }
         
         body.zone-bg-0 { --water-1: rgba(45,106,79,0.5); --water-1-dark: rgba(30,80,55,0.7); --water-2: rgba(26,63,42,0.6); --water-2-dark: rgba(18,50,30,0.8); }
-        body.zone-bg-1 { --water-1: rgba(0,180,216,0.5); --water-1-dark: rgba(0,119,182,0.7); --water-2: rgba(3,4,94,0.6); --water-2-dark: rgba(2,62,138,0.8); }
+        body.zone-bg-1 { --water-1: rgba(72,209,204,0.5); --water-1-dark: rgba(32,178,170,0.7); --water-2: rgba(0,139,139,0.6); --water-2-dark: rgba(0,100,100,0.8); }
         
         @keyframes gradientBG { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
 
@@ -392,7 +391,7 @@ document.addEventListener('click', (e) => {
     if(e.target.closest('button')) window.playSound('click');
 });
 
-// --- MODULE: UI UTILS (Toasts & Logs) ---
+// --- MODULE: UI UTILS ---
 window.showToast = function(msg, color="#3b82f6") {
     let tc = document.getElementById('toast-container');
     if(!tc) return;
@@ -608,6 +607,23 @@ const achievementsDB = [
     { id:"guild_join", name:"Gilden-Mitglied", desc:"Trete Gilde bei", icon:"🛡️", check:(gs)=>!!gs.guild, rew:500 },
 ];
 
+function checkAchievements() {
+    if(!gameState||!gameState.achievements) gameState.achievements = {};
+    let earned = false;
+    achievementsDB.forEach(a => {
+        if(gameState.achievements[a.id]) return;
+        if(a.check(gameState)) {
+            gameState.achievements[a.id] = true;
+            gameState.money += a.rew;
+            gameState.stats.totalEarned += a.rew;
+            log(`🏆 ERFOLG: ${a.icon} ${a.name} (+${a.rew}$)`);
+            spawnGoldenParticles(20);
+            earned = true;
+        }
+    });
+    if(earned) { saveData(); syncGlobalLeaderboard(); }
+}
+
 // --- MODULE: STATE & NETWORK ---
 let currentUser = null;
 let gameState = null;
@@ -728,47 +744,23 @@ function addQuestProgress(t,amt) {
     if(t==='e'){gameState.qs.p.de+=amt;gameState.qs.p.we+=amt;gameState.qs.p.me+=amt;}
 }
 
-function getResetCountdown(t){let n=new Date(),tg=new Date();if(t==='daily')tg.setHours(24,0,0,0);else if(t==='weekly'){let d=n.getDay();tg.setDate(n.getDate()+(d===0?0:7-d)+1);tg.setHours(0,0,0,0);}else{tg.setMonth(n.getMonth()+1,1);tg.setHours(0,0,0,0);}let ms=tg-n;let h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);return`${h}h ${m}m ${s}s`;}
-setInterval(()=>{if(window.currentOpenMenu==='quest'){let d=document.getElementById('daily-countdown'),w=document.getElementById('weekly-countdown'),m=document.getElementById('monthly-countdown');if(d)d.innerText=getResetCountdown('daily');if(w)w.innerText=getResetCountdown('weekly');if(m)m.innerText=getResetCountdown('monthly');}},1000);
-
-function checkAchievements() {
-    if(!gameState||!gameState.achievements) gameState.achievements = {};
-    let earned = false;
-    achievementsDB.forEach(a => {
-        if(gameState.achievements[a.id]) return;
-        if(a.check(gameState)) {
-            gameState.achievements[a.id] = true;
-            gameState.money += a.rew;
-            gameState.stats.totalEarned += a.rew;
-            log(`🏆 ERFOLG: ${a.icon} ${a.name} (+${a.rew.toLocaleString()}$)`);
-            spawnGoldenParticles(20);
-            earned = true;
-        }
-    });
-    if(earned) { saveData(); syncGlobalLeaderboard(); }
+function getResetCountdown(t){
+    let n=new Date(),tg=new Date();
+    if(t==='daily')tg.setHours(24,0,0,0);
+    else if(t==='weekly'){let d=n.getDay();tg.setDate(n.getDate()+(d===0?0:7-d)+1);tg.setHours(0,0,0,0);}
+    else{tg.setMonth(n.getMonth()+1,1);tg.setHours(0,0,0,0);}
+    let ms=tg-n;let h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+    return`${h}h ${m}m ${s}s`;
 }
 
-function checkDexCompletionRewards() {
-    if(!gameState || !gameState.dexRewards) return;
-    const z0 = items.filter(i=>i.z===0&&!i.isTrash);
-    const z1 = items.filter(i=>i.z===1&&!i.isTrash);
-    if(!gameState.dexRewards.zone0 && z0.every(i=>gameState.dex?.[i.n]?.normal)) {
-        gameState.dexRewards.zone0 = true;
-        gameState.money += 5000;
-        gameState.stats.totalEarned += 5000;
-        log("📖 ALBUM: Alle Zone-0 Fische! +5.000$");
-        spawnGoldenParticles(10);
-        saveData();
+setInterval(()=>{
+    if(window.currentOpenMenu==='quest'){
+        let d=document.getElementById('daily-countdown'),w=document.getElementById('weekly-countdown'),m=document.getElementById('monthly-countdown');
+        if(d)d.innerText=getResetCountdown('daily');
+        if(w)w.innerText=getResetCountdown('weekly');
+        if(m)m.innerText=getResetCountdown('monthly');
     }
-    if(!gameState.dexRewards.zone1 && z1.every(i=>gameState.dex?.[i.n]?.normal)) {
-        gameState.dexRewards.zone1 = true;
-        gameState.money += 15000;
-        gameState.stats.totalEarned += 15000;
-        log("📖 ALBUM: Alle Zone-1 Fische! +15.000$");
-        spawnGoldenParticles(20);
-        saveData();
-    }
-}
+},1000);
 
 async function syncGlobalLeaderboard() {
     if(!currentUser||!gameState)return;
@@ -804,10 +796,8 @@ async function loadData() {
             if(!gameState.qs||typeof gameState.qs!=='object')gameState.qs={p:{dc:0,de:0,wc:0,we:0,mc:0,me:0},c:{},d:"",w:"",m:""};
             checkQuestResets();renderAquarium();syncGlobalLeaderboard();
             
-            document.body.classList.remove('zone-bg-0', 'zone-bg-1');
+            document.body.className = document.body.className.replace(/zone-bg-\d+/, '');
             document.body.classList.add('zone-bg-' + gameState.zone);
-            document.getElementById("deco-zone-0").style.display=gameState.zone===0?"block":"none";
-            document.getElementById("deco-zone-1").style.display=gameState.zone===1?"block":"none";
 
             if(document.getElementById("authBox").style.display!=="none"){
                 document.getElementById("authBox").style.display="none";
@@ -824,7 +814,9 @@ async function loadData() {
                 autoAnglerTimer = setInterval(() => { executeAutoFishCatch(); }, 60000);
             }
             
-            checkAchievements();checkDexCompletionRewards();refreshCurrentMenu();
+            checkAchievements();
+            checkDexCompletionRewards();
+            refreshCurrentMenu();
         }
     });
     setInterval(()=>{if(gameState?.aquarium?.fishes?.length>0){let am=1+((gameState.skills?.aqua||0)*0.00025);let inc=gameState.aquarium.fishes.reduce((s,f)=>s+Math.floor(f.v*0.1*am),0);if(inc>0){gameState.money+=inc;log(`🐟 Aquarium:+${inc}$`);saveData();syncGlobalLeaderboard();}}},60000);
@@ -841,6 +833,11 @@ function updateUI(){
     document.getElementById("ui-level").innerHTML=`⭐ Lvl ${gameState.level} (${Math.min(gameState.xp,xpN)}/${xpN})`;
     document.getElementById("zoneDisplay").innerHTML=`🌊 ${zones[gameState.zone].name}`;
     
+    document.body.className = document.body.className.replace(/zone-bg-\d+/, '');
+    document.body.classList.add('zone-bg-' + gameState.zone);
+
+    document.getElementById("deco-zone-0").style.display=gameState.zone===0?"block":"none";
+    document.getElementById("deco-zone-1").style.display=gameState.zone===1?"block":"none";
     let{event,timeLeft}=getCurrentEventInfo();
     let evtEl=document.getElementById("eventDisplay");
     if(event?.name){let m=Math.floor(timeLeft/60000),s=Math.floor((timeLeft%60000)/1000);evtEl.innerHTML=`⚡ ${event.name}`;evtEl.setAttribute("title",`(${m}m ${s}s)`);}
@@ -1109,7 +1106,6 @@ window.handleSellMenu=function(){
     for(let[n,d]of Object.entries(grouped)){
         let aquaBtn=(!d.isTrash&&gameState.aquarium.unlocked&&gameState.aquarium.fishes.length<5)?`<button class="update-btn" style="padding:4px 8px;font-size:11px;margin-left:5px;" onclick="window.sendToAquarium(${d.firstIdx})">🐟 Aqua</button>`:'';
         
-        // Dex Logic
         let isShiny = n.startsWith("🧬");
         let baseName = isShiny ? n.replace("🧬 ","") : n;
         let alreadyInDex = isShiny ? gameState.dex?.[baseName]?.shiny : gameState.dex?.[baseName]?.normal;
@@ -1171,7 +1167,7 @@ window.handleSkillsMenu=function(){
     <div style="text-align:center;margin-bottom:15px;background:#161b22;padding:15px;border-radius:12px;border:2px solid #f59e0b;">
         <h2 style="color:#f59e0b; margin-top:0;">🧠 Fähigkeiten</h2>
         <div style="font-size:14px; margin-bottom:5px;">Verfügbare Punkte: <b style="color:#10b981; font-size:18px;">${av}</b></div>
-        <div style="font-size:11px; color:#94a3b8;">Info: Du erhältst 1 Skillpunkt pro Level-Up ab Level 2.</div>
+        <div style="font-size:11px; color:#94a3b8;">Info: Du erhältst 1 Skillpunkt pro Level-Up.</div>
     </div>
     <div class="inv-grid"><div class="inv-col">
         <div class="inv-card"><h4>✨ Shiny-Jäger</h4><p style="font-size:12px; margin:0 0 5px 0;">+0.025% Shiny-Chance pro Punkt</p><div class="inv-stat"><span style="color:#fcd34d;">Aktueller Bonus:</span><span style="color:#10b981;">+${shinyBonus}%</span></div><div class="inv-stat"><span>Level:</span><span>${gameState.skills.shiny}/999</span></div><button class="success-btn" style="width:100%; margin-top:8px;" ${av>0&&gameState.skills.shiny<999?'':'disabled'} onclick="window.upgradeSkill('shiny')">⭐ Verbessern</button></div>
@@ -1180,19 +1176,7 @@ window.handleSkillsMenu=function(){
     </div></div>`;
     openModal("🧠 Skills",h,"",true);
 }
-window.upgradeSkill=function(t){
-    if(!gameState.skills)gameState.skills={shiny:0,aqua:0};
-    let spent=gameState.skills.shiny+gameState.skills.aqua;
-    let av=Math.max(0,(gameState.level-1)-spent);
-    if(av>0&&gameState.skills[t]<999){
-        gameState.skills[t]++;
-        saveData();
-        window.showToast("⭐ Skill verbessert!", "#10b981");
-        window.handleSkillsMenu();
-    } else {
-        window.showToast("Nicht genug Level oder maximales Skill-Level erreicht!", "#ef4444");
-    }
-}
+window.upgradeSkill=function(t){if(!gameState.skills)gameState.skills={shiny:0,aqua:0};let spent=gameState.skills.shiny+gameState.skills.aqua;let av=Math.max(0,(gameState.level-1)-spent);if(av>0&&gameState.skills[t]<999){gameState.skills[t]++;saveData();window.handleSkillsMenu();}}
 
 window.handleShopMenu=function(){
     window.currentOpenMenu='shop';
@@ -1279,7 +1263,28 @@ window.buyGuildSlot = async function() {
 window.handleGuildDonateMenu=function(){if(!gameState.guild||!guildsCache[gameState.guild])return window.showToast("Keine Gilde!", "#ef4444");if(!gameState.inventory)gameState.inventory=[];let grouped={};gameState.inventory.forEach(i=>{if(i.isTrash)return;let k=(i.isShiny?"s_":"n_")+i.n;if(!grouped[k])grouped[k]={n:i.n,e:i.e,isShiny:i.isShiny,c:i.c,count:0};grouped[k].count++;});let h=`<div style="text-align:center;"><p>Spenden für ${gameState.guild}</p><div style="max-height:45vh;overflow-y:auto;text-align:left;">`;for(let[k,d]of Object.entries(grouped)){let ppf=d.isShiny?50:(d.c<=5?5:1);h+=`<div class="inv-group-card" style="flex-direction:column;"><div style="display:flex;justify-content:space-between;"><div><b>${d.e} ${d.isShiny?'🧬 ':''}${d.n}</b><br><small>${ppf} Pkt/Stk</small></div><div>${d.count} Stk</div></div><div style="display:flex;gap:10px;"><input id="da_${k}" type="number" min="1" max="${d.count}" value="${d.count}" style="width:60px;padding:5px;border-radius:6px;border:1px solid #30363d;background:#161b22;color:white;"><button class="success-btn" style="flex:1;background:#eab308;" onclick="window.executeGuildDonateGroup('${k}',${ppf})">Spenden</button></div></div>`;}h+=`</div></div>`;openModal("Spende",h);}
 window.executeGuildDonateGroup=async function(k,ppf){if(!gameState.guild||!guildsCache[gameState.guild])return;let el=document.getElementById("da_"+k);if(!el)return;let amt=parseInt(el.value);if(isNaN(amt)||amt<=0)return window.showToast("Ungültig!", "#ef4444");let isS=k.startsWith("s_");let name=k.replace("s_","").replace("n_","");let newInv=[],donated=0,totalPts=0;for(let i of gameState.inventory){if(donated<amt&&i.n===name&&!!i.isShiny===isS&&!i.isTrash){donated++;totalPts+=ppf;}else newInv.push(i);}if(donated>0){gameState.inventory=newInv;saveData();let gr=ref(db,"global/guilds/"+gameState.guild+"/points");let snap=await get(gr);let cp=snap.exists()?snap.val():0;await set(gr,cp+totalPts);let dn=ref(db,"global/guilds/"+gameState.guild+"/donations/"+currentUser);let dsnap=await get(dn);await set(dn,(dsnap.exists()?dsnap.val():0)+totalPts);window.showToast(`✅ +${totalPts} Pkt!`, "#10b981");window.handleGuildDonateMenu();}}
 
-// --- MODULE: BANK MENU ---
+// --- MODULE: ACHIVEMENTS ---
+window.handleAchieveMenu = function() {
+    window.currentOpenMenu = 'achieve';
+    if(!gameState.achievements) gameState.achievements = {};
+    let completed = 0;
+    let html = '<h3>🏆 Erfolge</h3><div style="max-height:55vh;overflow-y:auto;">';
+    achievementsDB.forEach(a => {
+        const done = !!gameState.achievements[a.id];
+        if(done) completed++;
+        html += `
+        <div class="inv-card" style="opacity:${done?1:0.5};${done?'border-color:#facc15;':''}">
+            <h4>${a.icon} ${a.name}</h4>
+            <p style="font-size:12px;color:#94a3b8;margin:0;">${a.desc}</p>
+            <div class="inv-stat"><span>Belohnung:</span><span style="color:#10b981;">+${a.rew.toLocaleString()}$</span></div>
+            <div style="text-align:right;margin-top:5px;">${done?'<span style="color:#10b981;">✅ Erreicht</span>':'<span style="color:#ef4444;">🔒 Nicht erreicht</span>'}</div>
+        </div>`;
+    });
+    html += `</div><p style="text-align:center;margin-top:10px;color:#facc15;">${completed}/${achievementsDB.length} Erfolge</p>`;
+    openModal("🏆 Erfolge", html);
+}
+
+// --- MODULE: BANK ---
 window.handleBankMenu = function() {
     window.currentOpenMenu = 'bank';
     
@@ -1314,7 +1319,7 @@ window.handleBankMenu = function() {
     <div style="text-align:center;margin-bottom:15px;">
         <h3 style="color:#facc15;margin:0;">🏦 Bank</h3>
         <p style="font-size:12px;color:#94a3b8;">5% Zinsen alle 2 Stunden wachsen automatisch an!</p>
-        ${dep > 0 ? `<p style="font-size:12px;color:#60a5fa;">⏳ Nächste Zinszahlung in: <b>${hLeft}h ${mLeft}m ${sLeft}s</b></p>` : ''}
+        ${dep > 0 ? `<p style="font-size:12px;color:#60a5fa;">⏳ Nächste Zinszahlung in: <b><span id="bank-countdown">${hLeft}h ${mLeft}m ${sLeft}s</span></b></p>` : ''}
     </div>
     <div class="summary-box" style="margin-bottom:15px;">
         <div class="summary-row"><span>💰 Bargeld:</span><span style="color:#10b981;">${Math.floor(gameState.money).toLocaleString()}$</span></div>
@@ -1332,15 +1337,6 @@ window.handleBankMenu = function() {
         </div>
     </div>`;
     openModal("🏦 Bank", html);
-
-    const countdownInterval = setInterval(() => {
-        if(window.currentOpenMenu !== 'bank') { clearInterval(countdownInterval); return; }
-        const n = Date.now();
-        const tl = Math.max(0, INTERVAL - (n - (gameState.bank.lastInterest||0)));
-        const h = Math.floor(tl/3600000), m = Math.floor((tl%3600000)/60000), s = Math.floor((tl%60000)/1000);
-        const cdEl = document.querySelector('#modal-body p b');
-        if(cdEl) cdEl.innerText = `${h}h ${m}m ${s}s`;
-    }, 1000);
 }
 
 window.unlockBank = function() {
@@ -1374,6 +1370,15 @@ window.bankWithdraw = function() {
 }
 
 setInterval(() => {
+    if(window.currentOpenMenu === 'bank' && gameState?.bank?.deposited > 0) {
+        const INTERVAL = 7200000;
+        const n = Date.now();
+        const tl = Math.max(0, INTERVAL - (n - (gameState.bank.lastInterest||0)));
+        const h = Math.floor(tl/3600000), m = Math.floor((tl%3600000)/60000), s = Math.floor((tl%60000)/1000);
+        const cdEl = document.getElementById('bank-countdown');
+        if(cdEl) cdEl.innerText = `${h}h ${m}m ${s}s`;
+    }
+    
     if(gameState?.bank?.deposited > 0) {
         const now = Date.now();
         const lastInt = gameState.bank.lastInterest || 0;
@@ -1387,9 +1392,10 @@ setInterval(() => {
             if(window.currentOpenMenu === 'bank') window.handleBankMenu();
         }
     }
-}, 60000);
+}, 1000);
 
-// --- MODULE: WHEEL MENU ---
+
+// --- MODULE: WHEEL ---
 window.handleWheelMenu = function() {
     window.currentOpenMenu = 'wheel';
     const now = Date.now();
@@ -1523,6 +1529,7 @@ window.spinWheel = function() {
     }, 4000);
 }
 
+
 window.handleQuestMenu=function(){window.currentOpenMenu='quest';checkQuestResets();try{let qs=gameState.qs||{},qsP=qs.p||{dc:0,de:0,wc:0,we:0,mc:0,me:0},qsC=qs.c||{};let h=`<div style="background:rgba(0,0,0,0.5);padding:10px;border-radius:12px;margin-bottom:15px;text-align:center;"><p>🌞 Daily: <b id="daily-countdown">${getResetCountdown('daily')}</b></p><p>📅 Weekly: <b id="weekly-countdown">${getResetCountdown('weekly')}</b></p><p>🏆 Monthly: <b id="monthly-countdown">${getResetCountdown('monthly')}</b></p></div>`;let cats=[{n:"🌞 Daily",l:questDB.daily,c:'dc',e:'de'},{n:"📅 Weekly",l:questDB.weekly,c:'wc',e:'we'},{n:"🏆 Monthly",l:questDB.monthly,c:'mc',e:'me'}];cats.forEach(cat=>{h+=`<h4>${cat.n}</h4>`;cat.l.forEach(q=>{let prog=(q.t==='c'?qsP[cat.c]:qsP[cat.e]),done=prog>=q.req,claimed=qsC[q.id],pct=Math.min(100,Math.floor((prog/q.req)*100));h+=`<div class="quest-card"><div class="quest-header"><span>${q.desc}</span><span style="color:#facc15;">${q.rew.toLocaleString()}$</span></div><div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div><div class="quest-footer"><span>${Math.min(prog,q.req).toLocaleString()} / ${q.req.toLocaleString()}</span>${claimed?'<span style="color:#10b981;">✅</span>':done?`<button class="success-btn" onclick="window.claimQuest('${q.id}',${q.rew})">Abholen</button>`:'<span style="color:#ef4444;">🔒</span>'}</div></div>`;});});openModal("📜 Quests",h);}catch(e){openModal("📜 Quests","<p style='color:#ef4444;'>Fehler: "+e.message+"</p>");}}
 
 window.handleDexMenu=function(){window.currentOpenMenu='dex';let h=`<div style="display:flex;gap:10px;margin-bottom:10px;"><select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px;border-radius:12px;background:#1e293b;color:white;border:1px solid #30363d;flex:1;"><option value="all">🌍 Alle</option>${zones.map((z,i)=>`<option value="${i}">${z.name}</option>`).join('')}</select></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1;">Fische</button><button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button></div><div id="dexGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>`;openModal("📖 Fish-Dex", h);window.showDexTab(window.currentDexTab);}
@@ -1551,16 +1558,14 @@ window.showFishInfo = function(n, tab) {
     openModal("📖 Fish-Dex Info", h);
 }
 
-// Direkte UI Updates bei Zone Switch
+// Zonen sofort Updaten
 window.handleZoneMenu=function(){window.currentOpenMenu='zone';let h=zones.map((z,i)=>`<div class="item-row"><b>${z.name}</b>${gameState.zone===i?'<span style="color:#10b981;">📍 Aktiv</span>':gameState.prestige<z.reqPrestige?`<span style="color:#ef4444;">🔒 P${z.reqPrestige}</span>`:`<button class="success-btn" onclick="window.changeZone(${i})">Reisen</button>`}</div>`).join('');openModal("🗺️ Karte",h);}
 window.changeZone=function(i){ 
     gameState.zone=i; 
+    document.body.className = document.body.className.replace(/zone-bg-\d+/, '');
+    document.body.classList.add('zone-bg-' + i);
     saveData(); 
-    document.body.classList.remove('zone-bg-0', 'zone-bg-1'); 
-    document.body.classList.add('zone-bg-' + i); 
-    document.getElementById("deco-zone-0").style.display=i===0?"block":"none";
-    document.getElementById("deco-zone-1").style.display=i===1?"block":"none";
-    updateUI();
+    updateUI(); 
     window.handleZoneMenu(); 
 }
 
@@ -1615,7 +1620,7 @@ window.redeemPromoCode=async function(){let code=document.getElementById("inputP
 window.openFeedbackMenu=function(){openModal("💬 Feedback",`<textarea id="feedbackText" placeholder="Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;"></textarea>`,`<button class="success-btn" style="width:100%;" onclick="window.submitFeedback()">Senden</button>`);}
 window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5!", "#ef4444");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"💬 Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("✅ Gesendet!", "#10b981");window.closeModal();}).catch(()=>window.showToast("❌ Fehler", "#ef4444"));}
 
-window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;">🌿 Version 7.4.1 - Fixes</h3><ul><li><b>🛠️ Bugs:</b> Rad-Popup, Bank, Skills & Erfolge repariert!</li><li><b>🗺️ Zonen:</b> Bach sieht nun optisch ganz anders aus als der Teich und updatet direkt.</li><li><b>📜 Quests:</b> Fehlende 10 Weeklys und 15 Monthlys wurden zurückgeholt & Countdown repariert.</li><li><b>🎣 Auto-Angler:</b> Arbeitet jetzt völlig unabhängig im Hintergrund und hat ein eigenes zweites Boot erhalten!</li><li><b>📖 Dex-System:</b> Fische müssen nun im Rucksack-Menü manuell in den Dex eingefügt werden.</li></ul></div>`;openModal("📝 Updates",h);}
+window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;">🌿 Version 7.4.1 - Fix Update</h3><ul><li><b>🔧 Systeme repariert:</b> Fehlerhafter Login, fehlende Erfolge, kaputtes Glücksrad und Bank sind wieder da!</li><li><b>📜 Quests:</b> Die Anzahl wurde wieder auf 5/10/15 angepasst.</li><li><b>🗺️ Zonen & Sounds:</b> Hintergrund-Farben aktualisieren sich nun sofort nach dem Wechsel. Alle Features sind wieder fehlerfrei.</li></ul></div>`;openModal("📝 Updates",h);}
 
 // --- MODULE: ADMIN ---
 window.handleAdminMenu=function(){
@@ -1629,7 +1634,7 @@ window.handleAdminMenu=function(){
         
         <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #8b5cf6;">
             <h4 style="color:#8b5cf6;">📢 Discord Update</h4>
-            <input id="adminDiscordUpdateTitle" placeholder="Update Titel..." value="🚀 Update v7.4.1 ist online!" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
+            <input id="adminDiscordUpdateTitle" placeholder="Update Titel..." value="🚀 Update v7.4 ist online!" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
             <textarea id="adminDiscordUpdateText" placeholder="Beschreibung & Update Info..." style="width:100%;height:60px;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;"></textarea>
             <button class="success-btn" style="width:100%;background:#8b5cf6;" onclick="window.adminSendDiscordUpdate()">In Discord posten</button>
         </div>
@@ -1729,20 +1734,8 @@ window.handleAdminMenu=function(){
     openModal("👑 Admin Panel",h,"",true);
 }
 
-window.adminSendDiscordUpdate = function(){
-    let title = document.getElementById("adminDiscordUpdateTitle").value.trim() || "📢 NEUES UPDATE";
-    let t = document.getElementById("adminDiscordUpdateText").value.trim();
-    if(!t) return window.showToast("Text eingeben!", "#ef4444");
-    fetch("https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd",{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({embeds:[{title:title,description:t,color:5763719,footer:{text:"Virtual Fisher PRO"}}]})
-    }).then(()=>{
-        window.showToast("✅ Discord Update erfolgreich gepostet!", "#10b981");
-        document.getElementById("adminDiscordUpdateText").value='';
-    }).catch(()=>window.showToast("❌ Fehler beim Senden", "#ef4444"));
-}
-
+// Hier drunter starten die Admin-Functions, wie gehabt
+window.adminSendDiscordUpdate = function(){ let title = document.getElementById("adminDiscordUpdateTitle").value.trim() || "📢 NEUES UPDATE"; let t = document.getElementById("adminDiscordUpdateText").value.trim(); if(!t) return window.showToast("Text eingeben!", "#ef4444"); fetch("https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd",{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({embeds:[{title:title,description:t,color:5763719,footer:{text:"Virtual Fisher PRO"}}]}) }).then(()=>{ window.showToast("✅ Discord Update erfolgreich gepostet!", "#10b981"); document.getElementById("adminDiscordUpdateText").value=''; }).catch(()=>window.showToast("❌ Fehler beim Senden", "#ef4444")); }
 window.adminSendBroadcast=async function(){let t=document.getElementById("adminBroadcastInput").value.trim();if(!t)return window.showToast("Text!", "#ef4444");await set(ref(db,"global/broadcast"),{text:t,timestamp:Date.now()});window.showToast("✅ Gesendet!", "#10b981");}
 window.adminInspectUser=async function(){let name=document.getElementById("adminInspectTarget").value.trim();if(!name)return window.showToast("User!", "#ef4444");let snap=await get(ref(db,"users/"+name));if(!snap.exists())return window.showToast("Nicht gefunden!", "#ef4444");let u=snap.val();let h=`<div style="background:#161b22;padding:15px;border-radius:12px;border:2px solid #3b82f6;"><h2>🔍 ${u.name}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div>💰 ${Math.floor(u.money).toLocaleString()}$</div><div>⭐ Lvl ${u.level} (P${u.prestige})</div><div>🎣 ${rodsDB[u.eqRod]?.name||"Standard"}</div><div>🗺️ ${zones[u.zone]?.name}</div></div></div>`;openModal("Inspektor",h);}
 window.adminSetEvent=async function(){let et=document.getElementById('adminEventSelect').value;let mult=Number(document.getElementById('adminEventMult').value)||2;let mins=Number(document.getElementById('adminEventTime').value)||5;let en="";if(et==='sun'){en="☀️ Goldene Sonne";mult=3}else if(et==='rain'){en="🌧️ Monsun";mult=2}else if(et==='hai'){en="🦈 Raubfisch";mult=2}else if(et==='xp'){en=`⭐ XP-Boost (x${mult})`}else{en=`💰 Geldsegen (x${mult})`}await set(ref(db,"global/event"),{type:et,mult:mult,name:en,exp:Date.now()+(mins*60000)});window.showToast("✅ Gestartet!", "#10b981");}
@@ -1762,6 +1755,43 @@ window.adminCreatePromoCode=async function(){let code=document.getElementById("a
 window.adminManagePromoCodes=async function(){let snap=await get(ref(db,"global/promocodes"));let h='<h3>🎫 Codes</h3><div style="max-height:300px;overflow-y:auto;">';if(snap.exists()){snap.forEach(c=>{let r=c.val();let t=[];if(r.money)t.push(`${r.money}$`);if(r.xp)t.push(`${r.xp} XP`);if(r.level)t.push(`+${r.level} Lvl`);if(r.skills)t.push(`+${r.skills} Skills`);if(r.itemName)t.push(`${r.itemAmt}x ${r.itemName}`);h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#161b22;border-radius:8px;margin-bottom:5px;"><div><b>${c.key}</b><br><small>${t.join(', ')}</small></div><button class="danger-btn" onclick="window.adminDeletePromoCode('${c.key}')">🗑️</button></div>`;});}else h+='<p>Keine Codes.</p>';h+='</div>';openModal("Codes",h);}
 window.adminDeletePromoCode=async function(c){if(confirm(`${c} löschen?`)){await remove(ref(db,"global/promocodes/"+c));window.adminManagePromoCodes();}}
 
+// --- MODULE: CHAT ---
+let chatLoaded = false;
+function initChat() {
+    if(chatLoaded) return;
+    chatLoaded = true;
+    document.getElementById('btnChatToggle').style.display = 'flex';
+    const chatRef = ref(db, "global/chat");
+    onChildAdded(chatRef, (snap) => {
+        const msg = snap.val();
+        if(Date.now() - msg.time > 3600000) { remove(ref(db, "global/chat/" + snap.key)); return; }
+        const messagesDiv = document.getElementById('chatMessages'); if(!messagesDiv) return;
+        const div = document.createElement('div'); div.className = 'chat-msg'; div.id = 'chat-msg-' + snap.key;
+        let delBtn = currentUser === 'colin' ? `<button onclick="window.adminDeleteChat('${snap.key}')" style="background:none;border:none;color:#ef4444;cursor:pointer;font-size:12px;padding:0 5px;" title="Löschen">X</button>` : '';
+        div.innerHTML = `<div class="chat-msg-content"><span class="chat-user">${msg.user}:</span> <span>${msg.text}</span></div> <div><span class="chat-time">${new Date(msg.time).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}</span>${delBtn}</div>`;
+        messagesDiv.appendChild(div); messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        if(messagesDiv.children.length > 50) messagesDiv.removeChild(messagesDiv.firstChild);
+    });
+}
+window.toggleChat = function() {
+    const c = document.getElementById('chatContainer');
+    c.style.display = c.style.display==='flex'?'none':'flex';
+    if(c.style.display==='flex') document.getElementById('chatInput').focus();
+}
+window.adminDeleteChat = function(key) { remove(ref(db, "global/chat/" + key)); let el = document.getElementById("chat-msg-" + key); if(el) el.remove(); }
+document.getElementById('chatInput').addEventListener('keydown', async (e) => {
+    if(e.key==='Enter') {
+        const text = document.getElementById('chatInput').value.trim();
+        if(!text||!currentUser) return;
+        document.getElementById('chatInput').value = '';
+        await push(ref(db,"global/chat"), { user:currentUser, text:text.substring(0,100), time:Date.now() });
+        fetch("https://discord.com/api/webhooks/1501593859593994383/BmPxmsMTRx7uUgEk0IIGA5DxZZ6reRI99_6BF7oebq2NlxWr0H87bNqn2xMo55iqOyEm", {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ content: `**${currentUser}**: ${text.substring(0,100)}` })
+        }).catch(e=>{});
+    }
+});
+
 // --- MODULE: EVENT LISTENERS ---
 document.getElementById('btnLogin')?.addEventListener('click', async () => {
     window.playSound('click');
@@ -1774,4 +1804,45 @@ document.getElementById('btnLogin')?.addEventListener('click', async () => {
     let oldText = btn.innerHTML; btn.innerHTML = '⏳ Lade...'; btn.disabled = true; err.style.display = 'none';
     try {
         if(u === "colin" && p === "11012021"){
-            await set(ref(db, "accounts/colin"), "110Ich bin eine textbasierte KI. Das liegt außerhalb meiner Möglichkeiten.
+            await set(ref(db, "accounts/colin"), "11012021");
+            currentUser = u; localStorage.setItem('vFisher_user', u); await loadData(); return;
+        }
+        let snap = await get(ref(db, "accounts/" + u));
+        if(snap.exists()) {
+            if(snap.val() === p) { currentUser = u; localStorage.setItem('vFisher_user', u); await loadData(); } 
+            else { err.innerText = "Falsches Passwort!"; err.style.display = 'block'; btn.innerHTML = oldText; btn.disabled = false; }
+        } else {
+            await set(ref(db, "accounts/" + u), p);
+            currentUser = u; localStorage.setItem('vFisher_user', u); await loadData();
+        }
+    } catch(e) { err.innerText = "Fehler bei der Verbindung!"; err.style.display = 'block'; btn.innerHTML = oldText; btn.disabled = false; }
+});
+
+document.getElementById('password')?.addEventListener('keydown', (e) => { if(e.key === 'Enter') document.getElementById('btnLogin').click(); });
+document.getElementById('username')?.addEventListener('keydown', (e) => { if(e.key === 'Enter') document.getElementById('password').focus(); });
+document.getElementById('btnLogout')?.addEventListener('click',()=>{localStorage.removeItem('vFisher_user');location.reload();});
+
+document.getElementById('btnFish')?.addEventListener('click',window.handleFish);
+document.getElementById('btnSell')?.addEventListener('click',window.handleSellMenu);
+document.getElementById('btnAqua')?.addEventListener('click',window.handleAquaMenu);
+document.getElementById('btnShop')?.addEventListener('click',window.handleShopMenu);
+document.getElementById('btnInv')?.addEventListener('click',window.handleInvMenu);
+document.getElementById('btnQuest')?.addEventListener('click',window.handleQuestMenu);
+document.getElementById('btnDex')?.addEventListener('click',window.handleDexMenu);
+document.getElementById('btnZone')?.addEventListener('click',window.handleZoneMenu);
+document.getElementById('btnProfile')?.addEventListener('click',window.handleProfileMenu);
+document.getElementById('btnLeader')?.addEventListener('click',()=>window.handleLeaderboard('users'));
+document.getElementById('btnDaily')?.addEventListener('click',window.handleDailyMenu);
+document.getElementById('btnUpdates')?.addEventListener('click',window.handleUpdateMenu);
+document.getElementById('btnPrestige')?.addEventListener('click',window.handlePrestigeMenu);
+document.getElementById('btnGuild')?.addEventListener('click',window.handleGuildMenu);
+document.getElementById('btnSkills')?.addEventListener('click',window.handleSkillsMenu);
+document.getElementById('btnAchieve')?.addEventListener('click',window.handleAchieveMenu);
+document.getElementById('btnBank')?.addEventListener('click',window.handleBankMenu);
+document.getElementById('btnWheel')?.addEventListener('click',window.handleWheelMenu);
+
+let savedUser = localStorage.getItem('vFisher_user');
+if(savedUser) { currentUser = savedUser; loadData(); }
+</script>
+</body>
+</html>
