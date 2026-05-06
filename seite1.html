@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
     <meta name="google" content="notranslate">
-    <title>Virtual Fisher PRO v7.4</title>
+    <title>Virtual Fisher PRO v7.4.2</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -624,6 +624,28 @@ function checkAchievements() {
     if(earned) { saveData(); syncGlobalLeaderboard(); }
 }
 
+function checkDexCompletionRewards() {
+    if(!gameState.dexRewards) gameState.dexRewards = {};
+    const z0 = items.filter(i=>i.z===0&&!i.isTrash);
+    const z1 = items.filter(i=>i.z===1&&!i.isTrash);
+    if(!gameState.dexRewards.zone0 && z0.every(i=>gameState.dex?.[i.n]?.normal)) {
+        gameState.dexRewards.zone0 = true;
+        gameState.money += 5000;
+        gameState.stats.totalEarned += 5000;
+        log("📖 ALBUM: Alle Zone-0 Fische! +5.000$");
+        spawnGoldenParticles(10);
+        saveData();
+    }
+    if(!gameState.dexRewards.zone1 && z1.every(i=>gameState.dex?.[i.n]?.normal)) {
+        gameState.dexRewards.zone1 = true;
+        gameState.money += 15000;
+        gameState.stats.totalEarned += 15000;
+        log("📖 ALBUM: Alle Zone-1 Fische! +15.000$");
+        spawnGoldenParticles(20);
+        saveData();
+    }
+}
+
 // --- MODULE: STATE & NETWORK ---
 let currentUser = null;
 let gameState = null;
@@ -794,6 +816,7 @@ async function loadData() {
             if(gameState.boatUpgraded===undefined)gameState.boatUpgraded=false;
             if(gameState.autoFishUnlocked===undefined)gameState.autoFishUnlocked=false;
             if(!gameState.qs||typeof gameState.qs!=='object')gameState.qs={p:{dc:0,de:0,wc:0,we:0,mc:0,me:0},c:{},d:"",w:"",m:""};
+            
             checkQuestResets();renderAquarium();syncGlobalLeaderboard();
             
             document.body.className = document.body.className.replace(/zone-bg-\d+/, '');
@@ -808,7 +831,7 @@ async function loadData() {
                 initChat();updateBoatVisual();
             }
             
-            // Auto Angler Controller
+            // Auto Angler Controller (Hintergrund-Boot)
             if(gameState.autoFishUnlocked && !autoAnglerTimer) {
                 document.getElementById('autoBoatContainer').style.display = 'block';
                 autoAnglerTimer = setInterval(() => { executeAutoFishCatch(); }, 60000);
@@ -892,7 +915,6 @@ window.handleFish = function(){
     let baitDef=baitsDB[gameState.eqBait];
     let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0);if(speedBonus>90)speedBonus=90;
     
-    // Basis Zeit 60s
     let fishTimeSec=60*(1-(speedBonus/100)); 
     let {event}=getCurrentEventInfo();
     if(event&&event.type==='speed')fishTimeSec=Math.floor(fishTimeSec/event.mult);
@@ -980,6 +1002,7 @@ function executeFishCatch(btn,scene){
         gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod]||0)+1;
         addQuestProgress('c',1);
         checkAchievements();
+        checkDexCompletionRewards();
         playCatchAnimation(item);
 
         let wText=item.weightG?` ⚖️ ${formatWeight(item.weightG)}`:'';
@@ -993,11 +1016,10 @@ function executeFishCatch(btn,scene){
     }
 }
 
-// Auto Angler Logic
+// Auto Angler Logic (Hintergrund)
 function executeAutoFishCatch() {
     if(!gameState || !gameState.inventory) return;
     
-    // Auto angler benutzt normale Werte, keine Boni, kein Bait-Verbrauch
     let pool=items.filter(i=>i.z===gameState.zone);
     let total=pool.reduce((s,i)=>s+i.c,0);
     let r=Math.random()*total;
@@ -1026,6 +1048,7 @@ function executeAutoFishCatch() {
         gameState.stats.totalCaught++;
         addQuestProgress('c',1);
         checkAchievements();
+        checkDexCompletionRewards();
     }
     
     // Kleiner Splash beim Auto Angler
@@ -1077,7 +1100,7 @@ function finishMinigame(won){
         let {event}=getCurrentEventInfo();if(event&&event.type==='xp')finalXp=Math.floor(finalXp*event.mult);
         gameState.inventory.push({...mgFishItem});gameState.xp+=finalXp;
         gameState.stats.totalCaught++;gameState.rodStats[gameState.eqRod]=(gameState.rodStats[gameState.eqRod]||0)+1;
-        addQuestProgress('c',1);checkAchievements();
+        addQuestProgress('c',1);checkAchievements();checkDexCompletionRewards();
         playCatchAnimation(mgFishItem);
         log(`⚔️ BOSS BESIEGT! ${mgFishItem.e} Gefangen: ${mgFishItem.baseName} (${mgFishItem.v}$)`);
         if(gameState.xp>=gameState.level*50){gameState.xp-=gameState.level*50;gameState.level++;log('⭐ LEVEL UP!'); window.playSound('shiny');}
@@ -1141,7 +1164,6 @@ window.sendToDex = function(idx) {
     gameState.dex[base].count++;
     if(item.weightG > gameState.dex[base].maxW) gameState.dex[base].maxW = item.weightG;
     
-    // Fish is consumed and gives NO money
     gameState.inventory.splice(idx, 1);
     saveData();
     checkDexCompletionRewards();
@@ -1394,7 +1416,6 @@ setInterval(() => {
     }
 }, 1000);
 
-
 // --- MODULE: WHEEL ---
 window.handleWheelMenu = function() {
     window.currentOpenMenu = 'wheel';
@@ -1529,7 +1550,6 @@ window.spinWheel = function() {
     }, 4000);
 }
 
-
 window.handleQuestMenu=function(){window.currentOpenMenu='quest';checkQuestResets();try{let qs=gameState.qs||{},qsP=qs.p||{dc:0,de:0,wc:0,we:0,mc:0,me:0},qsC=qs.c||{};let h=`<div style="background:rgba(0,0,0,0.5);padding:10px;border-radius:12px;margin-bottom:15px;text-align:center;"><p>🌞 Daily: <b id="daily-countdown">${getResetCountdown('daily')}</b></p><p>📅 Weekly: <b id="weekly-countdown">${getResetCountdown('weekly')}</b></p><p>🏆 Monthly: <b id="monthly-countdown">${getResetCountdown('monthly')}</b></p></div>`;let cats=[{n:"🌞 Daily",l:questDB.daily,c:'dc',e:'de'},{n:"📅 Weekly",l:questDB.weekly,c:'wc',e:'we'},{n:"🏆 Monthly",l:questDB.monthly,c:'mc',e:'me'}];cats.forEach(cat=>{h+=`<h4>${cat.n}</h4>`;cat.l.forEach(q=>{let prog=(q.t==='c'?qsP[cat.c]:qsP[cat.e]),done=prog>=q.req,claimed=qsC[q.id],pct=Math.min(100,Math.floor((prog/q.req)*100));h+=`<div class="quest-card"><div class="quest-header"><span>${q.desc}</span><span style="color:#facc15;">${q.rew.toLocaleString()}$</span></div><div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div><div class="quest-footer"><span>${Math.min(prog,q.req).toLocaleString()} / ${q.req.toLocaleString()}</span>${claimed?'<span style="color:#10b981;">✅</span>':done?`<button class="success-btn" onclick="window.claimQuest('${q.id}',${q.rew})">Abholen</button>`:'<span style="color:#ef4444;">🔒</span>'}</div></div>`;});});openModal("📜 Quests",h);}catch(e){openModal("📜 Quests","<p style='color:#ef4444;'>Fehler: "+e.message+"</p>");}}
 
 window.handleDexMenu=function(){window.currentOpenMenu='dex';let h=`<div style="display:flex;gap:10px;margin-bottom:10px;"><select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px;border-radius:12px;background:#1e293b;color:white;border:1px solid #30363d;flex:1;"><option value="all">🌍 Alle</option>${zones.map((z,i)=>`<option value="${i}">${z.name}</option>`).join('')}</select></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1;">Fische</button><button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button></div><div id="dexGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>`;openModal("📖 Fish-Dex", h);window.showDexTab(window.currentDexTab);}
@@ -1620,7 +1640,7 @@ window.redeemPromoCode=async function(){let code=document.getElementById("inputP
 window.openFeedbackMenu=function(){openModal("💬 Feedback",`<textarea id="feedbackText" placeholder="Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;"></textarea>`,`<button class="success-btn" style="width:100%;" onclick="window.submitFeedback()">Senden</button>`);}
 window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5!", "#ef4444");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"💬 Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("✅ Gesendet!", "#10b981");window.closeModal();}).catch(()=>window.showToast("❌ Fehler", "#ef4444"));}
 
-window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;">🌿 Version 7.4.1 - Fix Update</h3><ul><li><b>🔧 Systeme repariert:</b> Fehlerhafter Login, fehlende Erfolge, kaputtes Glücksrad und Bank sind wieder da!</li><li><b>📜 Quests:</b> Die Anzahl wurde wieder auf 5/10/15 angepasst.</li><li><b>🗺️ Zonen & Sounds:</b> Hintergrund-Farben aktualisieren sich nun sofort nach dem Wechsel. Alle Features sind wieder fehlerfrei.</li></ul></div>`;openModal("📝 Updates",h);}
+window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;">🌿 Version 7.4.2 - Final Fix</h3><ul><li><b>🔧 Systeme repariert:</b> Popups aktualisieren sich wieder richtig und Quests sowie Leveln von Skills ist wieder möglich!</li><li><b>🤖 Auto-Angler:</b> Das Auto-Angler Hintergrundboot funktioniert wieder zuverlässig!</li><li><b>🗺️ Zonen & Sounds:</b> Alles ist nun nahtlos zusammengeführt und bugfrei.</li></ul></div>`;openModal("📝 Updates",h);}
 
 // --- MODULE: ADMIN ---
 window.handleAdminMenu=function(){
@@ -1734,7 +1754,6 @@ window.handleAdminMenu=function(){
     openModal("👑 Admin Panel",h,"",true);
 }
 
-// Hier drunter starten die Admin-Functions, wie gehabt
 window.adminSendDiscordUpdate = function(){ let title = document.getElementById("adminDiscordUpdateTitle").value.trim() || "📢 NEUES UPDATE"; let t = document.getElementById("adminDiscordUpdateText").value.trim(); if(!t) return window.showToast("Text eingeben!", "#ef4444"); fetch("https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd",{ method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({embeds:[{title:title,description:t,color:5763719,footer:{text:"Virtual Fisher PRO"}}]}) }).then(()=>{ window.showToast("✅ Discord Update erfolgreich gepostet!", "#10b981"); document.getElementById("adminDiscordUpdateText").value=''; }).catch(()=>window.showToast("❌ Fehler beim Senden", "#ef4444")); }
 window.adminSendBroadcast=async function(){let t=document.getElementById("adminBroadcastInput").value.trim();if(!t)return window.showToast("Text!", "#ef4444");await set(ref(db,"global/broadcast"),{text:t,timestamp:Date.now()});window.showToast("✅ Gesendet!", "#10b981");}
 window.adminInspectUser=async function(){let name=document.getElementById("adminInspectTarget").value.trim();if(!name)return window.showToast("User!", "#ef4444");let snap=await get(ref(db,"users/"+name));if(!snap.exists())return window.showToast("Nicht gefunden!", "#ef4444");let u=snap.val();let h=`<div style="background:#161b22;padding:15px;border-radius:12px;border:2px solid #3b82f6;"><h2>🔍 ${u.name}</h2><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;"><div>💰 ${Math.floor(u.money).toLocaleString()}$</div><div>⭐ Lvl ${u.level} (P${u.prestige})</div><div>🎣 ${rodsDB[u.eqRod]?.name||"Standard"}</div><div>🗺️ ${zones[u.zone]?.name}</div></div></div>`;openModal("Inspektor",h);}
