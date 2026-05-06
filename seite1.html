@@ -1,341 +1,7 @@
-<!DOCTYPE html>
-<html lang="de" translate="no">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <meta name="format-detection" content="telephone=no, date=no, email=no, address=no">
-    <meta name="google" content="notranslate">
-    <title>Virtual Fisher PRO v7.3</title>
-    <style>
-        :root {
-            --water-1: rgba(59,130,246,0.3);
-            --water-1-dark: rgba(59,130,246,0.6);
-            --water-2: rgba(29,78,216,0.3);
-            --water-2-dark: rgba(29,78,216,0.6);
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; letter-spacing: normal; word-spacing: normal; }
-        body {
-            margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
-            color: #e6f0ff; display: flex; justify-content: center; align-items: center;
-            min-height: 100vh; transition: background 1s ease-in-out; padding: 10px;
-            background-size: 400% 400%; animation: gradientBG 15s ease infinite;
-            font-variant-numeric: tabular-nums;
-            -webkit-font-smoothing: antialiased;
-        }
-        
-        /* Zone 0 (Teich) Backgrounds */
-        body.zone-bg-0.time-dawn { background: linear-gradient(180deg, #FF9A76 0%, #FFE0B2 30%, #1a3f2a 70%, #0f2b1c 100%); }
-        body.zone-bg-0.time-day { background: linear-gradient(180deg, #87CEEB 0%, #E0F0FF 30%, #2d6a4f 70%, #1e4d35 100%); }
-        body.zone-bg-0.time-dusk { background: linear-gradient(180deg, #FF6B6B 0%, #FFD93D 25%, #1a3f2a 70%, #0f2b1c 100%); }
-        body.zone-bg-0.time-night { background: linear-gradient(180deg, #0F0C29 0%, #1a1a3e 25%, #0a1a12 70%, #050d08 100%); }
-        
-        /* Zone 1 (Bach) Backgrounds */
-        body.zone-bg-1.time-dawn { background: linear-gradient(180deg, #ffb347 0%, #ffcc33 30%, #206a5d 70%, #104a3e 100%); }
-        body.zone-bg-1.time-day { background: linear-gradient(180deg, #74ebd5 0%, #ACB6E5 30%, #3ca55c 70%, #1b5e20 100%); }
-        body.zone-bg-1.time-dusk { background: linear-gradient(180deg, #ff7e5f 0%, #feb47b 30%, #2e7d32 70%, #124016 100%); }
-        body.zone-bg-1.time-night { background: linear-gradient(180deg, #141E30 0%, #243B55 30%, #1b4b27 70%, #0a2411 100%); }
-        
-        body.time-night .container { border-color: rgba(100,150,255,0.2); }
-        body.time-night button { filter: brightness(0.9); }
-        body.time-night #fishing-scene { background: rgba(0,0,0,0.4); }
-        body.time-night .log-entry { color: #b0c4de; }
-        
-        body.zone-bg-0 { --water-1: rgba(45,106,79,0.5); --water-1-dark: rgba(30,80,55,0.7); --water-2: rgba(26,63,42,0.6); --water-2-dark: rgba(18,50,30,0.8); }
-        body.zone-bg-1 { --water-1: rgba(72,209,204,0.5); --water-1-dark: rgba(32,178,170,0.7); --water-2: rgba(0,139,139,0.6); --water-2-dark: rgba(0,100,100,0.8); }
-        
-        @keyframes gradientBG { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
-
-        .particles-container, .bubbles-container { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden; }
-        .particle { position:absolute; border-radius:50%; pointer-events:none; animation:particleFloat linear infinite; }
-        @keyframes particleFloat { 0%{transform:translateY(100vh)translateX(0)scale(0);opacity:0}10%{opacity:1}50%{transform:translateY(50vh)translateX(20px)scale(1)}90%{opacity:1}100%{transform:translateY(-20vh)translateX(-20px)scale(0);opacity:0} }
-        .particle-golden { background:radial-gradient(circle,#FFD700,#FFA500); box-shadow:0 0 8px #FFD700,0 0 15px #FFA500; animation-name:particleGoldenFloat; }
-        @keyframes particleGoldenFloat { 0%{transform:translateY(60vh)translateX(0)scale(0);opacity:0}20%{opacity:1;transform:scale(1.2)}100%{transform:translateY(-10vh)translateX(30px)scale(0.3);opacity:0} }
-        .bubble { position:absolute; bottom:-50px; background:rgba(255,255,255,0.15); border-radius:50%; animation:floatUp linear infinite; backdrop-filter:blur(2px); }
-        @keyframes floatUp { 0%{transform:translateY(0)scale(1);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-110vh)scale(1.5);opacity:0} }
-        .fish-swarm { position:fixed; z-index:1; pointer-events:none; font-size:18px; white-space:nowrap; animation:swimSwarm 20s linear infinite; opacity:0.5; }
-        @keyframes swimSwarm { 0%{transform:translateX(-10vw)translateY(0)}25%{transform:translateX(30vw)translateY(-5vh)}50%{transform:translateX(70vw)translateY(2vh)}75%{transform:translateX(40vw)translateY(-3vh)}100%{transform:translateX(-10vw)translateY(0)} }
-        .seaweed { position:fixed; bottom:0; z-index:1; pointer-events:none; font-size:40px; animation:swaySeaweed 6s ease-in-out infinite; transform-origin:bottom center; }
-        @keyframes swaySeaweed { 0%,100%{transform:rotate(-5deg)}50%{transform:rotate(5deg)} }
-        .stars-container { position:fixed; top:0; left:0; width:100%; height:40%; z-index:0; pointer-events:none; display:none; }
-        body.time-night .stars-container { display:block; }
-        .star { position:absolute; background:white; border-radius:50%; animation:twinkle 2s ease-in-out infinite; }
-        @keyframes twinkle { 0%,100%{opacity:0.3;transform:scale(1)}50%{opacity:1;transform:scale(1.5)} }
-
-        #aquarium-bg { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none; overflow:hidden; }
-        .aqua-fish-entity { position:absolute; top:0; left:0; font-size:clamp(40px,8vw,55px); filter:drop-shadow(0 0 10px rgba(59,130,246,0.5)); transition:transform 6s ease-in-out; white-space:nowrap; }
-
-        #btnAdminTop { position:fixed; top:10px; right:10px; background:rgba(15,23,42,0.8); border:1px solid #3b82f6; font-size:24px; cursor:pointer; display:none; z-index:1000; padding:8px 12px; border-radius:40px; }
-        #btnFeedbackFixed { position:fixed; bottom:15px; left:15px; z-index:1000; background:#3b82f6; border:2px solid #2563eb; border-radius:50%; width:55px; height:55px; font-size:24px; display:none; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 0 15px rgba(59,130,246,0.6); transition:0.2s; }
-        #btnFeedbackFixed:hover { transform:scale(1.1); background:#2563eb; }
-        #btnDiscordFixed { position:fixed; bottom:15px; left:80px; z-index:1000; background:#5865F2; border:2px solid #4752C4; border-radius:50%; width:55px; height:55px; font-size:24px; display:none; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 0 15px rgba(88,101,242,0.6); transition:0.2s; }
-        #btnDiscordFixed:hover { transform:scale(1.1); background:#4752C4; }
-
-        .container { width:100%; max-width:550px; background:rgba(22,27,34,0.85); backdrop-filter:blur(16px); padding:15px; border-radius:20px; box-shadow:0 15px 50px rgba(0,0,0,0.8); border:1px solid rgba(255,255,255,0.1); position:relative; z-index:10; max-height:95vh; overflow-y:auto; }
-        #broadcast-banner { display:none; position:fixed; top:0; left:0; width:100%; background:linear-gradient(90deg,#ef4444,#b91c1c); color:white; text-align:center; padding:15px; font-weight:bold; z-index:100000; box-shadow:0 4px 15px rgba(0,0,0,0.6); font-size:15px; border-bottom:2px solid #fca5a5; transition:opacity 0.5s ease; }
-        #broadcast-banner button { position:absolute; right:15px; top:12px; background:none; border:none; color:white; font-size:20px; cursor:pointer; font-weight:bold; padding:0; line-height:1; }
-
-        #fishing-scene { height:140px; position:relative; margin-bottom:12px; border-bottom:3px solid #3b82f6; overflow:hidden; border-radius:16px 16px 0 0; background:rgba(0,0,0,0.2); transition:background 1s ease; }
-        .boat-container { position:absolute; bottom:10px; left:10%; animation:bobbingBoat 3s ease-in-out infinite; z-index:3; transition:all 0.5s ease; }
-        .boat-container.boat-upgraded { font-size:120%; filter:drop-shadow(0 0 10px rgba(255,215,0,0.6)); }
-        @keyframes bobbingBoat { 0%,100%{transform:translateY(0)rotate(-2deg)}50%{transform:translateY(-3px)rotate(2deg)} }
-        .fisher-emoji { font-size:clamp(28px,7vw,36px); display:inline-block; }
-        .bobber { position:absolute; bottom:12px; left:60%; width:12px; height:12px; background:#ef4444; border-radius:50%; border:2px solid #7f1d1d; transition:0.1s; z-index:3; box-shadow:0 0 8px rgba(239,68,68,0.8); }
-        .fishing-active .bobber { animation:bobUnder 0.6s ease-in-out infinite alternate; }
-        @keyframes bobUnder { 0%{bottom:12px;transform:scale(1)}100%{bottom:-5px;transform:scale(0.7);opacity:0.6} }
-        #fishing-line-svg { position:absolute; top:0; left:0; width:100%; height:100%; z-index:2; pointer-events:none; }
-        .water-layer-1 { position:absolute; bottom:0; width:200%; height:20px; background:linear-gradient(90deg,var(--water-1)0%,var(--water-1-dark)25%,var(--water-1)50%,var(--water-1-dark)75%,var(--water-1)100%); animation:waves 4s linear infinite; z-index:4; }
-        .water-layer-2 { position:absolute; bottom:5px; width:200%; height:20px; background:linear-gradient(90deg,var(--water-2)0%,var(--water-2-dark)25%,var(--water-2)50%,var(--water-2-dark)75%,var(--water-2)100%); animation:waves 5s linear infinite reverse; z-index:2; }
-        @keyframes waves { from{transform:translateX(0)}to{transform:translateX(-50%)} }
-
-        .catch-splash { position:absolute; bottom:15px; left:55%; font-size:40px; z-index:10; animation:catchJump 0.8s ease-out forwards; pointer-events:none; }
-        @keyframes catchJump { 0%{transform:translateY(0)scale(0);opacity:1}40%{transform:translateY(-50px)scale(1.5)rotate(-10deg);opacity:1}100%{transform:translateY(-80px)scale(1.8)rotate(5deg);opacity:0} }
-        .splash-ripple { position:absolute; bottom:12px; left:55%; width:20px; height:20px; border:3px solid rgba(255,255,255,0.8); border-radius:50%; animation:rippleOut 0.6s ease-out forwards; pointer-events:none; }
-        @keyframes rippleOut { 0%{transform:scale(.5);opacity:1}100%{transform:scale(3);opacity:0} }
-        .shiny-catch-effect { position:absolute; bottom:15px; left:55%; font-size:50px; z-index:10; animation:shinyJump 1s ease-out forwards; pointer-events:none; }
-        @keyframes shinyJump { 0%{transform:translateY(0)scale(0)rotate(0);opacity:1}30%{transform:translateY(-60px)scale(1.8)rotate(-20deg);opacity:1}60%{transform:translateY(-90px)scale(2.2)rotate(10deg);opacity:.8}100%{transform:translateY(-120px)scale(2.5)rotate(0);opacity:0} }
-
-        .rain-fx { position:absolute; top:0; left:0; width:100%; height:100%; background:repeating-linear-gradient(170deg,rgba(255,255,255,0)0%,rgba(255,255,255,0)2%,rgba(255,255,255,0.4)2.5%,rgba(255,255,255,0)3%); background-size:100% 200%; animation:rainFall 0.3s linear infinite; z-index:5; pointer-events:none; }
-        @keyframes rainFall { from{background-position:0 0}to{background-position:0 100%} }
-        .sun-fx { position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at center,rgba(250,204,21,0.3)0%,transparent 70%); animation:pulseSun 3s infinite alternate; pointer-events:none; z-index:5; }
-        @keyframes pulseSun { from{opacity:0.5;transform:scale(1)}to{opacity:1;transform:scale(1.1)} }
-        .shark-fx { position:absolute; bottom:5px; font-size:22px; animation:swimShark 8s linear infinite; z-index:3; pointer-events:none; }
-        @keyframes swimShark { 0%{right:-40px;transform:scaleX(-1)}100%{right:110%;transform:scaleX(-1)} }
-        @keyframes spin { 0%{transform:rotate(0deg)}100%{transform:rotate(360deg)} }
-
-        #top-info { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px; font-weight:bold; flex-wrap:wrap; gap:8px; }
-        #stats-bar { display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:12px; margin-bottom:8px; font-size:13px; font-weight:bold; flex-wrap:wrap; gap:8px; }
-        .equip-bar { display:flex; justify-content:space-between; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); padding:8px 12px; border-radius:12px; font-size:12px; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
-        .btn-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:8px; }
-        .btn-grid-2 { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:8px; }
-        button { padding:12px 8px; border:none; border-radius:12px; background:#2563eb; color:white; font-weight:bold; cursor:pointer; transition:0.15s; font-size:13px; display:flex; align-items:center; justify-content:center; gap:6px; flex-direction:column; }
-        button span { font-size:20px; }
-        button:hover:not(:disabled) { filter:brightness(1.1); transform:translateY(-2px); }
-        button:active:not(:disabled) { transform:translateY(1px); }
-        button:disabled { background:#334155; cursor:not-allowed; opacity:0.6; transform: none !important; }
-        .danger-btn { background:#ef4444; flex-direction:row; }
-        .prestige-btn { background:#8b5cf6; flex-direction:row; justify-content:center; font-size:16px; }
-        .success-btn { background:#10b981; flex-direction:row; }
-        .update-btn { background:#0ea5e9; flex-direction:row; }
-        #log { height:180px; overflow-y:auto; background:rgba(0,0,0,0.5); padding:10px; border-radius:12px; font-size:13px; text-align:left; border-left:4px solid #3b82f6; margin-top:10px; }
-        .log-entry { padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.05); word-break:break-word; }
-
-        .modal-overlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); justify-content:center; align-items:center; z-index:10000; backdrop-filter:blur(8px); padding:16px; }
-        .modal-content { background:#161b22; width:100%; max-width:500px; max-height:85vh; border-radius:20px; border:1px solid #30363d; display:flex; flex-direction:column; overflow:hidden; transition:max-width 0.3s; }
-        .modal-content.wide { max-width:900px; }
-        .modal-header { background:#0d1117; padding:15px 20px; font-size:18px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #30363d; }
-        .modal-body { padding:20px; overflow-y:auto; font-size:14px; }
-        .modal-footer { padding:15px 20px; background:#0d1117; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #30363d; }
-        .close-btn { background:none; color:#8b949e; font-size:24px; cursor:pointer; padding:0; }
-        .item-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; gap:8px; }
-        .quest-card { background:rgba(0,0,0,0.3); border:1px solid #30363d; border-radius:12px; padding:15px; margin-bottom:12px; }
-        .quest-header { display:flex; justify-content:space-between; font-weight:bold; margin-bottom:8px; font-size:14px; }
-        .quest-bar-bg { width:100%; background:#1e293b; height:12px; border-radius:6px; overflow:hidden; margin-bottom:8px; border:1px solid #334155; }
-        .quest-bar-fill { height:100%; background:linear-gradient(90deg,#3b82f6,#60a5fa); transition:width 0.3s ease; }
-        .quest-footer { display:flex; justify-content:space-between; align-items:center; font-size:13px; color:#94a3b8; }
-        .inv-group-card { background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:12px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; }
-        .inv-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
-        .inv-col { max-height:60vh; overflow-y:auto; padding-right:8px; }
-        .inv-col::-webkit-scrollbar { width:5px; }
-        .inv-col::-webkit-scrollbar-thumb { background:#30363d; border-radius:5px; }
-        .inv-card { background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:15px; margin-bottom:10px; display:flex; flex-direction:column; gap:5px; }
-        .inv-card h4 { margin:0 0 5px 0; color:#60a5fa; border-bottom:1px solid #30363d; padding-bottom:5px; }
-        .inv-stat { display:flex; justify-content:space-between; font-size:12px; color:#94a3b8; }
-        .inv-stat span:last-child { font-weight:bold; color:#e2e8f0; }
-        .admin-grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
-        .summary-box { background:rgba(0,0,0,0.3); border-radius:12px; padding:15px; margin-top:15px; border:1px solid #30363d; }
-        .summary-row { display:flex; justify-content:space-between; margin-bottom:6px; font-size:14px; }
-        .summary-total { display:flex; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.1); padding-top:10px; margin-top:10px; font-size:16px; font-weight:bold; }
-        .leader-card,.profile-card { background:#0d1117; border:1px solid #30363d; border-radius:12px; padding:15px; margin-bottom:10px; transition:0.2s; cursor:pointer; }
-        .leader-card:hover { border-color:#3b82f6; transform:translateY(-2px); }
-        .profile-header { display:flex; align-items:center; gap:15px; border-bottom:1px solid #30363d; padding-bottom:12px; margin-bottom:12px; flex-wrap:wrap; }
-        .profile-avatar { font-size:40px; background:#1e293b; width:70px; height:70px; border-radius:50%; display:flex; justify-content:center; align-items:center; border:2px solid #60a5fa; }
-        .card-stats { display:flex; justify-content:space-between; font-size:13px; color:#8b949e; margin-top:5px; }
-        #minigame-container { background:#0f172a; padding:20px; border-radius:20px; border:2px solid #ef4444; text-align:center; }
-        .power-bar-bg { width:100%; background:#1e293b; height:30px; border-radius:8px; overflow:hidden; margin:8px 0; }
-        .power-bar-fill { height:100%; transition:width 0.1s linear; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-weight:bold; font-size:11px; }
-        @keyframes bossShake { 0%,100%{transform:translate(0,0)}25%{transform:translate(2px,2px)}50%{transform:translate(-2px,-1px)}75%{transform:translate(1px,-2px)} }
-        .boss-active { animation:bossShake 0.3s infinite; }
-        .wheel-container { position:relative; width:250px; height:250px; margin:0 auto; }
-        .wheel-canvas { width:100%; height:100%; }
-        .wheel-pointer { position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:36px; filter:drop-shadow(0 0 5px gold); z-index:5; }
-        #chatContainer { position:fixed; bottom:80px; right:10px; z-index:9999; display:none; flex-direction:column; width:300px; max-height:400px; background:rgba(22,27,34,0.95); border-radius:12px; border:1px solid #30363d; backdrop-filter:blur(10px); }
-        #chatMessages { flex:1; overflow-y:auto; padding:10px; font-size:12px; min-height:200px; max-height:300px; }
-        #chatInput { width:100%; padding:10px; border:none; border-top:1px solid #30363d; background:#0d1117; color:white; border-radius:0 0 12px 12px; font-size:13px; outline:none; }
-        .chat-msg { margin-bottom:5px; padding:3px 0; border-bottom:1px solid rgba(255,255,255,0.03); display:flex; align-items:center; justify-content:space-between; gap:5px; }
-        .chat-msg-content { flex: 1; word-break: break-word; }
-        .chat-msg .chat-user { color:#60a5fa; font-weight:bold; }
-        .chat-msg .chat-time { color:#64748b; font-size:9px; white-space:nowrap; }
-        #btnChatToggle { position:fixed; bottom:80px; right:10px; z-index:10000; background:#2563eb; border:2px solid #1d4ed8; border-radius:50%; width:45px; height:45px; font-size:20px; cursor:pointer; display:none; justify-content:center; align-items:center; box-shadow:0 0 15px rgba(37,99,235,0.5); }
-        
-        #toast-container { position:fixed; top:20px; right:20px; z-index:999999; display:flex; flex-direction:column; gap:10px; pointer-events:none; }
-        .toast { background:#1e293b; color:#fff; padding:12px 20px; border-radius:8px; box-shadow:0 4px 15px rgba(0,0,0,0.5); border-left:4px solid #3b82f6; font-size:14px; animation:slideIn 0.3s ease, fadeOut 0.3s ease 2.7s forwards; pointer-events:auto; }
-        @keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
-        @keyframes fadeOut { to{opacity:0; visibility:hidden} }
-
-        @media (max-width:768px) { .inv-grid{grid-template-columns:1fr} .inv-col{max-height:unset; overflow:visible;} .admin-grid{grid-template-columns:1fr} body{font-size:15px}button{font-size:14px}.modal-body{font-size:15px}#log{font-size:14px}h3{font-size:17px}h4{font-size:15px}#chatContainer{width:250px;right:5px} }
-        @media (max-width:550px) { .container{padding:12px}.btn-grid{grid-template-columns:repeat(3,1fr)}.btn-grid-2{grid-template-columns:repeat(3,1fr)}button{padding:10px;font-size:13px}button span{font-size:18px} }
-        @supports (-webkit-touch-callout:none) { body,button,input,select,textarea,.modal-body,#log,h1,h2,h3,h4,h5,h6,p,span,div{-webkit-text-size-adjust:100%;font-synthesis:none} }
-    </style>
-</head>
-<body class="zone-bg-0">
-
-<div class="particles-container" id="particlesContainer"></div>
-<div class="bubbles-container" id="bubblesContainer"></div>
-<div class="stars-container" id="starsContainer"></div>
-<div id="toast-container"></div>
-
-<div class="fish-swarm" style="top:15%;left:-10vw;">🐟🐟🐟🐟🐟</div>
-<div class="fish-swarm" style="top:35%;left:-10vw;animation-duration:25s;animation-delay:5s;font-size:14px;">🐠🐠🐠🐠🐠🐠</div>
-<div class="fish-swarm" style="top:60%;left:-10vw;animation-duration:22s;animation-delay:10s;">🐡🐡🐡🐡</div>
-<div class="seaweed" style="left:5%;animation-delay:0s;">🌿</div>
-<div class="seaweed" style="left:15%;animation-delay:1s;font-size:30px;">🌾</div>
-<div class="seaweed" style="right:8%;animation-delay:2s;font-size:35px;">🌿</div>
-<div class="seaweed" style="right:18%;animation-delay:0.5s;font-size:25px;">🎋</div>
-
-<div id="broadcast-banner">
-    📢 <span id="broadcast-text"></span>
-    <button onclick="window.closeBroadcast()">✖</button>
-</div>
-
-<div id="maintenance-overlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.95);z-index:999999;justify-content:center;align-items:center;flex-direction:column;text-align:center;color:white;">
-    <h1 style="color:#0ea5e9;font-size:40px;margin-bottom:10px;">🛠️ Spiel wird aktualisiert</h1>
-    <p style="font-size:18px;color:#94a3b8;">Bitte habe einen Moment Geduld. Wir sind gleich wieder da!</p>
-    <div style="margin-top:30px;border:4px solid #1e293b;border-top:4px solid #0ea5e9;border-radius:50%;width:50px;height:50px;animation:spin 1s linear infinite;"></div>
-</div>
-
-<div id="aquarium-bg"></div>
-
-<button id="btnFeedbackFixed" onclick="window.openFeedbackMenu()" title="Feedback senden">💬</button>
-<button id="btnDiscordFixed" onclick="window.open('https://discord.gg/C38hGU9eXq','_blank')" title="Zum Discord Server">🎮</button>
-
-<div id="chatContainer">
-    <div id="chatMessages"></div>
-    <input id="chatInput" type="text" placeholder="Nachricht..." maxlength="100">
-</div>
-<button id="btnChatToggle" onclick="window.toggleChat()">💬</button>
-
-<div id="timing-minigame-overlay" class="modal-overlay" style="z-index:99999;">
-    <div class="modal-content" style="max-width:350px; text-align:center; padding:20px; background:radial-gradient(circle, #1e293b 0%, #0f172a 100%); border:2px solid #3b82f6; border-radius: 20px; box-shadow: 0 0 20px rgba(59,130,246,0.5);">
-        <h2 style="color:#60a5fa; margin-top:0; text-transform: uppercase; letter-spacing: 2px;">🎣 Anbeißen!</h2>
-        <p style="color:#cbd5e1; font-size: 14px;">Klicke genau im <span style="color:#10b981; font-weight:bold;">grünen</span> Bereich!</p>
-        <div style="width:100%; height:40px; background:#0f172a; border-radius:20px; position:relative; overflow:hidden; margin:20px 0; border: 2px solid #334155; box-shadow: inset 0 0 10px rgba(0,0,0,0.8);">
-            <div id="timing-target" style="position:absolute; left:45%; width:10%; height:100%; background:linear-gradient(90deg, rgba(16,185,129,0.4), rgba(16,185,129,0.8), rgba(16,185,129,0.4)); box-shadow: 0 0 10px rgba(16,185,129,0.5);"></div>
-            <div id="timing-cursor" style="position:absolute; left:0%; width:4px; height:100%; background:#facc15; box-shadow: 0 0 8px #facc15, 0 0 15px #facc15;"></div>
-        </div>
-        <button id="btnTimingCatch" class="success-btn" style="width:100%; height:55px; font-size:20px; background: linear-gradient(180deg, #10b981 0%, #059669 100%); border: 1px solid #047857; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); box-shadow: 0 4px 6px rgba(0,0,0,0.3); transition: transform 0.1s;">🖱️ EINHOLEN!</button>
-    </div>
-</div>
-
-<div id="minigame-overlay" class="modal-overlay" style="z-index:99998;">
-    <div id="minigame-container">
-        <h1 style="color:#ef4444;margin:0 0 5px;">⚔️ KAMPF! ⚔️</h1>
-        <p style="margin:0 0 5px;">Du kämpfst gegen:</p>
-        <h2 id="mg-fish-name" style="margin:5px 0;">🦈 WEISSER HAI</h2>
-        <div style="font-size:55px;margin:10px 0;" id="mg-fish-emoji">🦈</div>
-        <div style="text-align:left">
-            <span>💪 Deine Kraft:</span>
-            <div class="power-bar-bg"><div id="mg-player-bar" class="power-bar-fill" style="width:0%;background:#3b82f6;"><span id="mg-player-val">0</span>%</div></div>
-            <span>🐟 Fisch Kraft:</span>
-            <div class="power-bar-bg"><div id="mg-fish-bar" class="power-bar-fill" style="width:100%;background:#ef4444;"><span id="mg-fish-val">100</span>%</div></div>
-        </div>
-        <button id="btnSpamClick" style="width:100%;height:70px;font-size:20px;background:#10b981;margin-top:12px;">🖱️ KLICKEN!</button>
-        <p id="mg-clicks-left" style="color:#fcd34d;margin-top:12px;">Noch 0 Klicks</p>
-    </div>
-</div>
-
-<div id="modal-overlay" class="modal-overlay">
-    <div id="modal-content" class="modal-content">
-        <div class="modal-header"><span id="modal-title"></span><button class="close-btn" onclick="window.closeModal()">✖</button></div>
-        <div id="modal-body" class="modal-body"></div>
-        <div id="modal-footer" class="modal-footer"></div>
-    </div>
-</div>
-
-<button id="btnAdminTop" onclick="window.handleAdminMenu()">⚙️</button>
-
-<div class="container">
-    <div id="fishing-scene">
-        <div id="deco-zone-0" style="display:none;">
-            <div style="position:absolute;bottom:20px;left:5%;font-size:24px;z-index:1;opacity:0.8;">🌾</div>
-            <div style="position:absolute;bottom:5px;right:15%;font-size:22px;z-index:3;">🪷🐸</div>
-            <div style="position:absolute;top:8px;right:35%;font-size:14px;z-index:1;opacity:0.7;">🦟</div>
-        </div>
-        <div id="deco-zone-1" style="display:none;">
-            <div style="position:absolute;bottom:10px;left:10%;font-size:20px;z-index:1;opacity:0.6;">🪨</div>
-            <div style="position:absolute;bottom:5px;right:20%;font-size:24px;z-index:3;">🌿🦆</div>
-        </div>
-        <div id="time-deco-dawn" style="display:none;position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:30px;z-index:1;">🌅</div>
-        <div id="time-deco-day" style="display:none;position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:30px;z-index:1;">☀️</div>
-        <div id="time-deco-dusk" style="display:none;position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:30px;z-index:1;">🌆</div>
-        <div id="time-deco-night" style="display:none;position:absolute;top:5px;left:50%;transform:translateX(-50%);font-size:30px;z-index:1;">🌙</div>
-
-        <svg id="fishing-line-svg"><line id="line-element" x1="0" y1="0" x2="0" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-dasharray="3,3" /></svg>
-        <div class="boat-container" id="boatContainer"><div class="fisher-emoji">🚣</div></div>
-        <div class="bobber" id="bobber"></div>
-        <div class="water-layer-2"></div>
-        <div class="water-layer-1"></div>
-    </div>
-
-    <div id="authBox">
-        <h3 style="text-align:center;">🔐 Virtual Fisher Login</h3>
-        <input id="username" placeholder="Spielername" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;">
-        <input id="password" type="password" placeholder="Passwort" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;">
-        <button id="btnLogin" style="width:100%;margin:15px 0;padding:14px;background:#10b981;">Einloggen</button>
-        <div id="login-error" style="color:#ef4444;font-size:13px;display:none;text-align:center;font-weight:bold;margin-top:5px;"></div>
-    </div>
-
-    <div id="game" style="display:none;flex-direction:column;">
-        <div id="top-info">
-            <span id="zoneDisplay" style="color:#60a5fa;">🍃 Naturteich</span>
-            <span id="timeDisplay" style="color:#94a3b8;font-size:11px;"></span>
-            <span id="eventDisplay" style="color:#facc15;font-size:11px;font-weight:bold;"></span>
-            <button id="btnLogout" class="danger-btn" style="padding:6px 12px;">🚪 Logout</button>
-        </div>
-        <div id="stats-bar">
-            <span id="ui-money">💰 0$</span>
-            <span id="ui-prestige" style="color:#fcd34d;">👑 P0 (+0%)</span>
-            <span id="ui-level">⭐ Lvl 1 (0/50)</span>
-        </div>
-        <div class="equip-bar">
-            <span id="ui-eq-rod">🎣 Rute: Steckrute</span>
-            <span id="ui-eq-bait">🪱 Köder: Keine</span>
-        </div>
-        <div id="game-controls">
-            <div style="display:flex; gap:8px; margin-bottom:12px;">
-                <button id="btnFish" style="flex:4; padding:16px; font-size:18px; flex-direction:row;">🎣 Angeln</button>
-                <button id="btnAutoFish" class="update-btn" style="flex:1; display:none; flex-direction:column; font-size:12px; background:#10b981;" onclick="window.toggleAutoFish()">🤖 Auto<br><b id="autoFishState">AUS</b></button>
-            </div>
-            
-            <div class="btn-grid">
-                <button id="btnSell"><span>💰</span> Rucksack</button>
-                <button id="btnAqua"><span>🐟</span> Aquarium</button>
-                <button id="btnShop"><span>🛒</span> Shop</button>
-                <button id="btnInv"><span>🎒</span> Ausrüstung</button>
-                <button id="btnDex"><span>📖</span> Dex</button>
-                <button id="btnQuest"><span>📜</span> Quest</button>
-                <button id="btnDaily"><span>🎁</span> Daily</button>
-                <button id="btnWheel"><span>🎰</span> Rad</button>
-                <button id="btnZone"><span>🗺️</span> Zone</button>
-            </div>
-            <div class="btn-grid-2">
-                <button id="btnProfile" style="font-size:13px;">📊 Profil</button>
-                <button id="btnSkills" style="font-size:13px;background:#f59e0b;">🧠 Skills</button>
-                <button id="btnGuild" style="font-size:13px;background:#eab308;">🛡️ Gilde</button>
-                <button id="btnAchieve" style="font-size:13px;background:#a855f7;">🏆 Erfolge</button>
-                <button id="btnBank" style="font-size:13px;background:#facc15;color:#000;">🏦 Bank</button>
-                <button id="btnLeader" style="font-size:13px;">🏆 Top</button>
-                <button id="btnPromo" style="font-size:13px;background:#8b5cf6;">🎫 Code</button>
-                <button id="btnUpdates" class="update-btn" style="font-size:13px;">📝 News</button>
-            </div>
-            <button id="btnPrestige" class="prestige-btn" style="width:100%;margin-bottom:8px;padding:14px;">🔁 Prestige</button>
-            <div id="log"></div>
-        </div>
-    </div>
-</div>
-
-<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, set, onValue, remove, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { getDatabase, ref, get, set, onValue, remove, push, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { zones, items, rodsDB, baitsDB, questDB, achievementsDB } from "./data.js";
+import { playSound } from "./audio.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
@@ -348,6 +14,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 window.showToast = function(msg, color="#3b82f6") {
+    if(color === "#ef4444") playSound('error');
     let tc = document.getElementById('toast-container');
     if(!tc) return;
     let t = document.createElement('div');
@@ -468,25 +135,6 @@ function updateBoatVisual() {
 }
 
 // ============ ACHIEVEMENTS ============
-const achievementsDB = [
-    { id:"first_catch", name:"Erster Fang", desc:"Fange deinen ersten Fisch", icon:"🎣", check:(gs)=>(gs.stats.totalCaught||0)>=1, rew:50 },
-    { id:"catch_100", name:"Hundert-Fänger", desc:"Fange 100 Fische", icon:"🐟", check:(gs)=>(gs.stats.totalCaught||0)>=100, rew:500 },
-    { id:"catch_1000", name:"Tausend-Fänger", desc:"Fange 1.000 Fische", icon:"🐠", check:(gs)=>(gs.stats.totalCaught||0)>=1000, rew:5000 },
-    { id:"first_shiny", name:"Shiny-Jäger", desc:"Fange einen Shiny", icon:"🧬", check:(gs)=>Object.values(gs.dex||{}).some(d=>d.shiny), rew:1000 },
-    { id:"level_10", name:"Anfänger-Meister", desc:"Erreiche Level 10", icon:"⭐", check:(gs)=>(gs.level||1)>=10, rew:300 },
-    { id:"level_50", name:"Profi-Angler", desc:"Erreiche Level 50", icon:"🌟", check:(gs)=>(gs.level||1)>=50, rew:5000 },
-    { id:"first_prestige", name:"Neuanfang", desc:"Mache Prestige", icon:"👑", check:(gs)=>(gs.prestige||0)>=1, rew:2000 },
-    { id:"prestige_5", name:"Prestige-Meister", desc:"Prestige 5", icon:"👑", check:(gs)=>(gs.prestige||0)>=5, rew:50000 },
-    { id:"money_10000", name:"Kleiner Geldbeutel", desc:"10.000$", icon:"💰", check:(gs)=>(gs.money||0)>=10000, rew:500 },
-    { id:"money_100000", name:"Großer Geldbeutel", desc:"100.000$", icon:"💎", check:(gs)=>(gs.money||0)>=100000, rew:10000 },
-    { id:"dex_10", name:"Sammler", desc:"10 verschiedene Fische", icon:"📖", check:(gs)=>Object.values(gs.dex||{}).filter(d=>d.normal).length>=10, rew:500 },
-    { id:"dex_all_zone0", name:"Bach-Komplettist", desc:"Alle Zone-0 Fische", icon:"🏞️", check:(gs)=>{const z0=items.filter(i=>i.z===0&&!i.isTrash);return z0.every(i=>gs.dex?.[i.n]?.normal);}, rew:5000 },
-    { id:"aqua_unlock", name:"Aquarium-Besitzer", desc:"Aquarium freischalten", icon:"🐟", check:(gs)=>gs.aquarium?.unlocked, rew:1000 },
-    { id:"aqua_full", name:"Volles Aquarium", desc:"5 Fische im Aquarium", icon:"🐠", check:(gs)=>(gs.aquarium?.fishes?.length||0)>=5, rew:3000 },
-    { id:"daily_streak_7", name:"Täglicher Besucher", desc:"7 Tage Streak", icon:"🔥", check:(gs)=>(gs.dailyStreak||0)>=7, rew:2000 },
-    { id:"guild_join", name:"Gilden-Mitglied", desc:"Trete Gilde bei", icon:"🛡️", check:(gs)=>!!gs.guild, rew:500 },
-];
-
 function checkAchievements() {
     if(!gameState||!gameState.achievements) gameState.achievements = {};
     let earned = false;
@@ -498,6 +146,7 @@ function checkAchievements() {
             gameState.stats.totalEarned += a.rew;
             log(`🏆 ERFOLG: ${a.icon} ${a.name} (+${a.rew}$)`);
             spawnGoldenParticles(20);
+            playSound('success');
             earned = true;
         }
     });
@@ -635,7 +284,7 @@ setInterval(() => {
     }
 }, 60000);
 
-// ============ GLÜCKSRAD (Mit CSS Animation) ============
+// ============ GLÜCKSRAD ============
 window.handleWheelMenu = function() {
     window.currentOpenMenu = 'wheel';
     const now = Date.now();
@@ -675,7 +324,6 @@ window.handleWheelMenu = function() {
 
     setTimeout(() => {
         const canvas = document.getElementById('wheelCanvas');
-        // Redraw wheel initially
         if(canvas) {
             canvas.style.transform = `rotate(${window.currentWheelRotation || 0}deg)`;
             drawWheel(canvas, wheelPrizes, 0);
@@ -745,7 +393,7 @@ window.spinWheel = function() {
     const slices = prizes.length;
     const arcSize = 360 / slices;
     const targetAngle = targetIdx * arcSize + (arcSize/2);
-    const finalRot = 360 * 8 + (270 - targetAngle); // 8 spins + offset to land top
+    const finalRot = 360 * 8 + (270 - targetAngle); 
     
     window.currentWheelRotation = (window.currentWheelRotation || 0) + finalRot;
     
@@ -756,6 +404,7 @@ window.spinWheel = function() {
         prizes[targetIdx].rew(gameState);
         if(gameState.xp >= gameState.level*50) {
             gameState.xp -= gameState.level*50; gameState.level++; log("⭐ LEVEL UP!");
+            playSound('success');
         }
         saveData();
         syncGlobalLeaderboard();
@@ -770,7 +419,7 @@ window.spinWheel = function() {
     }, 4000);
 }
 
-// ============ CHAT ============
+// ============ CHAT (LIVE DELETE) ============
 let chatLoaded = false;
 function initChat() {
     if(chatLoaded) return;
@@ -779,13 +428,10 @@ function initChat() {
     const chatRef = ref(db, "global/chat");
     onChildAdded(chatRef, (snap) => {
         const msg = snap.val();
-        
-        // Auto-delete old messages from DB (1 hour)
         if(Date.now() - msg.time > 3600000) {
             remove(ref(db, "global/chat/" + snap.key));
             return;
         }
-        
         const messagesDiv = document.getElementById('chatMessages');
         if(!messagesDiv) return;
         const div = document.createElement('div');
@@ -799,6 +445,11 @@ function initChat() {
         messagesDiv.scrollTop = messagesDiv.scrollHeight;
         if(messagesDiv.children.length > 50) messagesDiv.removeChild(messagesDiv.firstChild);
     });
+
+    onChildRemoved(chatRef, (snap) => {
+        let el = document.getElementById("chat-msg-" + snap.key);
+        if(el) el.remove();
+    });
 }
 window.toggleChat = function() {
     const c = document.getElementById('chatContainer');
@@ -807,8 +458,6 @@ window.toggleChat = function() {
 }
 window.adminDeleteChat = function(key) {
     remove(ref(db, "global/chat/" + key));
-    let el = document.getElementById("chat-msg-" + key);
-    if(el) el.remove();
 }
 document.getElementById('chatInput').addEventListener('keydown', async (e) => {
     if(e.key==='Enter') {
@@ -816,11 +465,6 @@ document.getElementById('chatInput').addEventListener('keydown', async (e) => {
         if(!text||!currentUser) return;
         document.getElementById('chatInput').value = '';
         await push(ref(db,"global/chat"), { user:currentUser, text:text.substring(0,100), time:Date.now() });
-        // Send to Discord
-        fetch("https://discord.com/api/webhooks/1501593859593994383/BmPxmsMTRx7uUgEk0IIGA5DxZZ6reRI99_6BF7oebq2NlxWr0H87bNqn2xMo55iqOyEm", {
-            method: 'POST', headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ content: `**${currentUser}**: ${text.substring(0,100)}` })
-        }).catch(e=>{});
     }
 });
 
@@ -846,131 +490,6 @@ function checkDexCompletionRewards() {
         saveData();
     }
 }
-
-// ============ DATENBANKEN ============
-const questDB = {
-    daily: [
-        { id:"d1", desc:"Fange 5 Fische", t:"c", req:5, rew:50 },
-        { id:"d2", desc:"Verdiene 500$", t:"e", req:500, rew:100 },
-        { id:"d3", desc:"Fange 20 Fische", t:"c", req:20, rew:200 },
-        { id:"d4", desc:"Verdiene 2000$", t:"e", req:2000, rew:400 },
-        { id:"d5", desc:"Fange 50 Fische", t:"c", req:50, rew:500 }
-    ],
-    weekly: [
-        { id:"w1", desc:"Fange 100 Fische", t:"c", req:100, rew:1000 },
-        { id:"w2", desc:"Verdiene 10000$", t:"e", req:10000, rew:2000 },
-        { id:"w3", desc:"Fange 250 Fische", t:"c", req:250, rew:2500 },
-        { id:"w4", desc:"Verdiene 25000$", t:"e", req:25000, rew:5000 },
-        { id:"w5", desc:"Fange 500 Fische", t:"c", req:500, rew:5000 },
-        { id:"w6", desc:"Verdiene 50000$", t:"e", req:50000, rew:10000 },
-        { id:"w7", desc:"Fange 1000 Fische", t:"c", req:1000, rew:10000 },
-        { id:"w8", desc:"Verdiene 100000$", t:"e", req:100000, rew:20000 },
-        { id:"w9", desc:"Fange 2500 Fische", t:"c", req:2500, rew:25000 },
-        { id:"w10", desc:"Verdiene 250000$", t:"e", req:250000, rew:50000 }
-    ],
-    monthly: [
-        { id:"m1", desc:"Fange 500 Fische", t:"c", req:500, rew:5000 },
-        { id:"m2", desc:"Verdiene 50000$", t:"e", req:50000, rew:10000 },
-        { id:"m3", desc:"Fange 1000 Fische", t:"c", req:1000, rew:10000 },
-        { id:"m4", desc:"Verdiene 100000$", t:"e", req:100000, rew:20000 },
-        { id:"m5", desc:"Fange 2500 Fische", t:"c", req:2500, rew:25000 },
-        { id:"m6", desc:"Verdiene 250000$", t:"e", req:250000, rew:50000 },
-        { id:"m7", desc:"Fange 5000 Fische", t:"c", req:5000, rew:50000 },
-        { id:"m8", desc:"Verdiene 500000$", t:"e", req:500000, rew:100000 },
-        { id:"m9", desc:"Fange 10000 Fische", t:"c", req:10000, rew:100000 },
-        { id:"m10", desc:"Verdiene 1000000$", t:"e", req:1000000, rew:200000 },
-        { id:"m11", desc:"Fange 25000 Fische", t:"c", req:25000, rew:250000 },
-        { id:"m12", desc:"Verdiene 2500000$", t:"e", req:2500000, rew:500000 },
-        { id:"m13", desc:"Fange 50000 Fische", t:"c", req:50000, rew:500000 },
-        { id:"m14", desc:"Verdiene 5000000$", t:"e", req:5000000, rew:1000000 },
-        { id:"m15", desc:"Fange 100000 Fische", t:"c", req:100000, rew:1000000 }
-    ]
-};
-
-let currentUser = null;
-let gameState = null;
-let globalState = null;
-window.currentOpenMenu = null;
-window.currentDexTab = 'normal';
-let fishInterval = null;
-let wasMaintenance = false;
-let lastLeaderboardUsers = [];
-let guildsCache = {};
-
-// AUTO-ANGELN STATE
-window.isAutoFishing = false;
-
-const zones = [
-    { name:"🍃 Naturteich", reqPrestige:0 },
-    { name:"🏞️ Bach", reqPrestige:1 }
-];
-
-const items = [
-    {n:"Laub / Blätter",v:-1,xp:-1,c:12.0,z:0,e:"🍂",isTrash:true,minW:5,maxW:50},
-    {n:"Entenfeder",v:-2,xp:-1,c:8.0,z:0,e:"🪶",isTrash:true,minW:1,maxW:10},
-    {n:"Algen",v:-3,xp:-2,c:6.0,z:0,e:"🌿",isTrash:true,minW:10,maxW:500},
-    {n:"Teichschlamm",v:-4,xp:-2,c:5.0,z:0,e:"🟤",isTrash:true,minW:100,maxW:2000},
-    {n:"Schneckenhaus",v:-2,xp:-1,c:5.0,z:0,e:"🐌",isTrash:true,minW:5,maxW:30},
-    {n:"Angelhaken (rostig)",v:-6,xp:-3,c:3.0,z:0,e:"🪝",isTrash:true,minW:2,maxW:15},
-    {n:"Gummistiefel",v:-8,xp:-4,c:2.0,z:0,e:"👢",isTrash:true,minW:500,maxW:2500},
-    {n:"Plastikflasche",v:-10,xp:-5,c:1.5,z:0,e:"🧴",isTrash:true,minW:20,maxW:150},
-    {n:"Scherbe",v:-12,xp:-6,c:1.0,z:0,e:"🔪",isTrash:true,minW:10,maxW:100},
-    {n:"Stichling",v:8,xp:4,c:15.0,z:0,e:"🐟",minW:5,maxW:15},
-    {n:"Moderlieschen",v:12,xp:6,c:14.0,z:0,e:"🐠",minW:10,maxW:30},
-    {n:"Elritze",v:15,xp:8,c:13.0,z:0,e:"🐟",minW:15,maxW:40},
-    {n:"Rotauge",v:20,xp:10,c:10.0,z:0,e:"🐟",minW:100,maxW:2000},
-    {n:"Ukelei",v:25,xp:12,c:9.0,z:0,e:"🐟",minW:50,maxW:300},
-    {n:"Gründling",v:30,xp:15,c:8.0,z:0,e:"🐡",minW:30,maxW:150},
-    {n:"Giebel",v:40,xp:20,c:6.0,z:0,e:"🐠",minW:200,maxW:3000},
-    {n:"Karausche",v:50,xp:25,c:5.0,z:0,e:"🐟",minW:150,maxW:2500},
-    {n:"Schleie",v:60,xp:30,c:4.0,z:0,e:"🐡",minW:300,maxW:4000},
-    {n:"Barbe",v:80,xp:35,c:3.0,z:0,e:"🐟",minW:500,maxW:6000},
-    {n:"Aal",v:100,xp:45,c:2.0,z:0,e:"🐍",minW:200,maxW:3000},
-    {n:"Hecht (jung)",v:150,xp:60,c:1.5,z:0,e:"🐊",minW:500,maxW:5000},
-    {n:"Karpfen",v:200,xp:80,c:1.0,z:0,e:"🐟",minW:1000,maxW:15000},
-    {n:"Zander",v:300,xp:100,c:0.5,z:0,e:"🐟",minW:800,maxW:8000},
-    {n:"Nasses Laub",v:-2,xp:-2,c:7.3,z:1,e:"🍂",isTrash:true,minW:5,maxW:60},
-    {n:"Angelschnur",v:-5,xp:-3,c:5.5,z:1,e:"🧵",isTrash:true,minW:2,maxW:20},
-    {n:"Bleischrot",v:-8,xp:-4,c:4.5,z:1,e:"⚫",isTrash:true,minW:5,maxW:50},
-    {n:"Plastikbecher",v:-10,xp:-5,c:3.6,z:1,e:"🥤",isTrash:true,minW:10,maxW:50},
-    {n:"Fischreuse (kaputt)",v:-15,xp:-8,c:1.8,z:1,e:"🪤",isTrash:true,minW:500,maxW:3000},
-    {n:"Gummiwurm",v:-6,xp:-3,c:1.8,z:1,e:"🪱",isTrash:true,minW:5,maxW:20},
-    {n:"Groppe",v:40,xp:20,c:14.0,z:1,e:"🐟",minW:10,maxW:50},
-    {n:"Elritze (Bach)",v:50,xp:25,c:13.0,z:1,e:"🐠",minW:15,maxW:60},
-    {n:"Bachneunauge",v:75,xp:35,c:12.0,z:1,e:"🐍",minW:20,maxW:100},
-    {n:"Mühlkoppe",v:90,xp:40,c:11.0,z:1,e:"🐡",minW:30,maxW:120},
-    {n:"Hasel",v:110,xp:50,c:9.0,z:1,e:"🐟",minW:50,maxW:400},
-    {n:"Döbel",v:150,xp:65,c:8.0,z:1,e:"🐟",minW:100,maxW:800},
-    {n:"Bachforelle",v:200,xp:85,c:5.0,z:1,e:"🐟",minW:150,maxW:1500},
-    {n:"Äsche",v:250,xp:100,c:4.0,z:1,e:"🐟",minW:200,maxW:1200},
-    {n:"Regenbogenforelle",v:350,xp:130,c:3.0,z:1,e:"🌈",minW:200,maxW:2000},
-    {n:"Saibling",v:450,xp:160,c:2.0,z:1,e:"🐟",minW:250,maxW:2500},
-    {n:"Huchen (jung)",v:600,xp:200,c:1.0,z:1,e:"🐊",minW:500,maxW:5000},
-    {n:"Rapfen",v:850,xp:280,c:0.6,z:1,e:"🐟",minW:300,maxW:3000},
-    {n:"Waller (jung)",v:1500,xp:450,c:0.4,z:1,e:"🐋",minW:500,maxW:8000}
-];
-
-const rodsDB = {
-    "rod1":{ name:"Steckrute",e:"🎋",cost:0,maxKg:2,speed:0,luck:0,res:10,desc:"Standard" },
-    "rod2":{ name:"Teleskoprute",e:"🎣",cost:250,maxKg:5,speed:5,luck:2,res:15,desc:"Stabiler" },
-    "rod3":{ name:"Matchrute",e:"🎯",cost:800,maxKg:8,speed:10,luck:5,res:20,desc:"Allround" },
-    "rod4":{ name:"Feeder-Rute",e:"🥢",cost:2500,maxKg:12,speed:15,luck:8,res:30,desc:"Sehr stabil" },
-    "rod5":{ name:"Karpfenrute",e:"🎏",cost:6000,maxKg:20,speed:20,luck:12,res:40,desc:"Für Dicken" },
-    "rod6":{ name:"Meister-Rute",e:"✨",cost:15000,maxKg:50,speed:25,luck:18,res:50,desc:"Ultimativ" }
-};
-
-const baitsDB = {
-    "b1":{ name:"Brot",e:"🍞",cost:20,amt:20,speed:0,luck:2,res:0,trashRed:0 },
-    "b2":{ name:"Mais",e:"🌽",cost:60,amt:20,speed:0,luck:4,res:0,trashRed:0 },
-    "b3":{ name:"Wurm",e:"🪱",cost:120,amt:20,speed:3,luck:0,res:0,trashRed:0 },
-    "b4":{ name:"Made",e:"🐛",cost:250,amt:20,speed:5,luck:2,res:0,trashRed:0 },
-    "b5":{ name:"Teig",e:"🥟",cost:500,amt:20,speed:0,luck:0,res:0,trashRed:15 },
-    "b6":{ name:"Caster",e:"🪺",cost:1000,amt:20,speed:0,luck:6,res:5,trashRed:0 },
-    "b7":{ name:"Pellets",e:"🧆",cost:2500,amt:20,speed:10,luck:0,res:0,trashRed:20 },
-    "b8":{ name:"Boilie",e:"🔴",cost:5000,amt:20,speed:0,luck:10,res:10,trashRed:0 },
-    "b9":{ name:"Fischpaste",e:"🥫",cost:10000,amt:20,speed:0,luck:15,res:0,trashRed:0 },
-    "b10":{ name:"Kunstköder",e:"🐟",cost:25000,amt:20,speed:15,luck:0,res:15,trashRed:0 }
-};
 
 // ============ HILFSFUNKTIONEN ============
 function refreshCurrentMenu() {
@@ -1022,54 +541,6 @@ function renderAquarium() {
     });
 }
 
-function roll(zIdx) {
-    let {event}=getCurrentEventInfo();
-    let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
-    let baitDef=gameState.eqBait!=="none"?baitsDB[gameState.eqBait]:null;
-    let pool=items.filter(i=>i.z===zIdx);
-    if(baitDef?.trashRed) pool=pool.filter(i=>!i.isTrash||Math.random()>baitDef.trashRed/100);
-    let eventLuckMult=(event&&event.type==='luck')?event.mult:1;
-    let modPool=pool.map(i=>{
-        let totalLuck=(rodDef.luck||0)+(baitDef?.luck||0);
-        let w=i.c*(1+totalLuck/100);
-        if(eventLuckMult>1&&i.c<=5&&!i.isTrash)w*=eventLuckMult;
-        if(event&&event.type==='hai'&&i.n==='Zander')w*=event.mult;
-        return{...i,weight:w};
-    });
-    let total=modPool.reduce((s,i)=>s+i.weight,0);
-    let r=Math.random()*total;
-    let baseItem=pool[0];
-    for(let i of modPool){if(r<i.weight){baseItem=i;break;}r-=i.weight;}
-    let baseShinyChance=0.01+((gameState.skills?.shiny||0)*0.00025);
-    let shinyChance=baseShinyChance*eventLuckMult;
-    if(event&&event.type==='sun')shinyChance*=event.mult;
-    let isShiny=Math.random()<shinyChance;
-    let itemW=0,finalVal=baseItem.v;
-    if(baseItem.minW!==undefined){
-        itemW=baseItem.minW+Math.random()*(baseItem.maxW-baseItem.minW);
-        if(!baseItem.isTrash){
-            let wPercent=(itemW-baseItem.minW)/(baseItem.maxW-baseItem.minW);
-            finalVal=Math.max(1,Math.floor(baseItem.v*(0.5+wPercent)));
-        }
-    }
-    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,isShiny:false,isTrash:baseItem.isTrash,weightG:itemW};
-    if(isShiny&&!baseItem.isTrash){
-        finalItem.n="🧬 "+baseItem.n;finalItem.v=Math.abs(finalItem.v)*5;
-        finalItem.xp=Math.abs(finalItem.xp)*5;finalItem.isShiny=true;finalItem.isTrash=false;
-    }
-    finalItem.id=Math.random().toString(36).substr(2,9);
-    return finalItem;
-}
-
-function updateDex(item) {
-    if(!gameState.dex)gameState.dex={};
-    if(!gameState.dex[item.baseName])gameState.dex[item.baseName]={normal:false,shiny:false,count:0,maxW:0};
-    if(item.isShiny)gameState.dex[item.baseName].shiny=true;
-    else gameState.dex[item.baseName].normal=true;
-    gameState.dex[item.baseName].count++;
-    if(item.weightG>gameState.dex[item.baseName].maxW)gameState.dex[item.baseName].maxW=item.weightG;
-}
-
 function cloudSync() {
     if(!currentUser||!gameState)return;
     localStorage.setItem('vFisher_cloud_'+currentUser,JSON.stringify({timestamp:Date.now(),money:gameState.money,level:gameState.level,prestige:gameState.prestige}));
@@ -1109,6 +580,7 @@ async function loadData() {
     onValue(ref(db,"global/guilds"),(snap)=>{guildsCache=snap.exists()?snap.val():{};if(gameState?.guild){let myG=guildsCache[gameState.guild];if(!myG||!myG.members||!myG.members.includes(currentUser)){gameState.guild="";saveData();}}refreshCurrentMenu();});
     onValue(ref(db,"global/leaderboard"),(snap)=>{if(snap.exists()){let d=snap.val();let ua=[];for(let k in d)ua.push(d[k]);ua.sort((a,b)=>(b.stats?.totalCaught||0)-(a.stats?.totalCaught||0));lastLeaderboardUsers=ua;if(window.currentOpenMenu==='leaderboard')refreshCurrentMenu();}});
     onValue(ref(db,"global"),(snap)=>{globalState=snap.exists()?snap.val():null;let im=globalState?.maintenance;if(im&&currentUser!=="colin"){document.getElementById('maintenance-overlay').style.display='flex';wasMaintenance=true;}else{document.getElementById('maintenance-overlay').style.display='none';if(wasMaintenance&&currentUser!=="colin")location.reload();}if(globalState?.broadcast&&Date.now()-globalState.broadcast.timestamp<300000&&(!gameState||gameState.lastBroadcast!==globalState.broadcast.timestamp)){document.getElementById('broadcast-text').innerText=globalState.broadcast.text;document.getElementById('broadcast-banner').style.display='block';}else document.getElementById('broadcast-banner').style.display='none';refreshCurrentMenu();});
+    
     onValue(ref(db,"users/"+currentUser),async(snap)=>{
         if(!currentUser)return;
         let acc=await get(ref(db,"accounts/"+currentUser));if(!acc.exists())return;
@@ -1125,6 +597,7 @@ async function loadData() {
             if(gameState.boatUpgraded===undefined)gameState.boatUpgraded=false;
             if(gameState.autoFishUnlocked===undefined)gameState.autoFishUnlocked=false;
             if(!gameState.qs||typeof gameState.qs!=='object')gameState.qs={p:{dc:0,de:0,wc:0,we:0,mc:0,me:0},c:{},d:"",w:"",m:""};
+            
             checkQuestResets();renderAquarium();syncGlobalLeaderboard();
             
             document.body.classList.remove('zone-bg-0', 'zone-bg-1');
@@ -1139,10 +612,7 @@ async function loadData() {
                 initChat();updateBoatVisual();
             }
             
-            if(gameState.autoFishUnlocked) {
-                document.getElementById('btnAutoFish').style.display = 'flex';
-            }
-            
+            checkAutoFisher(); // AKTIVIERE AUTO-FISHER HIER
             checkAchievements();checkDexCompletionRewards();refreshCurrentMenu();
         }
     });
@@ -1213,12 +683,88 @@ function autoEventCycle(){
 }
 autoEventCycle();
 
+// ============ AUTO ANGLER BACKGROUND (Zweites Boot) ============
+let autoFishIntervalTimer = null;
+function checkAutoFisher() {
+    let ab = document.getElementById('autoBoatContainer');
+    if (gameState.autoFishUnlocked) {
+        if(ab) ab.style.display = 'block';
+        if (!autoFishIntervalTimer) {
+            autoFishIntervalTimer = setInterval(() => { executeAutoCatch(); }, 60000);
+        }
+    } else {
+        if(ab) ab.style.display = 'none';
+        if(autoFishIntervalTimer) { clearInterval(autoFishIntervalTimer); autoFishIntervalTimer = null; }
+    }
+}
+function executeAutoCatch() {
+    let pool = items.filter(i => i.z === gameState.zone);
+    let total = pool.reduce((s,i)=>s+i.c, 0); let r = Math.random() * total; let baseItem = pool[0];
+    for(let i of pool) { if(r < i.c) { baseItem = i; break; } r -= i.c; }
+
+    let itemW = 0, finalVal = baseItem.v;
+    if(baseItem.minW !== undefined) {
+        itemW = baseItem.minW + Math.random() * (baseItem.maxW - baseItem.minW);
+        if(!baseItem.isTrash) { let wPercent = (itemW - baseItem.minW)/(baseItem.maxW - baseItem.minW); finalVal = Math.max(1, Math.floor(baseItem.v * (0.5 + wPercent))); }
+    }
+    let isShiny = !baseItem.isTrash && Math.random() < 0.01;
+    let finalItem = {baseName: baseItem.n, n: baseItem.n, v: finalVal, xp: baseItem.xp, c: baseItem.c, e: baseItem.e, isShiny: false, isTrash: baseItem.isTrash, weightG: itemW};
+    if(isShiny) { finalItem.n = "🧬 " + baseItem.n; finalItem.v = Math.abs(finalItem.v)*5; finalItem.xp = Math.abs(finalItem.xp)*5; finalItem.isShiny=true; }
+    finalItem.id = Math.random().toString(36).substr(2,9);
+
+    if(!gameState.inventory) gameState.inventory = [];
+    gameState.inventory.push(finalItem);
+    
+    let msg = finalItem.isTrash ? `🤖 Auto-Angler fing Müll: ${finalItem.baseName}` : `🤖 Auto-Angler fing: ${finalItem.e} ${finalItem.n} (${finalItem.v}$)`;
+    log(msg);
+
+    let scene = document.getElementById('fishing-scene');
+    if(scene) {
+        let splash = document.createElement('div'); splash.className = 'catch-splash'; splash.innerText = finalItem.e; splash.style.left = '30%';
+        scene.appendChild(splash); setTimeout(() => splash.remove(), 1000);
+    }
+    playSound('catch'); saveData(); refreshCurrentMenu();
+}
+
+
 // ============ FISCHEN & TIMING MINISPIEL ============
-window.toggleAutoFish = function() {
-    window.isAutoFishing = !window.isAutoFishing;
-    document.getElementById('autoFishState').innerText = window.isAutoFishing ? "AN" : "AUS";
-    document.getElementById('btnAutoFish').style.background = window.isAutoFishing ? "#10b981" : "#3b82f6";
-    if(window.isAutoFishing) window.handleFish();
+function roll(zIdx) {
+    let {event}=getCurrentEventInfo();
+    let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
+    let baitDef=gameState.eqBait!=="none"?baitsDB[gameState.eqBait]:null;
+    let pool=items.filter(i=>i.z===zIdx);
+    if(baitDef?.trashRed) pool=pool.filter(i=>!i.isTrash||Math.random()>baitDef.trashRed/100);
+    let eventLuckMult=(event&&event.type==='luck')?event.mult:1;
+    let modPool=pool.map(i=>{
+        let totalLuck=(rodDef.luck||0)+(baitDef?.luck||0);
+        let w=i.c*(1+totalLuck/100);
+        if(eventLuckMult>1&&i.c<=5&&!i.isTrash)w*=eventLuckMult;
+        if(event&&event.type==='hai'&&i.n==='Zander')w*=event.mult;
+        return{...i,weight:w};
+    });
+    let total=modPool.reduce((s,i)=>s+i.weight,0);
+    let r=Math.random()*total;
+    let baseItem=pool[0];
+    for(let i of modPool){if(r<i.weight){baseItem=i;break;}r-=i.weight;}
+    let baseShinyChance=0.01+((gameState.skills?.shiny||0)*0.00025);
+    let shinyChance=baseShinyChance*eventLuckMult;
+    if(event&&event.type==='sun')shinyChance*=event.mult;
+    let isShiny=Math.random()<shinyChance;
+    let itemW=0,finalVal=baseItem.v;
+    if(baseItem.minW!==undefined){
+        itemW=baseItem.minW+Math.random()*(baseItem.maxW-baseItem.minW);
+        if(!baseItem.isTrash){
+            let wPercent=(itemW-baseItem.minW)/(baseItem.maxW-baseItem.minW);
+            finalVal=Math.max(1,Math.floor(baseItem.v*(0.5+wPercent)));
+        }
+    }
+    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,isShiny:false,isTrash:baseItem.isTrash,weightG:itemW};
+    if(isShiny&&!baseItem.isTrash){
+        finalItem.n="🧬 "+baseItem.n;finalItem.v=Math.abs(finalItem.v)*5;
+        finalItem.xp=Math.abs(finalItem.xp)*5;finalItem.isShiny=true;finalItem.isTrash=false;
+    }
+    finalItem.id=Math.random().toString(36).substr(2,9);
+    return finalItem;
 }
 
 window.handleFish = function(){
@@ -1228,7 +774,6 @@ window.handleFish = function(){
     let baitDef=baitsDB[gameState.eqBait];
     let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0);if(speedBonus>90)speedBonus=90;
     
-    // REDUZIERT AUF 60 SEKUNDEN
     let fishTimeSec=60*(1-(speedBonus/100)); 
     let {event}=getCurrentEventInfo();
     if(event&&event.type==='speed')fishTimeSec=Math.floor(fishTimeSec/event.mult);
@@ -1248,8 +793,8 @@ window.handleFish = function(){
                     scene.classList.remove('fishing-active');
                     btn.disabled = false;
                     btn.innerHTML = '🎣 Angeln';
+                    playSound('error');
                     log("💨 Entkommen: Falsches Timing!");
-                    if(window.isAutoFishing) setTimeout(() => window.handleFish(), 2500);
                 }
             });
         }
@@ -1265,7 +810,6 @@ let timingResolve = null;
 function startTimingMinigame() {
     return new Promise(resolve => {
         timingResolve = resolve;
-        if(window.isAutoFishing) return resolve(true);
         document.getElementById('timing-minigame-overlay').style.display = 'flex';
         timingActive = true;
         timingCursor = 0;
@@ -1305,8 +849,8 @@ function executeFishCatch(btn,scene){
             let escapeChance=item.weightG>maxGrams?80-resilience:10-resilience;
             if(escapeChance>0&&Math.random()<escapeChance/100){
                 scene.classList.remove('fishing-active');btn.disabled=false;btn.innerHTML='🎣 Angeln';
+                playSound('error');
                 log(`💨 Entkommen: ${item.baseName} war zu stark!`);saveData();
-                if(window.isAutoFishing) setTimeout(() => window.handleFish(), 2500);
                 return;
             }
         }
@@ -1314,14 +858,13 @@ function executeFishCatch(btn,scene){
             gameState.xp=Math.max(0,gameState.xp-Math.abs(item.xp));gameState.inventory.push({...item});gameState.stats.totalCaught++;
             log(`🗑️ Gefangen: ${item.baseName} (${item.v}$)`);saveData();syncGlobalLeaderboard();
             scene.classList.remove('fishing-active');btn.disabled=false;btn.innerHTML='🎣 Angeln';
-            if(window.isAutoFishing) setTimeout(() => window.handleFish(), 2500);
             return;
         }
         if(item.isShiny||item.c<=0.5){triggerMinigame(item);scene.classList.remove('fishing-active');return;}
         if(event&&event.type==='xp')item.xp=Math.floor(item.xp*event.mult);
 
         gameState.inventory.push(item);
-        updateDex(item);
+        if(gameState.dex && gameState.dex[item.baseName]) gameState.dex[item.baseName].count++;
         gameState.xp += item.xp;
         gameState.stats.totalCaught++;
         gameState.rodStats[gameState.eqRod] = (gameState.rodStats[gameState.eqRod]||0)+1;
@@ -1329,19 +872,17 @@ function executeFishCatch(btn,scene){
         checkAchievements();
         checkDexCompletionRewards();
         playCatchAnimation(item);
+        playSound('catch');
 
         let wText=item.weightG?` ⚖️ ${formatWeight(item.weightG)}`:'';
         let msg=item.isShiny?`🧬 MUTATION: ${item.e} ${item.baseName}${wText} (${item.v}$)`:`${item.e} Gefangen: ${item.baseName}${wText} (${item.v}$)`;
-        if(gameState.xp>=gameState.level*50){gameState.xp-=gameState.level*50;gameState.level++;msg+=' ⭐ LEVEL UP!';}
+        if(gameState.xp>=gameState.level*50){gameState.xp-=gameState.level*50;gameState.level++;msg+=' ⭐ LEVEL UP!'; playSound('success');}
         log(msg);
         saveData();syncGlobalLeaderboard();refreshCurrentMenu();
         scene.classList.remove('fishing-active');btn.disabled=false;btn.innerHTML='🎣 Angeln';
-        
-        if(window.isAutoFishing) setTimeout(() => window.handleFish(), 2500);
 
     }catch(e){
         console.error(e);scene.classList.remove('fishing-active');btn.disabled=false;btn.innerHTML='🎣 Angeln';
-        if(window.isAutoFishing) setTimeout(() => window.handleFish(), 2500);
     }
 }
 
@@ -1358,13 +899,6 @@ function triggerMinigame(item){
     document.getElementById('mg-fish-emoji').innerHTML=item.e;updateMinigameUI();
     if(mgTimer)clearInterval(mgTimer);
     mgTimer=setInterval(()=>{if(!minigameActive)return clearInterval(mgTimer);if(Date.now()-mgLastClick>5000)finishMinigame(false);mgFishPower=Math.max(0,mgFishPower-0.5);updateMinigameUI();},100);
-    
-    if(window.isAutoFishing) {
-        let autoInterval = setInterval(() => {
-            if(!minigameActive) return clearInterval(autoInterval);
-            document.getElementById('btnSpamClick').click();
-        }, 100);
-    }
 }
 document.getElementById('btnSpamClick')?.addEventListener('click',()=>{
     if(!minigameActive)return;mgLastClick=Date.now();mgClicksNeeded--;
@@ -1388,18 +922,41 @@ function finishMinigame(won){
     if(won){
         let finalXp=Math.floor(mgFishItem.xp*(mgFishItem.isShiny?5:2));
         let {event}=getCurrentEventInfo();if(event&&event.type==='xp')finalXp=Math.floor(finalXp*event.mult);
-        gameState.inventory.push({...mgFishItem});updateDex(mgFishItem);gameState.xp+=finalXp;
+        gameState.inventory.push({...mgFishItem});
+        if(gameState.dex && gameState.dex[mgFishItem.baseName]) gameState.dex[mgFishItem.baseName].count++;
+        gameState.xp+=finalXp;
         gameState.stats.totalCaught++;gameState.rodStats[gameState.eqRod]=(gameState.rodStats[gameState.eqRod]||0)+1;
         addQuestProgress('c',1);checkAchievements();checkDexCompletionRewards();
-        playCatchAnimation(mgFishItem);
+        playCatchAnimation(mgFishItem); playSound('catch');
         log(`⚔️ BOSS BESIEGT! ${mgFishItem.e} Gefangen: ${mgFishItem.baseName} (${mgFishItem.v}$)`);
-        if(gameState.xp>=gameState.level*50){gameState.xp-=gameState.level*50;gameState.level++;log('⭐ LEVEL UP!');}
+        if(gameState.xp>=gameState.level*50){gameState.xp-=gameState.level*50;gameState.level++;log('⭐ LEVEL UP!'); playSound('success');}
     }else{
         gameState.xp=Math.max(0,gameState.xp-Math.floor(Math.abs(mgFishItem.xp)*2));
+        playSound('error');
         log(`💨 Entkommen: ${mgFishItem.baseName} hat sich losgerissen!`);
     }
     saveData();syncGlobalLeaderboard();refreshCurrentMenu();
-    if(window.isAutoFishing) setTimeout(() => window.handleFish(), 2500);
+}
+
+// ============ DEX EINTRAGEN ============
+window.sendToDex = function(idx) {
+    let item = gameState.inventory[idx];
+    if(!item || item.isTrash) return;
+    
+    if(!gameState.dex) gameState.dex = {};
+    if(!gameState.dex[item.baseName]) gameState.dex[item.baseName] = {normal:false, shiny:false, count:0, maxW:0};
+    
+    if(item.isShiny) gameState.dex[item.baseName].shiny = true;
+    else gameState.dex[item.baseName].normal = true;
+    
+    if(item.weightG > gameState.dex[item.baseName].maxW) gameState.dex[item.baseName].maxW = item.weightG;
+
+    gameState.inventory.splice(idx, 1);
+    playSound('success');
+    window.showToast(`📖 ${item.n} ins Dex hinzugefügt!`, "#10b981");
+    saveData();
+    checkDexCompletionRewards();
+    refreshCurrentMenu();
 }
 
 // ============ VERKAUF ============
@@ -1412,13 +969,19 @@ window.handleSellMenu=function(){
         let val=Number(item.v);if(isNaN(val))val=0;
         if(val>=0)baseValue+=val;else trashValue+=val;
         let key=item.n;
-        if(!grouped[key])grouped[key]={n:key,e:item.e,isTrash:item.isTrash,count:0,totalV:0,totalW:0,firstIdx:idx};
+        if(!grouped[key])grouped[key]={n:key, baseName:item.baseName||item.n, e:item.e, isShiny:item.isShiny, isTrash:item.isTrash, count:0, totalV:0, totalW:0, firstIdx:idx};
         grouped[key].count++;grouped[key].totalV+=val;if(item.weightG)grouped[key].totalW+=item.weightG;
     });
     let html='<h3>🎒 Rucksack</h3><div style="max-height:40vh;overflow-y:auto;padding-right:5px;margin-bottom:10px;">';
     for(let[n,d]of Object.entries(grouped)){
-        let aquaBtn=(!d.isTrash&&gameState.aquarium.unlocked&&gameState.aquarium.fishes.length<5)?`<button class="update-btn" style="padding:4px 8px;font-size:11px;margin-left:10px;" onclick="window.sendToAquarium(${d.firstIdx})">🐟 Aqua</button>`:'';
-        html+=`<div class="inv-group-card"><div style="flex:1;"><b>${d.count}x ${d.e} ${n}</b><br><small>${d.totalW>0?'⚖️ Ges:'+formatWeight(d.totalW):''}</small></div><div style="text-align:right;"><div style="color:${d.totalV>=0?'#10b981':'#ef4444'};font-weight:bold;">${d.totalV>=0?'+':''}${d.totalV.toLocaleString()}$</div>${aquaBtn}</div></div>`;
+        let aquaBtn=(!d.isTrash&&gameState.aquarium.unlocked&&gameState.aquarium.fishes.length<5)?`<button class="update-btn" style="padding:4px 8px;font-size:11px;margin-left:5px;" onclick="window.sendToAquarium(${d.firstIdx})">🐟 Aqua</button>`:'';
+        
+        let dexHasNormal = gameState.dex && gameState.dex[d.baseName] && gameState.dex[d.baseName].normal;
+        let dexHasShiny = gameState.dex && gameState.dex[d.baseName] && gameState.dex[d.baseName].shiny;
+        let needDex = (!d.isTrash && ((d.isShiny && !dexHasShiny) || (!d.isShiny && !dexHasNormal)));
+        let dexBtn = needDex ? `<button class="prestige-btn" style="padding:4px 8px;font-size:11px;margin-left:5px;" onclick="window.sendToDex(${d.firstIdx})">📖 Ins Dex</button>` : '';
+
+        html+=`<div class="inv-group-card"><div style="flex:1;"><b>${d.count}x ${d.e} ${n}</b><br><small>${d.totalW>0?'⚖️ Ges:'+formatWeight(d.totalW):''}</small></div><div style="text-align:right;"><div style="color:${d.totalV>=0?'#10b981':'#ef4444'};font-weight:bold;">${d.totalV>=0?'+':''}${d.totalV.toLocaleString()}$</div><div style="margin-top:5px; display:flex; justify-content:flex-end;">${dexBtn}${aquaBtn}</div></div></div>`;
     }
     html+='</div>';
     if(Object.keys(grouped).length===0)return openModal("💰 Rucksack","<p>Leer!</p>");
@@ -1484,7 +1047,7 @@ window.handleShopMenu=function(){
     let h=`<div class="inv-grid"><div class="inv-col"><h4>🎣 Ausrüstung</h4>`;
     
     if(!gameState.autoFishUnlocked) {
-        h += `<div class="inv-card" style="border-color:#10b981;"><h4>🤖 Auto-Angler</h4><p style="font-size:12px;">Angelt automatisch weiter, gewinnt sofort das Timing-Minispiel.</p><button class="success-btn" style="width:100%;" ${gameState.money<100000?'disabled':''} onclick="window.buyAutoFish()">100.000$</button></div>`;
+        h += `<div class="inv-card" style="border-color:#10b981;"><h4>🤖 Auto-Angler</h4><p style="font-size:12px;">Angelt automatisch im Hintergrund weiter ohne Bonusabzüge.</p><button class="success-btn" style="width:100%;" ${gameState.money<100000?'disabled':''} onclick="window.buyAutoFish()">100.000$</button></div>`;
     }
 
     for(let[id,r]of Object.entries(rodsDB)){if((gameState.ownedRods||[]).includes(id))continue;h+=`<div class="inv-card"><h4>${r.e} ${r.name}</h4><div class="inv-stat"><span>Anlockgeschwindigkeit:</span><span>+${r.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span><span>+${r.luck||0}%</span></div><div class="inv-stat"><span>Widerstandsfähigkeit:</span><span>${r.res||0}%</span></div><div class="inv-stat"><span>Max. Kilogramm:</span><span>${r.maxKg} kg</span></div><button class="success-btn" style="width:100%;" ${gameState.money<r.cost?'disabled':''} onclick="window.buyRod('${id}')">${r.cost.toLocaleString()}$</button></div>`;}
@@ -1495,7 +1058,7 @@ window.handleShopMenu=function(){
 }
 window.buyRod=function(id){gameState.money-=rodsDB[id].cost;if(!gameState.ownedRods)gameState.ownedRods=[];gameState.ownedRods.push(id);saveData();syncGlobalLeaderboard();window.handleShopMenu();}
 window.buyBait=function(id){gameState.money-=baitsDB[id].cost;if(!gameState.baits)gameState.baits={};gameState.baits[id]=(gameState.baits[id]||0)+baitsDB[id].amt;saveData();syncGlobalLeaderboard();window.handleShopMenu();}
-window.buyAutoFish=function(){gameState.money-=100000;gameState.autoFishUnlocked=true;document.getElementById('btnAutoFish').style.display='flex';saveData();window.handleShopMenu();}
+window.buyAutoFish=function(){gameState.money-=100000;gameState.autoFishUnlocked=true; checkAutoFisher(); saveData();window.handleShopMenu();}
 
 // ============ AUSRÜSTUNG ============
 window.handleInvMenu=function(){
@@ -1535,10 +1098,7 @@ window.handleGuildMenu=function(){
     let myG=guildsCache[gameState.guild];if(!myG){gameState.guild="";saveData();return window.handleGuildMenu();}
     let isO=myG.owner===currentUser,mems=myG.members||[];
     let maxM = myG.maxMembers || 10;
-    
-    // Sort by donations
     mems.sort((a,b) => (myG.donations?.[b]||0) - (myG.donations?.[a]||0));
-    
     let sg=[];for(let n in guildsCache)sg.push({name:n,points:guildsCache[n].points||0});sg.sort((a,b)=>b.points-a.points);
     let myR=sg.findIndex(g=>g.name===gameState.guild)+1;
     let h=`<div style="text-align:center;margin-bottom:15px;background:#161b22;padding:15px;border-radius:12px;border:2px solid #eab308;"><h2>${gameState.guild}</h2><div>🏆 Platz ${myR} | 🛡️ ${myG.points||0} Pkt</div></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button class="success-btn" style="flex:1;background:#eab308;" onclick="window.handleGuildDonateMenu()">🐟 Spenden</button><button class="danger-btn" style="flex:1;" onclick="window.leaveGuild()">${isO?'Auflösen':'Verlassen'}</button></div><div style="display:flex; justify-content:space-between; align-items:center;"><h4>👥 Mitglieder (${mems.length}/${maxM})</h4>${isO?`<button class="update-btn" style="padding:4px 8px; font-size:12px;" onclick="window.buyGuildSlot()">+1 Platz (5k Pkt)</button>`:''}</div><div style="max-height:35vh;overflow-y:auto; margin-top:5px;">`;
@@ -1578,7 +1138,6 @@ window.claimQuest=function(id,rew){if(!gameState.qs.c)gameState.qs.c={};if(gameS
 // ============ DEX ============
 window.handleDexMenu=function(){window.currentOpenMenu='dex';let h=`<div style="display:flex;gap:10px;margin-bottom:10px;"><select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px;border-radius:12px;background:#1e293b;color:white;border:1px solid #30363d;flex:1;"><option value="all">🌍 Alle</option>${zones.map((z,i)=>`<option value="${i}">${z.name}</option>`).join('')}</select></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1;">Fische</button><button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;">Shiny</button></div><div id="dexGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>`;openModal("📖 Fish-Dex", h);window.showDexTab(window.currentDexTab);}
 window.showDexTab=function(tab){window.currentDexTab=tab;let grid=document.getElementById('dexGrid'),zF=document.getElementById('dexZoneFilter')?.value||'all';if(!grid)return;document.getElementById('dexTabNormal').style.background=tab==='normal'?'#3b82f6':'#1e293b';document.getElementById('dexTabShiny').style.background=tab==='shiny'?'#3b82f6':'#1e293b';let col=0,tot=0;grid.innerHTML='';items.forEach(i=>{if(zF!=='all'&&i.z!==parseInt(zF))return;if(tab==='shiny'&&i.isTrash)return;tot++;let d=gameState.dex?.[i.n];let has=tab==='normal'?d?.normal:d?.shiny;if(has)col++;let div=document.createElement('div');div.style.cssText='background:#0d1117;padding:8px;border-radius:12px;text-align:center;border:1px solid #30363d;cursor:pointer;'+(has?'':'opacity:0.4;filter:grayscale(1);');div.innerHTML=`<div style="font-size:36px;">${i.e}</div><div style="font-size:11px;">${has?(tab==='shiny'?'🧬':'')+i.n:'???'}</div>`;if(has)div.onclick=()=>window.showFishInfo(i.n,tab);grid.appendChild(div);});let info=document.getElementById('dexInfo');if(!info){info=document.createElement('div');info.id='dexInfo';info.style.cssText='text-align:center;margin-top:15px;padding:10px;background:#0d1117;border-radius:12px;';grid.parentNode.appendChild(info);}info.innerHTML=`<b>Gesammelt: ${col}/${tot}</b>`;checkDexCompletionRewards();}
-
 window.showFishInfo = function(n, tab) {
     let item = items.find(i=>i.n===n);
     if(!item) return;
@@ -1589,7 +1148,6 @@ window.showFishInfo = function(n, tab) {
     let minK = formatWeight(item.minW||0);
     let maxK = formatWeight(item.maxW||0);
     let rec = formatWeight(d?.maxW||0);
-    
     let h = `
     <div style="text-align:center; padding:10px;">
         <div style="font-size:60px;">${item.e}</div>
@@ -1606,6 +1164,7 @@ window.showFishInfo = function(n, tab) {
     openModal("📖 Fish-Dex Info", h);
 }
 
+// ============ ZONEN ============
 window.handleZoneMenu=function(){window.currentOpenMenu='zone';let h=zones.map((z,i)=>`<div class="item-row"><b>${z.name}</b>${gameState.zone===i?'<span style="color:#10b981;">📍 Aktiv</span>':gameState.prestige<z.reqPrestige?`<span style="color:#ef4444;">🔒 P${z.reqPrestige}</span>`:`<button class="success-btn" onclick="window.changeZone(${i})">Reisen</button>`}</div>`).join('');openModal("🗺️ Karte",h);}
 window.changeZone=function(i){
     gameState.zone=i;
@@ -1613,6 +1172,7 @@ window.changeZone=function(i){
     window.handleZoneMenu();
 }
 
+// ============ LEADERBOARD & PROFILE ============
 window.handleLeaderboard=function(tab='users'){window.currentOpenMenu='leaderboard';window.currentLeaderboardTab=tab;let h=`<div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.handleLeaderboard('users')" style="flex:1;${tab==='users'?'background:#3b82f6;':'background:#1e293b;'}">👥 Spieler</button><button onclick="window.handleLeaderboard('guilds')" style="flex:1;${tab==='guilds'?'background:#eab308;':'background:#1e293b;'}">🛡️ Gilden</button></div><div style="max-height:60vh;overflow-y:auto;">`;if(tab==='users'){h+=lastLeaderboardUsers.map((u,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex;justify-content:space-between;"><b>${r} ${u.name}</b><span>👑 P${u.prestige||0}</span></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${(u.stats?.totalCaught||0).toLocaleString()}</span></div></div>`;}).join('');}else{let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));h+=sg.slice(0,100).map((g,i)=>{let r=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1)+'.';return`<div class="leader-card"><div style="display:flex;justify-content:space-between;"><b style="color:#eab308;">${r} ${g.name}</b><span>${g.owner}</span></div><div class="card-stats"><span>🛡️ ${g.points||0} Pkt</span><span>👥 ${(g.members||[]).length}/${g.maxMembers||10}</span></div></div>`;}).join('');}h+=`</div>`;openModal("🏆 Leaderboard",h);}
 window.showPlayerProfile=async function(name){let u;if(name===currentUser&&gameState)u=gameState;else{let snap=await get(ref(db,"users/"+name));if(snap.exists())u=snap.val();}if(u){let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(u.prestige||0)>0?'👑':'🎣'}</div><div><h2>${u.name}</h2><div>👑 P${u.prestige||0} | ⭐ Lvl ${u.level}</div>${u.guild?`<div style="color:#eab308;">🛡️ ${u.guild}</div>`:''}</div></div><div class="card-stats"><span>💰 ${Math.floor(u.money).toLocaleString()}$</span><span>🐟 ${(u.stats?.totalCaught||0).toLocaleString()}</span></div></div>`;openModal(`📊 ${u.name}`,h);}else window.showToast("Nicht gefunden!", "#ef4444");}
 
@@ -1659,12 +1219,37 @@ window.handlePrestigeMenu=function(){
 window.doPrestige=function(){gameState.prestige++;gameState.money=0;gameState.level=1;gameState.xp=0;gameState.inventory=[];saveData();syncGlobalLeaderboard();checkAchievements();location.reload();}
 
 document.getElementById('btnPromo')?.addEventListener('click',()=>{let h=`<input id="inputPromoCode" placeholder="Code" style="width:100%;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;">`;openModal("🎫 Code",h,`<button class="success-btn" style="width:100%;" onclick="window.redeemPromoCode()">Einlösen</button>`);});
-window.redeemPromoCode=async function(){let code=document.getElementById("inputPromoCode").value.trim().toUpperCase();if(!code)return window.showToast("Code!", "#ef4444");if(gameState.usedCodes?.[code])return window.showToast("Bereits eingelöst!", "#ef4444");let snap=await get(ref(db,"global/promocodes/"+code));if(snap.exists()){let p=snap.val();if(p.money){gameState.money+=p.money;gameState.stats.totalEarned+=p.money;}if(p.xp)gameState.xp+=p.xp;if(p.level)gameState.level+=p.level;if(p.prestige)gameState.prestige+=p.prestige;if(p.skills){gameState.skills=gameState.skills||{shiny:0,aqua:0};}if(p.itemName&&p.itemAmt){let bi=items.find(i=>i.n===p.itemName);if(bi)for(let i=0;i<p.itemAmt;i++)gameState.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}if(!gameState.usedCodes)gameState.usedCodes={};gameState.usedCodes[code]=true;saveData();syncGlobalLeaderboard();window.closeModal();window.showToast("✅ Eingelöst!", "#10b981");}else window.showToast("❌ Ungültig!", "#ef4444");}
+window.redeemPromoCode=async function(){
+    let code=document.getElementById("inputPromoCode").value.trim().toUpperCase();
+    if(!code)return window.showToast("Code!", "#ef4444"); if(gameState.usedCodes?.[code])return window.showToast("Bereits eingelöst!", "#ef4444");
+    let snap=await get(ref(db,"global/promocodes/"+code));
+    if(snap.exists()){
+        let p=snap.val();
+        if(p.money){gameState.money+=p.money;gameState.stats.totalEarned+=p.money;} if(p.xp)gameState.xp+=p.xp;
+        if(p.level)gameState.level+=p.level; if(p.prestige)gameState.prestige+=p.prestige;
+        if(p.skills){gameState.skills=gameState.skills||{shiny:0,aqua:0};}
+        if(p.itemName&&p.itemAmt){
+            if(p.itemName.startsWith('rod_')) {
+                let rid = p.itemName.replace('rod_','');
+                if(!gameState.ownedRods) gameState.ownedRods = [];
+                if(!gameState.ownedRods.includes(rid)) gameState.ownedRods.push(rid);
+            } else if(p.itemName.startsWith('bait_')) {
+                let bid = p.itemName.replace('bait_','');
+                if(!gameState.baits) gameState.baits = {}; gameState.baits[bid] = (gameState.baits[bid]||0) + p.itemAmt;
+            } else {
+                let bi=items.find(i=>i.n===p.itemName);
+                if(bi)for(let i=0;i<p.itemAmt;i++)gameState.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});
+            }
+        }
+        if(!gameState.usedCodes)gameState.usedCodes={}; gameState.usedCodes[code]=true;
+        playSound('success'); saveData(); syncGlobalLeaderboard(); window.closeModal(); window.showToast("✅ Eingelöst!", "#10b981");
+    }else window.showToast("❌ Ungültig!", "#ef4444");
+}
 
 window.openFeedbackMenu=function(){openModal("💬 Feedback",`<textarea id="feedbackText" placeholder="Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;"></textarea>`,`<button class="success-btn" style="width:100%;" onclick="window.submitFeedback()">Senden</button>`);}
 window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5!", "#ef4444");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"💬 Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("✅ Gesendet!", "#10b981");window.closeModal();}).catch(()=>window.showToast("❌ Fehler", "#ef4444"));}
 
-window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;">🌿 Version 7.3 - Improvements</h3><ul><li><b>🎣 Angeln:</b> Basis-Zeit auf 60 Sekunden reduziert.</li><li><b>🤖 Chat:</b> Verknüpfung mit Discord und Lösch-Funktion.</li><li><b>🗺️ Gilde:</b> Spenden System und erweiterte Plätze (5k Pkt pro Slot).</li><li><b>🎰 Rad:</b> Animations-Bugfix und flüssigeres CSS!</li><li><b>🧠 Dex:</b> Detailliertere Fang-Infos.</li></ul></div>`;openModal("📝 Updates",h);}
+window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;">🌿 Version 7.4 - Modular Update</h3><ul><li><b>🤖 Auto-Angler Rework:</b> Angelt nun leise im Hintergrund als 2. Boot, verbraucht keine Boni.</li><li><b>🗣️ Chat:</b> Live-Deletion von Nachrichten für alle Nutzer.</li><li><b>🎒 Dex Update:</b> Fische müssen nun manuell aus dem Rucksack gespendet werden.</li><li><b>🔊 Audio API:</b> Voll integrierte Web-Audio Sounds ohne externe Dateien.</li><li><b>🎫 Promo-Codes:</b> Admins können nun Ruten via Promo Code ausgeben.</li></ul></div>`;openModal("📝 Updates",h);}
 
 // ============ ADMIN ============
 window.handleAdminMenu=function(){
@@ -1678,7 +1263,7 @@ window.handleAdminMenu=function(){
         
         <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #8b5cf6;">
             <h4 style="color:#8b5cf6;">📢 Discord Update</h4>
-            <input id="adminDiscordUpdateTitle" placeholder="Update Titel..." value="🚀 Update v7.3 ist online!" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
+            <input id="adminDiscordUpdateTitle" placeholder="Update Titel..." value="🚀 Update v7.4 ist online!" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
             <textarea id="adminDiscordUpdateText" placeholder="Beschreibung & Update Info..." style="width:100%;height:60px;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;"></textarea>
             <button class="success-btn" style="width:100%;background:#8b5cf6;" onclick="window.adminSendDiscordUpdate()">In Discord posten</button>
         </div>
@@ -1705,6 +1290,9 @@ window.handleAdminMenu=function(){
                     </optgroup>
                     <optgroup label="Köder">
                         ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.e} ${b.name}</option>`).join('')}
+                    </optgroup>
+                    <optgroup label="Ruten">
+                        ${Object.entries(rodsDB).map(([id,r])=>`<option value="rod_${id}">${r.e} ${r.name}</option>`).join('')}
                     </optgroup>
                 </select>
                 <input id="adminCodeItemAmt" type="number" placeholder="Anzahl" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
@@ -1756,6 +1344,9 @@ window.handleAdminMenu=function(){
                     <optgroup label="Köder">
                         ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.e} ${b.name}</option>`).join('')}
                     </optgroup>
+                    <optgroup label="Ruten">
+                        ${Object.entries(rodsDB).map(([id,r])=>`<option value="rod_${id}">${r.e} ${r.name}</option>`).join('')}
+                    </optgroup>
                 </select>
                 <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:40%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
             </div>
@@ -1799,16 +1390,45 @@ window.adminShowAccounts=async function(){let snap=await get(ref(db,"accounts"))
 window.adminChangePassword=async function(u){let np=prompt(`Neues Passwort für ${u}:`);if(np&&np.length>=3){await set(ref(db,"accounts/"+u),np);window.showToast("✅ Geändert!", "#10b981");window.adminShowAccounts();}}
 window.adminQuickDelete=async function(u){if(confirm(`${u} löschen?`)){await remove(ref(db,"accounts/"+u));await remove(ref(db,"users/"+u));await remove(ref(db,"global/leaderboard/"+u));window.showToast("✅ Gelöscht!", "#10b981");window.adminShowAccounts();}}
 window.adminGive=async function(){let t=document.getElementById('adminTarget').value.trim(),ty=document.getElementById('adminType').value,am=Number(document.getElementById('adminAmount').value);if(!t||isNaN(am))return window.showToast("User & Menge!", "#ef4444");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(ty==='money')d.money+=am;if(ty==='level'){d.level+=am;d.xp=0;}if(ty==='prestige')d.prestige+=am;if(ty==='skills'){d.skills=d.skills||{shiny:0,aqua:0};}await set(ref(db,"users/"+t),d);window.showToast(`✅ ${am} ${ty} an ${t}`, "#10b981");}else window.showToast("Nicht gefunden!", "#ef4444");}
-window.adminGiveItem=async function(){let t=document.getElementById('adminTarget').value.trim(),iv=document.getElementById('adminItem').value,count=Number(document.getElementById('adminItemCount').value);if(!t||isNaN(count)||count<=0)return window.showToast("User & Anzahl!", "#ef4444");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(!Array.isArray(d.inventory))d.inventory=[];if(iv.startsWith("fish_")){let item=iv.replace("fish_","");let bi=items.find(i=>i.n===item);if(bi)for(let i=0;i<count;i++)d.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}else if(iv.startsWith("bait_")){let bid=iv.replace("bait_","");if(!d.baits)d.baits={};d.baits[bid]=(d.baits[bid]||0)+count;}await set(ref(db,"users/"+t),d);window.showToast(`✅ Gegeben!`, "#10b981");}else window.showToast("Nicht gefunden!", "#ef4444");}
+
+window.adminGiveItem=async function(){
+    let t=document.getElementById('adminTarget').value.trim(),iv=document.getElementById('adminItem').value,count=Number(document.getElementById('adminItemCount').value);
+    if(!t||isNaN(count)||count<=0)return window.showToast("User & Anzahl!", "#ef4444");
+    let snap=await get(ref(db,"users/"+t));
+    if(snap.exists()){
+        let d=snap.val();
+        if(!Array.isArray(d.inventory))d.inventory=[];
+        if(iv.startsWith("fish_")){
+            let item=iv.replace("fish_","");let bi=items.find(i=>i.n===item);
+            if(bi)for(let i=0;i<count;i++)d.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});
+        }else if(iv.startsWith("bait_")){
+            let bid=iv.replace("bait_","");if(!d.baits)d.baits={};d.baits[bid]=(d.baits[bid]||0)+count;
+        }else if(iv.startsWith("rod_")){
+            let rid=iv.replace("rod_","");if(!d.ownedRods)d.ownedRods=[];
+            if(!d.ownedRods.includes(rid))d.ownedRods.push(rid);
+        }
+        await set(ref(db,"users/"+t),d);window.showToast(`✅ Gegeben!`, "#10b981");
+    }else window.showToast("Nicht gefunden!", "#ef4444");
+}
+
 window.adminBanAccount=async function(){let u=document.getElementById('adminBanUser').value.trim(),m=Number(document.getElementById('adminBanTime').value);if(!u||isNaN(m))return window.showToast("User & Min!", "#ef4444");let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=Date.now()+(m*60000);await set(ref(db,"users/"+u),d);window.showToast(`🚫 ${u} für ${m} Min gesperrt!`, "#ef4444");}else window.showToast("Nicht gefunden!", "#ef4444");}
 window.adminShowBanned=async function(){let snap=await get(ref(db,"users"));if(snap.exists()){let h='<h3>🚫 Bann-Liste</h3><div style="max-height:300px;overflow-y:auto;">';let has=false;snap.forEach(c=>{let u=c.val();if(u?.bannedUntil>Date.now()){has=true;let ml=Math.ceil((u.bannedUntil-Date.now())/60000);h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#161b22;border-radius:8px;margin-bottom:5px;"><div><b>${u.name}</b><br><small>Noch ${ml} Min</small></div><button class="success-btn" onclick="window.adminUnban('${u.name}')">Entbannen</button></div>`;}});if(!has)h+='<p>Keine gesperrt.</p>';h+='</div>';openModal("Bann-Liste",h);}}
 window.adminUnban=async function(u){let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=0;await set(ref(db,"users/"+u),d);window.showToast(`✅ ${u} entbannt!`, "#10b981");window.adminShowBanned();}}
 window.adminResetAccount=async function(){let u=document.getElementById('adminResetUser').value.trim();if(!u)return window.showToast("User!", "#ef4444");if(confirm(`${u} wirklich wipen?`)){await remove(ref(db,"users/"+u));await set(ref(db,"global/leaderboard/"+u),{name:u,prestige:0,level:1,money:0,stats:{totalCaught:0}});window.showToast("✅ Gewiped!", "#10b981");}}
-window.adminCreatePromoCode=async function(){let code=document.getElementById("adminCodeName").value.trim().toUpperCase();let money=Number(document.getElementById("adminCodeMoney").value)||0;let xp=Number(document.getElementById("adminCodeXP").value)||0;let lvl=Number(document.getElementById("adminCodeLevel").value)||0;let skills=Number(document.getElementById("adminCodeSkills").value)||0;let itemName=document.getElementById("adminCodeItem").value;let itemAmt=Number(document.getElementById("adminCodeItemAmt").value)||0;if(!code)return window.showToast("Code-Name!", "#ef4444");let rew={money,xp,level:lvl,skills};if(itemName!=="none"&&itemAmt>0){rew.itemName=itemName;rew.itemAmt=itemAmt;}await set(ref(db,"global/promocodes/"+code),rew);window.showToast(`✅ Code ${code} erstellt!`, "#10b981");}
+
+window.adminCreatePromoCode=async function(){
+    let code=document.getElementById("adminCodeName").value.trim().toUpperCase();
+    let money=Number(document.getElementById("adminCodeMoney").value)||0; let xp=Number(document.getElementById("adminCodeXP").value)||0;
+    let lvl=Number(document.getElementById("adminCodeLevel").value)||0; let skills=Number(document.getElementById("adminCodeSkills").value)||0;
+    let itemName=document.getElementById("adminCodeItem").value; let itemAmt=Number(document.getElementById("adminCodeItemAmt").value)||0;
+    if(!code)return window.showToast("Code-Name!", "#ef4444");
+    let rew={money,xp,level:lvl,skills}; if(itemName!=="none"&&itemAmt>0){rew.itemName=itemName;rew.itemAmt=itemAmt;}
+    await set(ref(db,"global/promocodes/"+code),rew); window.showToast(`✅ Code ${code} erstellt!`, "#10b981");
+}
 window.adminManagePromoCodes=async function(){let snap=await get(ref(db,"global/promocodes"));let h='<h3>🎫 Codes</h3><div style="max-height:300px;overflow-y:auto;">';if(snap.exists()){snap.forEach(c=>{let r=c.val();let t=[];if(r.money)t.push(`${r.money}$`);if(r.xp)t.push(`${r.xp} XP`);if(r.level)t.push(`+${r.level} Lvl`);if(r.skills)t.push(`+${r.skills} Skills`);if(r.itemName)t.push(`${r.itemAmt}x ${r.itemName}`);h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#161b22;border-radius:8px;margin-bottom:5px;"><div><b>${c.key}</b><br><small>${t.join(', ')}</small></div><button class="danger-btn" onclick="window.adminDeletePromoCode('${c.key}')">🗑️</button></div>`;});}else h+='<p>Keine Codes.</p>';h+='</div>';openModal("Codes",h);}
 window.adminDeletePromoCode=async function(c){if(confirm(`${c} löschen?`)){await remove(ref(db,"global/promocodes/"+c));window.adminManagePromoCodes();}}
 
-// ============ EVENT LISTENERS ============
+// ============ EVENT LISTENERS & AUTH ============
 document.getElementById('btnLogin')?.addEventListener('click', async () => {
     let u = document.getElementById('username').value.trim();
     let p = document.getElementById('password').value;
@@ -1895,6 +1515,3 @@ if(savedUser) {
     currentUser = savedUser; 
     loadData(); 
 }
-</script>
-</body>
-</html>
