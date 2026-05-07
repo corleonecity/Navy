@@ -440,7 +440,6 @@
 </div>
 
 <script type="module">
-// --- MODULE: IMPORTS & CONFIG ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set, onValue, remove, push, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
@@ -456,7 +455,7 @@ const db = getDatabase(app);
 
 window.M = (icon, cssClass="", style="") => `<span class="material-symbols-outlined ${cssClass}" style="${style}">${icon}</span>`;
 
-// --- MODULE: STATE & NETWORK ---
+// --- STATE & NETWORK ---
 let currentUser = null;
 let gameState = null;
 let globalState = null;
@@ -469,7 +468,7 @@ let guildsCache = {};
 let autoAnglerTimer = null;
 let activeBubble = null;
 
-// --- MODULE: LOGIN LOGIC ---
+// --- LOGIN LOGIC ---
 const savedUser = localStorage.getItem('vFisher_user');
 if (savedUser) {
     currentUser = savedUser;
@@ -516,7 +515,7 @@ document.getElementById('btnLogout').addEventListener('click', () => {
     location.reload();
 });
 
-// --- MODULE: SOUND SYSTEM ---
+// --- SOUND SYSTEM ---
 const sounds = {
     click: new Audio('https://actions.google.com/sounds/v1/ui/button_click.ogg'),
     splash: new Audio('https://actions.google.com/sounds/v1/water/water_splash.ogg'),
@@ -536,7 +535,7 @@ document.addEventListener('click', (e) => {
     if(e.target.closest('button')) window.playSound('click');
 });
 
-// --- MODULE: UI UTILS ---
+// --- UI UTILS ---
 window.showToast = function(msg, color="#3b82f6", icon="info") {
     let tc = document.getElementById('toast-container');
     if(!tc) return;
@@ -552,7 +551,6 @@ function log(t) {
     l.prepend(e); while(l.children.length>30) l.removeChild(l.lastChild);
 }
 
-// BUBBLE SYSTEM: Sofortige Zeitverkürzung beim aktiven Angeln
 function spawnClickableBubble() {
     if(activeBubble || !gameState) return;
     const container = document.getElementById('particlesContainer');
@@ -647,8 +645,6 @@ const items = [
     {n:"Gummistiefel",v:-8,xp:-4,c:2.0,z:0,e:"roller_skating",cClass:"c-trash",isTrash:true,minW:500,maxW:2500},
     {n:"Plastikflasche",v:-10,xp:-5,c:1.5,z:0,e:"water_bottle",cClass:"c-trash",isTrash:true,minW:20,maxW:150},
     {n:"Scherbe",v:-12,xp:-6,c:1.0,z:0,e:"local_fire_department",cClass:"c-trash",isTrash:true,minW:10,maxW:100},
-    
-    // Zone 0 Fische (Realistische Farben!)
     {n:"Stichling",v:8,xp:4,c:15.0,z:0,e:"set_meal",cClass:"c-fish",color:"#78909c",minW:5,maxW:15},
     {n:"Moderlieschen",v:12,xp:6,c:14.0,z:0,e:"set_meal",cClass:"c-fish",color:"#a5d6a7",minW:10,maxW:30},
     {n:"Elritze",v:15,xp:8,c:13.0,z:0,e:"set_meal",cClass:"c-fish",color:"#81c784",minW:15,maxW:40},
@@ -663,16 +659,12 @@ const items = [
     {n:"Hecht (jung)",v:150,xp:60,c:1.5,z:0,e:"set_meal",cClass:"c-fish",color:"#33691e",minW:500,maxW:5000},
     {n:"Karpfen",v:200,xp:80,c:1.0,z:0,e:"set_meal",cClass:"c-fish",color:"#ffb300",minW:1000,maxW:15000},
     {n:"Zander",v:300,xp:100,c:0.5,z:0,e:"sailing",cClass:"c-fish",color:"#9e9d24",minW:800,maxW:8000},
-    
-    // Zone 1 Müll
     {n:"Nasses Laub",v:-2,xp:-2,c:7.3,z:1,e:"eco",cClass:"c-trash",isTrash:true,minW:5,maxW:60},
     {n:"Angelschnur",v:-5,xp:-3,c:5.5,z:1,e:"gesture",cClass:"c-trash",isTrash:true,minW:2,maxW:20},
     {n:"Bleischrot",v:-8,xp:-4,c:4.5,z:1,e:"circle",cClass:"c-trash",isTrash:true,minW:5,maxW:50},
     {n:"Plastikbecher",v:-10,xp:-5,c:3.6,z:1,e:"local_cafe",cClass:"c-trash",isTrash:true,minW:10,maxW:50},
     {n:"Fischreuse (kaputt)",v:-15,xp:-8,c:1.8,z:1,e:"grid_on",cClass:"c-trash",isTrash:true,minW:500,maxW:3000},
     {n:"Gummiwurm",v:-6,xp:-3,c:1.8,z:1,e:"bug_report",cClass:"c-trash",isTrash:true,minW:5,maxW:20},
-    
-    // Zone 1 Fische (Realistische Farben!)
     {n:"Groppe",v:40,xp:20,c:14.0,z:1,e:"set_meal",cClass:"c-fish",color:"#795548",minW:10,maxW:50},
     {n:"Elritze (Bach)",v:50,xp:25,c:13.0,z:1,e:"set_meal",cClass:"c-fish",color:"#81c784",minW:15,maxW:60},
     {n:"Bachneunauge",v:75,xp:35,c:12.0,z:1,e:"water_score",cClass:"c-fish",color:"#5d4037",minW:20,maxW:100},
@@ -940,7 +932,6 @@ window.closeBroadcast = function() {
 
 async function loadData() {
     if(!currentUser)return;
-    // Account Check
     onValue(ref(db,"accounts/"+currentUser),(snap)=>{
         if(!snap.exists()&&currentUser){
             localStorage.removeItem('vFisher_user');
@@ -949,13 +940,10 @@ async function loadData() {
         }
     });
 
-    // Guilds Check (not causing massive lag, mostly static)
     onValue(ref(db,"global/guilds"),(snap)=>{guildsCache=snap.exists()?snap.val():{};if(gameState?.guild){let myG=guildsCache[gameState.guild];if(!myG||!myG.members||!myG.members.includes(currentUser)){gameState.guild="";saveData();}}if(window.currentOpenMenu==='guild')refreshCurrentMenu();});
 
-    // Global Events
     onValue(ref(db,"global"),(snap)=>{globalState=snap.exists()?snap.val():null;let im=globalState?.maintenance;if(im&&currentUser!=="colin"){document.getElementById('maintenance-overlay').style.display='flex';wasMaintenance=true;}else{document.getElementById('maintenance-overlay').style.display='none';if(wasMaintenance&&currentUser!=="colin")location.reload();}if(globalState?.broadcast&&Date.now()-globalState.broadcast.timestamp<300000&&(!gameState||gameState.lastBroadcast!==globalState.broadcast.timestamp)){document.getElementById('broadcast-text').innerText=globalState.broadcast.text;document.getElementById('broadcast-banner').style.display='block';}else document.getElementById('broadcast-banner').style.display='none';});
 
-    // User Check
     onValue(ref(db,"users/"+currentUser),async(snap)=>{
         if(!currentUser)return;
         let acc=await get(ref(db,"accounts/"+currentUser));if(!acc.exists())return;
@@ -1631,7 +1619,6 @@ window.executeGuildDonateGroup=async function(k,ppf){
     }
 }
 
-// --- MODULE: ACHIVEMENTS ---
 window.handleAchieveMenu = function() {
     window.currentOpenMenu = 'achieve';
     if(!gameState.achievements) gameState.achievements = {};
@@ -1659,7 +1646,6 @@ window.handleAchieveMenu = function() {
     openModal(`${window.M('emoji_events')} Erfolge`, html);
 }
 
-// --- MODULE: BANK ---
 window.handleBankMenu = function() {
     window.currentOpenMenu = 'bank';
     
@@ -1761,7 +1747,6 @@ setInterval(() => {
     }
 }, 1000);
 
-// --- MODULE: WHEEL ---
 window.handleWheelMenu = function() {
     window.currentOpenMenu = 'wheel';
     const now = Date.now();
@@ -1895,140 +1880,45 @@ window.spinWheel = function() {
     }, 4000);
 }
 
-// --- MODULE: MENU CLICKS ---
-window.handleQuestMenu=function(){window.currentOpenMenu='quest';checkQuestResets();try{let qs=gameState.qs||{},qsP=qs.p||{dc:0,de:0,wc:0,we:0,mc:0,me:0},qsC=qs.c||{};let h=`<div style="background:rgba(0,0,0,0.5);padding:10px;border-radius:12px;margin-bottom:15px;text-align:center;font-size:13px;"><p>${window.M('today')} Daily: <b id="daily-countdown">${getResetCountdown('daily')}</b></p><p>${window.M('calendar_month')} Weekly: <b id="weekly-countdown">${getResetCountdown('weekly')}</b></p><p>${window.M('emoji_events')} Monthly: <b id="monthly-countdown">${getResetCountdown('monthly')}</b></p></div>`;let cats=[{n:window.M('today')+" Daily",l:questDB.daily,c:'dc',e:'de'},{n:window.M('calendar_month')+" Weekly",l:questDB.weekly,c:'wc',e:'we'},{n:window.M('emoji_events')+" Monthly",l:questDB.monthly,c:'mc',e:'me'}];cats.forEach(cat=>{h+=`<h4 style="margin-bottom:8px;">${cat.n}</h4>`;cat.l.forEach(q=>{let prog=(q.t==='c'?qsP[cat.c]:qsP[cat.e]),done=prog>=q.req,claimed=qsC[q.id],pct=Math.min(100,Math.floor((prog/q.req)*100));h+=`<div class="quest-card"><div class="quest-header"><span>${q.desc}</span><span style="color:#facc15;">${q.rew.toLocaleString()}$</span></div><div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div><div class="quest-footer"><span>${Math.min(prog,q.req).toLocaleString()} / ${q.req.toLocaleString()}</span>${claimed?'<span style="color:#10b981;">Erledigt</span>':done?`<button class="success-btn" style="padding:4px 8px;font-size:12px;flex-direction:row;" onclick="window.claimQuest('${q.id}',${q.rew})">${window.M('download')} Abholen</button>`:'<span style="color:#ef4444;">Offen</span>'}</div></div>`;});});openModal(`${window.M('assignment')} Quests`,h);}catch(e){openModal(`${window.M('assignment')} Quests`,"<p style='color:#ef4444;'>Fehler: "+e.message+"</p>");}}
-window.claimQuest=function(id,rew){
-    if(!gameState.qs.c) gameState.qs.c = {};
-    if(gameState.qs.c[id]) return;
-    gameState.qs.c[id] = true;
-    gameState.money += rew;
-    gameState.stats.totalEarned += rew;
-    updateUI(); window.handleQuestMenu(); saveData(); syncGlobalLeaderboard(); checkAchievements();
-}
-
-window.handleDexMenu=function(){window.currentOpenMenu='dex';let h=`<div style="display:flex;gap:10px;margin-bottom:10px;"><select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px;border-radius:12px;background:#1e293b;color:white;border:1px solid #30363d;flex:1;outline:none;"><option value="all">Alle Zonen</option>${zones.map((z,i)=>`<option value="${i}">${z.name}</option>`).join('')}</select></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1;flex-direction:row;">Normal</button><button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;flex-direction:row;">Mutiert</button></div><div id="dexGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>`;openModal(`${window.M('menu_book')} Fish-Dex`, h);window.showDexTab(window.currentDexTab);}
-window.showDexTab=function(tab){window.currentDexTab=tab;let grid=document.getElementById('dexGrid'),zF=document.getElementById('dexZoneFilter')?.value||'all';if(!grid)return;document.getElementById('dexTabNormal').style.background=tab==='normal'?'#3b82f6':'#1e293b';document.getElementById('dexTabShiny').style.background=tab==='shiny'?'#3b82f6':'#1e293b';let col=0,tot=0;grid.innerHTML='';items.forEach(i=>{if(zF!=='all'&&i.z!==parseInt(zF))return;if(tab==='shiny'&&i.isTrash)return;tot++;let d=gameState.dex?.[i.n];let has=tab==='normal'?d?.normal:d?.shiny;if(has)col++;let div=document.createElement('div');div.style.cssText='background:#0d1117;padding:8px;border-radius:12px;text-align:center;border:1px solid #30363d;cursor:pointer;'+(has?'':'opacity:0.4;filter:grayscale(1);');div.innerHTML=`<div style="font-size:36px;" class="${has?i.cClass:''}">${i.eObj}</div><div style="font-size:11px;margin-top:4px;">${has?(tab==='shiny'?'Mut. ':'')+i.n:'???'}</div>`;if(has)div.onclick=()=>window.showFishInfo(i.n,tab);grid.appendChild(div);});let info=document.getElementById('dexInfo');if(!info){info=document.createElement('div');info.id='dexInfo';info.style.cssText='text-align:center;margin-top:15px;padding:10px;background:#0d1117;border-radius:12px;';grid.parentNode.appendChild(info);}info.innerHTML=`<b>Gesammelt: ${col}/${tot}</b>`;checkDexCompletionRewards();}
-
-window.showFishInfo = function(n, tab) {
-    let item = items.find(i=>i.n===n); if(!item) return;
-    let d = gameState.dex[n];
-    let pool = items.filter(i=>i.z===item.z && !i.isTrash);
-    let totalWeight = pool.reduce((s,i)=>s+i.c,0);
-    let prob = item.isTrash ? "N/A" : ((item.c / totalWeight) * 100).toFixed(2) + "%";
-    let minK = formatWeight(item.minW||0), maxK = formatWeight(item.maxW||0), rec = formatWeight(d?.maxW||0);
-    let h = `
-    <div style="text-align:center; padding:10px;">
-        <div style="font-size:60px;" class="${item.cClass}">${item.eObj}</div>
-        <h2 style="margin:10px 0; color:${tab==='shiny'?'#facc15':'#60a5fa'};">${tab==='shiny'?'Mutierter ':''}${item.n}</h2>
-        <div class="inv-card" style="text-align:left; margin-top:15px;">
-            <div class="inv-stat"><span>Gefangen:</span><span style="color:#10b981;">${d?.count||0}x</span></div>
-            <div class="inv-stat"><span>Wahrscheinlichkeit:</span><span>~${prob}</span></div>
-            <div class="inv-stat"><span>Dein Rekord:</span><span style="color:#facc15;">${rec}</span></div>
-            <div class="inv-stat"><span>Gewichtsspanne:</span><span>${minK} - ${maxK}</span></div>
-            <div class="inv-stat"><span>Basis-Wert:</span><span>${item.v}$ / ${item.xp} XP</span></div>
-        </div>
-        <button class="update-btn" style="width:100%; margin-top:15px; flex-direction:row;" onclick="window.handleDexMenu()">${window.M('arrow_back')} Zurück</button>
-    </div>`;
-    openModal(`${window.M('info')} Info`, h);
-}
-
-window.handleZoneMenu=function(){window.currentOpenMenu='zone';let h=zones.map((z,i)=>`<div class="item-row"><b>${z.name}</b>${gameState.zone===i?'<span style="color:#10b981;">Aktiv</span>':gameState.prestige<z.reqPrestige?`<span style="color:#ef4444;">P${z.reqPrestige} benötigt</span>`:`<button class="success-btn" style="padding:6px 12px;flex-direction:row;" onclick="window.changeZone(${i})">${window.M('directions_walk')} Reisen</button>`}</div>`).join('');openModal(`${window.M('map')} Karte`,h);}
-window.changeZone=function(i){ 
-    gameState.zone=i; 
-    updateUI();
-    window.handleZoneMenu();
-    saveData(); 
-}
-
-// OPTIMIERTE LEADERBOARD LADEFUNKTION
-window.handleLeaderboard = async function(tab='users') {
-    window.currentOpenMenu='leaderboard';
-    window.currentLeaderboardTab=tab;
-    
-    openModal(`${window.M('leaderboard')} Leaderboard`, `<div style="text-align:center; padding:20px; color:#60a5fa;">${window.M('sync')} Daten werden geladen...</div>`);
-
-    let h=`<div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.handleLeaderboard('users')" style="flex:1;flex-direction:row;${tab==='users'?'background:#3b82f6;':'background:#1e293b;'}">${window.M('person')} Spieler</button><button onclick="window.handleLeaderboard('guilds')" style="flex:1;flex-direction:row;${tab==='guilds'?'background:#eab308;':'background:#1e293b;'}">${window.M('shield')} Gilden</button></div><div style="max-height:60vh;overflow-y:auto;padding-right:5px;">`;
-    
-    if(tab==='users'){
-        let snap = await get(ref(db,"global/leaderboard"));
-        if(snap.exists()) {
-            let d=snap.val();
-            let ua=[];
-            for(let k in d) ua.push(d[k]);
-            ua.sort((a,b)=>(b.stats?.totalCaught||0)-(a.stats?.totalCaught||0));
-            lastLeaderboardUsers=ua;
-        }
-        h+=lastLeaderboardUsers.map((u,i)=>{let r=i===0?window.M('trophy','c-shiny'):i===1?window.M('military_tech','c-shiny'):i===2?window.M('military_tech','c-rod'):(i+1)+'.';return`<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="display:flex;align-items:center;gap:4px;">${r} ${u.name}</b><span style="color:#fcd34d;">P${u.prestige||0}</span></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(u.money).toLocaleString()}$</span><span style="color:#60a5fa;">${(u.stats?.totalCaught||0).toLocaleString()} Fische</span></div></div>`;}).join('');
-    }else{
-        let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));
-        h+=sg.slice(0,100).map((g,i)=>{let r=i===0?window.M('trophy','c-shiny'):i===1?window.M('military_tech','c-shiny'):i===2?window.M('military_tech','c-rod'):(i+1)+'.';return`<div class="leader-card"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#eab308;display:flex;align-items:center;gap:4px;">${r} ${g.name}</b><span>${g.owner}</span></div><div class="card-stats"><span>${g.points||0} Pkt</span><span>${(g.members||[]).length}/${g.maxMembers||10} Memb.</span></div></div>`;}).join('');
-    }
-    h+=`</div>`;
-    openModal(`${window.M('leaderboard')} Leaderboard`,h);
-}
-
-window.showPlayerProfile=async function(name){let u;if(name===currentUser&&gameState)u=gameState;else{let snap=await get(ref(db,"users/"+name));if(snap.exists())u=snap.val();}if(u){let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(u.prestige||0)>0?window.M('stars'):window.M('phishing')}</div><div><h2>${u.name}</h2><div>P${u.prestige||0} | Lvl ${u.level}</div>${u.guild?`<div style="color:#eab308;margin-top:4px;">${window.M('shield')} ${u.guild}</div>`:''}</div></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(u.money).toLocaleString()}$</span><span style="color:#60a5fa;">${(u.stats?.totalCaught||0).toLocaleString()} Fische</span></div></div>`;openModal(`${window.M('person')} Profil: ${u.name}`,h);}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
-
-window.handleProfileMenu=function(){window.currentOpenMenu='profile';let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${gameState.prestige>0?window.M('stars'):window.M('phishing')}</div><div><h2>${gameState.name}</h2><div>P${gameState.prestige} | Lvl ${gameState.level}</div>${gameState.guild?`<div style="color:#eab308;margin-top:4px;">${window.M('shield')} ${gameState.guild}</div>`:''}</div></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(gameState.money).toLocaleString()}$</span><span style="color:#60a5fa;">${gameState.stats.totalCaught.toLocaleString()} Fische</span></div><div class="card-stats"><span>${gameState.stats.totalEarned.toLocaleString()}$ verdient</span><span style="color:#f97316;">Streak: ${gameState.dailyStreak||0}</span></div></div>`;openModal(`${window.M('person')} Profil`,h);}
-
-window.handleDailyMenu=function(){window.currentOpenMenu='daily';let now=Date.now(),DAY=86400000,can=false,streak=gameState.dailyStreak||0,td=now-gameState.lastDaily,cooldown="";if(gameState.lastDaily===0||td>=DAY*2){can=true;streak=1;}else if(td>=DAY){can=true;streak=Math.min(streak+1,7);}else{let tl=DAY-td;cooldown=`<p style="color:#ef4444;margin-top:15px;font-weight:bold;">Nächste in: ${Math.floor(tl/3600000)}h ${Math.floor((tl%3600000)/60000)}m</p>`;}let h=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;for(let i=1;i<=7;i++){let rew=i*100+gameState.prestige*50;let isFuture=i>(can?streak:streak);if(can&&i>streak)isFuture=true;if(!can&&i>streak)isFuture=true;let status=i<streak||(i===streak&&!can)?window.M('check_circle','c-money'):(i===streak&&can)?window.M('redeem','c-shiny'):window.M('lock','c-trash');let rewDisplay=isFuture?'???$':`${rew}$`;h+=`<div style="background:#0d1117;padding:10px;border-radius:12px;text-align:center;${i===streak&&can?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:28px;margin:5px 0;">${status}</div><div style="color:#10b981;font-size:12px;">${rewDisplay}</div></div>`;}h+=`</div>${cooldown}`;openModal(`${window.M('redeem')} Daily Belohnung`,h,can?`<button id="btnDailyClaim" class="success-btn" style="flex-direction:row;" onclick="window.claimDaily(${streak*100+gameState.prestige*50},${streak})">${window.M('download')} Abholen</button>`:'');}
-window.claimDaily=function(rew,streak){
-    let btn = document.getElementById('btnDailyClaim');
-    if(btn) btn.disabled = true;
-    if(Date.now() - gameState.lastDaily < 86400000) return;
-    gameState.money+=rew;gameState.stats.totalEarned+=rew;gameState.lastDaily=Date.now();gameState.dailyStreak=streak;
-    updateUI(); window.handleDailyMenu(); saveData();syncGlobalLeaderboard();checkAchievements();
-}
-
-window.handlePrestigeMenu=function(){
-    window.currentOpenMenu = 'prestige';
-    let rl = 20 + gameState.prestige * 5;
-    let rm = 5000 * Math.pow(2, gameState.prestige);
-    let can = gameState.level >= rl && gameState.money >= rm;
-    
-    let h = `
-    <div style="text-align:center; margin-bottom:15px;">
-        <div style="color:#fcd34d; margin-bottom:10px;">${window.M('stars', 'c-shiny')}</div>
-        <h2 style="color:#fcd34d; margin:0;">Prestige ${gameState.prestige} ➔ ${gameState.prestige + 1}</h2>
-        <p style="color:#94a3b8; font-size:13px; margin-top:5px;">Setze deinen Fortschritt zurück für dauerhafte Boni!</p>
-    </div>
-    
-    <div class="inv-card" style="border-color:#3b82f6;">
-        <h4 style="color:#60a5fa;">Deine Belohnung</h4>
-        <div class="inv-stat"><span>Dauerhafter Geld-Bonus:</span><span style="color:#10b981;">+${gameState.prestige + 1}%</span></div>
-        <div class="inv-stat"><span>Prestige-Level:</span><span style="color:#fcd34d;">${gameState.prestige + 1}</span></div>
-        <p style="font-size:12px; color:#ef4444; margin-top:8px;">Achtung: Dein Level, Geld und Inventar werden auf 0 gesetzt. Equipment und Stats bleiben erhalten!</p>
-    </div>
-    
-    <div class="inv-card" style="${can ? 'border-color:#10b981;' : 'border-color:#ef4444;'}">
-        <h4 style="color:#e2e8f0;">Voraussetzungen</h4>
-        <div class="inv-stat"><span>Benötigtes Level:</span><span style="color:${gameState.level >= rl ? '#10b981' : '#ef4444'};">${gameState.level} / ${rl}</span></div>
-        <div class="inv-stat"><span>Benötigtes Geld:</span><span style="color:${gameState.money >= rm ? '#10b981' : '#ef4444'};">${Math.floor(gameState.money).toLocaleString()}$ / ${rm.toLocaleString()}$</span></div>
-    </div>
-    `;
-    
-    openModal(`${window.M('military_tech')} Prestige`, h, can ? `<button class="success-btn" style="width:100%; font-size:18px; padding:15px; background:#8b5cf6; flex-direction:row;" onclick="window.doPrestige()">${window.M('stars')} PRESTIGE DURCHFÜHREN</button>` : `<button class="danger-btn" style="width:100%;flex-direction:row;" disabled>${window.M('lock')} Nicht alle Bedingungen erfüllt</button>`);
-}
-
-window.doPrestige=function(){gameState.prestige++;gameState.money=0;gameState.level=1;gameState.xp=0;gameState.inventory=[];saveData();syncGlobalLeaderboard();checkAchievements();location.reload();}
-
-document.getElementById('btnPromo')?.addEventListener('click',()=>{let h=`<input id="inputPromoCode" placeholder="Code eingeben" style="width:100%;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">`;openModal(`${window.M('local_activity')} Promo Code`,h,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.redeemPromoCode()">${window.M('check')} Einlösen</button>`);});
-window.redeemPromoCode=async function(){let code=document.getElementById("inputPromoCode").value.trim().toUpperCase();if(!code)return window.showToast("Code eingeben!", "#ef4444", "error");if(gameState.usedCodes?.[code])return window.showToast("Bereits eingelöst!", "#ef4444", "error");let snap=await get(ref(db,"global/promocodes/"+code));if(snap.exists()){let p=snap.val();if(p.money){gameState.money+=p.money;gameState.stats.totalEarned+=p.money;}if(p.xp)gameState.xp+=p.xp;if(p.level)gameState.level+=p.level;if(p.prestige)gameState.prestige+=p.prestige;if(p.skills){gameState.skills=gameState.skills||{shiny:0,aqua:0};}if(p.itemName){if(p.itemName.startsWith("rod_")){let rid=p.itemName.replace("rod_","");if(!gameState.ownedRods)gameState.ownedRods=[];if(!gameState.ownedRods.includes(rid))gameState.ownedRods.push(rid);}else if(p.itemName.startsWith("bait_")){let bid=p.itemName.replace("bait_","");if(!gameState.baits)gameState.baits={};gameState.baits[bid]=(gameState.baits[bid]||0)+p.itemAmt;}else{let bi=items.find(i=>i.n===p.itemName);if(bi)for(let i=0;i<p.itemAmt;i++)gameState.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}}if(!gameState.usedCodes)gameState.usedCodes={};gameState.usedCodes[code]=true; updateUI(); saveData();syncGlobalLeaderboard();window.closeModal();window.showToast("Code eingelöst!", "#10b981", "check_circle");}else window.showToast("Ungültig!", "#ef4444", "error");}
-
-window.openFeedbackMenu=function(){openModal(`${window.M('chat')} Feedback`,`<textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;outline:none;"></textarea>`,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.submitFeedback()">${window.M('send')} Senden</button>`);}
-window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5 Zeichen!", "#ef4444", "error");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("Gesendet!", "#10b981", "check_circle");window.closeModal();}).catch(()=>window.showToast("Fehler", "#ef4444", "error"));}
-
 window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.0 - Das Community Update</h3><ul><li style="margin-bottom:6px;"><b>Login & Server Fix:</b> Das Einloggen dauert nun nicht mehr ewig! Leaderboard lädt erst bei Klick auf den Button.</li><li style="margin-bottom:6px;"><b>Speichern Fix:</b> Inventar wird nun IMMER sicher geladen!</li><li style="margin-bottom:6px;"><b>Blasen-Bonus Überarbeitet:</b> Tippe auf Blasen *während dem Angeln*, um 2.5% der Angelzeit sofort abzukürzen (kein dauerhafter Bug-Bonus mehr).</li><li style="margin-bottom:6px;"><b>Timing Balken Fix:</b> Die Größe bei starker Ausrüstung skaliert wieder normal.</li><li style="margin-bottom:6px;"><b>Admin & System:</b> Admin-Bereich komplettiert und Bugs ausgebügelt.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);}
 
-// --- MODULE: ADMIN FULL ---
-window.handleAdminMenu=function(){
+window.adminSendDiscordUpdate = function() {
+    let t = document.getElementById("adminDiscordUpdateInput").value.trim();
+    if(t.length < 5) return window.showToast("Min 5 Zeichen!", "#ef4444", "error");
+    
+    fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB", {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            embeds: [{
+                title: "🚀 UPDATE LOG",
+                description: t,
+                color: 3447003, 
+                footer: { text: "vFisher Admin System" },
+                timestamp: new Date().toISOString()
+            }]
+        })
+    }).then(() => {
+        window.showToast("Update Log an Discord gesendet!", "#10b981", "check_circle");
+        document.getElementById("adminDiscordUpdateInput").value = '';
+    }).catch(() => window.showToast("Discord Fehler", "#ef4444", "error"));
+};
+
+window.handleAdminMenu = function(){
     let h=`
     <div class="admin-grid">
         <div style="display:flex;flex-direction:column;gap:10px;">
+            
+            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #5865F2;">
+                <h4 style="color:#5865F2;">${window.M('campaign')} Discord Update Log</h4>
+                <textarea id="adminDiscordUpdateInput" placeholder="Was ist neu im Update?..." style="width:100%;height:80px;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;resize:none;"></textarea>
+                <button class="update-btn" style="width:100%;flex-direction:row;background:#5865F2;" onclick="window.adminSendDiscordUpdate()">${window.M('send')} An Discord senden</button>
+            </div>
+
             <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #0ea5e9;">
-                <h4 style="color:#0ea5e9;">Live Broadcast</h4>
-                <input id="adminBroadcastInput" placeholder="Nachricht..." style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                <button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendBroadcast()">${window.M('send')} Senden</button>
+                <h4 style="color:#0ea5e9;">Live Broadcast (In-Game)</h4>
+                <input id="adminBroadcastInput" placeholder="Nachricht für alle Spieler..." style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                <button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendBroadcast()">${window.M('campaign')} Senden</button>
             </div>
 
             <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #3b82f6;">
@@ -2038,38 +1928,13 @@ window.handleAdminMenu=function(){
             </div>
             
             <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #a855f7;">
-                <h4 style="color:#a855f7;">Promo-Codes</h4>
+                <h4 style="color:#a855f7;">Promo-Codes erstellen</h4>
                 <input id="adminCodeName" placeholder="Code-Name" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;">
                     <input id="adminCodeMoney" type="number" placeholder="Geld ($)" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                     <input id="adminCodeXP" type="number" placeholder="XP" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                    <input id="adminCodeLevel" type="number" placeholder="Level +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                    <input id="adminCodeSkills" type="number" placeholder="Skills +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                 </div>
-                <div style="display:grid;grid-template-columns:2fr 1fr;gap:5px;margin-bottom:5px;">
-                    <select id="adminCodeItem" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                        <option value="none">Kein Item</option>
-                        <optgroup label="Ruten">
-                            ${Object.entries(rodsDB).map(([id,r])=>`<option value="rod_${id}">${r.name}</option>`).join('')}
-                        </optgroup>
-                        <optgroup label="Fische">
-                            ${items.map(i=>`<option value="${i.n}">${i.n}</option>`).join('')}
-                        </optgroup>
-                        <optgroup label="Köder">
-                            ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.name}</option>`).join('')}
-                        </optgroup>
-                    </select>
-                    <input id="adminCodeItemAmt" type="number" placeholder="Anzahl" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                </div>
-                <div style="display:flex;gap:5px;">
-                    <button class="success-btn" style="flex:1;background:#a855f7;flex-direction:row;" onclick="window.adminCreatePromoCode()">${window.M('add')} Erstellen</button>
-                    <button class="update-btn" style="flex:1;flex-direction:row;" onclick="window.adminManagePromoCodes()">${window.M('edit')} Verwalten</button>
-                </div>
-            </div>
-            
-            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #10b981;">
-                <h4 style="color:#10b981;">Wartung</h4>
-                <div style="display:flex;gap:5px;"><button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">AN</button><button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">AUS</button></div>
+                <button class="success-btn" style="width:100%;background:#a855f7;flex-direction:row;" onclick="window.adminCreatePromoCode()">${window.M('add')} Erstellen</button>
             </div>
         </div>
         
@@ -2087,43 +1952,31 @@ window.handleAdminMenu=function(){
                     <input id="adminEventMult" type="number" placeholder="Faktor" step="0.5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                     <input id="adminEventTime" type="number" placeholder="Minuten" value="5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                 </div>
-                <div style="display:flex;gap:5px;"><button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminSetEvent()">${window.M('play_arrow')} Start</button><button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminStopEvent()">${window.M('stop')} Stop</button></div>
+                <div style="display:flex;gap:5px;">
+                    <button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminSetEvent()">${window.M('play_arrow')} Start</button>
+                    <button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminStopEvent()">${window.M('stop')} Stop</button>
+                </div>
             </div>
             
             <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #3b82f6;">
-                <h4 style="color:#3b82f6;">Give</h4>
+                <h4 style="color:#3b82f6;">Give (Spieler belohnen)</h4>
                 <input id="adminTarget" placeholder="User" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                 <div style="display:flex;gap:5px;margin-bottom:5px;">
                     <select id="adminType" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                         <option value="money">Geld</option>
                         <option value="level">Level</option>
                         <option value="prestige">Prestige</option>
-                        <option value="skills">Skillpunkte</option>
                     </select>
                     <input id="adminAmount" type="number" placeholder="Menge" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                 </div>
                 <button class="success-btn" style="width:100%;margin-bottom:10px;" onclick="window.adminGive()">Geben</button>
-                <div style="display:flex;gap:5px;margin-bottom:5px;">
-                    <select id="adminItem" style="width:60%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                        <optgroup label="Fische">
-                            ${items.map(i=>`<option value="fish_${i.n}">${i.n}</option>`).join('')}
-                        </optgroup>
-                        <optgroup label="Köder">
-                            ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.name}</option>`).join('')}
-                        </optgroup>
-                    </select>
-                    <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:40%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                </div>
-                <button class="update-btn" style="width:100%;" onclick="window.adminGiveItem()">Item/Köder geben</button>
             </div>
             
-            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #a855f7;">
-                <h4 style="color:#a855f7;">Account</h4>
-                <input id="newAccUser" placeholder="User" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                <input id="newAccPass" placeholder="Passwort" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #10b981;">
+                <h4 style="color:#10b981;">Wartungsmodus</h4>
                 <div style="display:flex;gap:5px;">
-                    <button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminCreateAcc()">${window.M('add')} Erstellen</button>
-                    <button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminDelAcc()">${window.M('delete')} Löschen</button>
+                    <button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">AN</button>
+                    <button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">AUS</button>
                 </div>
             </div>
         </div>
@@ -2240,6 +2093,39 @@ window.initChat = function() {
     });
 };
 
+// ==========================================
+// BUTTON BINDINGS (DAMIT DIE MENÜS ÖFFNEN)
+// ==========================================
+const bindBtn = (id, func) => {
+    const btn = document.getElementById(id);
+    if (btn) btn.addEventListener('click', func);
+};
+
+bindBtn('btnFish', window.handleFish);
+bindBtn('btnSell', window.handleSellMenu);
+bindBtn('btnAqua', window.handleAquaMenu);
+bindBtn('btnShop', window.handleShopMenu);
+bindBtn('btnInv', window.handleInvMenu);
+bindBtn('btnDex', window.handleDexMenu);
+bindBtn('btnQuest', window.handleQuestMenu);
+bindBtn('btnDaily', window.handleDailyMenu);
+bindBtn('btnWheel', window.handleWheelMenu);
+bindBtn('btnZone', window.handleZoneMenu);
+bindBtn('btnProfile', window.handleProfileMenu);
+bindBtn('btnSkills', window.handleSkillsMenu);
+bindBtn('btnGuild', window.handleGuildMenu);
+bindBtn('btnAchieve', window.handleAchieveMenu);
+bindBtn('btnBank', window.handleBankMenu);
+bindBtn('btnLeader', () => window.handleLeaderboard('users'));
+bindBtn('btnPrestige', window.handlePrestigeMenu);
+bindBtn('btnUpdates', window.handleUpdateMenu);
+
+if (!document.getElementById('btnPromo').onclick) {
+    bindBtn('btnPromo', () => {
+        let h=`<input id="inputPromoCode" placeholder="Code eingeben" style="width:100%;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">`;
+        openModal(`${window.M('local_activity')} Promo Code`, h, `<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.redeemPromoCode()">${window.M('check')} Einlösen</button>`);
+    });
+}
 </script>
 </body>
 </html>
