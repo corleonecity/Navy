@@ -645,6 +645,8 @@ const items = [
     {n:"Gummistiefel",v:-8,xp:-4,c:2.0,z:0,e:"roller_skating",cClass:"c-trash",isTrash:true,minW:500,maxW:2500},
     {n:"Plastikflasche",v:-10,xp:-5,c:1.5,z:0,e:"water_bottle",cClass:"c-trash",isTrash:true,minW:20,maxW:150},
     {n:"Scherbe",v:-12,xp:-6,c:1.0,z:0,e:"local_fire_department",cClass:"c-trash",isTrash:true,minW:10,maxW:100},
+    
+    // Zone 0 Fische (Realistische Farben!)
     {n:"Stichling",v:8,xp:4,c:15.0,z:0,e:"set_meal",cClass:"c-fish",color:"#78909c",minW:5,maxW:15},
     {n:"Moderlieschen",v:12,xp:6,c:14.0,z:0,e:"set_meal",cClass:"c-fish",color:"#a5d6a7",minW:10,maxW:30},
     {n:"Elritze",v:15,xp:8,c:13.0,z:0,e:"set_meal",cClass:"c-fish",color:"#81c784",minW:15,maxW:40},
@@ -659,12 +661,16 @@ const items = [
     {n:"Hecht (jung)",v:150,xp:60,c:1.5,z:0,e:"set_meal",cClass:"c-fish",color:"#33691e",minW:500,maxW:5000},
     {n:"Karpfen",v:200,xp:80,c:1.0,z:0,e:"set_meal",cClass:"c-fish",color:"#ffb300",minW:1000,maxW:15000},
     {n:"Zander",v:300,xp:100,c:0.5,z:0,e:"sailing",cClass:"c-fish",color:"#9e9d24",minW:800,maxW:8000},
+    
+    // Zone 1 Müll
     {n:"Nasses Laub",v:-2,xp:-2,c:7.3,z:1,e:"eco",cClass:"c-trash",isTrash:true,minW:5,maxW:60},
     {n:"Angelschnur",v:-5,xp:-3,c:5.5,z:1,e:"gesture",cClass:"c-trash",isTrash:true,minW:2,maxW:20},
     {n:"Bleischrot",v:-8,xp:-4,c:4.5,z:1,e:"circle",cClass:"c-trash",isTrash:true,minW:5,maxW:50},
     {n:"Plastikbecher",v:-10,xp:-5,c:3.6,z:1,e:"local_cafe",cClass:"c-trash",isTrash:true,minW:10,maxW:50},
     {n:"Fischreuse (kaputt)",v:-15,xp:-8,c:1.8,z:1,e:"grid_on",cClass:"c-trash",isTrash:true,minW:500,maxW:3000},
     {n:"Gummiwurm",v:-6,xp:-3,c:1.8,z:1,e:"bug_report",cClass:"c-trash",isTrash:true,minW:5,maxW:20},
+    
+    // Zone 1 Fische (Realistische Farben!)
     {n:"Groppe",v:40,xp:20,c:14.0,z:1,e:"set_meal",cClass:"c-fish",color:"#795548",minW:10,maxW:50},
     {n:"Elritze (Bach)",v:50,xp:25,c:13.0,z:1,e:"set_meal",cClass:"c-fish",color:"#81c784",minW:15,maxW:60},
     {n:"Bachneunauge",v:75,xp:35,c:12.0,z:1,e:"water_score",cClass:"c-fish",color:"#5d4037",minW:20,maxW:100},
@@ -1882,6 +1888,10 @@ window.spinWheel = function() {
 
 window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.0 - Das Community Update</h3><ul><li style="margin-bottom:6px;"><b>Login & Server Fix:</b> Das Einloggen dauert nun nicht mehr ewig! Leaderboard lädt erst bei Klick auf den Button.</li><li style="margin-bottom:6px;"><b>Speichern Fix:</b> Inventar wird nun IMMER sicher geladen!</li><li style="margin-bottom:6px;"><b>Blasen-Bonus Überarbeitet:</b> Tippe auf Blasen *während dem Angeln*, um 2.5% der Angelzeit sofort abzukürzen (kein dauerhafter Bug-Bonus mehr).</li><li style="margin-bottom:6px;"><b>Timing Balken Fix:</b> Die Größe bei starker Ausrüstung skaliert wieder normal.</li><li style="margin-bottom:6px;"><b>Admin & System:</b> Admin-Bereich komplettiert und Bugs ausgebügelt.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);}
 
+// ==========================================
+// ADMIN BEREICH
+// ==========================================
+
 window.adminSendDiscordUpdate = function() {
     let t = document.getElementById("adminDiscordUpdateInput").value.trim();
     if(t.length < 5) return window.showToast("Min 5 Zeichen!", "#ef4444", "error");
@@ -1928,14 +1938,35 @@ window.handleAdminMenu = function(){
             </div>
             
             <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #a855f7;">
-                <h4 style="color:#a855f7;">Promo-Codes erstellen</h4>
+                <h4 style="color:#a855f7;">Promo-Codes</h4>
                 <input id="adminCodeName" placeholder="Code-Name" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;">
                     <input id="adminCodeMoney" type="number" placeholder="Geld ($)" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                     <input id="adminCodeXP" type="number" placeholder="XP" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                    <input id="adminCodeLevel" type="number" placeholder="Level +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                    <input id="adminCodeSkills" type="number" placeholder="Skills +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                 </div>
-                <button class="success-btn" style="width:100%;background:#a855f7;flex-direction:row;" onclick="window.adminCreatePromoCode()">${window.M('add')} Erstellen</button>
+                <div style="display:grid;grid-template-columns:2fr 1fr;gap:5px;margin-bottom:5px;">
+                    <select id="adminCodeItem" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                        <option value="none">Kein Item</option>
+                        <optgroup label="Ruten">
+                            ${Object.entries(rodsDB).map(([id,r])=>`<option value="rod_${id}">${r.name}</option>`).join('')}
+                        </optgroup>
+                        <optgroup label="Fische">
+                            ${items.map(i=>`<option value="fish_${i.n}">${i.n}</option>`).join('')}
+                        </optgroup>
+                        <optgroup label="Köder">
+                            ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.name}</option>`).join('')}
+                        </optgroup>
+                    </select>
+                    <input id="adminCodeItemAmt" type="number" placeholder="Anzahl" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                </div>
+                <div style="display:flex;gap:5px;">
+                    <button class="success-btn" style="flex:1;background:#a855f7;flex-direction:row;" onclick="window.adminCreatePromoCode()">${window.M('add')} Erstellen</button>
+                    <button class="update-btn" style="flex:1;flex-direction:row;" onclick="window.adminManagePromoCodes()">${window.M('edit')} Verwalten</button>
+                </div>
             </div>
+            
         </div>
         
         <div style="display:flex;flex-direction:column;gap:10px;">
@@ -1966,14 +1997,39 @@ window.handleAdminMenu = function(){
                         <option value="money">Geld</option>
                         <option value="level">Level</option>
                         <option value="prestige">Prestige</option>
+                        <option value="skills">Skillpunkte</option>
                     </select>
                     <input id="adminAmount" type="number" placeholder="Menge" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                 </div>
                 <button class="success-btn" style="width:100%;margin-bottom:10px;" onclick="window.adminGive()">Geben</button>
+                
+                <div style="display:flex;gap:5px;margin-bottom:5px;">
+                    <select id="adminItem" style="width:60%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                        <optgroup label="Ruten">
+                            ${Object.entries(rodsDB).map(([id,r])=>`<option value="rod_${id}">${r.name}</option>`).join('')}
+                        </optgroup>
+                        <optgroup label="Fische">
+                            ${items.map(i=>`<option value="fish_${i.n}">${i.n}</option>`).join('')}
+                        </optgroup>
+                        <optgroup label="Köder">
+                            ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.name}</option>`).join('')}
+                        </optgroup>
+                    </select>
+                    <input id="adminItemCount" type="number" placeholder="Anzahl" value="1" style="width:40%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                </div>
+                <button class="update-btn" style="width:100%;" onclick="window.adminGiveItem()">Item geben</button>
             </div>
             
             <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #10b981;">
-                <h4 style="color:#10b981;">Wartungsmodus</h4>
+                <h4 style="color:#10b981;">Account Verwaltung</h4>
+                <input id="newAccUser" placeholder="User" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                <input id="newAccPass" placeholder="Passwort" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                <div style="display:flex;gap:5px;">
+                    <button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminCreateAcc()">${window.M('add')} Erstellen</button>
+                    <button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminDelAcc()">${window.M('delete')} Löschen</button>
+                </div>
+                
+                <h4 style="color:#10b981;margin-top:10px;">Wartungsmodus</h4>
                 <div style="display:flex;gap:5px;">
                     <button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">AN</button>
                     <button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">AUS</button>
@@ -1999,8 +2055,60 @@ window.adminInspectUser = async function() {
     else window.showToast("Spieler nicht gefunden", "#ef4444", "error");
 };
 
-window.adminCreatePromoCode = function() { window.showToast("Funktion noch nicht fertig.", "#facc15", "warning"); };
-window.adminManagePromoCodes = function() { window.showToast("Funktion noch nicht fertig.", "#facc15", "warning"); };
+window.adminCreatePromoCode = async function() {
+    let code = document.getElementById("adminCodeName").value.trim().toUpperCase();
+    let money = parseInt(document.getElementById("adminCodeMoney").value) || 0;
+    let xp = parseInt(document.getElementById("adminCodeXP").value) || 0;
+    let lvl = parseInt(document.getElementById("adminCodeLevel").value) || 0;
+    let skills = parseInt(document.getElementById("adminCodeSkills").value) || 0;
+    let itemVal = document.getElementById("adminCodeItem").value;
+    let itemAmt = parseInt(document.getElementById("adminCodeItemAmt").value) || 1;
+    
+    if(!code) return window.showToast("Bitte Code-Namen eingeben!", "#ef4444", "error");
+    
+    let promoData = { created: Date.now() };
+    if(money > 0) promoData.money = money;
+    if(xp > 0) promoData.xp = xp;
+    if(lvl > 0) promoData.level = lvl;
+    if(skills > 0) promoData.skills = skills;
+    if(itemVal !== "none") {
+        if(itemVal.startsWith("fish_")) {
+            promoData.itemName = itemVal.replace("fish_", "");
+        } else {
+            promoData.itemName = itemVal;
+        }
+        promoData.itemAmt = itemAmt;
+    }
+    
+    await set(ref(db, "global/promocodes/" + code), promoData);
+    window.showToast("Promo-Code erstellt!", "#10b981", "check");
+};
+
+window.adminManagePromoCodes = async function() {
+    let snap = await get(ref(db, "global/promocodes"));
+    let html = '<div style="max-height:50vh;overflow-y:auto;">';
+    if(snap.exists()) {
+        let codes = snap.val();
+        for(let [c, d] of Object.entries(codes)) {
+            html += `<div style="display:flex;justify-content:space-between;background:#0d1117;padding:10px;margin-bottom:5px;border-radius:8px;align-items:center;">
+                <div><b style="color:#a855f7;">${c}</b><br><small style="color:#94a3b8;">Money: ${d.money||0} | XP: ${d.xp||0}</small></div>
+                <button class="danger-btn" style="padding:5px;" onclick="window.adminDeletePromoCode('${c}')">${window.M('delete')}</button>
+            </div>`;
+        }
+    } else {
+        html += '<p>Keine Codes vorhanden.</p>';
+    }
+    html += '</div>';
+    openModal(`${window.M('local_activity')} Promo-Codes`, html);
+};
+
+window.adminDeletePromoCode = async function(code) {
+    if(confirm(`Code ${code} wirklich löschen?`)) {
+        await remove(ref(db, "global/promocodes/" + code));
+        window.showToast("Code gelöscht!", "#ef4444", "delete");
+        window.adminManagePromoCodes(); 
+    }
+};
 
 window.adminSetMaintenance = function(state) {
     set(ref(db, "global/maintenance"), state);
@@ -2039,7 +2147,53 @@ window.adminGive = async function() {
     }
 };
 
-window.adminGiveItem = function() { window.showToast("Funktion noch nicht fertig.", "#facc15", "warning"); };
+window.adminGiveItem = async function() {
+    let u = document.getElementById("adminTarget").value.trim();
+    let itemVal = document.getElementById("adminItem").value;
+    let amt = parseInt(document.getElementById("adminItemCount").value) || 1;
+    
+    if(!u || !itemVal || amt <= 0) return window.showToast("Bitte User, Item und Menge korrekt angeben!", "#ef4444", "error");
+    
+    let snap = await get(ref(db, "users/" + u));
+    if(snap.exists()) {
+        let data = snap.val();
+        if(!data.inventory) data.inventory = [];
+        
+        if(itemVal.startsWith("rod_")) {
+            let rid = itemVal.replace("rod_", "");
+            if(!data.ownedRods) data.ownedRods = [];
+            if(!data.ownedRods.includes(rid)) data.ownedRods.push(rid);
+        } else if(itemVal.startsWith("bait_")) {
+            let bid = itemVal.replace("bait_", "");
+            if(!data.baits) data.baits = {};
+            data.baits[bid] = (data.baits[bid] || 0) + amt;
+        } else if(itemVal.startsWith("fish_")) {
+            let fname = itemVal.replace("fish_", "");
+            let fdef = items.find(i => i.n === fname);
+            if(fdef) {
+                for(let i=0; i<amt; i++) {
+                    data.inventory.push({
+                        id: Math.random().toString(36).substr(2,9),
+                        n: fdef.n,
+                        baseName: fdef.n,
+                        v: fdef.v,
+                        xp: fdef.xp,
+                        e: fdef.e,
+                        eObj: fdef.eObj,
+                        isShiny: false,
+                        isTrash: fdef.isTrash,
+                        weightG: fdef.minW || 0
+                    });
+                }
+            }
+        }
+        
+        await set(ref(db, "users/" + u), data);
+        window.showToast("Item(s) erfolgreich gegeben!", "#10b981", "check");
+    } else {
+        window.showToast("Spieler nicht gefunden!", "#ef4444", "error");
+    }
+};
 
 window.adminCreateAcc = async function() {
     let u = document.getElementById("newAccUser").value.trim();
@@ -2094,7 +2248,7 @@ window.initChat = function() {
 };
 
 // ==========================================
-// BUTTON BINDINGS (DAMIT DIE MENÜS ÖFFNEN)
+// BUTTON BINDINGS (WICHTIG DAMIT MENÜS GEHEN)
 // ==========================================
 const bindBtn = (id, func) => {
     const btn = document.getElementById(id);
@@ -2120,7 +2274,11 @@ bindBtn('btnLeader', () => window.handleLeaderboard('users'));
 bindBtn('btnPrestige', window.handlePrestigeMenu);
 bindBtn('btnUpdates', window.handleUpdateMenu);
 
-if (!document.getElementById('btnPromo').onclick) {
+if (document.getElementById('btnFeedbackFixed')) {
+    document.getElementById('btnFeedbackFixed').onclick = window.openFeedbackMenu;
+}
+
+if (document.getElementById('btnPromo')) {
     bindBtn('btnPromo', () => {
         let h=`<input id="inputPromoCode" placeholder="Code eingeben" style="width:100%;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">`;
         openModal(`${window.M('local_activity')} Promo Code`, h, `<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.redeemPromoCode()">${window.M('check')} Einlösen</button>`);
