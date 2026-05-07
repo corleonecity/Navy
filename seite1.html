@@ -865,7 +865,7 @@ function roll(zIdx) {
             finalVal=Math.max(1,Math.floor(baseItem.v*(0.5+wPercent)));
         }
     }
-    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,eObj:baseItem.eObj,isShiny:false,isTrash:!!baseItem.isTrash,weightG:itemW}; // WICHTIGER FIX: `isTrash: !!baseItem.isTrash`
+    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,eObj:baseItem.eObj,isShiny:false,isTrash:!!baseItem.isTrash,weightG:itemW}; 
     if(isShiny&&!baseItem.isTrash){
         finalItem.n="Mutierter "+baseItem.n;finalItem.v=Math.abs(finalItem.v)*5;
         finalItem.xp=Math.abs(finalItem.xp)*5;finalItem.isShiny=true;finalItem.isTrash=false;
@@ -942,7 +942,6 @@ async function loadData() {
         let acc=await get(ref(db,"accounts/"+currentUser));if(!acc.exists())return;
         if(snap.exists()) {
             gameState=snap.val();
-            // EXTREM WICHTIGER INVENTAR-SPEICHER-FIX für Firebase 
             if(gameState.inventory) {
                 if(!Array.isArray(gameState.inventory)) {
                     gameState.inventory = Object.values(gameState.inventory);
@@ -978,7 +977,10 @@ async function loadData() {
                 document.getElementById("btnDiscordFixed").style.display="flex";
                 document.getElementById("btnChatToggle").style.display="flex"; 
                 if(currentUser==="colin")document.getElementById("btnAdminTop").style.display="block";
-                initChat();updateBoatVisual();
+                
+                // Chat starten und Boot visuell aktualisieren
+                initChat(); 
+                updateBoatVisual();
                 setTimeout(spawnClickableBubble, 5000); // Start Bubble Spawner
             }
             
@@ -1233,7 +1235,7 @@ function executeAutoFishCatch() {
         }
     }
     
-    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,eObj:baseItem.eObj,isShiny:false,isTrash:!!baseItem.isTrash,weightG:itemW}; // WICHTIGER FIX: `isTrash: !!baseItem.isTrash`
+    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,eObj:baseItem.eObj,isShiny:false,isTrash:!!baseItem.isTrash,weightG:itemW}; 
     if(isShiny&&!baseItem.isTrash){
         finalItem.n="Mutierter "+baseItem.n;finalItem.v=Math.abs(finalItem.v)*5;
         finalItem.xp=Math.abs(finalItem.xp)*5;finalItem.isShiny=true;finalItem.isTrash=false;
@@ -1330,7 +1332,6 @@ window.handleSellMenu=function(){
         let baseName = isShiny ? n.replace("Mutierter ","") : n;
         let alreadyInDex = isShiny ? gameState.dex?.[baseName]?.shiny : gameState.dex?.[baseName]?.normal;
         
-        // ERLAUBT JETZT AUCH MÜLL IM DEX
         let dexBtn = (!alreadyInDex) ? `<button class="prestige-btn" style="padding:4px 8px;font-size:11px;margin-left:5px;flex-direction:row;justify-content:center;" onclick="window.sendToDex('${d.firstId}')">${window.M('menu_book')} Dex</button>` : '';
 
         html+=`<div class="inv-group-card"><div style="flex:1;"><b>${d.count}x ${d.eObj} ${n}</b><br><small>${d.totalW>0?'Ges: '+formatWeight(d.totalW):''}</small></div><div style="text-align:right; display:flex; align-items:center; justify-content:flex-end;"><div style="color:${d.totalV>=0?'#10b981':'#ef4444'};font-weight:bold;margin-right:5px;">${d.totalV>=0?'+':''}${d.totalV.toLocaleString()}$</div>${aquaBtn}${dexBtn}</div></div>`;
@@ -1359,7 +1360,7 @@ window.sendToDex = function(id) {
     if(idx === -1) return;
     let item = gameState.inventory[idx];
     
-    if(!item) return; // MÜLL JETZT ERLAUBT
+    if(!item) return; 
     if(!gameState.dex) gameState.dex = {};
     let base = item.baseName;
     if(!gameState.dex[base]) gameState.dex[base] = {normal:false, shiny:false, count:0, maxW:0};
@@ -1373,7 +1374,6 @@ window.sendToDex = function(id) {
     gameState.dex[base].count++;
     if(item.weightG > gameState.dex[base].maxW) gameState.dex[base].maxW = item.weightG;
     
-    // Entfernt NUR diesen EINEN Fisch
     gameState.inventory.splice(idx, 1);
     
     updateUI(); 
@@ -2001,4 +2001,57 @@ window.handleAdminMenu=function(){
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;">
                 <input id="adminCodeMoney" type="number" placeholder="Geld ($)" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
                 <input id="adminCodeXP" type="number" placeholder="XP" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                <input id="adminCodeLevel" type="number" placeholder="Level +" style="padding:10px;border-radius:8
+                <input id="adminCodeLevel" type="number" placeholder="Level +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+            </div>
+        </div>
+    </div></div>`;
+    openModal(`${window.M('settings')} Admin Panel`, h);
+}
+
+// Dummy-Funktionen für das Admin-Panel, damit es nicht zu Fehlern kommt
+window.adminSendBroadcast = function() { window.showToast("Broadcast gesendet (Demo)", "#0ea5e9", "campaign"); }
+window.adminSendDiscordUpdate = function() { window.showToast("Discord Update gesendet (Demo)", "#8b5cf6", "campaign"); }
+window.adminInspectUser = function() { window.showToast("Spieler inspiziert (Demo)", "#3b82f6", "search"); }
+
+// Chat Initialisierung und Toggling
+window.toggleChat = function() {
+    let c = document.getElementById('chatContainer');
+    c.style.display = (c.style.display === 'none' || c.style.display === '') ? 'flex' : 'none';
+}
+
+function initChat() {
+    let chatInput = document.getElementById('chatInput');
+    if(chatInput) {
+        chatInput.addEventListener('keypress', function(e) {
+            if(e.key === 'Enter' && this.value.trim() !== '') {
+                this.value = '';
+                window.showToast("Nachricht gesendet (Demo)", "#3b82f6", "chat");
+            }
+        });
+    }
+}
+window.initChat = initChat;
+
+// Die Event-Listener für das gesamte Hauptmenü! 
+// Diese waren vorher nicht verknüpft oder wurden durch den Syntaxfehler blockiert.
+document.getElementById('btnFish')?.addEventListener('click', window.handleFish);
+document.getElementById('btnSell')?.addEventListener('click', window.handleSellMenu);
+document.getElementById('btnAqua')?.addEventListener('click', window.handleAquaMenu);
+document.getElementById('btnShop')?.addEventListener('click', window.handleShopMenu);
+document.getElementById('btnInv')?.addEventListener('click', window.handleInvMenu);
+document.getElementById('btnDex')?.addEventListener('click', window.handleDexMenu);
+document.getElementById('btnQuest')?.addEventListener('click', window.handleQuestMenu);
+document.getElementById('btnDaily')?.addEventListener('click', window.handleDailyMenu);
+document.getElementById('btnWheel')?.addEventListener('click', window.handleWheelMenu);
+document.getElementById('btnZone')?.addEventListener('click', window.handleZoneMenu);
+document.getElementById('btnProfile')?.addEventListener('click', window.handleProfileMenu);
+document.getElementById('btnSkills')?.addEventListener('click', window.handleSkillsMenu);
+document.getElementById('btnGuild')?.addEventListener('click', window.handleGuildMenu);
+document.getElementById('btnAchieve')?.addEventListener('click', window.handleAchieveMenu);
+document.getElementById('btnBank')?.addEventListener('click', window.handleBankMenu);
+document.getElementById('btnLeader')?.addEventListener('click', () => window.handleLeaderboard('users'));
+document.getElementById('btnUpdates')?.addEventListener('click', window.handleUpdateMenu);
+
+</script>
+</body>
+</html>
