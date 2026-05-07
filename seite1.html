@@ -2018,7 +2018,6 @@ window.redeemPromoCode=async function(){let code=document.getElementById("inputP
 window.openFeedbackMenu=function(){openModal(`${window.M('chat')} Feedback`,`<textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;outline:none;"></textarea>`,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.submitFeedback()">${window.M('send')} Senden</button>`);}
 window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5 Zeichen!", "#ef4444", "error");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("Gesendet!", "#10b981", "check_circle");window.closeModal();}).catch(()=>window.showToast("Fehler", "#ef4444", "error"));}
 
-// NUR STATISCHE NEWS!
 window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.0 - Das Community Update</h3><ul><li style="margin-bottom:6px;"><b>Login & Server Fix:</b> Das Einloggen dauert nun nicht mehr ewig! Leaderboard lädt erst bei Klick auf den Button.</li><li style="margin-bottom:6px;"><b>Speichern Fix:</b> Inventar wird nun IMMER sicher geladen!</li><li style="margin-bottom:6px;"><b>Blasen-Bonus Überarbeitet:</b> Tippe auf Blasen *während dem Angeln*, um 2.5% der Angelzeit sofort abzukürzen (kein dauerhafter Bug-Bonus mehr).</li><li style="margin-bottom:6px;"><b>Timing Balken Fix:</b> Die Größe bei starker Ausrüstung skaliert wieder normal.</li><li style="margin-bottom:6px;"><b>Admin & System:</b> Admin-Bereich komplettiert und Bugs ausgebügelt.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);}
 
 // --- MODULE: ADMIN FULL ---
@@ -2121,4 +2120,126 @@ window.handleAdminMenu=function(){
             <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #a855f7;">
                 <h4 style="color:#a855f7;">Account</h4>
                 <input id="newAccUser" placeholder="User" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                <input id="newAccPass" placeholder="Passwort" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:
+                <input id="newAccPass" placeholder="Passwort" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                <div style="display:flex;gap:5px;">
+                    <button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminCreateAcc()">${window.M('add')} Erstellen</button>
+                    <button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminDelAcc()">${window.M('delete')} Löschen</button>
+                </div>
+            </div>
+        </div>
+    </div>`;
+    openModal(`${window.M('settings')} Admin Panel`, h, "", true);
+};
+
+window.adminSendBroadcast = function() {
+    let text = document.getElementById("adminBroadcastInput").value.trim();
+    if(!text) return window.showToast("Bitte Nachricht eingeben!", "#ef4444", "error");
+    set(ref(db, "global/broadcast"), { text: text, timestamp: Date.now() });
+    window.showToast("Broadcast gesendet!", "#10b981", "campaign");
+};
+
+window.adminInspectUser = async function() {
+    let u = document.getElementById("adminInspectTarget").value.trim();
+    if(!u) return window.showToast("Bitte Username eingeben!", "#ef4444", "error");
+    let snap = await get(ref(db, "users/" + u));
+    if(snap.exists()) alert(JSON.stringify(snap.val(), null, 2));
+    else window.showToast("Spieler nicht gefunden", "#ef4444", "error");
+};
+
+window.adminCreatePromoCode = function() { window.showToast("Funktion noch nicht fertig.", "#facc15", "warning"); };
+window.adminManagePromoCodes = function() { window.showToast("Funktion noch nicht fertig.", "#facc15", "warning"); };
+
+window.adminSetMaintenance = function(state) {
+    set(ref(db, "global/maintenance"), state);
+    window.showToast("Wartung " + (state ? "Aktiviert" : "Deaktiviert"), state ? "#ef4444" : "#10b981", "build");
+};
+
+window.adminSetEvent = function() {
+    let type = document.getElementById("adminEventSelect").value;
+    let mult = parseFloat(document.getElementById("adminEventMult").value) || 2;
+    let mins = parseInt(document.getElementById("adminEventTime").value) || 5;
+    set(ref(db, "global/event"), { type: type, mult: mult, name: "Admin Event ("+type+")", exp: Date.now() + (mins * 60000) });
+    window.showToast("Event gestartet!", "#10b981", "play_arrow");
+};
+
+window.adminStopEvent = function() {
+    set(ref(db, "global/event"), null);
+    window.showToast("Event gestoppt!", "#ef4444", "stop");
+};
+
+window.adminGive = async function() {
+    let u = document.getElementById("adminTarget").value.trim();
+    let type = document.getElementById("adminType").value;
+    let amt = parseFloat(document.getElementById("adminAmount").value) || 0;
+    if(!u || amt === 0) return window.showToast("Bitte User und Menge angeben!", "#ef4444", "error");
+    let snap = await get(ref(db, "users/" + u));
+    if(snap.exists()) {
+        let data = snap.val();
+        if(type === "money") data.money += amt;
+        if(type === "level") data.level += amt;
+        if(type === "prestige") data.prestige += amt;
+        if(type === "skills") { data.skills = data.skills || {shiny:0,aqua:0}; data.skills.shiny += amt; }
+        await set(ref(db, "users/" + u), data);
+        window.showToast("Erfolgreich gegeben!", "#10b981", "check");
+    } else {
+        window.showToast("Spieler nicht gefunden!", "#ef4444", "error");
+    }
+};
+
+window.adminGiveItem = function() { window.showToast("Funktion noch nicht fertig.", "#facc15", "warning"); };
+
+window.adminCreateAcc = async function() {
+    let u = document.getElementById("newAccUser").value.trim();
+    let p = document.getElementById("newAccPass").value.trim();
+    if(u && p) {
+        await set(ref(db, "accounts/" + u), p);
+        window.showToast("Account erstellt", "#10b981", "check");
+    } else {
+        window.showToast("User und PW eingeben", "#ef4444", "error");
+    }
+};
+
+window.adminDelAcc = async function() {
+    let u = document.getElementById("newAccUser").value.trim();
+    if(u && confirm(`Account ${u} wirklich löschen?`)) {
+        await remove(ref(db, "accounts/" + u));
+        await remove(ref(db, "users/" + u));
+        window.showToast("Account gelöscht", "#ef4444", "delete");
+    }
+};
+
+window.toggleChat = function() {
+    let c = document.getElementById("chatContainer");
+    c.style.display = (c.style.display === "none" || c.style.display === "") ? "flex" : "none";
+};
+
+window.initChat = function() {
+    const chatInput = document.getElementById('chatInput');
+    if(!chatInput) return;
+    chatInput.addEventListener('keypress', function(e) {
+        if(e.key === 'Enter' && this.value.trim() !== '') {
+            push(ref(db, "global/chat"), {
+                user: currentUser,
+                text: this.value.trim(),
+                time: Date.now()
+            });
+            this.value = '';
+        }
+    });
+
+    onChildAdded(ref(db, "global/chat"), (snap) => {
+        let msg = snap.val();
+        let d = new Date(msg.time);
+        let timeStr = d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0');
+        let div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<span class="chat-time">[${timeStr}]</span> <span class="chat-user">${msg.user}:</span> <span class="chat-msg-content">${msg.text}</span>`;
+        let container = document.getElementById('chatMessages');
+        container.appendChild(div);
+        container.scrollTop = container.scrollHeight;
+    });
+};
+
+</script>
+</body>
+</html>
