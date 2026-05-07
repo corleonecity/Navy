@@ -1983,4 +1983,72 @@ window.adminChangePassword=async function(u){let np=prompt(`Neues Passwort für 
 window.adminQuickDelete=async function(u){if(confirm(`${u} löschen?`)){await remove(ref(db,"accounts/"+u));await remove(ref(db,"users/"+u));await remove(ref(db,"global/leaderboard/"+u));window.showToast("Gelöscht!", "#10b981", "check");window.adminShowAccounts();}}
 window.adminGive=async function(){let t=document.getElementById('adminTarget').value.trim(),ty=document.getElementById('adminType').value,am=Number(document.getElementById('adminAmount').value);if(!t||isNaN(am))return window.showToast("User & Menge!", "#ef4444", "error");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(ty==='money')d.money+=am;if(ty==='level'){d.level+=am;d.xp=0;}if(ty==='prestige')d.prestige+=am;if(ty==='skills'){d.skills=d.skills||{shiny:0,aqua:0};}await set(ref(db,"users/"+t),d);window.showToast(`${am} ${ty} an ${t}`, "#10b981", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
 window.adminGiveItem=async function(){let t=document.getElementById('adminTarget').value.trim(),iv=document.getElementById('adminItem').value,count=Number(document.getElementById('adminItemCount').value);if(!t||isNaN(count)||count<=0)return window.showToast("User & Anzahl!", "#ef4444", "error");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(!Array.isArray(d.inventory))d.inventory=[];if(iv.startsWith("fish_")){let item=iv.replace("fish_","");let bi=items.find(i=>i.n===item);if(bi)for(let i=0;i<count;i++)d.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}else if(iv.startsWith("bait_")){let bid=iv.replace("bait_","");if(!d.baits)d.baits={};d.baits[bid]=(d.baits[bid]||0)+count;}await set(ref(db,"users/"+t),d);window.showToast(`Gegeben!`, "#10b981", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
-window.adminBanAccount=async function(){let u=document.getElementById('adminBanUser').value.trim(),m=Number(document.getElementById('adminBanTime').value);if(!u||isNaN(m))return window.showToast("User & Min!", "#ef4444", "error");let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=Date.now()+(m*60000);await set(ref(db,"users/"+u),d);window.showToast(`${u} für ${m} Min gesperrt!`, "#ef444
+window.adminBanAccount=async function(){let u=document.getElementById('adminBanUser').value.trim(),m=Number(document.getElementById('adminBanTime').value);if(!u||isNaN(m))return window.showToast("User & Min!", "#ef4444", "error");let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=Date.now()+(m*60000);await set(ref(db,"users/"+u),d);window.showToast(`${u} für ${m} Min gesperrt!`, "#ef4444", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
+window.adminShowBanned=async function(){let snap=await get(ref(db,"users"));if(snap.exists()){let h='<div style="max-height:300px;overflow-y:auto;">';let has=false;snap.forEach(c=>{let u=c.val();if(u?.bannedUntil>Date.now()){has=true;let ml=Math.ceil((u.bannedUntil-Date.now())/60000);h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#161b22;border-radius:8px; margin-bottom: 5px;"><span><b>${u.name}</b> (${ml} Min)</span></div>`;}});h+='</div>';if(!has)return window.showToast("Niemand gebannt!", "#ef4444", "error");openModal("Banned Users",h);}else window.showToast("Fehler!", "#ef4444", "error");}
+window.adminResetAccount=async function(){let u=document.getElementById('adminResetUser').value.trim();if(confirm(`Willst du ${u} wirklich WIPEN?`)){let snap=await get(ref(db,"users/"+u));if(snap.exists()){let n=snap.val();n.money=0;n.xp=0;n.level=1;n.prestige=0;n.inventory=[];n.stats={totalCaught:0,totalEarned:0};await set(ref(db,"users/"+u),n);window.showToast(`${u} wurde gewiped!`, "#f97316", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}}
+window.adminCreatePromoCode=async function(){let n=document.getElementById('adminCodeName').value.trim().toUpperCase(),m=Number(document.getElementById('adminCodeMoney').value)||0,x=Number(document.getElementById('adminCodeXP').value)||0,l=Number(document.getElementById('adminCodeLevel').value)||0,s=Number(document.getElementById('adminCodeSkills').value)||0,i=document.getElementById('adminCodeItem').value,ia=Number(document.getElementById('adminCodeItemAmt').value)||1;if(!n)return window.showToast("Code Name!", "#ef4444", "error");let c={};if(m)c.money=m;if(x)c.xp=x;if(l)c.level=l;if(s)c.skills=s;if(i&&i!=="none"){c.itemName=i;c.itemAmt=ia;}await set(ref(db,"global/promocodes/"+n),c);window.showToast("Promo Code erstellt!", "#10b981", "check");document.getElementById('adminCodeName').value='';}
+window.adminManagePromoCodes=async function(){let snap=await get(ref(db,"global/promocodes"));if(snap.exists()){let h='<div style="max-height:400px;overflow-y:auto;">';snap.forEach(c=>{let d=c.val(),txt=[];if(d.money)txt.push(`${d.money}$`);if(d.xp)txt.push(`${d.xp}XP`);if(d.level)txt.push(`+${d.level}Lvl`);if(d.itemName)txt.push(`${d.itemAmt}x ${d.itemName}`);h+=`<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #30363d;align-items:center;"><div><b>${c.key}</b><br><small style="color:#10b981;">${txt.join(', ')}</small></div><button class="danger-btn" style="padding:4px 8px;" onclick="window.adminDeletePromoCode('${c.key}')">${window.M('delete')}</button></div>`;});h+='</div>';openModal("Promo Codes",h);}else window.showToast("Keine Codes!", "#ef4444", "error");}
+window.adminDeletePromoCode=async function(c){if(confirm(`Code ${c} löschen?`)){await remove(ref(db,"global/promocodes/"+c));window.showToast("Gelöscht!", "#10b981", "check");window.adminManagePromoCodes();}}
+
+// --- CHAT MODULE ---
+function initChat(){
+    let inP = document.getElementById('chatInput');
+    inP.addEventListener('keypress', function(e){
+        if(e.key==='Enter') window.sendChatMessage();
+    });
+    
+    const chatRef = ref(db, 'chat');
+    onChildAdded(chatRef, (data) => {
+        let msg = data.val();
+        let cm = document.getElementById('chatMessages');
+        let div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<span class="chat-user">${msg.user}:</span> <span class="chat-msg-content">${msg.text}</span> <span class="chat-time">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>`;
+        cm.appendChild(div);
+        cm.scrollTop = cm.scrollHeight;
+    });
+}
+window.toggleChat=function(){
+    let c = document.getElementById('chatContainer');
+    c.style.display = c.style.display === 'flex' ? 'none' : 'flex';
+    if(c.style.display === 'flex') {
+        let cm = document.getElementById('chatMessages');
+        cm.scrollTop = cm.scrollHeight;
+        document.getElementById('chatInput').focus();
+    }
+}
+window.sendChatMessage=function(){
+    let inP = document.getElementById('chatInput');
+    let text = inP.value.trim();
+    if(text.length > 0 && text.length <= 100 && currentUser) {
+        push(ref(db, 'chat'), {
+            user: currentUser,
+            text: text,
+            timestamp: Date.now()
+        });
+        inP.value = '';
+    }
+}
+
+// Binden der Standard-Buttons im UI
+document.getElementById('btnFish').addEventListener('click', window.handleFish);
+document.getElementById('btnSell').addEventListener('click', window.handleSellMenu);
+document.getElementById('btnAqua').addEventListener('click', window.handleAquaMenu);
+document.getElementById('btnShop').addEventListener('click', window.handleShopMenu);
+document.getElementById('btnInv').addEventListener('click', window.handleInvMenu);
+document.getElementById('btnDex').addEventListener('click', window.handleDexMenu);
+document.getElementById('btnQuest').addEventListener('click', window.handleQuestMenu);
+document.getElementById('btnDaily').addEventListener('click', window.handleDailyMenu);
+document.getElementById('btnWheel').addEventListener('click', window.handleWheelMenu);
+document.getElementById('btnZone').addEventListener('click', window.handleZoneMenu);
+document.getElementById('btnProfile').addEventListener('click', window.handleProfileMenu);
+document.getElementById('btnSkills').addEventListener('click', window.handleSkillsMenu);
+document.getElementById('btnGuild').addEventListener('click', window.handleGuildMenu);
+document.getElementById('btnAchieve').addEventListener('click', window.handleAchieveMenu);
+document.getElementById('btnBank').addEventListener('click', window.handleBankMenu);
+document.getElementById('btnLeader').addEventListener('click', () => window.handleLeaderboard('users'));
+document.getElementById('btnPrestige').addEventListener('click', window.handlePrestigeMenu);
+document.getElementById('btnUpdates').addEventListener('click', window.handleUpdateMenu);
+</script>
+</body>
+</html>
