@@ -265,8 +265,11 @@
         @keyframes slideIn { from{transform:translate3d(100%,0,0);opacity:0} to{transform:translate3d(0,0,0);opacity:1} }
         @keyframes fadeOut { to{opacity:0; visibility:hidden} }
 
+        /* Admin Grid Styling */
+        .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
         /* Mobile specific styling */
-        @media (max-width:768px) { .inv-grid{grid-template-columns:1fr} .inv-col{max-height:unset; overflow:visible;} body{font-size:15px} .modal-body{font-size:15px} #chatContainer{width:250px;right:5px} }
+        @media (max-width:768px) { .inv-grid{grid-template-columns:1fr} .inv-col{max-height:unset; overflow:visible;} .admin-grid{grid-template-columns:1fr;} body{font-size:15px} .modal-body{font-size:15px} #chatContainer{width:250px;right:5px} }
         @media (max-width:550px) { 
             .container { padding:10px; max-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
             .btn-grid { grid-template-columns:repeat(3,1fr); }
@@ -382,8 +385,8 @@
 
     <div id="authBox">
         <h3 style="text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;"><span class="material-symbols-outlined">lock</span> Virtual Fisher Login</h3>
-        <input id="username" placeholder="Spielername" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;outline:none;">
-        <input id="password" type="password" placeholder="Passwort" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;outline:none;">
+        <input id="username" placeholder="Spielername" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;outline:none;" onkeypress="if(event.key==='Enter') document.getElementById('btnLogin').click()">
+        <input id="password" type="password" placeholder="Passwort" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;outline:none;" onkeypress="if(event.key==='Enter') document.getElementById('btnLogin').click()">
         <button id="btnLogin" style="width:100%;margin:15px 0;padding:14px;background:#10b981;flex-direction:row;"><span class="material-symbols-outlined">login</span> Einloggen</button>
         <div id="login-error" style="color:#ef4444;font-size:13px;display:none;text-align:center;font-weight:bold;margin-top:5px;"></div>
     </div>
@@ -437,6 +440,7 @@
 </div>
 
 <script type="module">
+// --- MODULE: IMPORTS & CONFIG ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set, onValue, remove, push, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
@@ -452,6 +456,7 @@ const db = getDatabase(app);
 
 window.M = (icon, cssClass="", style="") => `<span class="material-symbols-outlined ${cssClass}" style="${style}">${icon}</span>`;
 
+// --- MODULE: STATE & NETWORK ---
 let currentUser = null;
 let gameState = null;
 let globalState = null;
@@ -464,6 +469,7 @@ let guildsCache = {};
 let autoAnglerTimer = null;
 let activeBubble = null;
 
+// --- MODULE: LOGIN LOGIC ---
 const savedUser = localStorage.getItem('vFisher_user');
 if (savedUser) {
     currentUser = savedUser;
@@ -510,6 +516,7 @@ document.getElementById('btnLogout').addEventListener('click', () => {
     location.reload();
 });
 
+// --- MODULE: SOUND SYSTEM ---
 const sounds = {
     click: new Audio('https://actions.google.com/sounds/v1/ui/button_click.ogg'),
     splash: new Audio('https://actions.google.com/sounds/v1/water/water_splash.ogg'),
@@ -529,6 +536,7 @@ document.addEventListener('click', (e) => {
     if(e.target.closest('button')) window.playSound('click');
 });
 
+// --- MODULE: UI UTILS ---
 window.showToast = function(msg, color="#3b82f6", icon="info") {
     let tc = document.getElementById('toast-container');
     if(!tc) return;
@@ -544,7 +552,7 @@ function log(t) {
     l.prepend(e); while(l.children.length>30) l.removeChild(l.lastChild);
 }
 
-// BUBBLE SYSTEM
+// BUBBLE SYSTEM: Sofortige Zeitverkürzung beim aktiven Angeln
 function spawnClickableBubble() {
     if(activeBubble || !gameState) return;
     const container = document.getElementById('particlesContainer');
@@ -556,18 +564,23 @@ function spawnClickableBubble() {
     
     activeBubble.onclick = function() {
         window.playSound('splash');
-        gameState.bubbleBonus = (gameState.bubbleBonus || 0) + 2.5;
-        window.showToast("+2.5% Angel-Speed dauerhaft!", "#3b82f6", "bubble_chart");
+        
+        if (window.currentFishingTimeLeft !== undefined && window.currentFishingTimeLeft > 0) {
+            let deduct = Math.max(1, Math.floor(window.currentFishTimeSec * 0.025)); 
+            window.currentFishingTimeLeft -= deduct;
+            if (window.currentFishingTimeLeft < 0) window.currentFishingTimeLeft = 0;
+            window.showToast(`- ${deduct}s Angelzeit!`, "#3b82f6", "timer");
+        } else {
+            window.showToast("Plop!", "#3b82f6", "bubble_chart");
+        }
+        
         activeBubble.remove();
         activeBubble = null;
-        saveData();
-        // Neue spawnt nach 5 bis 10 Sekunden
         setTimeout(spawnClickableBubble, 5000 + Math.random() * 5000);
     };
     
     container.appendChild(activeBubble);
     
-    // Verlassen des Bildschirms nach Animation
     setTimeout(() => {
         if(activeBubble) {
             activeBubble.remove();
@@ -632,10 +645,10 @@ const items = [
     {n:"Schneckenhaus",v:-2,xp:-1,c:5.0,z:0,e:"bug_report",cClass:"c-trash",isTrash:true,minW:5,maxW:30},
     {n:"Angelhaken (rostig)",v:-6,xp:-3,c:3.0,z:0,e:"phishing",cClass:"c-trash",isTrash:true,minW:2,maxW:15},
     {n:"Gummistiefel",v:-8,xp:-4,c:2.0,z:0,e:"roller_skating",cClass:"c-trash",isTrash:true,minW:500,maxW:2500},
-    {n:"Plastikflasche",v:0.25,xp:-5,c:1.5,z:0,e:"water_bottle",cClass:"c-trash",isTrash:true,minW:20,maxW:150},
+    {n:"Plastikflasche",v:-10,xp:-5,c:1.5,z:0,e:"water_bottle",cClass:"c-trash",isTrash:true,minW:20,maxW:150},
     {n:"Scherbe",v:-12,xp:-6,c:1.0,z:0,e:"local_fire_department",cClass:"c-trash",isTrash:true,minW:10,maxW:100},
     
-    // Zone 0 Fische
+    // Zone 0 Fische (Realistische Farben!)
     {n:"Stichling",v:8,xp:4,c:15.0,z:0,e:"set_meal",cClass:"c-fish",color:"#78909c",minW:5,maxW:15},
     {n:"Moderlieschen",v:12,xp:6,c:14.0,z:0,e:"set_meal",cClass:"c-fish",color:"#a5d6a7",minW:10,maxW:30},
     {n:"Elritze",v:15,xp:8,c:13.0,z:0,e:"set_meal",cClass:"c-fish",color:"#81c784",minW:15,maxW:40},
@@ -659,7 +672,7 @@ const items = [
     {n:"Fischreuse (kaputt)",v:-15,xp:-8,c:1.8,z:1,e:"grid_on",cClass:"c-trash",isTrash:true,minW:500,maxW:3000},
     {n:"Gummiwurm",v:-6,xp:-3,c:1.8,z:1,e:"bug_report",cClass:"c-trash",isTrash:true,minW:5,maxW:20},
     
-    // Zone 1 Fische
+    // Zone 1 Fische (Realistische Farben!)
     {n:"Groppe",v:40,xp:20,c:14.0,z:1,e:"set_meal",cClass:"c-fish",color:"#795548",minW:10,maxW:50},
     {n:"Elritze (Bach)",v:50,xp:25,c:13.0,z:1,e:"set_meal",cClass:"c-fish",color:"#81c784",minW:15,maxW:60},
     {n:"Bachneunauge",v:75,xp:35,c:12.0,z:1,e:"water_score",cClass:"c-fish",color:"#5d4037",minW:20,maxW:100},
@@ -865,13 +878,13 @@ function roll(zIdx) {
             finalVal=Math.max(1,Math.floor(baseItem.v*(0.5+wPercent)));
         }
     }
-    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,eObj:baseItem.eObj,isShiny:false,isTrash:!!baseItem.isTrash,weightG:itemW}; 
+    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,eObj:baseItem.eObj,isShiny:false,isTrash:baseItem.isTrash,weightG:itemW};
     if(isShiny&&!baseItem.isTrash){
         finalItem.n="Mutierter "+baseItem.n;finalItem.v=Math.abs(finalItem.v)*5;
         finalItem.xp=Math.abs(finalItem.xp)*5;finalItem.isShiny=true;finalItem.isTrash=false;
         finalItem.eObj=window.M(baseItem.e, 'c-shiny');
     }
-    finalItem.id=Math.random().toString(36).substr(2,9); 
+    finalItem.id=Math.random().toString(36).substr(2,9);
     return finalItem;
 }
 
@@ -927,6 +940,7 @@ window.closeBroadcast = function() {
 
 async function loadData() {
     if(!currentUser)return;
+    // Account Check
     onValue(ref(db,"accounts/"+currentUser),(snap)=>{
         if(!snap.exists()&&currentUser){
             localStorage.removeItem('vFisher_user');
@@ -934,9 +948,14 @@ async function loadData() {
             document.body.innerHTML=`<div style="text-align:center;background:#161b22;padding:30px;border-radius:15px;border:2px solid #ef4444;max-width:400px;margin:auto;"><h1 style="color:#ef4444;"><span class="material-symbols-outlined">warning</span> Account gelöscht</h1><p>Dein Account wurde administrativ entfernt.</p><button onclick="location.reload()" style="padding:12px;background:#3b82f6;border:none;border-radius:8px;color:white;width:100%;">OK</button></div>`;
         }
     });
-    onValue(ref(db,"global/guilds"),(snap)=>{guildsCache=snap.exists()?snap.val():{};if(gameState?.guild){let myG=guildsCache[gameState.guild];if(!myG||!myG.members||!myG.members.includes(currentUser)){gameState.guild="";saveData();}}refreshCurrentMenu();});
-    onValue(ref(db,"global/leaderboard"),(snap)=>{if(snap.exists()){let d=snap.val();let ua=[];for(let k in d)ua.push(d[k]);ua.sort((a,b)=>(b.stats?.totalCaught||0)-(a.stats?.totalCaught||0));lastLeaderboardUsers=ua;if(window.currentOpenMenu==='leaderboard')refreshCurrentMenu();}});
-    onValue(ref(db,"global"),(snap)=>{globalState=snap.exists()?snap.val():null;let im=globalState?.maintenance;if(im&&currentUser!=="colin"){document.getElementById('maintenance-overlay').style.display='flex';wasMaintenance=true;}else{document.getElementById('maintenance-overlay').style.display='none';if(wasMaintenance&&currentUser!=="colin")location.reload();}if(globalState?.broadcast&&Date.now()-globalState.broadcast.timestamp<300000&&(!gameState||gameState.lastBroadcast!==globalState.broadcast.timestamp)){document.getElementById('broadcast-text').innerText=globalState.broadcast.text;document.getElementById('broadcast-banner').style.display='block';}else document.getElementById('broadcast-banner').style.display='none';refreshCurrentMenu();});
+
+    // Guilds Check (not causing massive lag, mostly static)
+    onValue(ref(db,"global/guilds"),(snap)=>{guildsCache=snap.exists()?snap.val():{};if(gameState?.guild){let myG=guildsCache[gameState.guild];if(!myG||!myG.members||!myG.members.includes(currentUser)){gameState.guild="";saveData();}}if(window.currentOpenMenu==='guild')refreshCurrentMenu();});
+
+    // Global Events
+    onValue(ref(db,"global"),(snap)=>{globalState=snap.exists()?snap.val():null;let im=globalState?.maintenance;if(im&&currentUser!=="colin"){document.getElementById('maintenance-overlay').style.display='flex';wasMaintenance=true;}else{document.getElementById('maintenance-overlay').style.display='none';if(wasMaintenance&&currentUser!=="colin")location.reload();}if(globalState?.broadcast&&Date.now()-globalState.broadcast.timestamp<300000&&(!gameState||gameState.lastBroadcast!==globalState.broadcast.timestamp)){document.getElementById('broadcast-text').innerText=globalState.broadcast.text;document.getElementById('broadcast-banner').style.display='block';}else document.getElementById('broadcast-banner').style.display='none';});
+
+    // User Check
     onValue(ref(db,"users/"+currentUser),async(snap)=>{
         if(!currentUser)return;
         let acc=await get(ref(db,"accounts/"+currentUser));if(!acc.exists())return;
@@ -950,9 +969,13 @@ async function loadData() {
             } else {
                 gameState.inventory = [];
             }
+        } else {
+            gameState={name:currentUser,money:0,xp:0,level:1,zone:0,inventory:[],dex:{},aquarium:{unlocked:false,fishes:[]},lastDaily:0,dailyStreak:0,prestige:0,stats:{totalCaught:0,totalEarned:0},ownedRods:["rod1"],eqRod:"rod1",baits:{},eqBait:"none",bannedUntil:0,rodStats:{},usedCodes:{},guild:"",skills:{shiny:0,aqua:0},achievements:{},bank:{deposited:0,interestEarned:0,lastInterest:0},lastWheelSpin:0,dexRewards:{},boatUpgraded:false,autoFishUnlocked:false,bankUnlocked:false};
+            saveData();
         }
-        else{gameState={name:currentUser,money:0,xp:0,level:1,zone:0,inventory:[],dex:{},aquarium:{unlocked:false,fishes:[]},lastDaily:0,dailyStreak:0,prestige:0,stats:{totalCaught:0,totalEarned:0},ownedRods:["rod1"],eqRod:"rod1",baits:{},eqBait:"none",bannedUntil:0,rodStats:{},usedCodes:{},guild:"",skills:{shiny:0,aqua:0},achievements:{},bank:{deposited:0,interestEarned:0,lastInterest:0},lastWheelSpin:0,dexRewards:{},boatUpgraded:false,autoFishUnlocked:false,bankUnlocked:false,bubbleBonus:0};saveData();}
+
         if(gameState?.bannedUntil>Date.now()){let mins=Math.ceil((gameState.bannedUntil-Date.now())/60000);document.body.innerHTML=`<div style="text-align:center;background:#161b22;padding:30px;border-radius:15px;border:2px solid #ef4444;"><h1 style="color:#ef4444;"><span class="material-symbols-outlined">block</span> GESPERRT</h1><p>Noch ${mins} Min</p><button onclick="localStorage.removeItem('vFisher_user');location.reload()" style="padding:12px;background:#3b82f6;border:none;border-radius:8px;color:white;width:100%;">Abmelden</button></div>`;return;}
+        
         if(gameState){
             if(!Array.isArray(gameState.inventory))gameState.inventory=[];
             if(!gameState.achievements)gameState.achievements={};
@@ -962,7 +985,6 @@ async function loadData() {
             if(gameState.lastWheelSpin===undefined)gameState.lastWheelSpin=0;
             if(gameState.boatUpgraded===undefined)gameState.boatUpgraded=false;
             if(gameState.autoFishUnlocked===undefined)gameState.autoFishUnlocked=false;
-            if(gameState.bubbleBonus===undefined)gameState.bubbleBonus=0;
             if(!gameState.qs||typeof gameState.qs!=='object')gameState.qs={p:{dc:0,de:0,wc:0,we:0,mc:0,me:0},c:{},d:"",w:"",m:""};
             
             checkQuestResets();renderAquarium();syncGlobalLeaderboard();
@@ -978,10 +1000,9 @@ async function loadData() {
                 document.getElementById("btnChatToggle").style.display="flex"; 
                 if(currentUser==="colin")document.getElementById("btnAdminTop").style.display="block";
                 
-                // Chat starten und Boot visuell aktualisieren
                 initChat(); 
                 updateBoatVisual();
-                setTimeout(spawnClickableBubble, 5000); // Start Bubble Spawner
+                setTimeout(spawnClickableBubble, 5000);
             }
             
             if(gameState.autoFishUnlocked && !autoAnglerTimer) {
@@ -992,7 +1013,7 @@ async function loadData() {
             checkAchievements();
             checkDexCompletionRewards();
             updateUI(); 
-            refreshCurrentMenu(); 
+            if(window.currentOpenMenu !== 'leaderboard') refreshCurrentMenu();
         }
     });
     setInterval(()=>{if(gameState?.aquarium?.fishes?.length>0){let am=1+((gameState.skills?.aqua||0)*0.00025);let inc=gameState.aquarium.fishes.reduce((s,f)=>s+Math.floor(f.v*0.1*am),0);if(inc>0){gameState.money+=inc;log(`${window.M('set_meal','c-fish')} Aquarium:+${inc}$`);saveData();syncGlobalLeaderboard();updateUI();}}},60000);
@@ -1067,7 +1088,6 @@ autoEventCycle();
 window.handleFish = function(){
     let btn=document.getElementById('btnFish');if(btn.disabled)return;
     
-    // SOFORTIGER KÖDERVERBRAUCH BEIM START
     if (gameState.eqBait !== "none" && gameState.baits && gameState.baits[gameState.eqBait] > 0) {
         gameState.baits[gameState.eqBait]--;
         if(gameState.baits[gameState.eqBait] <= 0) {
@@ -1082,8 +1102,7 @@ window.handleFish = function(){
     let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
     let baitDef=baitsDB[gameState.eqBait];
     
-    // Blasen-Bonus wird addiert
-    let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0)+(gameState.bubbleBonus||0);
+    let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0);
     if(speedBonus>90)speedBonus=90;
     
     let resBonus = (rodDef.res||0) + (baitDef?.res||0);
@@ -1093,13 +1112,19 @@ window.handleFish = function(){
     if(event&&event.type==='speed')fishTimeSec=Math.floor(fishTimeSec/event.mult);
     if(event&&event.type==='rain')fishTimeSec=Math.floor(fishTimeSec/event.mult);
     fishTimeSec=Math.max(2,Math.floor(fishTimeSec));
-    let timeLeft=fishTimeSec;btn.innerHTML=`${window.M('phishing')} Angeln... (${timeLeft}s)`;
+    
+    window.currentFishTimeSec = fishTimeSec;
+    window.currentFishingTimeLeft = fishTimeSec;
+    
+    btn.innerHTML=`${window.M('phishing')} Angeln... (${window.currentFishingTimeLeft}s)`;
     if(fishInterval)clearInterval(fishInterval);
     fishInterval=setInterval(()=>{
-        timeLeft--;
-        if(timeLeft>0)btn.innerHTML=`${window.M('phishing')} Angeln... (${timeLeft}s)`;
-        else{
+        window.currentFishingTimeLeft--;
+        if(window.currentFishingTimeLeft>0) {
+            btn.innerHTML=`${window.M('phishing')} Angeln... (${window.currentFishingTimeLeft}s)`;
+        } else {
             clearInterval(fishInterval);
+            window.currentFishingTimeLeft = 0;
             startTimingMinigame(resBonus).then((success) => {
                 if(success) {
                     executeFishCatch(btn, scene);
@@ -1140,8 +1165,7 @@ function startTimingMinigame(resBonus) {
         timingActive = true; timingCursor = 0; timingDir = 1; timingLastTime = performance.now();
         
         let baseWidth = 10;
-        // WIDERSTANDSFÄHIGKEIT ANGEPASST - Balken wächst jetzt moderater
-        let extraWidth = (resBonus || 0) * 0.5; 
+        let extraWidth = (resBonus || 0) * 0.25; 
         let targetWidth = Math.min(50, baseWidth + extraWidth); 
         let targetLeft = 50 - (targetWidth / 2);
         
@@ -1235,7 +1259,7 @@ function executeAutoFishCatch() {
         }
     }
     
-    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,eObj:baseItem.eObj,isShiny:false,isTrash:!!baseItem.isTrash,weightG:itemW}; 
+    let finalItem={baseName:baseItem.n,n:baseItem.n,v:finalVal,xp:baseItem.xp,c:baseItem.c,e:baseItem.e,eObj:baseItem.eObj,isShiny:false,isTrash:baseItem.isTrash,weightG:itemW}; 
     if(isShiny&&!baseItem.isTrash){
         finalItem.n="Mutierter "+baseItem.n;finalItem.v=Math.abs(finalItem.v)*5;
         finalItem.xp=Math.abs(finalItem.xp)*5;finalItem.isShiny=true;finalItem.isTrash=false;
@@ -1331,8 +1355,7 @@ window.handleSellMenu=function(){
         let isShiny = n.startsWith("Mutierter ");
         let baseName = isShiny ? n.replace("Mutierter ","") : n;
         let alreadyInDex = isShiny ? gameState.dex?.[baseName]?.shiny : gameState.dex?.[baseName]?.normal;
-        
-        let dexBtn = (!alreadyInDex) ? `<button class="prestige-btn" style="padding:4px 8px;font-size:11px;margin-left:5px;flex-direction:row;justify-content:center;" onclick="window.sendToDex('${d.firstId}')">${window.M('menu_book')} Dex</button>` : '';
+        let dexBtn = (!d.isTrash && !alreadyInDex) ? `<button class="prestige-btn" style="padding:4px 8px;font-size:11px;margin-left:5px;flex-direction:row;justify-content:center;" onclick="window.sendToDex('${d.firstId}')">${window.M('menu_book')} Dex</button>` : '';
 
         html+=`<div class="inv-group-card"><div style="flex:1;"><b>${d.count}x ${d.eObj} ${n}</b><br><small>${d.totalW>0?'Ges: '+formatWeight(d.totalW):''}</small></div><div style="text-align:right; display:flex; align-items:center; justify-content:flex-end;"><div style="color:${d.totalV>=0?'#10b981':'#ef4444'};font-weight:bold;margin-right:5px;">${d.totalV>=0?'+':''}${d.totalV.toLocaleString()}$</div>${aquaBtn}${dexBtn}</div></div>`;
     }
@@ -1360,7 +1383,7 @@ window.sendToDex = function(id) {
     if(idx === -1) return;
     let item = gameState.inventory[idx];
     
-    if(!item) return; 
+    if(!item || item.isTrash) return;
     if(!gameState.dex) gameState.dex = {};
     let base = item.baseName;
     if(!gameState.dex[base]) gameState.dex[base] = {normal:false, shiny:false, count:0, maxW:0};
@@ -1375,7 +1398,6 @@ window.sendToDex = function(id) {
     if(item.weightG > gameState.dex[base].maxW) gameState.dex[base].maxW = item.weightG;
     
     gameState.inventory.splice(idx, 1);
-    
     updateUI(); 
     window.handleSellMenu(); 
     saveData();
@@ -1436,16 +1458,12 @@ window.handleShopMenu=function(){
     }
     for(let[id,r]of Object.entries(rodsDB)){if((gameState.ownedRods||[]).includes(id))continue;h+=`<div class="inv-card"><h4>${window.M(r.e, 'c-rod')} ${r.name}</h4><div class="inv-stat"><span>Speed:</span><span>+${r.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span><span>+${r.luck||0}%</span></div><div class="inv-stat"><span>Stärke:</span><span>${r.res||0}%</span></div><div class="inv-stat"><span>Max. Kg:</span><span>${r.maxKg} kg</span></div><button class="success-btn" style="width:100%;" ${gameState.money<r.cost?'disabled':''} onclick="window.buyRod('${id}')">${r.cost.toLocaleString()}$</button></div>`;}
     h+=`</div><div class="inv-col"><h4>Köder</h4>`;
-    
-    // KÖDER-KISTE anstatt einzelner Köder
     h+=`<div class="inv-card"><h4>${window.M('redeem', 'c-bait')} Köder-Kiste</h4><p style="font-size:12px;">Enthält 10 zufällige Köder für dein Inventar. Es können auch seltene Köder doppelt dabei sein!</p><button class="success-btn" style="width:100%;" ${gameState.money<500?'disabled':''} onclick="window.buyBaitBox()">500$</button></div>`;
-    
     h+=`</div></div>`;
     openModal(titleStr,h,"",true);
 }
 window.buyRod=function(id){gameState.money-=rodsDB[id].cost;if(!gameState.ownedRods)gameState.ownedRods=[];gameState.ownedRods.push(id); updateUI(); window.handleShopMenu(); saveData();syncGlobalLeaderboard();}
 
-// KÖDER-KISTE KAUFEN
 window.buyBaitBox = function() {
     if(gameState.money < 500) return;
     gameState.money -= 500;
@@ -1454,7 +1472,7 @@ window.buyBaitBox = function() {
     let acquired = {};
     for(let i=0; i<10; i++) {
         let r = baitKeys[Math.floor(Math.random()*baitKeys.length)];
-        gameState.baits[r] = (gameState.baits[r]||0) + 1; // +1 Ladung des entsprechenden Köders
+        gameState.baits[r] = (gameState.baits[r]||0) + 1; 
         acquired[baitsDB[r].name] = (acquired[baitsDB[r].name]||0) + 1;
     }
     updateUI(); window.handleShopMenu(); saveData();
@@ -1613,7 +1631,7 @@ window.executeGuildDonateGroup=async function(k,ppf){
     }
 }
 
-// ERFOLGE - MIT FORTSCHRITT
+// --- MODULE: ACHIVEMENTS ---
 window.handleAchieveMenu = function() {
     window.currentOpenMenu = 'achieve';
     if(!gameState.achievements) gameState.achievements = {};
@@ -1641,6 +1659,7 @@ window.handleAchieveMenu = function() {
     openModal(`${window.M('emoji_events')} Erfolge`, html);
 }
 
+// --- MODULE: BANK ---
 window.handleBankMenu = function() {
     window.currentOpenMenu = 'bank';
     
@@ -1742,6 +1761,7 @@ setInterval(() => {
     }
 }, 1000);
 
+// --- MODULE: WHEEL ---
 window.handleWheelMenu = function() {
     window.currentOpenMenu = 'wheel';
     const now = Date.now();
@@ -1861,7 +1881,7 @@ window.spinWheel = function() {
         if(gameState.xp >= gameState.level*50) {
             gameState.xp -= gameState.level*50; gameState.level++; log(`${window.M('star','c-shiny')} LEVEL UP!`); window.playSound('shiny');
         }
-        updateUI(); 
+        updateUI();
         saveData();
         syncGlobalLeaderboard();
         checkAchievements();
@@ -1875,6 +1895,7 @@ window.spinWheel = function() {
     }, 4000);
 }
 
+// --- MODULE: MENU CLICKS ---
 window.handleQuestMenu=function(){window.currentOpenMenu='quest';checkQuestResets();try{let qs=gameState.qs||{},qsP=qs.p||{dc:0,de:0,wc:0,we:0,mc:0,me:0},qsC=qs.c||{};let h=`<div style="background:rgba(0,0,0,0.5);padding:10px;border-radius:12px;margin-bottom:15px;text-align:center;font-size:13px;"><p>${window.M('today')} Daily: <b id="daily-countdown">${getResetCountdown('daily')}</b></p><p>${window.M('calendar_month')} Weekly: <b id="weekly-countdown">${getResetCountdown('weekly')}</b></p><p>${window.M('emoji_events')} Monthly: <b id="monthly-countdown">${getResetCountdown('monthly')}</b></p></div>`;let cats=[{n:window.M('today')+" Daily",l:questDB.daily,c:'dc',e:'de'},{n:window.M('calendar_month')+" Weekly",l:questDB.weekly,c:'wc',e:'we'},{n:window.M('emoji_events')+" Monthly",l:questDB.monthly,c:'mc',e:'me'}];cats.forEach(cat=>{h+=`<h4 style="margin-bottom:8px;">${cat.n}</h4>`;cat.l.forEach(q=>{let prog=(q.t==='c'?qsP[cat.c]:qsP[cat.e]),done=prog>=q.req,claimed=qsC[q.id],pct=Math.min(100,Math.floor((prog/q.req)*100));h+=`<div class="quest-card"><div class="quest-header"><span>${q.desc}</span><span style="color:#facc15;">${q.rew.toLocaleString()}$</span></div><div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div><div class="quest-footer"><span>${Math.min(prog,q.req).toLocaleString()} / ${q.req.toLocaleString()}</span>${claimed?'<span style="color:#10b981;">Erledigt</span>':done?`<button class="success-btn" style="padding:4px 8px;font-size:12px;flex-direction:row;" onclick="window.claimQuest('${q.id}',${q.rew})">${window.M('download')} Abholen</button>`:'<span style="color:#ef4444;">Offen</span>'}</div></div>`;});});openModal(`${window.M('assignment')} Quests`,h);}catch(e){openModal(`${window.M('assignment')} Quests`,"<p style='color:#ef4444;'>Fehler: "+e.message+"</p>");}}
 window.claimQuest=function(id,rew){
     if(!gameState.qs.c) gameState.qs.c = {};
@@ -1914,12 +1935,38 @@ window.showFishInfo = function(n, tab) {
 window.handleZoneMenu=function(){window.currentOpenMenu='zone';let h=zones.map((z,i)=>`<div class="item-row"><b>${z.name}</b>${gameState.zone===i?'<span style="color:#10b981;">Aktiv</span>':gameState.prestige<z.reqPrestige?`<span style="color:#ef4444;">P${z.reqPrestige} benötigt</span>`:`<button class="success-btn" style="padding:6px 12px;flex-direction:row;" onclick="window.changeZone(${i})">${window.M('directions_walk')} Reisen</button>`}</div>`).join('');openModal(`${window.M('map')} Karte`,h);}
 window.changeZone=function(i){ 
     gameState.zone=i; 
-    updateUI(); 
-    window.handleZoneMenu(); 
+    updateUI();
+    window.handleZoneMenu();
     saveData(); 
 }
 
-window.handleLeaderboard=function(tab='users'){window.currentOpenMenu='leaderboard';window.currentLeaderboardTab=tab;let h=`<div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.handleLeaderboard('users')" style="flex:1;flex-direction:row;${tab==='users'?'background:#3b82f6;':'background:#1e293b;'}">${window.M('person')} Spieler</button><button onclick="window.handleLeaderboard('guilds')" style="flex:1;flex-direction:row;${tab==='guilds'?'background:#eab308;':'background:#1e293b;'}">${window.M('shield')} Gilden</button></div><div style="max-height:60vh;overflow-y:auto;padding-right:5px;">`;if(tab==='users'){h+=lastLeaderboardUsers.map((u,i)=>{let r=i===0?window.M('trophy','c-shiny'):i===1?window.M('military_tech','c-shiny'):i===2?window.M('military_tech','c-rod'):(i+1)+'.';return`<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="display:flex;align-items:center;gap:4px;">${r} ${u.name}</b><span style="color:#fcd34d;">P${u.prestige||0}</span></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(u.money).toLocaleString()}$</span><span style="color:#60a5fa;">${(u.stats?.totalCaught||0).toLocaleString()} Fische</span></div></div>`;}).join('');}else{let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));h+=sg.slice(0,100).map((g,i)=>{let r=i===0?window.M('trophy','c-shiny'):i===1?window.M('military_tech','c-shiny'):i===2?window.M('military_tech','c-rod'):(i+1)+'.';return`<div class="leader-card"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#eab308;display:flex;align-items:center;gap:4px;">${r} ${g.name}</b><span>${g.owner}</span></div><div class="card-stats"><span>${g.points||0} Pkt</span><span>${(g.members||[]).length}/${g.maxMembers||10} Memb.</span></div></div>`;}).join('');}h+=`</div>`;openModal(`${window.M('leaderboard')} Leaderboard`,h);}
+// OPTIMIERTE LEADERBOARD LADEFUNKTION
+window.handleLeaderboard = async function(tab='users') {
+    window.currentOpenMenu='leaderboard';
+    window.currentLeaderboardTab=tab;
+    
+    openModal(`${window.M('leaderboard')} Leaderboard`, `<div style="text-align:center; padding:20px; color:#60a5fa;">${window.M('sync')} Daten werden geladen...</div>`);
+
+    let h=`<div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.handleLeaderboard('users')" style="flex:1;flex-direction:row;${tab==='users'?'background:#3b82f6;':'background:#1e293b;'}">${window.M('person')} Spieler</button><button onclick="window.handleLeaderboard('guilds')" style="flex:1;flex-direction:row;${tab==='guilds'?'background:#eab308;':'background:#1e293b;'}">${window.M('shield')} Gilden</button></div><div style="max-height:60vh;overflow-y:auto;padding-right:5px;">`;
+    
+    if(tab==='users'){
+        let snap = await get(ref(db,"global/leaderboard"));
+        if(snap.exists()) {
+            let d=snap.val();
+            let ua=[];
+            for(let k in d) ua.push(d[k]);
+            ua.sort((a,b)=>(b.stats?.totalCaught||0)-(a.stats?.totalCaught||0));
+            lastLeaderboardUsers=ua;
+        }
+        h+=lastLeaderboardUsers.map((u,i)=>{let r=i===0?window.M('trophy','c-shiny'):i===1?window.M('military_tech','c-shiny'):i===2?window.M('military_tech','c-rod'):(i+1)+'.';return`<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="display:flex;align-items:center;gap:4px;">${r} ${u.name}</b><span style="color:#fcd34d;">P${u.prestige||0}</span></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(u.money).toLocaleString()}$</span><span style="color:#60a5fa;">${(u.stats?.totalCaught||0).toLocaleString()} Fische</span></div></div>`;}).join('');
+    }else{
+        let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));
+        h+=sg.slice(0,100).map((g,i)=>{let r=i===0?window.M('trophy','c-shiny'):i===1?window.M('military_tech','c-shiny'):i===2?window.M('military_tech','c-rod'):(i+1)+'.';return`<div class="leader-card"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#eab308;display:flex;align-items:center;gap:4px;">${r} ${g.name}</b><span>${g.owner}</span></div><div class="card-stats"><span>${g.points||0} Pkt</span><span>${(g.members||[]).length}/${g.maxMembers||10} Memb.</span></div></div>`;}).join('');
+    }
+    h+=`</div>`;
+    openModal(`${window.M('leaderboard')} Leaderboard`,h);
+}
+
 window.showPlayerProfile=async function(name){let u;if(name===currentUser&&gameState)u=gameState;else{let snap=await get(ref(db,"users/"+name));if(snap.exists())u=snap.val();}if(u){let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(u.prestige||0)>0?window.M('stars'):window.M('phishing')}</div><div><h2>${u.name}</h2><div>P${u.prestige||0} | Lvl ${u.level}</div>${u.guild?`<div style="color:#eab308;margin-top:4px;">${window.M('shield')} ${u.guild}</div>`:''}</div></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(u.money).toLocaleString()}$</span><span style="color:#60a5fa;">${(u.stats?.totalCaught||0).toLocaleString()} Fische</span></div></div>`;openModal(`${window.M('person')} Profil: ${u.name}`,h);}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
 
 window.handleProfileMenu=function(){window.currentOpenMenu='profile';let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${gameState.prestige>0?window.M('stars'):window.M('phishing')}</div><div><h2>${gameState.name}</h2><div>P${gameState.prestige} | Lvl ${gameState.level}</div>${gameState.guild?`<div style="color:#eab308;margin-top:4px;">${window.M('shield')} ${gameState.guild}</div>`:''}</div></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(gameState.money).toLocaleString()}$</span><span style="color:#60a5fa;">${gameState.stats.totalCaught.toLocaleString()} Fische</span></div><div class="card-stats"><span>${gameState.stats.totalEarned.toLocaleString()}$ verdient</span><span style="color:#f97316;">Streak: ${gameState.dailyStreak||0}</span></div></div>`;openModal(`${window.M('person')} Profil`,h);}
@@ -1966,93 +2013,112 @@ window.handlePrestigeMenu=function(){
 window.doPrestige=function(){gameState.prestige++;gameState.money=0;gameState.level=1;gameState.xp=0;gameState.inventory=[];saveData();syncGlobalLeaderboard();checkAchievements();location.reload();}
 
 document.getElementById('btnPromo')?.addEventListener('click',()=>{let h=`<input id="inputPromoCode" placeholder="Code eingeben" style="width:100%;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">`;openModal(`${window.M('local_activity')} Promo Code`,h,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.redeemPromoCode()">${window.M('check')} Einlösen</button>`);});
-window.redeemPromoCode=async function(){let code=document.getElementById("inputPromoCode").value.trim().toUpperCase();if(!code)return window.showToast("Code eingeben!", "#ef4444", "error");if(gameState.usedCodes?.[code])return window.showToast("Bereits eingelöst!", "#ef4444", "error");let snap=await get(ref(db,"global/promocodes/"+code));if(snap.exists()){let p=snap.val();if(p.money){gameState.money+=p.money;gameState.stats.totalEarned+=p.money;}if(p.xp)gameState.xp+=p.xp;if(p.level)gameState.level+=p.level;if(p.prestige)gameState.prestige+=p.prestige;if(p.skills){gameState.skills=gameState.skills||{shiny:0,aqua:0};}if(p.itemName){if(p.itemName.startsWith("rod_")){let rid=p.itemName.replace("rod_","");if(!gameState.ownedRods)gameState.ownedRods=[];if(!gameState.ownedRods.includes(rid))gameState.ownedRods.push(rid);}else if(p.itemName.startsWith("bait_")){let bid=p.itemName.replace("bait_","");if(!gameState.baits)gameState.baits={};gameState.baits[bid]=(gameState.baits[bid]||0)+p.itemAmt;}else{let bi=items.find(i=>i.n===p.itemName);if(bi)for(let i=0;i<p.itemAmt;i++)gameState.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:!!bi.isTrash,weightG:bi.minW||0});}}if(!gameState.usedCodes)gameState.usedCodes={};gameState.usedCodes[code]=true; updateUI(); saveData();syncGlobalLeaderboard();window.closeModal();window.showToast("Code eingelöst!", "#10b981", "check_circle");}else window.showToast("Ungültig!", "#ef4444", "error");}
+window.redeemPromoCode=async function(){let code=document.getElementById("inputPromoCode").value.trim().toUpperCase();if(!code)return window.showToast("Code eingeben!", "#ef4444", "error");if(gameState.usedCodes?.[code])return window.showToast("Bereits eingelöst!", "#ef4444", "error");let snap=await get(ref(db,"global/promocodes/"+code));if(snap.exists()){let p=snap.val();if(p.money){gameState.money+=p.money;gameState.stats.totalEarned+=p.money;}if(p.xp)gameState.xp+=p.xp;if(p.level)gameState.level+=p.level;if(p.prestige)gameState.prestige+=p.prestige;if(p.skills){gameState.skills=gameState.skills||{shiny:0,aqua:0};}if(p.itemName){if(p.itemName.startsWith("rod_")){let rid=p.itemName.replace("rod_","");if(!gameState.ownedRods)gameState.ownedRods=[];if(!gameState.ownedRods.includes(rid))gameState.ownedRods.push(rid);}else if(p.itemName.startsWith("bait_")){let bid=p.itemName.replace("bait_","");if(!gameState.baits)gameState.baits={};gameState.baits[bid]=(gameState.baits[bid]||0)+p.itemAmt;}else{let bi=items.find(i=>i.n===p.itemName);if(bi)for(let i=0;i<p.itemAmt;i++)gameState.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}}if(!gameState.usedCodes)gameState.usedCodes={};gameState.usedCodes[code]=true; updateUI(); saveData();syncGlobalLeaderboard();window.closeModal();window.showToast("Code eingelöst!", "#10b981", "check_circle");}else window.showToast("Ungültig!", "#ef4444", "error");}
 
 window.openFeedbackMenu=function(){openModal(`${window.M('chat')} Feedback`,`<textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;outline:none;"></textarea>`,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.submitFeedback()">${window.M('send')} Senden</button>`);}
 window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5 Zeichen!", "#ef4444", "error");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("Gesendet!", "#10b981", "check_circle");window.closeModal();}).catch(()=>window.showToast("Fehler", "#ef4444", "error"));}
 
-window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.0 - Das Community Update</h3><ul><li style="margin-bottom:6px;"><b>Speichern Fix:</b> Inventar wird nun IMMER sicher geladen!</li><li style="margin-bottom:6px;"><b>Blasen-Bonus:</b> Tippe auf Blasen für einen permanenten Geschwindigkeitsbonus!</li><li style="margin-bottom:6px;"><b>Erfolge-Fortschritt:</b> Sieh exakt was dir fehlt.</li><li style="margin-bottom:6px;"><b>Köder-Kiste:</b> Hole dir 10 zufällige Köder für 500$!</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);}
+// NUR STATISCHE NEWS!
+window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.0 - Das Community Update</h3><ul><li style="margin-bottom:6px;"><b>Login & Server Fix:</b> Das Einloggen dauert nun nicht mehr ewig! Leaderboard lädt erst bei Klick auf den Button.</li><li style="margin-bottom:6px;"><b>Speichern Fix:</b> Inventar wird nun IMMER sicher geladen!</li><li style="margin-bottom:6px;"><b>Blasen-Bonus Überarbeitet:</b> Tippe auf Blasen *während dem Angeln*, um 2.5% der Angelzeit sofort abzukürzen (kein dauerhafter Bug-Bonus mehr).</li><li style="margin-bottom:6px;"><b>Timing Balken Fix:</b> Die Größe bei starker Ausrüstung skaliert wieder normal.</li><li style="margin-bottom:6px;"><b>Admin & System:</b> Admin-Bereich komplettiert und Bugs ausgebügelt.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);}
 
-// --- MODULE: ADMIN ---
+// --- MODULE: ADMIN FULL ---
 window.handleAdminMenu=function(){
-    let h=`<div class="admin-grid">
-    <div style="display:flex;flex-direction:column;gap:10px;">
-        <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #0ea5e9;">
-            <h4 style="color:#0ea5e9;">Live Broadcast</h4>
-            <input id="adminBroadcastInput" placeholder="Nachricht..." style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-            <button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendBroadcast()">${window.M('send')} Senden</button>
-        </div>
-        
-        <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #8b5cf6;">
-            <h4 style="color:#8b5cf6;">Discord Update</h4>
-            <input id="adminDiscordUpdateTitle" placeholder="Update Titel..." value="🚀 Update v7.5 ist online!" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-            <textarea id="adminDiscordUpdateText" placeholder="Beschreibung & Update Info..." style="width:100%;height:60px;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;outline:none;"></textarea>
-            <button class="success-btn" style="width:100%;background:#8b5cf6;flex-direction:row;" onclick="window.adminSendDiscordUpdate()">${window.M('campaign')} In Discord posten</button>
-        </div>
+    let h=`
+    <div class="admin-grid">
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #0ea5e9;">
+                <h4 style="color:#0ea5e9;">Live Broadcast</h4>
+                <input id="adminBroadcastInput" placeholder="Nachricht..." style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                <button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendBroadcast()">${window.M('send')} Senden</button>
+            </div>
 
-        <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #3b82f6;">
-            <h4 style="color:#3b82f6;">Spieler Inspektor</h4>
-            <input id="adminInspectTarget" placeholder="Username" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-            <button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.adminInspectUser()">${window.M('search')} Durchsuchen</button>
-        </div>
-        <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #a855f7;">
-            <h4 style="color:#a855f7;">Promo-Codes</h4>
-            <input id="adminCodeName" placeholder="Code-Name" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;">
-                <input id="adminCodeMoney" type="number" placeholder="Geld ($)" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                <input id="adminCodeXP" type="number" placeholder="XP" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
-                <input id="adminCodeLevel" type="number" placeholder="Level +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #3b82f6;">
+                <h4 style="color:#3b82f6;">Spieler Inspektor</h4>
+                <input id="adminInspectTarget" placeholder="Username" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                <button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.adminInspectUser()">${window.M('search')} Durchsuchen</button>
+            </div>
+            
+            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #a855f7;">
+                <h4 style="color:#a855f7;">Promo-Codes</h4>
+                <input id="adminCodeName" placeholder="Code-Name" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:5px;">
+                    <input id="adminCodeMoney" type="number" placeholder="Geld ($)" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                    <input id="adminCodeXP" type="number" placeholder="XP" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                    <input id="adminCodeLevel" type="number" placeholder="Level +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                    <input id="adminCodeSkills" type="number" placeholder="Skills +" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                </div>
+                <div style="display:grid;grid-template-columns:2fr 1fr;gap:5px;margin-bottom:5px;">
+                    <select id="adminCodeItem" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                        <option value="none">Kein Item</option>
+                        <optgroup label="Ruten">
+                            ${Object.entries(rodsDB).map(([id,r])=>`<option value="rod_${id}">${r.name}</option>`).join('')}
+                        </optgroup>
+                        <optgroup label="Fische">
+                            ${items.map(i=>`<option value="${i.n}">${i.n}</option>`).join('')}
+                        </optgroup>
+                        <optgroup label="Köder">
+                            ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.name}</option>`).join('')}
+                        </optgroup>
+                    </select>
+                    <input id="adminCodeItemAmt" type="number" placeholder="Anzahl" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                </div>
+                <div style="display:flex;gap:5px;">
+                    <button class="success-btn" style="flex:1;background:#a855f7;flex-direction:row;" onclick="window.adminCreatePromoCode()">${window.M('add')} Erstellen</button>
+                    <button class="update-btn" style="flex:1;flex-direction:row;" onclick="window.adminManagePromoCodes()">${window.M('edit')} Verwalten</button>
+                </div>
+            </div>
+            
+            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #10b981;">
+                <h4 style="color:#10b981;">Wartung</h4>
+                <div style="display:flex;gap:5px;"><button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">AN</button><button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">AUS</button></div>
             </div>
         </div>
-    </div></div>`;
-    openModal(`${window.M('settings')} Admin Panel`, h);
-}
-
-// Dummy-Funktionen für das Admin-Panel, damit es nicht zu Fehlern kommt
-window.adminSendBroadcast = function() { window.showToast("Broadcast gesendet (Demo)", "#0ea5e9", "campaign"); }
-window.adminSendDiscordUpdate = function() { window.showToast("Discord Update gesendet (Demo)", "#8b5cf6", "campaign"); }
-window.adminInspectUser = function() { window.showToast("Spieler inspiziert (Demo)", "#3b82f6", "search"); }
-
-// Chat Initialisierung und Toggling
-window.toggleChat = function() {
-    let c = document.getElementById('chatContainer');
-    c.style.display = (c.style.display === 'none' || c.style.display === '') ? 'flex' : 'none';
-}
-
-function initChat() {
-    let chatInput = document.getElementById('chatInput');
-    if(chatInput) {
-        chatInput.addEventListener('keypress', function(e) {
-            if(e.key === 'Enter' && this.value.trim() !== '') {
-                this.value = '';
-                window.showToast("Nachricht gesendet (Demo)", "#3b82f6", "chat");
-            }
-        });
-    }
-}
-window.initChat = initChat;
-
-// Die Event-Listener für das gesamte Hauptmenü! 
-// Diese waren vorher nicht verknüpft oder wurden durch den Syntaxfehler blockiert.
-document.getElementById('btnFish')?.addEventListener('click', window.handleFish);
-document.getElementById('btnSell')?.addEventListener('click', window.handleSellMenu);
-document.getElementById('btnAqua')?.addEventListener('click', window.handleAquaMenu);
-document.getElementById('btnShop')?.addEventListener('click', window.handleShopMenu);
-document.getElementById('btnInv')?.addEventListener('click', window.handleInvMenu);
-document.getElementById('btnDex')?.addEventListener('click', window.handleDexMenu);
-document.getElementById('btnQuest')?.addEventListener('click', window.handleQuestMenu);
-document.getElementById('btnDaily')?.addEventListener('click', window.handleDailyMenu);
-document.getElementById('btnWheel')?.addEventListener('click', window.handleWheelMenu);
-document.getElementById('btnZone')?.addEventListener('click', window.handleZoneMenu);
-document.getElementById('btnProfile')?.addEventListener('click', window.handleProfileMenu);
-document.getElementById('btnSkills')?.addEventListener('click', window.handleSkillsMenu);
-document.getElementById('btnGuild')?.addEventListener('click', window.handleGuildMenu);
-document.getElementById('btnAchieve')?.addEventListener('click', window.handleAchieveMenu);
-document.getElementById('btnBank')?.addEventListener('click', window.handleBankMenu);
-document.getElementById('btnLeader')?.addEventListener('click', () => window.handleLeaderboard('users'));
-document.getElementById('btnUpdates')?.addEventListener('click', window.handleUpdateMenu);
-document.getElementById('btnPrestige')?.addEventListener('click', window.handlePrestigeMenu);
-
-</script>
-</body>
-</html>
+        
+        <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #facc15;">
+                <h4 style="color:#facc15;">Manuelle Events</h4>
+                <select id="adminEventSelect" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                    <option value="sun">Goldene Sonne</option>
+                    <option value="rain">Monsun</option>
+                    <option value="hai">Raubfisch</option>
+                    <option value="xp">XP-Boost</option>
+                    <option value="money">Geldsegen</option>
+                </select>
+                <div style="display:flex;gap:5px;margin-bottom:5px;">
+                    <input id="adminEventMult" type="number" placeholder="Faktor" step="0.5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                    <input id="adminEventTime" type="number" placeholder="Minuten" value="5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                </div>
+                <div style="display:flex;gap:5px;"><button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminSetEvent()">${window.M('play_arrow')} Start</button><button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminStopEvent()">${window.M('stop')} Stop</button></div>
+            </div>
+            
+            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #3b82f6;">
+                <h4 style="color:#3b82f6;">Give</h4>
+                <input id="adminTarget" placeholder="User" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                <div style="display:flex;gap:5px;margin-bottom:5px;">
+                    <select id="adminType" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                        <option value="money">Geld</option>
+                        <option value="level">Level</option>
+                        <option value="prestige">Prestige</option>
+                        <option value="skills">Skillpunkte</option>
+                    </select>
+                    <input id="adminAmount" type="number" placeholder="Menge" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                </div>
+                <button class="success-btn" style="width:100%;margin-bottom:10px;" onclick="window.adminGive()">Geben</button>
+                <div style="display:flex;gap:5px;margin-bottom:5px;">
+                    <select id="adminItem" style="width:60%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                        <optgroup label="Fische">
+                            ${items.map(i=>`<option value="fish_${i.n}">${i.n}</option>`).join('')}
+                        </optgroup>
+                        <optgroup label="Köder">
+                            ${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.name}</option>`).join('')}
+                        </optgroup>
+                    </select>
+                    <input id="adminItemCount" type="number" placeholder="Anzahl" style="width:40%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                </div>
+                <button class="update-btn" style="width:100%;" onclick="window.adminGiveItem()">Item/Köder geben</button>
+            </div>
+            
+            <div style="background:#0d1117;padding:12px;border-radius:12px;border:1px solid #a855f7;">
+                <h4 style="color:#a855f7;">Account</h4>
+                <input id="newAccUser" placeholder="User" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+                <input id="newAccPass" placeholder="Passwort" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:
