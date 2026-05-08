@@ -15,7 +15,7 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0" />
 
-    <title>Virtual Fisher PRO v7.5.0</title>
+    <title>Virtual Fisher PRO v7.5.1</title>
     <style>
         :root {
             --water-1: rgba(59,130,246,0.3);
@@ -23,33 +23,11 @@
             --water-2: rgba(29,78,216,0.3);
             --water-2-dark: rgba(29,78,216,0.6);
         }
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            letter-spacing: normal; 
-            word-spacing: normal; 
-            margin: 0; 
-            padding: 0; 
-            /* Verhindert Text-Auswahl bei Doppelklick und iOS OS-Popups */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; letter-spacing: normal; word-spacing: normal; margin: 0; padding: 0;
+            -webkit-user-select: none; user-select: none;
             -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
         }
         
-        /* Input Felder dürfen natürlich weiterhin Text auswählen */
-        input, textarea {
-            -webkit-touch-callout: default;
-            -webkit-user-select: text;
-            -khtml-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-        }
-        
-        /* Basis Vollbild-Fix für iOS Notch */
         html {
             background-color: #0f172a; 
             height: 100vh; height: -webkit-fill-available;
@@ -64,13 +42,11 @@
             transition: background 1s ease-in-out;
         }
 
-        /* Material Icon Helper Classes */
         .material-symbols-outlined { vertical-align: middle; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
         .c-fish { color: #60a5fa; } .c-shiny { color: #facc15; text-shadow: 0 0 10px #facc15; }
         .c-trash { color: #94a3b8; } .c-rod { color: #f97316; } .c-bait { color: #a3e635; }
         .c-money { color: #10b981; } .c-danger { color: #ef4444; } .c-star { color: #facc15; }
         
-        /* Backgrounds */
         body.zone-bg-0.time-dawn { background: linear-gradient(180deg, #FF9A76 0%, #FFE0B2 30%, #1a3f2a 70%, #0f2b1c 100%); }
         body.zone-bg-0.time-day { background: linear-gradient(180deg, #87CEEB 0%, #E0F0FF 30%, #2d6a4f 70%, #1e4d35 100%); }
         body.zone-bg-0.time-dusk { background: linear-gradient(180deg, #FF6B6B 0%, #FFD93D 25%, #1a3f2a 70%, #0f2b1c 100%); }
@@ -89,7 +65,6 @@
         
         @keyframes gradientBG { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
 
-        /* 60fps Hardware Accelerated Effects */
         .particles-container, .bubbles-container { position:fixed; top:0; left:0; width:100%; height:100%; z-index:0; pointer-events:none; overflow:hidden; }
         .particle { position:absolute; border-radius:50%; pointer-events:none; animation:particleFloat linear infinite; will-change: transform, opacity; }
         @keyframes particleFloat { 0%{transform:translate3d(0, 100vh, 0) scale(0);opacity:0} 10%{opacity:1} 50%{transform:translate3d(20px, 50vh, 0) scale(1)} 90%{opacity:1} 100%{transform:translate3d(-20px, -20vh, 0) scale(0);opacity:0} }
@@ -97,6 +72,30 @@
         @keyframes particleGoldenFloat { 0%{transform:translate3d(0, 60vh, 0) scale(0);opacity:0} 20%{opacity:1;transform:scale(1.2)} 100%{transform:translate3d(30px, -10vh, 0) scale(0.3);opacity:0} }
         .bubble { position:absolute; bottom:-50px; background:rgba(255,255,255,0.15); border-radius:50%; animation:floatUp linear infinite; backdrop-filter:blur(2px); will-change: transform; }
         @keyframes floatUp { 0%{transform:translate3d(0,0,0) scale(1);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translate3d(0, -110vh, 0) scale(1.5);opacity:0} }
+        
+        .interactive-bubble {
+            position: fixed;
+            z-index: 9999;
+            pointer-events: auto;
+            cursor: pointer;
+            background: rgba(255,255,255,0.25);
+            border-radius: 50%;
+            animation: bubbleIdle 2s ease-in-out infinite;
+            will-change: transform;
+            box-shadow: 0 0 15px rgba(59,130,246,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .interactive-bubble:active {
+            transform: scale(1.3);
+            opacity: 0.6;
+        }
+        @keyframes bubbleIdle {
+            0%,100%{transform:translate3d(0,0,0) scale(1)}
+            50%{transform:translate3d(0,-8px,0) scale(1.05)}
+        }
+        
         .fish-swarm { position:fixed; z-index:1; pointer-events:none; font-size:18px; white-space:nowrap; animation:swimSwarm 20s linear infinite; opacity:0.5; will-change: transform; color: #60a5fa;}
         @keyframes swimSwarm { 0%{transform:translate3d(-10vw, 0, 0)} 25%{transform:translate3d(30vw, -5vh, 0)} 50%{transform:translate3d(70vw, 2vh, 0)} 75%{transform:translate3d(40vw, -3vh, 0)} 100%{transform:translate3d(-10vw, 0, 0)} }
         
@@ -110,7 +109,6 @@
         #aquarium-bg { position:fixed; top:0; left:0; width:100%; height:100%; z-index:1; pointer-events:none; overflow:hidden; }
         .aqua-fish-entity { position:absolute; top:0; left:0; font-size:clamp(40px,8vw,55px); filter:drop-shadow(0 0 10px rgba(59,130,246,0.5)); transition:transform 6s ease-in-out; white-space:nowrap; }
 
-        /* UI Basis */
         #btnAdminTop { position:fixed; top:env(safe-area-inset-top, 10px); right:10px; background:rgba(15,23,42,0.8); border:1px solid #3b82f6; font-size:24px; cursor:pointer; display:none; z-index:1000; padding:8px 12px; border-radius:40px; }
         #btnFeedbackFixed, #btnDiscordFixed { position:fixed; bottom:calc(15px + env(safe-area-inset-bottom)); z-index:1000; border-radius:50%; width:50px; height:50px; font-size:22px; display:none; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 0 15px rgba(59,130,246,0.6); transition:0.2s; color:white;}
         #btnFeedbackFixed { left:15px; background:#3b82f6; border:2px solid #2563eb; } #btnFeedbackFixed:hover { transform:scale(1.1); background:#2563eb; }
@@ -121,7 +119,6 @@
         #broadcast-banner { display:none; position:fixed; top:env(safe-area-inset-top, 0); left:0; width:100%; background:linear-gradient(90deg,#ef4444,#b91c1c); color:white; text-align:center; padding:15px; font-weight:bold; z-index:100000; box-shadow:0 4px 15px rgba(0,0,0,0.6); font-size:15px; border-bottom:2px solid #fca5a5; }
         #broadcast-banner button { position:absolute; right:15px; top:12px; background:none; border:none; color:white; font-size:20px; cursor:pointer; font-weight:bold; padding:0; line-height:1; }
 
-        /* Szene Details */
         #fishing-scene { height:140px; position:relative; margin-bottom:12px; border-bottom:3px solid #3b82f6; overflow:hidden; border-radius:16px 16px 0 0; background:rgba(0,0,0,0.2); transition:background 1s ease; }
         .boat-container { position:absolute; bottom:10px; left:10%; animation:bobbingBoat 3s ease-in-out infinite; z-index:3; transition:all 0.5s ease; will-change: transform; color:#e2e8f0; }
         .boat-container.boat-upgraded { font-size:120%; filter:drop-shadow(0 0 10px rgba(255,215,0,0.6)); color:#facc15; }
@@ -150,7 +147,6 @@
         .sun-fx { position:absolute; top:0; left:0; width:100%; height:100%; background:radial-gradient(circle at center,rgba(250,204,21,0.3)0%,transparent 70%); animation:pulseSun 3s infinite alternate; pointer-events:none; z-index:5; }
         @keyframes pulseSun { from{opacity:0.5;transform:scale(1)}to{opacity:1;transform:scale(1.1)} }
 
-        /* HUD & Buttons */
         #top-info { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-size:13px; font-weight:bold; flex-wrap:wrap; gap:8px; }
         #stats-bar { display:flex; justify-content:space-between; align-items:center; background:rgba(0,0,0,0.4); padding:10px 12px; border-radius:12px; margin-bottom:8px; font-size:13px; font-weight:bold; flex-wrap:wrap; gap:8px; }
         .equip-bar { display:flex; justify-content:space-between; background:rgba(16,185,129,0.1); border:1px solid rgba(16,185,129,0.2); padding:8px 12px; border-radius:12px; font-size:12px; margin-bottom:10px; flex-wrap:wrap; gap:8px; }
@@ -171,7 +167,6 @@
         .log-entry { padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.05); word-break:break-word; display:flex; align-items:center; gap:5px; }
         .log-entry .material-symbols-outlined { font-size: 16px; }
 
-        /* Snappy 60fps Modals */
         .modal-overlay { 
             position:fixed; top:0; left:0; width:100%; height:100%; 
             background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; 
@@ -194,7 +189,6 @@
         .modal-footer { padding:15px 20px; background:#0d1117; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #30363d; }
         .close-btn { background:none; color:#8b949e; font-size:24px; cursor:pointer; padding:0; flex-direction:row;}
         
-        /* GUI Listen & Items */
         .item-row { display:flex; justify-content:space-between; align-items:center; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); flex-wrap:wrap; gap:8px; }
         .quest-card { background:rgba(0,0,0,0.3); border:1px solid #30363d; border-radius:12px; padding:15px; margin-bottom:12px; }
         .quest-header { display:flex; justify-content:space-between; font-weight:bold; margin-bottom:8px; font-size:14px; align-items:center; gap:5px;}
@@ -219,20 +213,17 @@
         .profile-avatar .material-symbols-outlined { font-size:40px; }
         .card-stats { display:flex; justify-content:space-between; font-size:13px; color:#8b949e; margin-top:5px; align-items:center;}
         
-        /* Minigames */
         #minigame-container { background:#0f172a; padding:20px; border-radius:20px; border:2px solid #ef4444; text-align:center; }
         .power-bar-bg { width:100%; background:#1e293b; height:30px; border-radius:8px; overflow:hidden; margin:8px 0; }
         .power-bar-fill { height:100%; transition:width 0.1s linear; display:flex; align-items:center; justify-content:flex-end; padding-right:8px; font-weight:bold; font-size:11px; }
         @keyframes bossShake { 0%,100%{transform:translate3d(0,0,0)}25%{transform:translate3d(2px,2px,0)}50%{transform:translate3d(-2px,-1px,0)}75%{transform:translate3d(1px,-2px,0)} }
         .boss-active { animation:bossShake 0.3s infinite; }
         
-        /* Glücksrad */
         .wheel-container { position:relative; width:250px; height:250px; margin:0 auto; }
         .wheel-canvas { width:100%; height:100%; }
         .wheel-pointer { position:absolute; top:-20px; left:50%; transform:translateX(-50%); z-index:5; color:#facc15;}
         .wheel-pointer .material-symbols-outlined { font-size:40px; filter:drop-shadow(0 0 5px gold); }
         
-        /* Chat & Toasts */
         #chatContainer { position:fixed; bottom:calc(80px + env(safe-area-inset-bottom)); right:10px; z-index:9999; display:none; flex-direction:column; width:300px; max-height:400px; background:rgba(22,27,34,0.95); border-radius:12px; border:1px solid #30363d; backdrop-filter:blur(10px); }
         #chatMessages { flex:1; overflow-y:auto; padding:10px; font-size:12px; min-height:200px; max-height:300px; }
         #chatInput { width:100%; padding:10px; border:none; border-top:1px solid #30363d; background:#0d1117; color:white; border-radius:0 0 12px 12px; font-size:13px; outline:none; }
@@ -245,12 +236,11 @@
         @keyframes slideIn { from{transform:translate3d(100%,0,0);opacity:0} to{transform:translate3d(0,0,0);opacity:1} }
         @keyframes fadeOut { to{opacity:0; visibility:hidden} }
 
-        /* Mobile specific styling */
         @media (max-width:768px) { .inv-grid{grid-template-columns:1fr} .inv-col{max-height:unset; overflow:visible;} body{font-size:15px} .modal-body{font-size:15px} #chatContainer{width:250px;right:5px} }
         @media (max-width:550px) { 
             .container { padding:10px; max-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
             .btn-grid { grid-template-columns:repeat(3,1fr); }
-            .btn-grid-2 { grid-template-columns:repeat(4,1fr); } /* 8 Buttons -> 4x2 Grid for symmetry */
+            .btn-grid-2 { grid-template-columns:repeat(4,1fr); }
             button { padding:8px 6px; font-size:11px; }
             button .material-symbols-outlined { font-size: 20px; }
             .modal-body { padding:12px; }
@@ -417,7 +407,6 @@
 </div>
 
 <script type="module">
-// --- MODULE: IMPORTS & CONFIG ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set, onValue, remove, push, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
@@ -431,12 +420,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// [INSTANT-UPDATE-RULE] FEST EINGEBAUT: Lokale Updates sofort durchführen, UI sofort rendern, dann speichern.
-
-// Helper für Material Icons anstelle von Emojis. Nun mit Style-Injection für Farben!
 window.M = (icon, cssClass="", style="") => `<span class="material-symbols-outlined ${cssClass}" style="${style}">${icon}</span>`;
 
-// --- MODULE: STATE & NETWORK ---
 let currentUser = null;
 let gameState = null;
 let globalState = null;
@@ -447,9 +432,13 @@ let wasMaintenance = false;
 let lastLeaderboardUsers = [];
 let guildsCache = {};
 let autoAnglerTimer = null;
-window.currentFishingTimeLeft = 0; // Global für das Blasen-Minispiel
 
-// --- MODULE: LOGIN LOGIC ---
+// Interaktive Blasenvariablen
+window.isFishingActive = false;
+window.fishingTimeLeft = 0;
+window.activeBubble = null;
+window.bubbleTimeout = null;
+
 const savedUser = localStorage.getItem('vFisher_user');
 if (savedUser) {
     currentUser = savedUser;
@@ -496,7 +485,19 @@ document.getElementById('btnLogout').addEventListener('click', () => {
     location.reload();
 });
 
-// --- MODULE: SOUND SYSTEM ---
+// Shake Detection verhindern
+document.addEventListener('touchmove', function(e) {
+    if (e.target.closest('.modal-body, #log, #chatMessages')) return;
+    e.preventDefault();
+}, { passive: false });
+
+window.addEventListener('devicemotion', function(e) {
+    const acc = e.accelerationIncludingGravity;
+    if (acc && (Math.abs(acc.x) > 15 || Math.abs(acc.y) > 15 || Math.abs(acc.z) > 15)) {
+        e.preventDefault();
+    }
+}, true);
+
 const sounds = {
     click: new Audio('https://actions.google.com/sounds/v1/ui/button_click.ogg'),
     splash: new Audio('https://actions.google.com/sounds/v1/water/water_splash.ogg'),
@@ -516,7 +517,6 @@ document.addEventListener('click', (e) => {
     if(e.target.closest('button')) window.playSound('click');
 });
 
-// --- MODULE: UI UTILS ---
 window.showToast = function(msg, color="#3b82f6", icon="info") {
     let tc = document.getElementById('toast-container');
     if(!tc) return;
@@ -531,11 +531,6 @@ function log(t) {
     let l=document.getElementById("log"); let e=document.createElement("div"); e.className="log-entry"; e.innerHTML=t;
     l.prepend(e); while(l.children.length>30) l.removeChild(l.lastChild);
 }
-
-// --- MODULE: VISUAL INITIALIZATION ---
-function initBubbles() { /* ... */ }
-function initStars() { /* ... */ }
-function initParticles() { /* ... */ }
 
 function getTimeOfDay() {
     const h = new Date().getHours();
@@ -583,7 +578,89 @@ function updateBoatVisual() {
     else { boat.classList.remove('boat-upgraded'); boat.querySelector('.fisher-emoji').innerHTML = window.M('rowing'); }
 }
 
-// --- MODULE: DATABASES (Realistic Colors Added!) ---
+// Interaktive Blasen-Funktionen
+window.spawnInteractiveBubble = function() {
+    if (window.activeBubble) return; // Nur eine Blase gleichzeitig
+    if (!window.isFishingActive || window.fishingTimeLeft <= 0) return;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'interactive-bubble';
+    
+    // Zufällige Größe zwischen 50-80px
+    const size = 50 + Math.random() * 30;
+    bubble.style.width = size + 'px';
+    bubble.style.height = size + 'px';
+    
+    // Zufällige Position (sichtbarer Bereich)
+    const maxX = window.innerWidth - size - 20;
+    const maxY = window.innerHeight - size - 20;
+    const x = 10 + Math.random() * maxX;
+    const y = 10 + Math.random() * maxY;
+    
+    bubble.style.left = x + 'px';
+    bubble.style.top = y + 'px';
+    bubble.style.fontSize = (size * 0.4) + 'px';
+    bubble.style.display = 'flex';
+    bubble.style.alignItems = 'center';
+    bubble.style.justifyContent = 'center';
+    bubble.innerHTML = window.M('bubble', 'c-fish');
+    
+    bubble.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (!window.isFishingActive || window.fishingTimeLeft <= 0) return;
+        
+        // 10% der Angelzeit entfernen
+        const reduction = Math.max(1, Math.floor(window.fishingTimeLeft * 0.1));
+        window.fishingTimeLeft = Math.max(1, window.fishingTimeLeft - reduction);
+        
+        // Visuelles Feedback
+        bubble.style.transform = 'scale(1.5)';
+        bubble.style.opacity = '0.3';
+        setTimeout(() => {
+            if (bubble.parentElement) bubble.remove();
+        }, 200);
+        
+        window.activeBubble = null;
+        if (window.bubbleTimeout) clearTimeout(window.bubbleTimeout);
+        
+        // Nächste Blase nach 2-5 Sekunden spawnen
+        if (window.isFishingActive && window.fishingTimeLeft > 1) {
+            window.bubbleTimeout = setTimeout(() => {
+                window.spawnInteractiveBubble();
+            }, 2000 + Math.random() * 3000);
+        }
+        
+        window.showToast(`-${reduction}s Angelzeit!`, '#10b981', 'bubble');
+    });
+    
+    document.body.appendChild(bubble);
+    window.activeBubble = bubble;
+    
+    // Blase verschwindet nach 8-12 Sekunden automatisch
+    setTimeout(() => {
+        if (bubble.parentElement && window.activeBubble === bubble) {
+            bubble.remove();
+            window.activeBubble = null;
+            if (window.isFishingActive && window.fishingTimeLeft > 1) {
+                window.bubbleTimeout = setTimeout(() => {
+                    window.spawnInteractiveBubble();
+                }, 1500 + Math.random() * 2000);
+            }
+        }
+    }, 8000 + Math.random() * 4000);
+};
+
+window.clearInteractiveBubble = function() {
+    if (window.activeBubble) {
+        window.activeBubble.remove();
+        window.activeBubble = null;
+    }
+    if (window.bubbleTimeout) {
+        clearTimeout(window.bubbleTimeout);
+        window.bubbleTimeout = null;
+    }
+};
+
 const zones = [{ name:"Naturteich", reqPrestige:0 }, { name:"Bach", reqPrestige:1 }];
 const items = [
     {n:"Laub / Blätter",v:-1,xp:-1,c:12.0,z:0,e:"eco",cClass:"c-trash",isTrash:true,minW:5,maxW:50},
@@ -593,10 +670,11 @@ const items = [
     {n:"Schneckenhaus",v:-2,xp:-1,c:5.0,z:0,e:"bug_report",cClass:"c-trash",isTrash:true,minW:5,maxW:30},
     {n:"Angelhaken (rostig)",v:-6,xp:-3,c:3.0,z:0,e:"phishing",cClass:"c-trash",isTrash:true,minW:2,maxW:15},
     {n:"Gummistiefel",v:-8,xp:-4,c:2.0,z:0,e:"roller_skating",cClass:"c-trash",isTrash:true,minW:500,maxW:2500},
-    {n:"Plastikflasche",v:0.25,xp:-5,c:1.5,z:0,e:"water_bottle",cClass:"c-trash",isTrash:true,minW:20,maxW:150},
+    // Plastikflasche: Positiver Wert statt Minus
+    {n:"Plastikflasche",v:0.25,xp:1,c:1.5,z:0,e:"water_bottle",cClass:"c-fish",isTrash:false,minW:20,maxW:150},
     {n:"Scherbe",v:-12,xp:-6,c:1.0,z:0,e:"local_fire_department",cClass:"c-trash",isTrash:true,minW:10,maxW:100},
     
-    // Zone 0 Fische (Realistische Farben!)
+    // Zone 0 Fische
     {n:"Stichling",v:8,xp:4,c:15.0,z:0,e:"set_meal",cClass:"c-fish",color:"#78909c",minW:5,maxW:15},
     {n:"Moderlieschen",v:12,xp:6,c:14.0,z:0,e:"set_meal",cClass:"c-fish",color:"#a5d6a7",minW:10,maxW:30},
     {n:"Elritze",v:15,xp:8,c:13.0,z:0,e:"set_meal",cClass:"c-fish",color:"#81c784",minW:15,maxW:40},
@@ -620,7 +698,7 @@ const items = [
     {n:"Fischreuse (kaputt)",v:-15,xp:-8,c:1.8,z:1,e:"grid_on",cClass:"c-trash",isTrash:true,minW:500,maxW:3000},
     {n:"Gummiwurm",v:-6,xp:-3,c:1.8,z:1,e:"bug_report",cClass:"c-trash",isTrash:true,minW:5,maxW:20},
     
-    // Zone 1 Fische (Realistische Farben!)
+    // Zone 1 Fische
     {n:"Groppe",v:40,xp:20,c:14.0,z:1,e:"set_meal",cClass:"c-fish",color:"#795548",minW:10,maxW:50},
     {n:"Elritze (Bach)",v:50,xp:25,c:13.0,z:1,e:"set_meal",cClass:"c-fish",color:"#81c784",minW:15,maxW:60},
     {n:"Bachneunauge",v:75,xp:35,c:12.0,z:1,e:"water_score",cClass:"c-fish",color:"#5d4037",minW:20,maxW:100},
@@ -644,17 +722,33 @@ const rodsDB = {
     "rod5":{ name:"Karpfenrute",e:"phishing",cost:6000,maxKg:20,speed:20,luck:12,res:40,desc:"Für Dicken" },
     "rod6":{ name:"Meister-Rute",e:"star",cost:15000,maxKg:50,speed:25,luck:18,res:50,desc:"Ultimativ" }
 };
+
+// Köder-Kisten System: Ersetzt direkten Köderkauf
+const baitCrateCost = 50;
+const baitCrateContents = [
+    { baitId: "b1", name: "Brot", minAmt: 2, maxAmt: 6 },
+    { baitId: "b2", name: "Mais", minAmt: 1, maxAmt: 5 },
+    { baitId: "b3", name: "Wurm", minAmt: 1, maxAmt: 4 },
+    { baitId: "b4", name: "Made", minAmt: 1, maxAmt: 3 },
+    { baitId: "b5", name: "Teig", minAmt: 1, maxAmt: 3 },
+    { baitId: "b6", name: "Caster", minAmt: 1, maxAmt: 2 },
+    { baitId: "b7", name: "Pellets", minAmt: 1, maxAmt: 2 },
+    { baitId: "b8", name: "Boilie", minAmt: 1, maxAmt: 2 },
+    { baitId: "b9", name: "Fischpaste", minAmt: 1, maxAmt: 1 },
+    { baitId: "b10", name: "Kunstköder", minAmt: 1, maxAmt: 1 },
+];
+
 const baitsDB = {
-    "b1":{ name:"Brot",e:"bakery_dining",cost:20,amt:20,speed:0,luck:2,res:0,trashRed:0 },
-    "b2":{ name:"Mais",e:"grass",cost:60,amt:20,speed:0,luck:4,res:0,trashRed:0 },
-    "b3":{ name:"Wurm",e:"bug_report",cost:120,amt:20,speed:3,luck:0,res:0,trashRed:0 },
-    "b4":{ name:"Made",e:"pest_control",cost:250,amt:20,speed:5,luck:2,res:0,trashRed:0 },
-    "b5":{ name:"Teig",e:"breakfast_dining",cost:500,amt:20,speed:0,luck:0,res:0,trashRed:15 },
-    "b6":{ name:"Caster",e:"egg",cost:1000,amt:20,speed:0,luck:6,res:5,trashRed:0 },
-    "b7":{ name:"Pellets",e:"blur_circular",cost:2500,amt:20,speed:10,luck:0,res:0,trashRed:20 },
-    "b8":{ name:"Boilie",e:"radio_button_checked",cost:5000,amt:20,speed:0,luck:10,res:10,trashRed:0 },
-    "b9":{ name:"Fischpaste",e:"takeout_dining",cost:10000,amt:20,speed:0,luck:15,res:0,trashRed:0 },
-    "b10":{ name:"Kunstköder",e:"set_meal",cost:25000,amt:20,speed:15,luck:0,res:15,trashRed:0 }
+    "b1":{ name:"Brot",e:"bakery_dining",cost:20,amt:20,speed:0,luck:2,res:5,trashRed:0 },
+    "b2":{ name:"Mais",e:"grass",cost:60,amt:20,speed:0,luck:4,res:5,trashRed:0 },
+    "b3":{ name:"Wurm",e:"bug_report",cost:120,amt:20,speed:3,luck:0,res:8,trashRed:0 },
+    "b4":{ name:"Made",e:"pest_control",cost:250,amt:20,speed:5,luck:2,res:10,trashRed:0 },
+    "b5":{ name:"Teig",e:"breakfast_dining",cost:500,amt:20,speed:0,luck:0,res:12,trashRed:15 },
+    "b6":{ name:"Caster",e:"egg",cost:1000,amt:20,speed:0,luck:6,res:15,trashRed:0 },
+    "b7":{ name:"Pellets",e:"blur_circular",cost:2500,amt:20,speed:10,luck:0,res:18,trashRed:20 },
+    "b8":{ name:"Boilie",e:"radio_button_checked",cost:5000,amt:20,speed:0,luck:10,res:20,trashRed:0 },
+    "b9":{ name:"Fischpaste",e:"takeout_dining",cost:10000,amt:20,speed:0,luck:15,res:22,trashRed:0 },
+    "b10":{ name:"Kunstköder",e:"set_meal",cost:25000,amt:20,speed:15,luck:0,res:25,trashRed:0 }
 };
 
 const questDB = {
@@ -697,22 +791,22 @@ const questDB = {
 };
 
 const achievementsDB = [
-    { id:"first_catch", name:"Erster Fang", desc:"Fange deinen ersten Fisch", icon:"phishing", check:(gs)=>(gs.stats.totalCaught||0)>=1, rew:50 },
-    { id:"catch_100", name:"Hundert-Fänger", desc:"Fange 100 Fische", icon:"set_meal", check:(gs)=>(gs.stats.totalCaught||0)>=100, rew:500 },
-    { id:"catch_1000", name:"Tausend-Fänger", desc:"Fange 1.000 Fische", icon:"set_meal", check:(gs)=>(gs.stats.totalCaught||0)>=1000, rew:5000 },
-    { id:"first_shiny", name:"Shiny-Jäger", desc:"Fange einen Shiny", icon:"science", check:(gs)=>Object.values(gs.dex||{}).some(d=>d.shiny), rew:1000 },
-    { id:"level_10", name:"Anfänger-Meister", desc:"Erreiche Level 10", icon:"star", check:(gs)=>(gs.level||1)>=10, rew:300 },
-    { id:"level_50", name:"Profi-Angler", desc:"Erreiche Level 50", icon:"stars", check:(gs)=>(gs.level||1)>=50, rew:5000 },
-    { id:"first_prestige", name:"Neuanfang", desc:"Mache Prestige", icon:"military_tech", check:(gs)=>(gs.prestige||0)>=1, rew:2000 },
-    { id:"prestige_5", name:"Prestige-Meister", desc:"Prestige 5", icon:"military_tech", check:(gs)=>(gs.prestige||0)>=5, rew:50000 },
-    { id:"money_10000", name:"Kleiner Geldbeutel", desc:"10.000$", icon:"payments", check:(gs)=>(gs.money||0)>=10000, rew:500 },
-    { id:"money_100000", name:"Großer Geldbeutel", desc:"100.000$", icon:"diamond", check:(gs)=>(gs.money||0)>=100000, rew:10000 },
-    { id:"dex_10", name:"Sammler", desc:"10 verschiedene Fische", icon:"menu_book", check:(gs)=>Object.values(gs.dex||{}).filter(d=>d.normal).length>=10, rew:500 },
-    { id:"dex_all_zone0", name:"Bach-Komplettist", desc:"Alle Zone-0 Fische", icon:"landscape", check:(gs)=>{const z0=items.filter(i=>i.z===0&&!i.isTrash);return z0.every(i=>gs.dex?.[i.n]?.normal);}, rew:5000 },
-    { id:"aqua_unlock", name:"Aquarium-Besitzer", desc:"Aquarium freischalten", icon:"water", check:(gs)=>gs.aquarium?.unlocked, rew:1000 },
-    { id:"aqua_full", name:"Volles Aquarium", desc:"5 Fische im Aquarium", icon:"set_meal", check:(gs)=>(gs.aquarium?.fishes?.length||0)>=5, rew:3000 },
-    { id:"daily_streak_7", name:"Täglicher Besucher", desc:"7 Tage Streak", icon:"local_fire_department", check:(gs)=>(gs.dailyStreak||0)>=7, rew:2000 },
-    { id:"guild_join", name:"Gilden-Mitglied", desc:"Trete Gilde bei", icon:"shield", check:(gs)=>!!gs.guild, rew:500 },
+    { id:"first_catch", name:"Erster Fang", desc:"Fange deinen ersten Fisch", icon:"phishing", check:(gs)=>(gs.stats.totalCaught||0)>=1, rew:50, progress: (gs) => Math.min(1, gs.stats.totalCaught||0), target: 1 },
+    { id:"catch_100", name:"Hundert-Fänger", desc:"Fange 100 Fische", icon:"set_meal", check:(gs)=>(gs.stats.totalCaught||0)>=100, rew:500, progress: (gs) => Math.min(100, gs.stats.totalCaught||0), target: 100 },
+    { id:"catch_1000", name:"Tausend-Fänger", desc:"Fange 1.000 Fische", icon:"set_meal", check:(gs)=>(gs.stats.totalCaught||0)>=1000, rew:5000, progress: (gs) => Math.min(1000, gs.stats.totalCaught||0), target: 1000 },
+    { id:"first_shiny", name:"Shiny-Jäger", desc:"Fange einen Shiny", icon:"science", check:(gs)=>Object.values(gs.dex||{}).some(d=>d.shiny), rew:1000, progress: (gs) => Object.values(gs.dex||{}).some(d=>d.shiny) ? 1 : 0, target: 1 },
+    { id:"level_10", name:"Anfänger-Meister", desc:"Erreiche Level 10", icon:"star", check:(gs)=>(gs.level||1)>=10, rew:300, progress: (gs) => Math.min(10, gs.level||1), target: 10 },
+    { id:"level_50", name:"Profi-Angler", desc:"Erreiche Level 50", icon:"stars", check:(gs)=>(gs.level||1)>=50, rew:5000, progress: (gs) => Math.min(50, gs.level||1), target: 50 },
+    { id:"first_prestige", name:"Neuanfang", desc:"Mache Prestige", icon:"military_tech", check:(gs)=>(gs.prestige||0)>=1, rew:2000, progress: (gs) => Math.min(1, gs.prestige||0), target: 1 },
+    { id:"prestige_5", name:"Prestige-Meister", desc:"Prestige 5", icon:"military_tech", check:(gs)=>(gs.prestige||0)>=5, rew:50000, progress: (gs) => Math.min(5, gs.prestige||0), target: 5 },
+    { id:"money_10000", name:"Kleiner Geldbeutel", desc:"10.000$", icon:"payments", check:(gs)=>(gs.money||0)>=10000, rew:500, progress: (gs) => Math.min(10000, gs.money||0), target: 10000 },
+    { id:"money_100000", name:"Großer Geldbeutel", desc:"100.000$", icon:"diamond", check:(gs)=>(gs.money||0)>=100000, rew:10000, progress: (gs) => Math.min(100000, gs.money||0), target: 100000 },
+    { id:"dex_10", name:"Sammler", desc:"10 verschiedene Fische", icon:"menu_book", check:(gs)=>Object.values(gs.dex||{}).filter(d=>d.normal).length>=10, rew:500, progress: (gs) => Math.min(10, Object.values(gs.dex||{}).filter(d=>d.normal).length), target: 10 },
+    { id:"dex_all_zone0", name:"Bach-Komplettist", desc:"Alle Zone-0 Fische", icon:"landscape", check:(gs)=>{const z0=items.filter(i=>i.z===0&&!i.isTrash);return z0.every(i=>gs.dex?.[i.n]?.normal);}, rew:5000, progress: (gs) => {const z0=items.filter(i=>i.z===0&&!i.isTrash);return z0.filter(i=>gs.dex?.[i.n]?.normal).length;}, target: ()=>{return items.filter(i=>i.z===0&&!i.isTrash).length;} },
+    { id:"aqua_unlock", name:"Aquarium-Besitzer", desc:"Aquarium freischalten", icon:"water", check:(gs)=>gs.aquarium?.unlocked, rew:1000, progress: (gs) => gs.aquarium?.unlocked ? 1 : 0, target: 1 },
+    { id:"aqua_full", name:"Volles Aquarium", desc:"5 Fische im Aquarium", icon:"set_meal", check:(gs)=>(gs.aquarium?.fishes?.length||0)>=5, rew:3000, progress: (gs) => Math.min(5, gs.aquarium?.fishes?.length||0), target: 5 },
+    { id:"daily_streak_7", name:"Täglicher Besucher", desc:"7 Tage Streak", icon:"local_fire_department", check:(gs)=>(gs.dailyStreak||0)>=7, rew:2000, progress: (gs) => Math.min(7, gs.dailyStreak||0), target: 7 },
+    { id:"guild_join", name:"Gilden-Mitglied", desc:"Trete Gilde bei", icon:"shield", check:(gs)=>!!gs.guild, rew:500, progress: (gs) => gs.guild ? 1 : 0, target: 1 },
 ];
 
 function checkAchievements() {
@@ -796,11 +890,10 @@ function renderAquarium() {
     });
 }
 
-function roll(zIdx, overrideBaitId = null) {
+function roll(zIdx) {
     let {event}=getCurrentEventInfo();
     let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
-    let activeBait = overrideBaitId !== null ? overrideBaitId : gameState.eqBait;
-    let baitDef=activeBait!=="none"?baitsDB[activeBait]:null;
+    let baitDef=gameState.eqBait!=="none"?baitsDB[gameState.eqBait]:null;
     let pool=items.filter(i=>i.z===zIdx);
     if(baitDef?.trashRed) pool=pool.filter(i=>!i.isTrash||Math.random()>baitDef.trashRed/100);
     let eventLuckMult=(event&&event.type==='luck')?event.mult:1;
@@ -833,7 +926,7 @@ function roll(zIdx, overrideBaitId = null) {
         finalItem.xp=Math.abs(finalItem.xp)*5;finalItem.isShiny=true;finalItem.isTrash=false;
         finalItem.eObj=window.M(baseItem.e, 'c-shiny');
     }
-    finalItem.id=Math.random().toString(36).substr(2,9); // Eindeutige ID generieren (WICHTIG für sicheres Entfernen!)
+    finalItem.id=Math.random().toString(36).substr(2,9);
     return finalItem;
 }
 
@@ -926,7 +1019,7 @@ async function loadData() {
                 document.getElementById("game").style.display="flex";
                 document.getElementById("btnFeedbackFixed").style.display="flex";
                 document.getElementById("btnDiscordFixed").style.display="flex";
-                document.getElementById("btnChatToggle").style.display="flex"; // Chat Button anzeigen!
+                document.getElementById("btnChatToggle").style.display="flex";
                 if(currentUser==="colin")document.getElementById("btnAdminTop").style.display="block";
                 initChat();updateBoatVisual();
             }
@@ -938,8 +1031,8 @@ async function loadData() {
             
             checkAchievements();
             checkDexCompletionRewards();
-            updateUI(); // INSTANT-UPDATE-RULE
-            refreshCurrentMenu(); // INSTANT-UPDATE-RULE
+            updateUI();
+            refreshCurrentMenu();
         }
     });
     setInterval(()=>{if(gameState?.aquarium?.fishes?.length>0){let am=1+((gameState.skills?.aqua||0)*0.00025);let inc=gameState.aquarium.fishes.reduce((s,f)=>s+Math.floor(f.v*0.1*am),0);if(inc>0){gameState.money+=inc;log(`${window.M('set_meal','c-fish')} Aquarium:+${inc}$`);saveData();syncGlobalLeaderboard();updateUI();}}},60000);
@@ -991,7 +1084,6 @@ function openModal(title,body,footer='',wide=false){
     ov.classList.add('active');
 }
 
-// --- MODULE: AUTO EVENTS ---
 function autoEventCycle(){
     setInterval(async()=>{
         if(!globalState){try{let snap=await get(ref(db,"global"));globalState=snap.exists()?snap.val():null;}catch(e){}}
@@ -1012,84 +1104,20 @@ function autoEventCycle(){
 }
 autoEventCycle();
 
-// --- MODULE: FISHING CORE (MANUAL & AUTO) ---
-let activeFishingBubble = null;
-let fishingBubbleInterval = null;
-
-function spawnFishingBubble() {
-    if (!document.getElementById('fishing-scene').classList.contains('fishing-active')) return;
-    if (activeFishingBubble) return; 
-    
-    let bubble = document.createElement('div');
-    bubble.innerHTML = window.M('radio_button_unchecked'); 
-    bubble.style.position = 'fixed';
-    bubble.style.left = (Math.random() * 80 + 10) + 'vw';
-    bubble.style.bottom = '-50px';
-    bubble.style.fontSize = '40px';
-    bubble.style.color = 'rgba(255,255,255,0.7)';
-    bubble.style.zIndex = '999999'; 
-    bubble.style.cursor = 'pointer';
-    bubble.style.transition = 'transform 3s linear';
-    bubble.style.textShadow = '0 0 10px rgba(59,130,246,0.8)';
-    bubble.style.pointerEvents = 'auto'; 
-    
-    document.body.appendChild(bubble);
-    activeFishingBubble = bubble;
-    
-    requestAnimationFrame(() => {
-        bubble.style.transform = `translateY(-110vh)`;
-    });
-
-    bubble.onclick = function() {
-        window.playSound('splash');
-        if (window.currentFishingTimeLeft > 0) {
-            let reduction = Math.max(1, Math.floor(window.currentFishingTimeLeft * 0.10));
-            window.currentFishingTimeLeft -= reduction;
-            let btn = document.getElementById('btnFish');
-            if (btn) btn.innerHTML = `${window.M('phishing')} Angeln... (${window.currentFishingTimeLeft}s)`;
-        }
-        bubble.remove();
-        activeFishingBubble = null;
-    };
-
-    setTimeout(() => {
-        if(bubble && bubble.parentNode) {
-            bubble.remove();
-            if(activeFishingBubble === bubble) activeFishingBubble = null;
-        }
-    }, 3000);
-}
-
-function startFishingBubbles() {
-    cleanupFishingBubbles();
-    fishingBubbleInterval = setInterval(() => {
-        if (!activeFishingBubble && Math.random() < 0.6) { 
-            spawnFishingBubble();
-        }
-    }, 1000);
-}
-
-function cleanupFishingBubbles() {
-    if (fishingBubbleInterval) clearInterval(fishingBubbleInterval);
-    if (activeFishingBubble) { activeFishingBubble.remove(); activeFishingBubble = null; }
-}
-
 window.handleFish = function(){
     let btn=document.getElementById('btnFish');if(btn.disabled)return;
-    btn.disabled=true;let scene=document.getElementById('fishing-scene');scene.classList.add('fishing-active');
-    let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
     
-    let usedBaitId = gameState.eqBait;
-    let baitDef=baitsDB[usedBaitId];
-    
-    // Köder wird SOFORT bei Klick auf Angeln abgezogen
-    if(gameState.eqBait!=="none"&&gameState.baits&&gameState.baits[gameState.eqBait]>0){
+    // Köder sofort entfernen
+    if(gameState.eqBait!=="none"&&gameState.baits){
         gameState.baits[gameState.eqBait]--;
         if(gameState.baits[gameState.eqBait]<=0)gameState.eqBait="none";
-        updateUI(); // INSTANT-UPDATE-RULE
+        updateUI();
         saveData();
     }
     
+    btn.disabled=true;let scene=document.getElementById('fishing-scene');scene.classList.add('fishing-active');
+    let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
+    let baitDef=baitsDB[gameState.eqBait];
     let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0);if(speedBonus>90)speedBonus=90;
     let resBonus = (rodDef.res||0) + (baitDef?.res||0);
     
@@ -1098,21 +1126,27 @@ window.handleFish = function(){
     if(event&&event.type==='speed')fishTimeSec=Math.floor(fishTimeSec/event.mult);
     if(event&&event.type==='rain')fishTimeSec=Math.floor(fishTimeSec/event.mult);
     fishTimeSec=Math.max(2,Math.floor(fishTimeSec));
-    window.currentFishingTimeLeft=fishTimeSec;
-    btn.innerHTML=`${window.M('phishing')} Angeln... (${window.currentFishingTimeLeft}s)`;
+    let timeLeft=fishTimeSec;
+    btn.innerHTML=`${window.M('phishing')} Angeln... (${timeLeft}s)`;
+    
+    // Interaktive Blasen aktivieren
+    window.isFishingActive = true;
+    window.fishingTimeLeft = timeLeft;
+    window.clearInteractiveBubble();
+    setTimeout(() => { window.spawnInteractiveBubble(); }, 500);
     
     if(fishInterval)clearInterval(fishInterval);
-    startFishingBubbles();
-    
     fishInterval=setInterval(()=>{
-        window.currentFishingTimeLeft--;
-        if(window.currentFishingTimeLeft>0)btn.innerHTML=`${window.M('phishing')} Angeln... (${window.currentFishingTimeLeft}s)`;
+        timeLeft--;
+        window.fishingTimeLeft = timeLeft;
+        if(timeLeft>0)btn.innerHTML=`${window.M('phishing')} Angeln... (${timeLeft}s)`;
         else{
             clearInterval(fishInterval);
-            cleanupFishingBubbles();
+            window.isFishingActive = false;
+            window.clearInteractiveBubble();
             startTimingMinigame(resBonus).then((success) => {
                 if(success) {
-                    executeFishCatch(btn, scene, usedBaitId);
+                    executeFishCatch(btn, scene);
                 } else {
                     scene.classList.remove('fishing-active');
                     btn.disabled = false;
@@ -1175,15 +1209,14 @@ document.getElementById('btnTimingCatch')?.addEventListener('click', () => {
     else timingResolve(false);
 });
 
-function executeFishCatch(btn,scene, usedBaitId){
+function executeFishCatch(btn,scene){
     try{
         if(!gameState.inventory)gameState.inventory=[];
         if(!gameState.rodStats)gameState.rodStats={};
-        let item=roll(gameState.zone, usedBaitId);
+        let item=roll(gameState.zone);
         let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
-        let baitDef=baitsDB[usedBaitId];
+        let baitDef=baitsDB[gameState.eqBait];
         let {event}=getCurrentEventInfo();
-
         if(!item.isTrash&&item.weightG){
             let maxGrams=(rodDef.maxKg||2)*1000;let resilience=(rodDef.res||0)+(baitDef?.res||0);
             let escapeChance=item.weightG>maxGrams?80-resilience:10-resilience;
@@ -1217,7 +1250,7 @@ function executeFishCatch(btn,scene, usedBaitId){
         let msg=item.isShiny?`${window.M('science','c-shiny')} MUTATION: ${item.baseName}${wText} (${item.v}$)`:`${item.eObj} Gefangen: ${item.baseName}${wText} (${item.v}$)`;
         if(gameState.xp>=gameState.level*50){gameState.xp-=gameState.level*50;gameState.level++;msg+=` ${window.M('star','c-shiny')} LEVEL UP!`; window.playSound('shiny');}
         log(msg);
-        updateUI(); // INSTANT-UPDATE-RULE
+        updateUI();
         saveData();syncGlobalLeaderboard();refreshCurrentMenu();
         scene.classList.remove('fishing-active');btn.disabled=false;btn.innerHTML=`${window.M('phishing')} Angeln`;
     }catch(e){
@@ -1225,7 +1258,6 @@ function executeFishCatch(btn,scene, usedBaitId){
     }
 }
 
-// Auto Angler Logic (Hintergrund)
 function executeAutoFishCatch() {
     if(!gameState || !gameState.inventory) return;
     
@@ -1272,7 +1304,6 @@ function executeAutoFishCatch() {
     saveData();syncGlobalLeaderboard();refreshCurrentMenu();
 }
 
-// Boss Minigame
 let minigameActive=false,mgPlayerPower=0,mgFishPower=50,mgFishItem=null,mgTimer=null,mgClicksNeeded=15,mgTotalClicks=15,mgLastClick=0;
 function triggerMinigame(item){
     if(!gameState.inventory)gameState.inventory=[];
@@ -1319,11 +1350,10 @@ function finishMinigame(won){
         log(`${window.M('air')} Entkommen: ${mgFishItem.baseName} hat sich losgerissen!`);
         window.playSound('error');
     }
-    updateUI(); // INSTANT-UPDATE-RULE
+    updateUI();
     saveData();syncGlobalLeaderboard();refreshCurrentMenu();
 }
 
-// --- MODULE: INVENTORY & SELLING ---
 window.handleSellMenu=function(){
     window.currentOpenMenu='sell';
     if(!gameState.inventory)gameState.inventory=[];
@@ -1333,7 +1363,6 @@ window.handleSellMenu=function(){
         let val=Number(item.v);if(isNaN(val))val=0;
         if(val>=0)baseValue+=val;else trashValue+=val;
         let key=item.n;
-        // Speichere die EINDEUTIGE ID (item.id) statt des Indexes, um Bugs beim Entfernen zu vermeiden
         if(!grouped[key])grouped[key]={n:key,eObj:item.eObj,isTrash:item.isTrash,count:0,totalV:0,totalW:0,firstId:item.id};
         grouped[key].count++;grouped[key].totalV+=val;if(item.weightG)grouped[key].totalW+=item.weightG;
     });
@@ -1362,18 +1391,20 @@ window.executeSell=function(val){
     gameState.money+=Number(val);
     if(val>0){gameState.stats.totalEarned+=val;addQuestProgress('e',val);}
     gameState.inventory=[];
-    updateUI(); // INSTANT-UPDATE-RULE
-    window.handleSellMenu(); // INSTANT-UPDATE-RULE
+    updateUI();
+    window.handleSellMenu();
     saveData();syncGlobalLeaderboard();checkAchievements();
 }
 
-// --- MODULE: DEX MANUAL ENTRY ---
+// Dex: Nur den EINEN Fisch entfernen, nicht alle
 window.sendToDex = function(id) {
     let idx = gameState.inventory.findIndex(i => i.id === id);
     if(idx === -1) return;
     let item = gameState.inventory[idx];
     
-    if(!item || item.isTrash) return;
+    // Müll kann nicht ins Dex
+    if(!item || item.isTrash) return window.showToast("Müll kann nicht ins Dex!", "#ef4444", "error");
+    
     if(!gameState.dex) gameState.dex = {};
     let base = item.baseName;
     if(!gameState.dex[base]) gameState.dex[base] = {normal:false, shiny:false, count:0, maxW:0};
@@ -1387,21 +1418,46 @@ window.sendToDex = function(id) {
     gameState.dex[base].count++;
     if(item.weightG > gameState.dex[base].maxW) gameState.dex[base].maxW = item.weightG;
     
+    // Nur den einen Fisch entfernen
     gameState.inventory.splice(idx, 1);
-    updateUI(); // INSTANT-UPDATE-RULE
-    window.handleSellMenu(); // INSTANT-UPDATE-RULE
+    updateUI();
+    window.handleSellMenu();
     saveData();
     checkDexCompletionRewards();
     window.showToast("Dem Dex hinzugefügt!", "#10b981", "menu_book");
 }
 
-// --- MODULE: MENUS (Aqua, Skills, Shop, Inv, Guild, Quest, Dex) ---
+// Köder-Kiste kaufen
+window.buyBaitCrate = function() {
+    if(gameState.money < baitCrateCost) return window.showToast("Nicht genug Geld!", "#ef4444", "error");
+    gameState.money -= baitCrateCost;
+    
+    // Zufällige Köder aus der Kiste
+    let numTypes = 3 + Math.floor(Math.random() * 3); // 3-5 verschiedene Ködertypen
+    let shuffled = [...baitCrateContents].sort(() => Math.random() - 0.5);
+    let selected = shuffled.slice(0, numTypes);
+    let logMsg = [];
+    
+    if(!gameState.baits) gameState.baits = {};
+    selected.forEach(s => {
+        let amt = s.minAmt + Math.floor(Math.random() * (s.maxAmt - s.minAmt + 1));
+        gameState.baits[s.baitId] = (gameState.baits[s.baitId] || 0) + amt;
+        logMsg.push(`${amt}x ${s.name}`);
+    });
+    
+    log(`${window.M('inventory_2')} Köder-Kiste geöffnet: ${logMsg.join(', ')}`);
+    updateUI();
+    window.handleShopMenu();
+    saveData();
+    window.showToast(`Köder-Kiste für ${baitCrateCost}$ gekauft!`, "#10b981", "redeem");
+}
+
 window.handleAquaMenu=function(){window.currentOpenMenu='aqua';if(!gameState.aquarium)gameState.aquarium={unlocked:false,fishes:[]};if(!gameState.aquarium.unlocked){let c=gameState.money>=50000||gameState.prestige>=1;return openModal(`${window.M('water')} Aquarium`,`<div style="text-align:center"><p>50.000$</p>${c?`<button class="success-btn" onclick="window.unlockAquarium()">${window.M('shopping_cart')} Kaufen</button>`:'<button disabled>Nicht verfügbar</button>'}</div>`);}let h=`<h3>Kapazität (${gameState.aquarium.fishes.length}/5)</h3>`;gameState.aquarium.fishes.forEach((f,i)=>{let inc=Math.floor(f.v*0.1*(1+((gameState.skills?.aqua||0)*0.00025)));h+=`<div class="item-row"><div>${f.eObj} ${f.n} <small style="color:#10b981;">(+${inc}$/min)</small></div><button class="danger-btn" onclick="window.removeFromAquarium(${i})">Entfernen</button></div>`;});openModal(`${window.M('water')} Aquarium`,h);}
 window.unlockAquarium=function(){
     if(gameState.money>=50000){
         gameState.money-=50000; gameState.aquarium.unlocked=true;
-        updateUI(); // INSTANT-UPDATE-RULE
-        window.handleAquaMenu(); // INSTANT-UPDATE-RULE
+        updateUI();
+        window.handleAquaMenu();
         saveData();checkAchievements();renderAquarium();
     }
 }
@@ -1440,6 +1496,7 @@ window.handleSkillsMenu=function(){
 }
 window.upgradeSkill=function(t){if(!gameState.skills)gameState.skills={shiny:0,aqua:0};let spent=gameState.skills.shiny+gameState.skills.aqua;let av=Math.max(0,(gameState.level-1)-spent);if(av>0&&gameState.skills[t]<999){gameState.skills[t]++; updateUI(); window.handleSkillsMenu(); saveData();}}
 
+// Shop mit Köder-Kisten statt Einzelködern
 window.handleShopMenu=function(){
     window.currentOpenMenu='shop';
     let titleStr=`${window.M('shopping_cart')} Shop (${Math.floor(gameState.money).toLocaleString()}$)`;
@@ -1448,13 +1505,21 @@ window.handleShopMenu=function(){
         h += `<div class="inv-card" style="border-color:#10b981;"><h4>${window.M('smart_toy')} Auto-Angler</h4><p style="font-size:12px;">Angelt alle 60s im Hintergrund. Unabhängig vom aktiven Spielen.</p><button class="success-btn" style="width:100%;" ${gameState.money<100000?'disabled':''} onclick="window.buyAutoFish()">100.000$</button></div>`;
     }
     for(let[id,r]of Object.entries(rodsDB)){if((gameState.ownedRods||[]).includes(id))continue;h+=`<div class="inv-card"><h4>${window.M(r.e, 'c-rod')} ${r.name}</h4><div class="inv-stat"><span>Speed:</span><span>+${r.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span><span>+${r.luck||0}%</span></div><div class="inv-stat"><span>Stärke:</span><span>${r.res||0}%</span></div><div class="inv-stat"><span>Max. Kg:</span><span>${r.maxKg} kg</span></div><button class="success-btn" style="width:100%;" ${gameState.money<r.cost?'disabled':''} onclick="window.buyRod('${id}')">${r.cost.toLocaleString()}$</button></div>`;}
-    h+=`</div><div class="inv-col"><h4>Köder</h4>`;
-    for(let[id,b]of Object.entries(baitsDB)){h+=`<div class="inv-card"><h4>${window.M(b.e, 'c-bait')} ${b.name} (${b.amt}x)</h4><div class="inv-stat"><span>Speed:</span><span>+${b.speed||0}%</span></div><div class="inv-stat"><span>Glück:</span><span>+${b.luck||0}%</span></div><div class="inv-stat"><span>Stärke:</span><span>${b.res||0}%</span></div>${b.trashRed?`<div class="inv-stat" style="color:#10b981;"><span>Müll Reduzierung:</span><span>${b.trashRed}%</span></div>`:''}<button class="success-btn" style="width:100%;" ${gameState.money<b.cost?'disabled':''} onclick="window.buyBait('${id}')">${b.cost.toLocaleString()}$</button></div>`;}
-    h+=`</div></div>`;
+    h+=`</div><div class="inv-col"><h4>Köder-Kiste</h4>
+    <div class="inv-card" style="border-color:#10b981;">
+        <h4>${window.M('inventory_2')} Köder-Kiste</h4>
+        <p style="font-size:12px;">Enthält 3-5 verschiedene Ködertypen mit zufälliger Menge!</p>
+        <div class="inv-stat"><span>Preis:</span><span style="color:#10b981;">${baitCrateCost}$</span></div>
+        <button class="success-btn" style="width:100%; margin-top:8px; background:#facc15; color:#000;" ${gameState.money<baitCrateCost?'disabled':''} onclick="window.buyBaitCrate()">${window.M('redeem')} Kiste öffnen</button>
+    </div>
+    <div style="margin-top:10px; padding:10px; background:#0d1117; border-radius:12px;">
+        <p style="font-size:11px; color:#94a3b8;">Mögliche Inhalte:</p>
+        ${baitCrateContents.map(b => `<div style="font-size:10px; color:#a3e635; display:flex; justify-content:space-between;"><span>${b.name}</span><span>${b.minAmt}-${b.maxAmt}x</span></div>`).join('')}
+    </div>
+    </div></div>`;
     openModal(titleStr,h,"",true);
 }
 window.buyRod=function(id){gameState.money-=rodsDB[id].cost;if(!gameState.ownedRods)gameState.ownedRods=[];gameState.ownedRods.push(id); updateUI(); window.handleShopMenu(); saveData();syncGlobalLeaderboard();}
-window.buyBait=function(id){gameState.money-=baitsDB[id].cost;if(!gameState.baits)gameState.baits={};gameState.baits[id]=(gameState.baits[id]||0)+baitsDB[id].amt; updateUI(); window.handleShopMenu(); saveData();syncGlobalLeaderboard();}
 window.buyAutoFish=function(){gameState.money-=100000;gameState.autoFishUnlocked=true; document.getElementById('autoBoatContainer').style.display='block'; autoAnglerTimer = setInterval(() => { executeAutoFishCatch(); }, 60000); updateUI(); window.handleShopMenu(); saveData();}
 
 window.handleInvMenu=function(){
@@ -1596,7 +1661,7 @@ window.executeGuildDonateGroup=async function(k,ppf){
     if(donated>0){
         let g=guildsCache[gameState.guild];let mult=g.multiplier||1;let finalPts=Math.floor(totalPts*mult);
         gameState.inventory=newInv; 
-        updateUI(); window.handleGuildDonateMenu(); saveData(); // INSTANT-UPDATE-RULE
+        updateUI(); window.handleGuildDonateMenu(); saveData();
         let gr=ref(db,"global/guilds/"+gameState.guild+"/points");
         let snap=await get(gr);let cp=snap.exists()?snap.val():0;
         await set(gr,cp+finalPts);
@@ -1606,7 +1671,7 @@ window.executeGuildDonateGroup=async function(k,ppf){
     }
 }
 
-// --- MODULE: ACHIVEMENTS ---
+// Erfolge mit Fortschritt
 window.handleAchieveMenu = function() {
     window.currentOpenMenu = 'achieve';
     if(!gameState.achievements) gameState.achievements = {};
@@ -1615,10 +1680,21 @@ window.handleAchieveMenu = function() {
     achievementsDB.forEach(a => {
         const done = !!gameState.achievements[a.id];
         if(done) completed++;
+        let prog = typeof a.progress === 'function' ? a.progress(gameState) : 0;
+        let target = typeof a.target === 'function' ? a.target() : (a.target || 1);
+        let pct = Math.min(100, Math.floor((prog / target) * 100));
+        
         html += `
-        <div class="inv-card" style="opacity:${done?1:0.5};${done?'border-color:#facc15;':''}">
+        <div class="inv-card" style="opacity:${done?1:0.7};${done?'border-color:#facc15;':''}">
             <h4>${window.M(a.icon, 'c-shiny')} ${a.name}</h4>
             <p style="font-size:12px;color:#94a3b8;margin:0;">${a.desc}</p>
+            <div class="quest-bar-bg" style="margin:8px 0; height:8px;">
+                <div class="quest-bar-fill" style="width:${pct}%; background:${done?'#facc15':'#3b82f6'};"></div>
+            </div>
+            <div class="inv-stat">
+                <span>Fortschritt:</span>
+                <span style="color:${done?'#10b981':'#60a5fa'};">${prog}/${target} ${done?'✓':''}</span>
+            </div>
             <div class="inv-stat"><span>Belohnung:</span><span style="color:#10b981;">+${a.rew.toLocaleString()}$</span></div>
             <div style="text-align:right;margin-top:5px;">${done?'<span style="color:#10b981;">Erreicht</span>':'<span style="color:#ef4444;">Nicht erreicht</span>'}</div>
         </div>`;
@@ -1627,7 +1703,7 @@ window.handleAchieveMenu = function() {
     openModal(`${window.M('emoji_events')} Erfolge`, html);
 }
 
-// --- MODULE: BANK ---
+// Bank (unverändert)
 window.handleBankMenu = function() {
     window.currentOpenMenu = 'bank';
     
@@ -1729,7 +1805,7 @@ setInterval(() => {
     }
 }, 1000);
 
-// --- MODULE: WHEEL ---
+// Wheel (unverändert)
 window.handleWheelMenu = function() {
     window.currentOpenMenu = 'wheel';
     const now = Date.now();
@@ -1849,7 +1925,7 @@ window.spinWheel = function() {
         if(gameState.xp >= gameState.level*50) {
             gameState.xp -= gameState.level*50; gameState.level++; log(`${window.M('star','c-shiny')} LEVEL UP!`); window.playSound('shiny');
         }
-        updateUI(); // INSTANT-UPDATE-RULE
+        updateUI();
         saveData();
         syncGlobalLeaderboard();
         checkAchievements();
@@ -1899,12 +1975,11 @@ window.showFishInfo = function(n, tab) {
     openModal(`${window.M('info')} Info`, h);
 }
 
-// Zonen sofort Updaten
 window.handleZoneMenu=function(){window.currentOpenMenu='zone';let h=zones.map((z,i)=>`<div class="item-row"><b>${z.name}</b>${gameState.zone===i?'<span style="color:#10b981;">Aktiv</span>':gameState.prestige<z.reqPrestige?`<span style="color:#ef4444;">P${z.reqPrestige} benötigt</span>`:`<button class="success-btn" style="padding:6px 12px;flex-direction:row;" onclick="window.changeZone(${i})">${window.M('directions_walk')} Reisen</button>`}</div>`).join('');openModal(`${window.M('map')} Karte`,h);}
 window.changeZone=function(i){ 
     gameState.zone=i; 
-    updateUI(); // INSTANT-UPDATE-RULE
-    window.handleZoneMenu(); // INSTANT-UPDATE-RULE
+    updateUI();
+    window.handleZoneMenu();
     saveData(); 
 }
 
@@ -1960,9 +2035,9 @@ window.redeemPromoCode=async function(){let code=document.getElementById("inputP
 window.openFeedbackMenu=function(){openModal(`${window.M('chat')} Feedback`,`<textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;outline:none;"></textarea>`,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.submitFeedback()">${window.M('send')} Senden</button>`);}
 window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5 Zeichen!", "#ef4444", "error");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("Gesendet!", "#10b981", "check_circle");window.closeModal();}).catch(()=>window.showToast("Fehler", "#ef4444", "error"));}
 
-window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.0 - The App Update</h3><ul><li style="margin-bottom:6px;"><b>60 FPS Engine:</b> Animationen & Minispiele laufen jetzt absolut flüssig!</li><li style="margin-bottom:6px;"><b>Instant Updates:</b> Käufe & Aktionen reagieren sofort ohne Ladeverzögerung.</li><li style="margin-bottom:6px;"><b>UI & Design:</b> Alle Emojis wurden durch professionelle Vektor-Icons ersetzt. Das Mobile-Layout wurde perfektioniert und Notch/FaceCam weiße Balken bei iOS (PWA) gefixt.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);}
+window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.1 - Quality Update</h3><ul><li style="margin-bottom:6px;"><b>Köder-Kisten:</b> Köder sind nicht mehr einzeln kaufbar. Kaufe jetzt Köder-Kisten mit zufälligen Ködern!</li><li style="margin-bottom:6px;"><b>Interaktive Blasen:</b> Beim Angeln erscheinen Blasen auf dem Bildschirm. Tippe sie an für -10% Angelzeit!</li><li style="margin-bottom:6px;"><b>Plastikflasche:</b> Bringt jetzt +0,25$ statt Minus.</li><li style="margin-bottom:6px;"><b>Erfolge:</b> Zeigen jetzt Fortschrittsbalken.</li><li style="margin-bottom:6px;"><b>Dex-Fix:</b> Nur der ausgewählte Fisch wird entfernt, nicht alle.</li><li style="margin-bottom:6px;"><b>Müll im Dex:</b> Müll kann nicht mehr ins Dex gelegt werden.</li><li style="margin-bottom:6px;"><b>Widerstandsfähigkeit:</b> Köder geben jetzt Widerstand, der den Timing-Balken vergrößert.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);}
 
-// --- MODULE: ADMIN ---
+// Admin (unverändert)
 window.handleAdminMenu=function(){
     let h=`<div class="admin-grid">
     <div style="display:flex;flex-direction:column;gap:10px;">
@@ -2084,4 +2159,72 @@ window.adminCreateAccount=async function(){let u=document.getElementById('newAcc
 window.adminShowAccounts=async function(){let snap=await get(ref(db,"accounts"));if(snap.exists()){let h='<div style="max-height:400px;overflow-y:auto;">';snap.forEach(c=>{h+=`<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #30363d; align-items:center;"><span><b>${c.key}</b> - ${c.val()}</span><div style="display:flex;gap:5px;"><button class="update-btn" style="padding:4px 8px;" onclick="window.adminChangePassword('${c.key}')">${window.M('edit')}</button><button class="danger-btn" style="padding:4px 8px;" onclick="window.adminQuickDelete('${c.key}')">${window.M('delete')}</button></div></div>`;});h+='</div>';openModal("Accounts",h);}else window.showToast("Keine Accounts!", "#ef4444", "error");}
 window.adminChangePassword=async function(u){let np=prompt(`Neues Passwort für ${u}:`);if(np&&np.length>=3){await set(ref(db,"accounts/"+u),np);window.showToast("Geändert!", "#10b981", "check");window.adminShowAccounts();}}
 window.adminQuickDelete=async function(u){if(confirm(`${u} löschen?`)){await remove(ref(db,"accounts/"+u));await remove(ref(db,"users/"+u));await remove(ref(db,"global/leaderboard/"+u));window.showToast("Gelöscht!", "#10b981", "check");window.adminShowAccounts();}}
-window.adminGive=async function(){let t=document.
+window.adminGive=async function(){let t=document.getElementById('adminTarget').value.trim(),ty=document.getElementById('adminType').value,am=Number(document.getElementById('adminAmount').value);if(!t||isNaN(am))return window.showToast("User & Menge!", "#ef4444", "error");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(ty==='money')d.money+=am;if(ty==='level'){d.level+=am;d.xp=0;}if(ty==='prestige')d.prestige+=am;if(ty==='skills'){d.skills=d.skills||{shiny:0,aqua:0};}await set(ref(db,"users/"+t),d);window.showToast(`${am} ${ty} an ${t}`, "#10b981", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
+window.adminGiveItem=async function(){let t=document.getElementById('adminTarget').value.trim(),iv=document.getElementById('adminItem').value,count=Number(document.getElementById('adminItemCount').value);if(!t||isNaN(count)||count<=0)return window.showToast("User & Anzahl!", "#ef4444", "error");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(!Array.isArray(d.inventory))d.inventory=[];if(iv.startsWith("fish_")){let item=iv.replace("fish_","");let bi=items.find(i=>i.n===item);if(bi)for(let i=0;i<count;i++)d.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}else if(iv.startsWith("bait_")){let bid=iv.replace("bait_","");if(!d.baits)d.baits={};d.baits[bid]=(d.baits[bid]||0)+count;}await set(ref(db,"users/"+t),d);window.showToast(`Gegeben!`, "#10b981", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
+window.adminBanAccount=async function(){let u=document.getElementById('adminBanUser').value.trim(),m=Number(document.getElementById('adminBanTime').value);if(!u||isNaN(m))return window.showToast("User & Min!", "#ef4444", "error");let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=Date.now()+(m*60000);await set(ref(db,"users/"+u),d);window.showToast(`${u} für ${m} Min gesperrt!`, "#ef4444", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
+window.adminShowBanned=async function(){let snap=await get(ref(db,"users"));if(snap.exists()){let h='<div style="max-height:300px;overflow-y:auto;">';let has=false;snap.forEach(c=>{let u=c.val();if(u?.bannedUntil>Date.now()){has=true;let ml=Math.ceil((u.bannedUntil-Date.now())/60000);h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#161b22;border-radius:8px; margin-bottom: 5px;"><span><b>${u.name}</b> (${ml} Min)</span></div>`;}});h+='</div>';if(!has)return window.showToast("Niemand gebannt!", "#ef4444", "error");openModal("Banned Users",h);}else window.showToast("Fehler!", "#ef4444", "error");}
+window.adminResetAccount=async function(){let u=document.getElementById('adminResetUser').value.trim();if(confirm(`Willst du ${u} wirklich WIPEN?`)){let snap=await get(ref(db,"users/"+u));if(snap.exists()){let n=snap.val();n.money=0;n.xp=0;n.level=1;n.prestige=0;n.inventory=[];n.stats={totalCaught:0,totalEarned:0};await set(ref(db,"users/"+u),n);window.showToast(`${u} wurde gewiped!`, "#f97316", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}}
+window.adminCreatePromoCode=async function(){let n=document.getElementById('adminCodeName').value.trim().toUpperCase(),m=Number(document.getElementById('adminCodeMoney').value)||0,x=Number(document.getElementById('adminCodeXP').value)||0,l=Number(document.getElementById('adminCodeLevel').value)||0,s=Number(document.getElementById('adminCodeSkills').value)||0,i=document.getElementById('adminCodeItem').value,ia=Number(document.getElementById('adminCodeItemAmt').value)||1;if(!n)return window.showToast("Code Name!", "#ef4444", "error");let c={};if(m)c.money=m;if(x)c.xp=x;if(l)c.level=l;if(s)c.skills=s;if(i&&i!=="none"){c.itemName=i;c.itemAmt=ia;}await set(ref(db,"global/promocodes/"+n),c);window.showToast("Promo Code erstellt!", "#10b981", "check");document.getElementById('adminCodeName').value='';}
+window.adminManagePromoCodes=async function(){let snap=await get(ref(db,"global/promocodes"));if(snap.exists()){let h='<div style="max-height:400px;overflow-y:auto;">';snap.forEach(c=>{let d=c.val(),txt=[];if(d.money)txt.push(`${d.money}$`);if(d.xp)txt.push(`${d.xp}XP`);if(d.level)txt.push(`+${d.level}Lvl`);if(d.itemName)txt.push(`${d.itemAmt}x ${d.itemName}`);h+=`<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #30363d;align-items:center;"><div><b>${c.key}</b><br><small style="color:#10b981;">${txt.join(', ')}</small></div><button class="danger-btn" style="padding:4px 8px;" onclick="window.adminDeletePromoCode('${c.key}')">${window.M('delete')}</button></div>`;});h+='</div>';openModal("Promo Codes",h);}else window.showToast("Keine Codes!", "#ef4444", "error");}
+window.adminDeletePromoCode=async function(c){if(confirm(`Code ${c} löschen?`)){await remove(ref(db,"global/promocodes/"+c));window.showToast("Gelöscht!", "#10b981", "check");window.adminManagePromoCodes();}}
+
+function initChat(){
+    let inP = document.getElementById('chatInput');
+    inP.addEventListener('keypress', function(e){
+        if(e.key==='Enter') window.sendChatMessage();
+    });
+    
+    const chatRef = ref(db, 'chat');
+    onChildAdded(chatRef, (data) => {
+        let msg = data.val();
+        let cm = document.getElementById('chatMessages');
+        let div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<span class="chat-user">${msg.user}:</span> <span class="chat-msg-content">${msg.text}</span> <span class="chat-time">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>`;
+        cm.appendChild(div);
+        cm.scrollTop = cm.scrollHeight;
+    });
+}
+window.toggleChat=function(){
+    let c = document.getElementById('chatContainer');
+    c.style.display = c.style.display === 'flex' ? 'none' : 'flex';
+    if(c.style.display === 'flex') {
+        let cm = document.getElementById('chatMessages');
+        cm.scrollTop = cm.scrollHeight;
+        document.getElementById('chatInput').focus();
+    }
+}
+window.sendChatMessage=function(){
+    let inP = document.getElementById('chatInput');
+    let text = inP.value.trim();
+    if(text.length > 0 && text.length <= 100 && currentUser) {
+        push(ref(db, 'chat'), {
+            user: currentUser,
+            text: text,
+            timestamp: Date.now()
+        });
+        inP.value = '';
+    }
+}
+
+document.getElementById('btnFish').addEventListener('click', window.handleFish);
+document.getElementById('btnSell').addEventListener('click', window.handleSellMenu);
+document.getElementById('btnAqua').addEventListener('click', window.handleAquaMenu);
+document.getElementById('btnShop').addEventListener('click', window.handleShopMenu);
+document.getElementById('btnInv').addEventListener('click', window.handleInvMenu);
+document.getElementById('btnDex').addEventListener('click', window.handleDexMenu);
+document.getElementById('btnQuest').addEventListener('click', window.handleQuestMenu);
+document.getElementById('btnDaily').addEventListener('click', window.handleDailyMenu);
+document.getElementById('btnWheel').addEventListener('click', window.handleWheelMenu);
+document.getElementById('btnZone').addEventListener('click', window.handleZoneMenu);
+document.getElementById('btnProfile').addEventListener('click', window.handleProfileMenu);
+document.getElementById('btnSkills').addEventListener('click', window.handleSkillsMenu);
+document.getElementById('btnGuild').addEventListener('click', window.handleGuildMenu);
+document.getElementById('btnAchieve').addEventListener('click', window.handleAchieveMenu);
+document.getElementById('btnBank').addEventListener('click', window.handleBankMenu);
+document.getElementById('btnLeader').addEventListener('click', () => window.handleLeaderboard('users'));
+document.getElementById('btnPrestige').addEventListener('click', window.handlePrestigeMenu);
+document.getElementById('btnUpdates').addEventListener('click', window.handleUpdateMenu);
+</script>
+</body>
+</html>
