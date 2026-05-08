@@ -352,10 +352,11 @@
 
     <div id="authBox">
         <h3 style="text-align:center; display:flex; align-items:center; justify-content:center; gap:8px;"><span class="material-symbols-outlined">lock</span> Virtual Fisher Login</h3>
-        <input id="username" placeholder="Spielername" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;outline:none;">
-        <input id="password" type="password" placeholder="Passwort" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;outline:none;">
-        <button id="btnLogin" style="width:100%;margin:15px 0;padding:14px;background:#10b981;flex-direction:row;"><span class="material-symbols-outlined">login</span> Einloggen</button>
+        <input id="username" placeholder="Spielername" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;outline:none;" autocomplete="off">
+        <input id="password" type="password" placeholder="Passwort" style="width:100%;padding:12px;margin:5px 0;border-radius:12px;border:1px solid #30363d;background:#0d1117;color:white;outline:none;" autocomplete="off">
+        <button id="btnLogin" type="button" style="width:100%;margin:15px 0;padding:14px;background:#10b981;flex-direction:row;"><span class="material-symbols-outlined">login</span> Einloggen</button>
         <div id="login-error" style="color:#ef4444;font-size:13px;display:none;text-align:center;font-weight:bold;margin-top:5px;"></div>
+        <div id="login-loading" style="color:#facc15;font-size:13px;display:none;text-align:center;font-weight:bold;margin-top:5px;">Verbinde mit Server...</div>
     </div>
 
     <div id="game" style="display:none;flex-direction:column;">
@@ -417,8 +418,17 @@ const firebaseConfig = {
     projectId: "cc-shop-36c3b",
     storageBucket: "cc-shop-36c3b.firebasestorage.app"
 };
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+
+let app, db;
+try {
+    app = initializeApp(firebaseConfig);
+    db = getDatabase(app);
+    console.log("Firebase initialisiert");
+} catch(e) {
+    console.error("Firebase Init Fehler:", e);
+    document.getElementById('login-error').innerText = "Server-Verbindungsfehler! Bitte später erneut versuchen.";
+    document.getElementById('login-error').style.display = 'block';
+}
 
 window.M = (icon, cssClass="", style="") => `<span class="material-symbols-outlined ${cssClass}" style="${style}">${icon}</span>`;
 
@@ -440,16 +450,27 @@ window.activeBubble = null;
 window.bubbleTimeout = null;
 
 const savedUser = localStorage.getItem('vFisher_user');
-if (savedUser) {
+if (savedUser && db) {
     currentUser = savedUser;
     loadData();
 }
 
-document.getElementById('btnLogin').addEventListener('click', async () => {
+// Login-Button Handler mit Timeout-Schutz
+document.getElementById('btnLogin').addEventListener('click', async function() {
+    if (!db) {
+        document.getElementById('login-error').innerText = "Server nicht erreichbar! Bitte Seite neu laden.";
+        document.getElementById('login-error').style.display = 'block';
+        return;
+    }
+    
     let u = document.getElementById('username').value.trim();
     let p = document.getElementById('password').value.trim();
     let err = document.getElementById('login-error');
+    let load = document.getElementById('login-loading');
+    let btn = document.getElementById('btnLogin');
+    
     err.style.display = 'none';
+    load.style.display = 'none';
 
     if(u.length < 3 || p.length < 3) {
         err.innerText = "Benutzername und Passwort müssen mindestens 3 Zeichen lang sein.";
@@ -457,25 +478,55 @@ document.getElementById('btnLogin').addEventListener('click', async () => {
         return;
     }
 
+    // Button deaktivieren, Ladezustand anzeigen
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">sync</span> Verbinde...';
+    load.style.display = 'block';
+    load.innerText = 'Verbinde mit Server...';
+
+    // Timeout-Promise für maximal 10 Sekunden Wartezeit
+    const timeout = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('TIMEOUT')), 10000)
+    );
+
     try {
-        let snap = await get(ref(db, "accounts/" + u));
+        // Firebase-Abfrage mit Timeout
+        const getPromise = get(ref(db, "accounts/" + u));
+        let snap = await Promise.race([getPromise, timeout]);
+        
+        load.innerText = 'Anmeldung läuft...';
+        
         if(snap.exists()) {
             if(snap.val() === p) {
+                // Erfolgreicher Login
+                load.innerText = 'Login erfolgreich! Lade Spiel...';
                 currentUser = u;
                 localStorage.setItem('vFisher_user', u);
-                loadData();
+                await loadData();
             } else {
-                err.innerText = "Falsches Passwort!";
-                err.style.display = 'block';
+                throw new Error('Falsches Passwort!');
             }
         } else {
+            // Neuer Account
+            load.innerText = 'Erstelle neuen Account...';
             await set(ref(db, "accounts/" + u), p);
             currentUser = u;
             localStorage.setItem('vFisher_user', u);
-            loadData();
+            await loadData();
         }
     } catch(error) {
-        err.innerText = "Verbindungsfehler zur Datenbank!";
+        console.error("Login-Fehler:", error);
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined">login</span> Einloggen';
+        load.style.display = 'none';
+        
+        if (error.message === 'TIMEOUT') {
+            err.innerText = "Server antwortet nicht! Überprüfe deine Internetverbindung.";
+        } else if (error.message === 'Falsches Passwort!') {
+            err.innerText = error.message;
+        } else {
+            err.innerText = "Verbindungsfehler zur Datenbank! Bitte versuche es erneut.";
+        }
         err.style.display = 'block';
     }
 });
@@ -580,18 +631,16 @@ function updateBoatVisual() {
 
 // Interaktive Blasen-Funktionen
 window.spawnInteractiveBubble = function() {
-    if (window.activeBubble) return; // Nur eine Blase gleichzeitig
+    if (window.activeBubble) return;
     if (!window.isFishingActive || window.fishingTimeLeft <= 0) return;
     
     const bubble = document.createElement('div');
     bubble.className = 'interactive-bubble';
     
-    // Zufällige Größe zwischen 50-80px
     const size = 50 + Math.random() * 30;
     bubble.style.width = size + 'px';
     bubble.style.height = size + 'px';
     
-    // Zufällige Position (sichtbarer Bereich)
     const maxX = window.innerWidth - size - 20;
     const maxY = window.innerHeight - size - 20;
     const x = 10 + Math.random() * maxX;
@@ -609,11 +658,9 @@ window.spawnInteractiveBubble = function() {
         e.stopPropagation();
         if (!window.isFishingActive || window.fishingTimeLeft <= 0) return;
         
-        // 10% der Angelzeit entfernen
         const reduction = Math.max(1, Math.floor(window.fishingTimeLeft * 0.1));
         window.fishingTimeLeft = Math.max(1, window.fishingTimeLeft - reduction);
         
-        // Visuelles Feedback
         bubble.style.transform = 'scale(1.5)';
         bubble.style.opacity = '0.3';
         setTimeout(() => {
@@ -623,7 +670,6 @@ window.spawnInteractiveBubble = function() {
         window.activeBubble = null;
         if (window.bubbleTimeout) clearTimeout(window.bubbleTimeout);
         
-        // Nächste Blase nach 2-5 Sekunden spawnen
         if (window.isFishingActive && window.fishingTimeLeft > 1) {
             window.bubbleTimeout = setTimeout(() => {
                 window.spawnInteractiveBubble();
@@ -636,7 +682,6 @@ window.spawnInteractiveBubble = function() {
     document.body.appendChild(bubble);
     window.activeBubble = bubble;
     
-    // Blase verschwindet nach 8-12 Sekunden automatisch
     setTimeout(() => {
         if (bubble.parentElement && window.activeBubble === bubble) {
             bubble.remove();
@@ -968,7 +1013,8 @@ window.closeBroadcast = function() {
 }
 
 async function loadData() {
-    if(!currentUser)return;
+    if(!currentUser || !db) return;
+    
     onValue(ref(db,"accounts/"+currentUser),(snap)=>{
         if(!snap.exists()&&currentUser){
             localStorage.removeItem('vFisher_user');
@@ -1009,6 +1055,11 @@ async function loadData() {
                 document.getElementById("btnChatToggle").style.display="flex";
                 if(currentUser==="colin")document.getElementById("btnAdminTop").style.display="block";
                 initChat();updateBoatVisual();
+                
+                // Login-Ladezustand zurücksetzen
+                document.getElementById('login-loading').style.display = 'none';
+                document.getElementById('btnLogin').disabled = false;
+                document.getElementById('btnLogin').innerHTML = '<span class="material-symbols-outlined">login</span> Einloggen';
             }
             
             if(gameState.autoFishUnlocked && !autoAnglerTimer) {
@@ -1025,7 +1076,7 @@ async function loadData() {
     setInterval(()=>{if(gameState?.aquarium?.fishes?.length>0){let am=1+((gameState.skills?.aqua||0)*0.00025);let inc=gameState.aquarium.fishes.reduce((s,f)=>s+Math.floor(f.v*0.1*am),0);if(inc>0){gameState.money+=inc;log(`${window.M('set_meal','c-fish')} Aquarium:+${inc}$`);saveData();syncGlobalLeaderboard();updateUI();}}},60000);
 }
 
-function saveData(){if(currentUser&&gameState){set(ref(db,"users/"+currentUser),gameState).catch(e=>{});cloudSync();}}
+function saveData(){if(currentUser&&gameState){set(ref(db,"users/"+currentUser),gameState).catch(e=>{console.error("Save error:", e);});cloudSync();}}
 setInterval(()=>{if(gameState&&currentUser)saveData();},5000);
 
 function updateUI(){
@@ -1094,7 +1145,6 @@ autoEventCycle();
 window.handleFish = function(){
     let btn=document.getElementById('btnFish');if(btn.disabled)return;
     
-    // Köder sofort entfernen
     if(gameState.eqBait!=="none"&&gameState.baits){
         gameState.baits[gameState.eqBait]--;
         if(gameState.baits[gameState.eqBait]<=0)gameState.eqBait="none";
@@ -1115,7 +1165,6 @@ window.handleFish = function(){
     fishTimeSec=Math.max(2,Math.floor(fishTimeSec));
     let timeLeft=fishTimeSec;
     
-    // Interaktive Blasen aktivieren
     window.isFishingActive = true;
     window.fishingTimeLeft = timeLeft;
     btn.innerHTML=`${window.M('phishing')} Angeln... (${window.fishingTimeLeft}s)`;
@@ -1421,7 +1470,6 @@ window.executeSell=function(val){
     saveData();syncGlobalLeaderboard();checkAchievements();
 }
 
-// Dex: Nur den EINEN Fisch entfernen, nicht alle
 window.sendToDex = function(id) {
     let idx = gameState.inventory.findIndex(i => i.id === id);
     if(idx === -1) return;
@@ -1442,7 +1490,6 @@ window.sendToDex = function(id) {
     gameState.dex[base].count++;
     if(item.weightG > gameState.dex[base].maxW) gameState.dex[base].maxW = item.weightG;
     
-    // Nur den einen Fisch entfernen
     gameState.inventory.splice(idx, 1);
     updateUI();
     window.handleSellMenu();
@@ -1451,7 +1498,6 @@ window.sendToDex = function(id) {
     window.showToast("Dem Dex hinzugefügt!", "#10b981", "menu_book");
 }
 
-// Köder-Kiste kaufen
 window.buyBaitCrate = function() {
     if(gameState.money < baitCrateCost) return window.showToast("Nicht genug Geld!", "#ef4444", "error");
     gameState.money -= baitCrateCost;
@@ -1528,7 +1574,6 @@ window.handleSkillsMenu=function(){
 }
 window.upgradeSkill=function(t){if(!gameState.skills)gameState.skills={shiny:0,aqua:0};let spent=gameState.skills.shiny+gameState.skills.aqua;let av=Math.max(0,(gameState.level-1)-spent);if(av>0&&gameState.skills[t]<999){gameState.skills[t]++; updateUI(); window.handleSkillsMenu(); saveData();}}
 
-// Shop mit Köder-Kisten statt Einzelködern
 window.handleShopMenu=function(){
     window.currentOpenMenu='shop';
     let titleStr=`${window.M('shopping_cart')} Shop (${Math.floor(gameState.money).toLocaleString()}$)`;
@@ -1699,7 +1744,6 @@ window.executeGuildDonateGroup=async function(k,ppf){
     }
 }
 
-// Erfolge mit Fortschritt
 window.handleAchieveMenu = function() {
     window.currentOpenMenu = 'achieve';
     if(!gameState.achievements) gameState.achievements = {};
@@ -1731,7 +1775,6 @@ window.handleAchieveMenu = function() {
     openModal(`${window.M('emoji_events')} Erfolge`, html);
 }
 
-// Bank (unverändert)
 window.handleBankMenu = function() {
     window.currentOpenMenu = 'bank';
     
@@ -1833,7 +1876,6 @@ setInterval(() => {
     }
 }, 1000);
 
-// Wheel (unverändert)
 window.handleWheelMenu = function() {
     window.currentOpenMenu = 'wheel';
     const now = Date.now();
@@ -2063,9 +2105,8 @@ window.redeemPromoCode=async function(){let code=document.getElementById("inputP
 window.openFeedbackMenu=function(){openModal(`${window.M('chat')} Feedback`,`<textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;outline:none;"></textarea>`,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.submitFeedback()">${window.M('send')} Senden</button>`);}
 window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5 Zeichen!", "#ef4444", "error");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("Gesendet!", "#10b981", "check_circle");window.closeModal();}).catch(()=>window.showToast("Fehler", "#ef4444", "error"));}
 
-window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.1 - Quality Update</h3><ul><li style="margin-bottom:6px;"><b>Köder-Kisten:</b> Köder sind nicht mehr einzeln kaufbar. Kaufe jetzt Köder-Kisten mit zufälligen Ködern!</li><li style="margin-bottom:6px;"><b>Interaktive Blasen:</b> Beim Angeln erscheinen Blasen auf dem Bildschirm. Tippe sie an für -10% Angelzeit!</li><li style="margin-bottom:6px;"><b>Plastikflasche:</b> Bringt jetzt +0,25$ statt Minus.</li><li style="margin-bottom:6px;"><b>Erfolge:</b> Zeigen jetzt Fortschrittsbalken.</li><li style="margin-bottom:6px;"><b>Dex-Fix:</b> Nur der ausgewählte Fisch wird entfernt, nicht alle.</li><li style="margin-bottom:6px;"><b>Müll im Dex:</b> Müll kann nicht mehr ins Dex gelegt werden.</li><li style="margin-bottom:6px;"><b>Widerstandsfähigkeit:</b> Köder geben jetzt Widerstand, der den Timing-Balken vergrößert.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);}
+window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.1 - Quality Update</h3><ul><li style="margin-bottom:6px;"><b>Login-Fix:</b> Der Login-Button wurde repariert und hat jetzt eine Ladeanzeige.</li><li style="margin-bottom:6px;"><b>Köder-Kisten:</b> Köder sind nicht mehr einzeln kaufbar. Kaufe jetzt Köder-Kisten mit zufälligen Ködern!</li><li style="margin-bottom:6px;"><b>Interaktive Blasen:</b> Beim Angeln erscheinen Blasen auf dem Bildschirm. Tippe sie an für -10% Angelzeit!</li><li style="margin-bottom:6px;"><b>Plastikflasche:</b> Bringt jetzt +0,25$ statt Minus.</li><li style="margin-bottom:6px;"><b>Erfolge:</b> Zeigen jetzt Fortschrittsbalken.</li><li style="margin-bottom:6px;"><b>Dex-Fix:</b> Nur der ausgewählte Fisch wird entfernt, nicht alle.</li><li style="margin-bottom:6px;"><b>Müll im Dex:</b> Müll kann nicht mehr ins Dex gelegt werden.</li><li style="margin-bottom:6px;"><b>Widerstandsfähigkeit:</b> Köder geben jetzt Widerstand, der den Timing-Balken vergrößert.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);}
 
-// Admin (unverändert)
 window.handleAdminMenu=function(){
     let h=`<div class="admin-grid">
     <div style="display:flex;flex-direction:column;gap:10px;">
@@ -2168,4 +2209,179 @@ window.handleAdminMenu=function(){
             <input id="newAccUser" placeholder="User" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
             <input id="newAccPass" placeholder="Passwort" style="width:100%;padding:10px;margin-bottom:5px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
             <div style="display:flex;gap:5px;margin-bottom:10px;"><button class="success-btn" style="flex:1;background:#a855f7;" onclick="window.adminCreateAccount()">Erstellen</button><button class="update-btn" style="flex:1;" onclick="window.adminShowAccounts()">Anzeigen</button></div>
-            <div style="display:flex;gap:5px;margin-bottom:5px;"><input id="
+            <div style="display:flex;gap:5px;margin-bottom:5px;"><input id="resetUser" placeholder="User" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="resetPass" placeholder="Neues PW" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div><button class="warning-btn" style="width:100%;" onclick="window.adminResetPassword()">Passwort ändern</button>
+        </div>
+    </div></div>`;
+    openModal(`${window.M('settings')} Admin Panel`,h,"",true);
+}
+
+// Missing admin functions
+window.adminSendBroadcast = async function() {
+    let txt = document.getElementById('adminBroadcastInput').value.trim();
+    if(!txt) return window.showToast("Text eingeben!", "#ef4444", "error");
+    await set(ref(db,"global/broadcast"),{text:txt,timestamp:Date.now()});
+    window.showToast("Gesendet!", "#10b981", "check_circle");
+}
+window.adminSendDiscordUpdate = async function() {
+    let title = document.getElementById('adminDiscordUpdateTitle').value.trim();
+    let desc = document.getElementById('adminDiscordUpdateText').value.trim();
+    if(!title) return window.showToast("Titel eingeben!", "#ef4444", "error");
+    try {
+        await fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({embeds:[{title:title,description:desc||"Kein Text",color:5814783,timestamp:new Date().toISOString()}]})
+        });
+        window.showToast("Update gepostet!", "#10b981", "check_circle");
+    } catch(e) { window.showToast("Fehler beim Senden", "#ef4444", "error"); }
+}
+window.adminInspectUser = async function() {
+    let u = document.getElementById('adminInspectTarget').value.trim();
+    if(!u) return window.showToast("User eingeben!", "#ef4444", "error");
+    let snap = await get(ref(db,"users/"+u));
+    if(snap.exists()) {
+        let d = snap.val();
+        openModal(`${window.M('search')} ${u}`, `<pre style="color:#e2e8f0;font-size:11px;white-space:pre-wrap;">${JSON.stringify(d,null,2)}</pre>`);
+    } else window.showToast("Nicht gefunden!", "#ef4444", "error");
+}
+window.adminCreatePromoCode = async function() {
+    let name = document.getElementById('adminCodeName').value.trim().toUpperCase();
+    if(!name) return window.showToast("Code-Namen eingeben!", "#ef4444", "error");
+    let obj = {};
+    let money = parseInt(document.getElementById('adminCodeMoney').value);
+    let xp = parseInt(document.getElementById('adminCodeXP').value);
+    let lvl = parseInt(document.getElementById('adminCodeLevel').value);
+    let skill = parseInt(document.getElementById('adminCodeSkills').value);
+    let item = document.getElementById('adminCodeItem').value;
+    let itemAmt = parseInt(document.getElementById('adminCodeItemAmt').value) || 1;
+    if(!isNaN(money)&&money!==0) obj.money = money;
+    if(!isNaN(xp)&&xp!==0) obj.xp = xp;
+    if(!isNaN(lvl)&&lvl!==0) obj.level = lvl;
+    if(!isNaN(skill)&&skill!==0) obj.skills = skill;
+    if(item !== 'none') { obj.itemName = item; obj.itemAmt = itemAmt; }
+    if(Object.keys(obj).length === 0) return window.showToast("Mindestens eine Belohnung angeben!", "#ef4444", "error");
+    await set(ref(db,"global/promocodes/"+name),obj);
+    window.showToast(`Code ${name} erstellt!`, "#10b981", "check_circle");
+}
+window.adminManagePromoCodes = async function() {
+    let snap = await get(ref(db,"global/promocodes"));
+    let h = '<div style="max-height:50vh;overflow-y:auto;">';
+    if(snap.exists()) {
+        for(let [code,data] of Object.entries(snap.val())) {
+            h += `<div class="inv-group-card" style="flex-direction:column;align-items:flex-start;"><b>${code}</b><small style="color:#94a3b8;">${JSON.stringify(data)}</small><button class="danger-btn" style="margin-top:5px;padding:4px 8px;font-size:11px;" onclick="window.adminDeletePromoCode('${code}')">Löschen</button></div>`;
+        }
+    } else h += '<p>Keine Codes vorhanden.</p>';
+    h += '</div>';
+    openModal(`${window.M('edit')} Codes verwalten`, h);
+}
+window.adminDeletePromoCode = async function(code) {
+    await remove(ref(db,"global/promocodes/"+code));
+    window.showToast(`Code ${code} gelöscht!`, "#10b981", "check_circle");
+    window.adminManagePromoCodes();
+}
+window.adminSetMaintenance = async function(on) {
+    await set(ref(db,"global/maintenance"), on ? true : null);
+    window.showToast(on ? "Wartung AN!" : "Wartung AUS!", "#10b981", "check_circle");
+}
+window.adminSetEvent = async function() {
+    let type = document.getElementById('adminEventSelect').value;
+    let mult = parseFloat(document.getElementById('adminEventMult').value) || 2;
+    let minutes = parseInt(document.getElementById('adminEventTime').value) || 5;
+    let names = {sun:"Goldene Sonne",rain:"Monsun",hai:"Raubfisch",xp:"XP-Boost",money:"Geldsegen"};
+    await set(ref(db,"global/event"),{type:type,mult:mult,name:names[type]||type,exp:Date.now()+minutes*60000});
+    window.showToast(`${names[type]} gestartet!`, "#facc15", "bolt");
+}
+window.adminStopEvent = async function() {
+    await set(ref(db,"global/event"),null);
+    window.showToast("Event gestoppt!", "#10b981", "check_circle");
+}
+window.adminGive = async function() {
+    let target = document.getElementById('adminTarget').value.trim();
+    let type = document.getElementById('adminType').value;
+    let amt = parseInt(document.getElementById('adminAmount').value);
+    if(!target || isNaN(amt)) return window.showToast("Daten eingeben!", "#ef4444", "error");
+    let snap = await get(ref(db,"users/"+target));
+    if(!snap.exists()) return window.showToast("Spieler nicht gefunden!", "#ef4444", "error");
+    let d = snap.val();
+    if(type==='money') d.money = (d.money||0) + amt;
+    if(type==='level') d.level = (d.level||1) + amt;
+    if(type==='prestige') d.prestige = (d.prestige||0) + amt;
+    if(type==='skills') { d.skills = d.skills || {shiny:0,aqua:0}; d.skills.shiny += amt; d.skills.aqua += amt; }
+    await set(ref(db,"users/"+target),d);
+    window.showToast(`${amt} ${type} an ${target} gegeben!`, "#10b981", "check_circle");
+}
+window.adminGiveItem = async function() {
+    let target = document.getElementById('adminTarget').value.trim();
+    let itemVal = document.getElementById('adminItem').value;
+    let count = parseInt(document.getElementById('adminItemCount').value) || 1;
+    if(!target) return window.showToast("User eingeben!", "#ef4444", "error");
+    let snap = await get(ref(db,"users/"+target));
+    if(!snap.exists()) return window.showToast("Spieler nicht gefunden!", "#ef4444", "error");
+    let d = snap.val();
+    if(!d.inventory) d.inventory = [];
+    if(itemVal.startsWith('fish_')) {
+        let n = itemVal.replace('fish_','');
+        let bi = items.find(i=>i.n===n);
+        if(bi) for(let i=0;i<count;i++) d.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});
+    } else if(itemVal.startsWith('bait_')) {
+        let bid = itemVal.replace('bait_','');
+        if(!d.baits) d.baits = {};
+        d.baits[bid] = (d.baits[bid]||0) + count;
+    }
+    await set(ref(db,"users/"+target),d);
+    window.showToast(`${count}x Item an ${target} gegeben!`, "#10b981", "check_circle");
+}
+window.adminCreateAccount = async function() {
+    let u = document.getElementById('newAccUser').value.trim();
+    let p = document.getElementById('newAccPass').value.trim();
+    if(!u||!p) return window.showToast("Daten eingeben!", "#ef4444", "error");
+    await set(ref(db,"accounts/"+u),p);
+    window.showToast(`Account ${u} erstellt!`, "#10b981", "check_circle");
+}
+window.adminShowAccounts = async function() {
+    let snap = await get(ref(db,"accounts"));
+    let h = '<div style="max-height:50vh;overflow-y:auto;">';
+    if(snap.exists()) {
+        for(let u in snap.val()) h += `<div class="inv-group-card">${u}</div>`;
+    }
+    h += '</div>';
+    openModal("Accounts", h);
+}
+window.adminResetPassword = async function() {
+    let u = document.getElementById('resetUser').value.trim();
+    let p = document.getElementById('resetPass').value.trim();
+    if(!u||!p) return window.showToast("Daten eingeben!", "#ef4444", "error");
+    await set(ref(db,"accounts/"+u),p);
+    window.showToast(`Passwort für ${u} geändert!`, "#10b981", "check_circle");
+}
+
+// Chat (vereinfacht)
+function initChat() {
+    if(!currentUser) return;
+    const chatRef = ref(db, "global/chat");
+    onChildAdded(chatRef, (snap) => {
+        let msg = snap.val();
+        let div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<span class="chat-msg-content"><span class="chat-user">${msg.user}:</span> ${msg.text}</span><span class="chat-time">${new Date(msg.time).toLocaleTimeString()}</span>`;
+        let container = document.getElementById('chatMessages');
+        if(container) { container.appendChild(div); container.scrollTop = container.scrollHeight; }
+    });
+}
+window.toggleChat = function() {
+    let c = document.getElementById('chatContainer');
+    c.style.display = c.style.display === 'flex' ? 'none' : 'flex';
+}
+document.getElementById('chatInput')?.addEventListener('keypress', async function(e) {
+    if(e.key === 'Enter' && this.value.trim()) {
+        await push(ref(db, "global/chat"), {user:currentUser,text:this.value.trim(),time:Date.now()});
+        this.value = '';
+    }
+});
+</script>
+
+<style>
+@keyframes spin { 0%{transform:rotate(0deg)}100%{transform:rotate(360deg)} }
+</style>
+
+</body>
+</html>
