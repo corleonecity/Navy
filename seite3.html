@@ -23,31 +23,7 @@
             --water-2: rgba(29,78,216,0.3);
             --water-2-dark: rgba(29,78,216,0.6);
         }
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            letter-spacing: normal; 
-            word-spacing: normal; 
-            margin: 0; 
-            padding: 0; 
-            /* Verhindert Text-Auswahl bei Doppelklick und iOS OS-Popups */
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-        
-        /* Input Felder dürfen natürlich weiterhin Text auswählen */
-        input, textarea {
-            -webkit-touch-callout: default;
-            -webkit-user-select: text;
-            -khtml-user-select: text;
-            -moz-user-select: text;
-            -ms-user-select: text;
-            user-select: text;
-        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; letter-spacing: normal; word-spacing: normal; margin: 0; padding: 0; }
         
         /* Basis Vollbild-Fix für iOS Notch */
         html {
@@ -447,7 +423,6 @@ let wasMaintenance = false;
 let lastLeaderboardUsers = [];
 let guildsCache = {};
 let autoAnglerTimer = null;
-window.currentFishingTimeLeft = 0; // Global für das Blasen-Minispiel
 
 // --- MODULE: LOGIN LOGIC ---
 const savedUser = localStorage.getItem('vFisher_user');
@@ -593,7 +568,7 @@ const items = [
     {n:"Schneckenhaus",v:-2,xp:-1,c:5.0,z:0,e:"bug_report",cClass:"c-trash",isTrash:true,minW:5,maxW:30},
     {n:"Angelhaken (rostig)",v:-6,xp:-3,c:3.0,z:0,e:"phishing",cClass:"c-trash",isTrash:true,minW:2,maxW:15},
     {n:"Gummistiefel",v:-8,xp:-4,c:2.0,z:0,e:"roller_skating",cClass:"c-trash",isTrash:true,minW:500,maxW:2500},
-    {n:"Plastikflasche",v:0.25,xp:-5,c:1.5,z:0,e:"water_bottle",cClass:"c-trash",isTrash:true,minW:20,maxW:150},
+    {n:"Plastikflasche",v:-10,xp:-5,c:1.5,z:0,e:"water_bottle",cClass:"c-trash",isTrash:true,minW:20,maxW:150},
     {n:"Scherbe",v:-12,xp:-6,c:1.0,z:0,e:"local_fire_department",cClass:"c-trash",isTrash:true,minW:10,maxW:100},
     
     // Zone 0 Fische (Realistische Farben!)
@@ -796,11 +771,10 @@ function renderAquarium() {
     });
 }
 
-function roll(zIdx, overrideBaitId = null) {
+function roll(zIdx) {
     let {event}=getCurrentEventInfo();
     let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
-    let activeBait = overrideBaitId !== null ? overrideBaitId : gameState.eqBait;
-    let baitDef=activeBait!=="none"?baitsDB[activeBait]:null;
+    let baitDef=gameState.eqBait!=="none"?baitsDB[gameState.eqBait]:null;
     let pool=items.filter(i=>i.z===zIdx);
     if(baitDef?.trashRed) pool=pool.filter(i=>!i.isTrash||Math.random()>baitDef.trashRed/100);
     let eventLuckMult=(event&&event.type==='luck')?event.mult:1;
@@ -1013,83 +987,11 @@ function autoEventCycle(){
 autoEventCycle();
 
 // --- MODULE: FISHING CORE (MANUAL & AUTO) ---
-let activeFishingBubble = null;
-let fishingBubbleInterval = null;
-
-function spawnFishingBubble() {
-    if (!document.getElementById('fishing-scene').classList.contains('fishing-active')) return;
-    if (activeFishingBubble) return; 
-    
-    let bubble = document.createElement('div');
-    bubble.innerHTML = window.M('radio_button_unchecked'); 
-    bubble.style.position = 'fixed';
-    bubble.style.left = (Math.random() * 80 + 10) + 'vw';
-    bubble.style.bottom = '-50px';
-    bubble.style.fontSize = '40px';
-    bubble.style.color = 'rgba(255,255,255,0.7)';
-    bubble.style.zIndex = '999999'; 
-    bubble.style.cursor = 'pointer';
-    bubble.style.transition = 'transform 3s linear';
-    bubble.style.textShadow = '0 0 10px rgba(59,130,246,0.8)';
-    bubble.style.pointerEvents = 'auto'; 
-    
-    document.body.appendChild(bubble);
-    activeFishingBubble = bubble;
-    
-    requestAnimationFrame(() => {
-        bubble.style.transform = `translateY(-110vh)`;
-    });
-
-    bubble.onclick = function() {
-        window.playSound('splash');
-        if (window.currentFishingTimeLeft > 0) {
-            let reduction = Math.max(1, Math.floor(window.currentFishingTimeLeft * 0.10));
-            window.currentFishingTimeLeft -= reduction;
-            let btn = document.getElementById('btnFish');
-            if (btn) btn.innerHTML = `${window.M('phishing')} Angeln... (${window.currentFishingTimeLeft}s)`;
-        }
-        bubble.remove();
-        activeFishingBubble = null;
-    };
-
-    setTimeout(() => {
-        if(bubble && bubble.parentNode) {
-            bubble.remove();
-            if(activeFishingBubble === bubble) activeFishingBubble = null;
-        }
-    }, 3000);
-}
-
-function startFishingBubbles() {
-    cleanupFishingBubbles();
-    fishingBubbleInterval = setInterval(() => {
-        if (!activeFishingBubble && Math.random() < 0.6) { 
-            spawnFishingBubble();
-        }
-    }, 1000);
-}
-
-function cleanupFishingBubbles() {
-    if (fishingBubbleInterval) clearInterval(fishingBubbleInterval);
-    if (activeFishingBubble) { activeFishingBubble.remove(); activeFishingBubble = null; }
-}
-
 window.handleFish = function(){
     let btn=document.getElementById('btnFish');if(btn.disabled)return;
     btn.disabled=true;let scene=document.getElementById('fishing-scene');scene.classList.add('fishing-active');
     let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
-    
-    let usedBaitId = gameState.eqBait;
-    let baitDef=baitsDB[usedBaitId];
-    
-    // Köder wird SOFORT bei Klick auf Angeln abgezogen
-    if(gameState.eqBait!=="none"&&gameState.baits&&gameState.baits[gameState.eqBait]>0){
-        gameState.baits[gameState.eqBait]--;
-        if(gameState.baits[gameState.eqBait]<=0)gameState.eqBait="none";
-        updateUI(); // INSTANT-UPDATE-RULE
-        saveData();
-    }
-    
+    let baitDef=baitsDB[gameState.eqBait];
     let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0);if(speedBonus>90)speedBonus=90;
     let resBonus = (rodDef.res||0) + (baitDef?.res||0);
     
@@ -1098,21 +1000,16 @@ window.handleFish = function(){
     if(event&&event.type==='speed')fishTimeSec=Math.floor(fishTimeSec/event.mult);
     if(event&&event.type==='rain')fishTimeSec=Math.floor(fishTimeSec/event.mult);
     fishTimeSec=Math.max(2,Math.floor(fishTimeSec));
-    window.currentFishingTimeLeft=fishTimeSec;
-    btn.innerHTML=`${window.M('phishing')} Angeln... (${window.currentFishingTimeLeft}s)`;
-    
+    let timeLeft=fishTimeSec;btn.innerHTML=`${window.M('phishing')} Angeln... (${timeLeft}s)`;
     if(fishInterval)clearInterval(fishInterval);
-    startFishingBubbles();
-    
     fishInterval=setInterval(()=>{
-        window.currentFishingTimeLeft--;
-        if(window.currentFishingTimeLeft>0)btn.innerHTML=`${window.M('phishing')} Angeln... (${window.currentFishingTimeLeft}s)`;
+        timeLeft--;
+        if(timeLeft>0)btn.innerHTML=`${window.M('phishing')} Angeln... (${timeLeft}s)`;
         else{
             clearInterval(fishInterval);
-            cleanupFishingBubbles();
             startTimingMinigame(resBonus).then((success) => {
                 if(success) {
-                    executeFishCatch(btn, scene, usedBaitId);
+                    executeFishCatch(btn, scene);
                 } else {
                     scene.classList.remove('fishing-active');
                     btn.disabled = false;
@@ -1175,15 +1072,15 @@ document.getElementById('btnTimingCatch')?.addEventListener('click', () => {
     else timingResolve(false);
 });
 
-function executeFishCatch(btn,scene, usedBaitId){
+function executeFishCatch(btn,scene){
     try{
         if(!gameState.inventory)gameState.inventory=[];
         if(!gameState.rodStats)gameState.rodStats={};
-        let item=roll(gameState.zone, usedBaitId);
+        let item=roll(gameState.zone);
         let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
-        let baitDef=baitsDB[usedBaitId];
+        let baitDef=baitsDB[gameState.eqBait];
         let {event}=getCurrentEventInfo();
-
+        if(gameState.eqBait!=="none"&&gameState.baits){gameState.baits[gameState.eqBait]--;if(gameState.baits[gameState.eqBait]<=0)gameState.eqBait="none";}
         if(!item.isTrash&&item.weightG){
             let maxGrams=(rodDef.maxKg||2)*1000;let resilience=(rodDef.res||0)+(baitDef?.res||0);
             let escapeChance=item.weightG>maxGrams?80-resilience:10-resilience;
@@ -2084,4 +1981,74 @@ window.adminCreateAccount=async function(){let u=document.getElementById('newAcc
 window.adminShowAccounts=async function(){let snap=await get(ref(db,"accounts"));if(snap.exists()){let h='<div style="max-height:400px;overflow-y:auto;">';snap.forEach(c=>{h+=`<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #30363d; align-items:center;"><span><b>${c.key}</b> - ${c.val()}</span><div style="display:flex;gap:5px;"><button class="update-btn" style="padding:4px 8px;" onclick="window.adminChangePassword('${c.key}')">${window.M('edit')}</button><button class="danger-btn" style="padding:4px 8px;" onclick="window.adminQuickDelete('${c.key}')">${window.M('delete')}</button></div></div>`;});h+='</div>';openModal("Accounts",h);}else window.showToast("Keine Accounts!", "#ef4444", "error");}
 window.adminChangePassword=async function(u){let np=prompt(`Neues Passwort für ${u}:`);if(np&&np.length>=3){await set(ref(db,"accounts/"+u),np);window.showToast("Geändert!", "#10b981", "check");window.adminShowAccounts();}}
 window.adminQuickDelete=async function(u){if(confirm(`${u} löschen?`)){await remove(ref(db,"accounts/"+u));await remove(ref(db,"users/"+u));await remove(ref(db,"global/leaderboard/"+u));window.showToast("Gelöscht!", "#10b981", "check");window.adminShowAccounts();}}
-window.adminGive=async function(){let t=document.
+window.adminGive=async function(){let t=document.getElementById('adminTarget').value.trim(),ty=document.getElementById('adminType').value,am=Number(document.getElementById('adminAmount').value);if(!t||isNaN(am))return window.showToast("User & Menge!", "#ef4444", "error");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(ty==='money')d.money+=am;if(ty==='level'){d.level+=am;d.xp=0;}if(ty==='prestige')d.prestige+=am;if(ty==='skills'){d.skills=d.skills||{shiny:0,aqua:0};}await set(ref(db,"users/"+t),d);window.showToast(`${am} ${ty} an ${t}`, "#10b981", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
+window.adminGiveItem=async function(){let t=document.getElementById('adminTarget').value.trim(),iv=document.getElementById('adminItem').value,count=Number(document.getElementById('adminItemCount').value);if(!t||isNaN(count)||count<=0)return window.showToast("User & Anzahl!", "#ef4444", "error");let snap=await get(ref(db,"users/"+t));if(snap.exists()){let d=snap.val();if(!Array.isArray(d.inventory))d.inventory=[];if(iv.startsWith("fish_")){let item=iv.replace("fish_","");let bi=items.find(i=>i.n===item);if(bi)for(let i=0;i<count;i++)d.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}else if(iv.startsWith("bait_")){let bid=iv.replace("bait_","");if(!d.baits)d.baits={};d.baits[bid]=(d.baits[bid]||0)+count;}await set(ref(db,"users/"+t),d);window.showToast(`Gegeben!`, "#10b981", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
+window.adminBanAccount=async function(){let u=document.getElementById('adminBanUser').value.trim(),m=Number(document.getElementById('adminBanTime').value);if(!u||isNaN(m))return window.showToast("User & Min!", "#ef4444", "error");let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.bannedUntil=Date.now()+(m*60000);await set(ref(db,"users/"+u),d);window.showToast(`${u} für ${m} Min gesperrt!`, "#ef4444", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}
+window.adminShowBanned=async function(){let snap=await get(ref(db,"users"));if(snap.exists()){let h='<div style="max-height:300px;overflow-y:auto;">';let has=false;snap.forEach(c=>{let u=c.val();if(u?.bannedUntil>Date.now()){has=true;let ml=Math.ceil((u.bannedUntil-Date.now())/60000);h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#161b22;border-radius:8px; margin-bottom: 5px;"><span><b>${u.name}</b> (${ml} Min)</span></div>`;}});h+='</div>';if(!has)return window.showToast("Niemand gebannt!", "#ef4444", "error");openModal("Banned Users",h);}else window.showToast("Fehler!", "#ef4444", "error");}
+window.adminResetAccount=async function(){let u=document.getElementById('adminResetUser').value.trim();if(confirm(`Willst du ${u} wirklich WIPEN?`)){let snap=await get(ref(db,"users/"+u));if(snap.exists()){let n=snap.val();n.money=0;n.xp=0;n.level=1;n.prestige=0;n.inventory=[];n.stats={totalCaught:0,totalEarned:0};await set(ref(db,"users/"+u),n);window.showToast(`${u} wurde gewiped!`, "#f97316", "check");}else window.showToast("Nicht gefunden!", "#ef4444", "error");}}
+window.adminCreatePromoCode=async function(){let n=document.getElementById('adminCodeName').value.trim().toUpperCase(),m=Number(document.getElementById('adminCodeMoney').value)||0,x=Number(document.getElementById('adminCodeXP').value)||0,l=Number(document.getElementById('adminCodeLevel').value)||0,s=Number(document.getElementById('adminCodeSkills').value)||0,i=document.getElementById('adminCodeItem').value,ia=Number(document.getElementById('adminCodeItemAmt').value)||1;if(!n)return window.showToast("Code Name!", "#ef4444", "error");let c={};if(m)c.money=m;if(x)c.xp=x;if(l)c.level=l;if(s)c.skills=s;if(i&&i!=="none"){c.itemName=i;c.itemAmt=ia;}await set(ref(db,"global/promocodes/"+n),c);window.showToast("Promo Code erstellt!", "#10b981", "check");document.getElementById('adminCodeName').value='';}
+window.adminManagePromoCodes=async function(){let snap=await get(ref(db,"global/promocodes"));if(snap.exists()){let h='<div style="max-height:400px;overflow-y:auto;">';snap.forEach(c=>{let d=c.val(),txt=[];if(d.money)txt.push(`${d.money}$`);if(d.xp)txt.push(`${d.xp}XP`);if(d.level)txt.push(`+${d.level}Lvl`);if(d.itemName)txt.push(`${d.itemAmt}x ${d.itemName}`);h+=`<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #30363d;align-items:center;"><div><b>${c.key}</b><br><small style="color:#10b981;">${txt.join(', ')}</small></div><button class="danger-btn" style="padding:4px 8px;" onclick="window.adminDeletePromoCode('${c.key}')">${window.M('delete')}</button></div>`;});h+='</div>';openModal("Promo Codes",h);}else window.showToast("Keine Codes!", "#ef4444", "error");}
+window.adminDeletePromoCode=async function(c){if(confirm(`Code ${c} löschen?`)){await remove(ref(db,"global/promocodes/"+c));window.showToast("Gelöscht!", "#10b981", "check");window.adminManagePromoCodes();}}
+
+// --- CHAT MODULE ---
+function initChat(){
+    let inP = document.getElementById('chatInput');
+    inP.addEventListener('keypress', function(e){
+        if(e.key==='Enter') window.sendChatMessage();
+    });
+    
+    const chatRef = ref(db, 'chat');
+    onChildAdded(chatRef, (data) => {
+        let msg = data.val();
+        let cm = document.getElementById('chatMessages');
+        let div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<span class="chat-user">${msg.user}:</span> <span class="chat-msg-content">${msg.text}</span> <span class="chat-time">${new Date(msg.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>`;
+        cm.appendChild(div);
+        cm.scrollTop = cm.scrollHeight;
+    });
+}
+window.toggleChat=function(){
+    let c = document.getElementById('chatContainer');
+    c.style.display = c.style.display === 'flex' ? 'none' : 'flex';
+    if(c.style.display === 'flex') {
+        let cm = document.getElementById('chatMessages');
+        cm.scrollTop = cm.scrollHeight;
+        document.getElementById('chatInput').focus();
+    }
+}
+window.sendChatMessage=function(){
+    let inP = document.getElementById('chatInput');
+    let text = inP.value.trim();
+    if(text.length > 0 && text.length <= 100 && currentUser) {
+        push(ref(db, 'chat'), {
+            user: currentUser,
+            text: text,
+            timestamp: Date.now()
+        });
+        inP.value = '';
+    }
+}
+
+// Binden der Standard-Buttons im UI
+document.getElementById('btnFish').addEventListener('click', window.handleFish);
+document.getElementById('btnSell').addEventListener('click', window.handleSellMenu);
+document.getElementById('btnAqua').addEventListener('click', window.handleAquaMenu);
+document.getElementById('btnShop').addEventListener('click', window.handleShopMenu);
+document.getElementById('btnInv').addEventListener('click', window.handleInvMenu);
+document.getElementById('btnDex').addEventListener('click', window.handleDexMenu);
+document.getElementById('btnQuest').addEventListener('click', window.handleQuestMenu);
+document.getElementById('btnDaily').addEventListener('click', window.handleDailyMenu);
+document.getElementById('btnWheel').addEventListener('click', window.handleWheelMenu);
+document.getElementById('btnZone').addEventListener('click', window.handleZoneMenu);
+document.getElementById('btnProfile').addEventListener('click', window.handleProfileMenu);
+document.getElementById('btnSkills').addEventListener('click', window.handleSkillsMenu);
+document.getElementById('btnGuild').addEventListener('click', window.handleGuildMenu);
+document.getElementById('btnAchieve').addEventListener('click', window.handleAchieveMenu);
+document.getElementById('btnBank').addEventListener('click', window.handleBankMenu);
+document.getElementById('btnLeader').addEventListener('click', () => window.handleLeaderboard('users'));
+document.getElementById('btnPrestige').addEventListener('click', window.handlePrestigeMenu);
+document.getElementById('btnUpdates').addEventListener('click', window.handleUpdateMenu);
+</script>
+</body>
+</html>
