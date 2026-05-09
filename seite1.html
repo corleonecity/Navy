@@ -813,6 +813,9 @@ function refreshCurrentMenu() {
     if(m==='bank')window.handleBankMenu();
     if(m==='wheel')window.handleWheelMenu();
     if(m==='prestige')window.handlePrestigeMenu();
+    if(m==='admin')window.handleAdminMenu();
+    if(m==='adminAccounts')window.adminShowAccounts();
+    if(m==='adminPromos')window.adminPromoManager();
 }
 
 function getCurrentEventInfo() {
@@ -1058,7 +1061,6 @@ autoEventCycle();
 
 window.handleFish = function(){
     let btn=document.getElementById('btnFish');if(btn.disabled)return;
-    // Köder wird erst NACH erfolgreichem Fang verbraucht
     let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
     let baitDef=baitsDB[gameState.eqBait];
     let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0);if(speedBonus>90)speedBonus=90;
@@ -1091,7 +1093,6 @@ window.handleFish = function(){
                     btn.innerHTML = `${window.M('phishing')} Angeln`;
                     log(`💨 Entkommen: Falsches Timing!`);
                     window.playSound('error');
-                    // Köder wird NICHT verbraucht bei Misserfolg
                 }
             });
         }
@@ -1140,7 +1141,6 @@ document.getElementById('btnTimingCatch').addEventListener('click', () => {
 
 function executeFishCatch(btn,scene){
     try{
-        // Köder erst jetzt verbrauchen bei erfolgreichem Fang
         if(gameState.eqBait!=="none"&&gameState.baits){
             gameState.baits[gameState.eqBait]--;
             if(gameState.baits[gameState.eqBait]<=0)gameState.eqBait="none";
@@ -1279,9 +1279,6 @@ function finishMinigame(won){
     updateUI();
     saveData();syncGlobalLeaderboard();refreshCurrentMenu();
 }
-
-// Alle restlichen Funktionen (handleSellMenu, handleAquaMenu, etc.) bleiben unverändert wie im Original
-// ... (aus Platzgründen gekürzt, aber vollständig vorhanden)
 
 window.handleSellMenu=function(){
     window.currentOpenMenu='sell';
@@ -1691,21 +1688,281 @@ document.getElementById('chatInput')?.addEventListener('keypress', async functio
     }
 });
 
-// Admin-Funktionen (unverändert wie im Original)
+// ==============================================
+// ADMIN FUNCTIONS (EXTENDED)
+// ==============================================
+const NEWS_TEXT = "Version 7.5.2 - Große Erweiterung\n\n🌊 Zone 3: Alter Hafen - 10 neue Fische + 6 Müll\n🏔️ Zone 4: Geheimer Bergsee - 10 neue Fische + 6 Müll\n🎣 4 neue Angelruten: Hafenrute, Brandungsrute, Bergrute, Eisangel\n🐛 Köder-Bug gefixt: Köder wird erst bei erfolgreichem Fang verbraucht\n💰 Bessere Balance: Mehr Geld in höheren Zonen\n🎨 Echte Emojis: Alle Fische/Müll haben jetzt schöne Emojis";
+
 window.handleAdminMenu = function() {
+    window.currentOpenMenu = 'admin';
     let h = `<div style="padding:20px;max-height:70vh;overflow-y:auto;"><h3 style="color:#0ea5e9;">Admin Panel</h3><p style="color:#94a3b8;margin-bottom:15px;">Angemeldet als <b>${currentUser}</b></p>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px;">
+        <button class="update-btn" style="flex:1; min-width:140px;" onclick="window.handleAdminMenu()">📋 Hauptmenü</button>
+        <button class="update-btn" style="flex:1; min-width:140px; background:#f59e0b;" onclick="window.adminShowGive()">🎁 Give</button>
+        <button class="update-btn" style="flex:1; min-width:140px; background:#a855f7;" onclick="window.adminPromoManager()">🏷️ Promos</button>
+        <button class="update-btn" style="flex:1; min-width:140px; background:#0ea5e9;" onclick="window.adminShowAccounts()">👥 Accounts</button>
+    </div>
     <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #0ea5e9;margin-bottom:15px;"><h4 style="color:#0ea5e9;">Live Broadcast</h4><input id="adminBroadcastInput" placeholder="Nachricht..." style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendBroadcast()">Senden</button></div>
-    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #0ea5e9;margin-bottom:15px;"><h4 style="color:#0ea5e9;">Discord Update senden</h4><input id="adminUpdateInput" placeholder="Update-Text..." style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendUpdate()">Update absenden</button></div>
-    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #facc15;margin-bottom:15px;"><h4 style="color:#facc15;">Events</h4><select id="adminEventSelect" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="sun">☀️ Goldene Sonne</option><option value="rain">🌧️ Monsun</option><option value="hai">🦈 Raubfisch</option><option value="luck">🍀 Glück</option><option value="sell">💰 Verkauf</option></select><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="adminEventMult" type="number" placeholder="Faktor" step="0.5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminEventTime" type="number" placeholder="Minuten" value="5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div><div style="display:flex;gap:8px;"><button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminSetEvent()">Start</button><button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminStopEvent()">Stop</button></div></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #0ea5e9;margin-bottom:15px;"><h4 style="color:#0ea5e9;">Discord Update senden</h4><p style="font-size:11px;color:#94a3b8;margin-bottom:10px;">Sendet den aktuellen News-Text an Discord.</p><button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendUpdate()">Update absenden</button></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #facc15;margin-bottom:15px;"><h4 style="color:#facc15;">Events</h4><select id="adminEventSelect" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="sun">☀️ Goldene Sonne</option><option value="rain">🌧️ Monsun</option><option value="hai">🦈 Raubfisch</option><option value="luck">🍀 Glück (nur Admin)</option><option value="sell">💰 Verkauf (nur Admin)</option></select><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="adminEventMult" type="number" placeholder="Faktor" step="0.5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminEventTime" type="number" placeholder="Minuten" value="5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div><div style="display:flex;gap:8px;"><button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminSetEvent()">Start</button><button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminStopEvent()">Stop</button></div></div>
     <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #10b981;margin-bottom:15px;"><h4 style="color:#10b981;">Wartung</h4><div style="display:flex;gap:8px;"><button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">AN</button><button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">AUS</button></div></div>
     </div>`;
     openModal(`${window.M('settings')} Admin Panel`, h);
 };
+
 window.adminSendBroadcast = async function() {let txt=document.getElementById('adminBroadcastInput').value.trim();if(!txt)return window.showToast("Text eingeben!","#ef4444","error");await set(ref(db,"global/broadcast"),{text:txt,timestamp:Date.now()});window.showToast("Gesendet!","#10b981","check_circle");};
-window.adminSendUpdate = async function(){let txt=document.getElementById('adminUpdateInput').value.trim();if(!txt)return window.showToast("Text eingeben!","#ef4444","error");try{await fetch("https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"📢 Update",description:txt,color:3447003,timestamp:new Date().toISOString()}]})});window.showToast("Update gesendet!","#10b981","check_circle");document.getElementById('adminUpdateInput').value='';}catch(e){window.showToast("Fehler!","#ef4444","error");}};
+window.adminSendUpdate = async function(){
+    try {
+        await fetch("https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd", {
+            method:'POST',headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({embeds:[{title:"📢 Update",description:NEWS_TEXT,color:3447003,timestamp:new Date().toISOString()}]})
+        });
+        window.showToast("Update gesendet!","#10b981","check_circle");
+    } catch(e) {window.showToast("Fehler!","#ef4444","error");}
+};
 window.adminSetEvent = async function(){let type=document.getElementById('adminEventSelect').value;let mult=parseFloat(document.getElementById('adminEventMult').value)||2;let minutes=parseInt(document.getElementById('adminEventTime').value)||5;let names={sun:"☀️ Goldene Sonne",rain:"🌧️ Monsun",hai:"🦈 Raubfisch",luck:"🍀 Glück",sell:"💰 Verkauf"};await set(ref(db,"global/event"),{type,mult,name:names[type]||type,exp:Date.now()+minutes*60000});window.showToast(`${names[type]} gestartet!`,"#facc15","bolt");};
 window.adminStopEvent = async function(){await set(ref(db,"global/event"),null);window.showToast("Event gestoppt!","#10b981","check_circle");};
 window.adminSetMaintenance = async function(on){await set(ref(db,"global/maintenance"),on?true:null);window.showToast(on?"Wartung AN!":"Wartung AUS!","#10b981","check_circle");};
+
+// GIVE FUNCTION
+window.adminShowGive = function() {
+    window.currentOpenMenu = 'admin';
+    let allFishNames = items.filter(i=>!i.isTrash).map(i=>i.n);
+    let allTrashNames = items.filter(i=>i.isTrash).map(i=>i.n);
+    let rodOptions = Object.entries(rodsDB).map(([id,r])=>`<option value="rod_${id}">${r.e} ${r.name}</option>`).join('');
+    let baitOptions = Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">${b.e} ${b.name}</option>`).join('');
+    let h = `<div style="max-height:60vh;overflow-y:auto;padding-right:5px;">
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:15px;">Gib einem Spieler Items, Geld oder andere Werte.</p>
+    <input id="giveTargetUser" placeholder="Spielername" style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+        <input id="giveMoney" type="number" placeholder="Geld" style="width:33%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+        <input id="giveXp" type="number" placeholder="XP" style="width:33%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+        <input id="giveLevel" type="number" placeholder="Level+" style="width:33%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+    </div>
+    <div style="margin-bottom:10px;"><label style="font-size:12px;">Angelrute:</label><select id="giveRod" style="width:100%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="">- Keine -</option>${rodOptions}</select></div>
+    <div style="margin-bottom:10px;"><label style="font-size:12px;">Köder:</label><div style="display:flex;gap:8px;"><select id="giveBait" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="">- Keine -</option>${baitOptions}</select><input id="giveBaitAmt" type="number" placeholder="Anzahl" value="20" style="width:80px;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div></div>
+    <div style="margin-bottom:10px;"><label style="font-size:12px;">Fisch:</label><div style="display:flex;gap:8px;"><select id="giveFish" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="">- Keine -</option>${allFishNames.map(n=>`<option value="${n}">🐟 ${n}</option>`).join('')}</select><input id="giveFishAmt" type="number" placeholder="Anzahl" value="1" style="width:80px;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div></div>
+    <div style="margin-bottom:10px;"><label style="font-size:12px;">Müll:</label><div style="display:flex;gap:8px;"><select id="giveTrash" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="">- Keine -</option>${allTrashNames.map(n=>`<option value="${n}">🗑️ ${n}</option>`).join('')}</select><input id="giveTrashAmt" type="number" placeholder="Anzahl" value="1" style="width:80px;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div></div>
+    <button class="success-btn" style="width:100%;padding:15px;font-size:16px;flex-direction:row;" onclick="window.adminExecuteGive()">🎁 GIVE</button>
+    </div>`;
+    openModal(`${window.M('volunteer_activism')} Give Items`, h, `<button class="update-btn" onclick="window.handleAdminMenu()">⬅️ Zurück</button>`);
+};
+window.adminExecuteGive = async function() {
+    let target = document.getElementById('giveTargetUser').value.trim();
+    if(!target) return window.showToast("Spieler eingeben!","#ef4444","error");
+    let snap = await get(ref(db,"users/"+target));
+    if(!snap.exists()) return window.showToast("Spieler nicht gefunden!","#ef4444","error");
+    let data = snap.val();
+    let money = parseInt(document.getElementById('giveMoney').value) || 0;
+    let xp = parseInt(document.getElementById('giveXp').value) || 0;
+    let level = parseInt(document.getElementById('giveLevel').value) || 0;
+    let rodVal = document.getElementById('giveRod').value;
+    let baitVal = document.getElementById('giveBait').value;
+    let baitAmt = parseInt(document.getElementById('giveBaitAmt').value) || 0;
+    let fishVal = document.getElementById('giveFish').value;
+    let fishAmt = parseInt(document.getElementById('giveFishAmt').value) || 0;
+    let trashVal = document.getElementById('giveTrash').value;
+    let trashAmt = parseInt(document.getElementById('giveTrashAmt').value) || 0;
+    if(money) data.money = (data.money||0) + money;
+    if(xp) data.xp = (data.xp||0) + xp;
+    if(level) data.level = (data.level||1) + level;
+    if(rodVal && rodVal.startsWith("rod_")) {
+        let rid = rodVal.replace("rod_","");
+        if(!data.ownedRods) data.ownedRods = ["rod1"];
+        if(!data.ownedRods.includes(rid)) data.ownedRods.push(rid);
+    }
+    if(baitVal && baitVal.startsWith("bait_") && baitAmt > 0) {
+        let bid = baitVal.replace("bait_","");
+        if(!data.baits) data.baits = {};
+        data.baits[bid] = (data.baits[bid]||0) + baitAmt;
+    }
+    if(fishVal && fishAmt > 0) {
+        let bi = items.find(i=>i.n===fishVal && !i.isTrash);
+        if(bi) {
+            if(!data.inventory) data.inventory = [];
+            for(let i=0;i<fishAmt;i++) {
+                let w = bi.minW + Math.random()*(bi.maxW-bi.minW);
+                data.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:false,weightG:w});
+            }
+        }
+    }
+    if(trashVal && trashAmt > 0) {
+        let bi = items.find(i=>i.n===trashVal && i.isTrash);
+        if(bi) {
+            if(!data.inventory) data.inventory = [];
+            for(let i=0;i<trashAmt;i++) {
+                let w = bi.minW + Math.random()*(bi.maxW-bi.minW);
+                data.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:true,weightG:w});
+            }
+        }
+    }
+    await set(ref(db,"users/"+target), data);
+    window.showToast(`Give an ${target} erfolgreich!`,"#10b981","check_circle");
+};
+
+// PROMO CODE MANAGER
+window.adminPromoManager = async function() {
+    window.currentOpenMenu = 'adminPromos';
+    let snap = await get(ref(db,"global/promocodes"));
+    let promos = snap.exists() ? snap.val() : {};
+    let h = `<div style="max-height:60vh;overflow-y:auto;padding-right:5px;"><h4 style="color:#a855f7;">Bestehende Promo-Codes</h4>`;
+    let entries = Object.entries(promos);
+    if(entries.length === 0) h += `<p style="color:#94a3b8;">Keine vorhanden.</p>`;
+    else {
+        entries.forEach(([code, data]) => {
+            let desc = [];
+            if(data.money) desc.push(`${data.money}$`);
+            if(data.xp) desc.push(`${data.xp} XP`);
+            if(data.level) desc.push(`+${data.level} Lvl`);
+            if(data.itemName) desc.push(`Item: ${data.itemName} x${data.itemAmt||1}`);
+            h += `<div style="display:flex;justify-content:space-between;align-items:center;background:#0d1117;padding:10px;border-radius:8px;margin-bottom:5px;"><div><b style="color:#facc15;">${code}</b><br><small style="color:#94a3b8;">${desc.join(', ') || 'Keine Belohnung'}</small></div><button class="danger-btn" style="padding:4px 8px;font-size:11px;" onclick="window.adminDeletePromo('${code}')">🗑️ Del</button></div>`;
+        });
+    }
+    h += `</div><hr style="border-color:#30363d;margin:15px 0;"><h4 style="color:#10b981;">Neuen Promo-Code erstellen</h4>
+    <input id="adminPromoCode" placeholder="Code (GROSSBUCHSTABEN)" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">
+    <div style="display:flex;gap:8px;margin-bottom:8px;"><input id="adminPromoMoney" type="number" placeholder="Geld" style="width:33%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;"><input id="adminPromoXp" type="number" placeholder="XP" style="width:33%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;"><input id="adminPromoLevel" type="number" placeholder="Level+" style="width:33%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;"></div>
+    <select id="adminPromoItem" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="">- Optionales Item -</option><optgroup label="Angelruten">${Object.entries(rodsDB).map(([id,r])=>`<option value="rod_${id}">🎣 ${r.name}</option>`).join('')}</optgroup><optgroup label="Köder">${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">🪱 ${b.name}</option>`).join('')}</optgroup><optgroup label="Fische">${items.filter(i=>!i.isTrash).map(i=>`<option value="${i.n}">🐟 ${i.n}</option>`).join('')}</optgroup><optgroup label="Müll">${items.filter(i=>i.isTrash).map(i=>`<option value="${i.n}">🗑️ ${i.n}</option>`).join('')}</optgroup></select>
+    <input id="adminPromoItemAmt" type="number" placeholder="Item-Anzahl" value="1" style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;">
+    <button class="success-btn" style="width:100%;padding:12px;font-size:16px;flex-direction:row;background:#a855f7;" onclick="window.adminCreatePromo()">✅ Promo-Code erstellen</button>`;
+    openModal(`${window.M('sell')} Promo-Code Verwaltung`, h, `<button class="update-btn" onclick="window.handleAdminMenu()">⬅️ Zurück</button>`);
+};
+window.adminCreatePromo = async function() {
+    let code = document.getElementById('adminPromoCode').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if(code.length < 3) return window.showToast("Code min. 3 Zeichen!","#ef4444","error");
+    let snap = await get(ref(db,"global/promocodes/"+code));
+    if(snap.exists()) return window.showToast("Code existiert bereits!","#ef4444","error");
+    let money = parseInt(document.getElementById('adminPromoMoney').value) || 0;
+    let xp = parseInt(document.getElementById('adminPromoXp').value) || 0;
+    let level = parseInt(document.getElementById('adminPromoLevel').value) || 0;
+    let itemName = document.getElementById('adminPromoItem').value;
+    let itemAmt = parseInt(document.getElementById('adminPromoItemAmt').value) || 1;
+    let promoData = {};
+    if(money) promoData.money = money;
+    if(xp) promoData.xp = xp;
+    if(level) promoData.level = level;
+    if(itemName) { promoData.itemName = itemName; promoData.itemAmt = itemAmt; }
+    if(Object.keys(promoData).length === 0) return window.showToast("Mindestens eine Belohnung!","#ef4444","error");
+    await set(ref(db,"global/promocodes/"+code), promoData);
+    window.showToast(`Code ${code} erstellt!`,"#10b981","check_circle");
+    window.adminPromoManager();
+};
+window.adminDeletePromo = async function(code) {
+    if(confirm(`Promo-Code ${code} wirklich löschen?`)) {
+        await remove(ref(db,"global/promocodes/"+code));
+        window.showToast("Gelöscht!","#ef4444","delete");
+        window.adminPromoManager();
+    }
+};
+
+// ACCOUNT MANAGER
+window.adminShowAccounts = async function() {
+    window.currentOpenMenu = 'adminAccounts';
+    let accSnap = await get(ref(db,"accounts"));
+    let userSnap = await get(ref(db,"users"));
+    let accounts = accSnap.exists() ? accSnap.val() : {};
+    let users = userSnap.exists() ? userSnap.val() : {};
+    let h = `<div style="max-height:55vh;overflow-y:auto;padding-right:5px;"><input id="adminAccountSearch" placeholder="Suchen..." style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;" oninput="window.adminFilterAccounts()"><div id="adminAccountList">`;
+    let names = Object.keys(accounts).sort();
+    names.forEach(name => {
+        let uData = users[name] || {};
+        let isBanned = uData.bannedUntil > Date.now();
+        h += `<div class="inv-group-card admin-account-row" style="flex-direction:column; align-items:flex-start; gap:8px;" data-name="${name.toLowerCase()}">
+            <div style="display:flex; justify-content:space-between; width:100%;">
+                <div><b style="color:#60a5fa;">${name}</b> <small style="color:#94a3b8;">Lvl ${uData.level||1} | P${uData.prestige||0} | ${Math.floor(uData.money||0).toLocaleString()}$</small>${isBanned?' <span style="color:#ef4444;font-weight:bold;">GEBANNT</span>':''}</div>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px; width:100%; justify-content:flex-end;">
+                <button class="update-btn" style="padding:4px 8px;font-size:11px;flex-direction:row;" onclick="window.adminEditAccount('${name}')">✏️ Edit</button>
+                <button class="danger-btn" style="padding:4px 8px;font-size:11px;flex-direction:row;" onclick="window.adminDeleteAccount('${name}')">🗑️ Acc löschen</button>
+                <button class="success-btn" style="padding:4px 8px;font-size:11px;background:#f97316;flex-direction:row;" onclick="window.adminResetUser('${name}')">🔄 Reset</button>
+                <button class="danger-btn" style="padding:4px 8px;font-size:11px;background:#b91c1c;flex-direction:row;" onclick="window.adminBanUserPrompt('${name}')">🚫 Bannen</button>
+            </div>
+        </div>`;
+    });
+    h += `</div></div>`;
+    openModal(`${window.M('group')} Account Verwaltung`, h, `<button class="update-btn" onclick="window.handleAdminMenu()">⬅️ Zurück</button>`);
+};
+window.adminFilterAccounts = function() {
+    let q = document.getElementById('adminAccountSearch')?.value.toLowerCase() || '';
+    document.querySelectorAll('.admin-account-row').forEach(el => {
+        el.style.display = el.dataset.name.includes(q) ? '' : 'none';
+    });
+};
+window.adminEditAccount = async function(name) {
+    let accSnap = await get(ref(db,"accounts/"+name));
+    let userSnap = await get(ref(db,"users/"+name));
+    let pw = accSnap.exists() ? accSnap.val() : '';
+    let uData = userSnap.exists() ? userSnap.val() : {};
+    let h = `<h4>Account: <b style="color:#60a5fa;">${name}</b></h4>
+    <label>Neuer Benutzername:</label><input id="adminEditNewName" value="${name}" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+    <label>Neues Passwort:</label><input id="adminEditNewPw" placeholder="(leer lassen für keine Änderung)" style="width:100%;padding:10px;margin-bottom:15px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+    <div style="background:#0d1117;padding:10px;border-radius:8px;margin-bottom:10px;font-size:12px;color:#94a3b8;">
+    <div>Level: ${uData.level||1} | Geld: ${Math.floor(uData.money||0).toLocaleString()}$ | Prestige: ${uData.prestige||0}</div>
+    <div>Bann: ${uData.bannedUntil>Date.now()?'Aktiv bis '+new Date(uData.bannedUntil).toLocaleString():'Kein'}</div>
+    </div>`;
+    openModal(`${window.M('edit')} Account bearbeiten`, h, `<button class="success-btn" onclick="window.adminSaveAccount('${name}')">💾 Speichern</button>`);
+};
+window.adminSaveAccount = async function(oldName) {
+    let newName = document.getElementById('adminEditNewName').value.trim();
+    let newPw = document.getElementById('adminEditNewPw').value.trim();
+    if(newName.length < 3) return window.showToast("Name min. 3 Zeichen!","#ef4444","error");
+    if(newName !== oldName) {
+        let checkSnap = await get(ref(db,"accounts/"+newName));
+        if(checkSnap.exists()) return window.showToast("Name bereits vergeben!","#ef4444","error");
+        let oldAcc = await get(ref(db,"accounts/"+oldName));
+        let pw = oldAcc.exists() ? oldAcc.val() : '';
+        if(newPw) pw = newPw;
+        let oldUser = await get(ref(db,"users/"+oldName));
+        await set(ref(db,"accounts/"+newName), pw);
+        await remove(ref(db,"accounts/"+oldName));
+        if(oldUser.exists()) {
+            let uData = oldUser.val();
+            uData.name = newName;
+            await set(ref(db,"users/"+newName), uData);
+            await remove(ref(db,"users/"+oldName));
+        }
+        await remove(ref(db,"global/leaderboard/"+oldName));
+    } else if(newPw) {
+        await set(ref(db,"accounts/"+oldName), newPw);
+    }
+    window.showToast("Account gespeichert!","#10b981","check_circle");
+    window.adminShowAccounts();
+};
+window.adminDeleteAccount = async function(name) {
+    if(!confirm(`Account "${name}" WIRKLICH permanent löschen? Alle Daten sind dann weg!`)) return;
+    await remove(ref(db,"accounts/"+name));
+    await remove(ref(db,"users/"+name));
+    await remove(ref(db,"global/leaderboard/"+name));
+    window.showToast(`Account ${name} gelöscht!`,"#ef4444","delete");
+    window.adminShowAccounts();
+};
+window.adminResetUser = async function(name) {
+    if(!confirm(`Spielstand von "${name}" wirklich zurücksetzen? (Login bleibt erhalten)`)) return;
+    let snap = await get(ref(db,"users/"+name));
+    if(!snap.exists()) return window.showToast("Kein Spielstand!","#ef4444","error");
+    let fresh = {name:name,money:0,xp:0,level:1,zone:0,inventory:[],dex:{},aquarium:{unlocked:false,fishes:[]},lastDaily:0,dailyStreak:0,prestige:0,stats:{totalCaught:0,totalEarned:0},ownedRods:["rod1"],eqRod:"rod1",baits:{},eqBait:"none",bannedUntil:0,rodStats:{},usedCodes:{},guild:"",skills:{shiny:0,aqua:0},achievements:{},bank:{deposited:0,interestEarned:0,lastInterest:0},lastWheelSpin:0,dexRewards:{},boatUpgraded:false,autoFishUnlocked:false,bankUnlocked:false};
+    await set(ref(db,"users/"+name), fresh);
+    window.showToast(`Spielstand von ${name} gelöscht!`,"#10b981","check_circle");
+    window.adminShowAccounts();
+};
+window.adminBanUserPrompt = function(name) {
+    let h = `<h4>User: <b style="color:#ef4444;">${name}</b> bannen</h4>
+    <input id="adminBanMinutes" type="number" placeholder="Minuten" value="60" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">
+    <input id="adminBanReason" placeholder="Grund" style="width:100%;padding:10px;margin-bottom:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;">`;
+    openModal(`${window.M('block')} Bannen`, h, `<button class="danger-btn" style="width:100%;" onclick="window.adminBanUserExecute('${name}')">🚫 BANNEN</button>`);
+};
+window.adminBanUserExecute = async function(name) {
+    let mins = parseInt(document.getElementById('adminBanMinutes').value) || 60;
+    let reason = document.getElementById('adminBanReason').value.trim() || 'Kein Grund angegeben';
+    let snap = await get(ref(db,"users/"+name));
+    if(!snap.exists()) return window.showToast("Spieler nicht gefunden!","#ef4444","error");
+    let data = snap.val();
+    data.bannedUntil = Date.now() + mins * 60000;
+    data.banReason = reason;
+    await set(ref(db,"users/"+name), data);
+    window.showToast(`${name} für ${mins} Min gebannt!`,"#ef4444","block");
+    window.closeModal();
+    window.adminShowAccounts();
+};
 </script>
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
 </body>
