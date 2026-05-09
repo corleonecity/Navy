@@ -24,10 +24,7 @@
             -webkit-user-select: none; user-select: none;
             -webkit-touch-callout: none;
         }
-        html {
-            background-color: #0f172a; 
-            height: 100vh; height: -webkit-fill-available;
-        }
+        html { background-color: #0f172a; height: 100vh; height: -webkit-fill-available; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
             color: #e6f0ff; display: flex; justify-content: center; align-items: center;
@@ -62,28 +59,9 @@
         @keyframes particleGoldenFloat { 0%{transform:translate3d(0, 60vh, 0) scale(0);opacity:0} 20%{opacity:1;transform:scale(1.2)} 100%{transform:translate3d(30px, -10vh, 0) scale(0.3);opacity:0} }
         .bubble { position:absolute; bottom:-50px; background:rgba(255,255,255,0.15); border-radius:50%; animation:floatUp linear infinite; backdrop-filter:blur(2px); will-change: transform; }
         @keyframes floatUp { 0%{transform:translate3d(0,0,0) scale(1);opacity:0} 10%{opacity:1} 90%{opacity:1} 100%{transform:translate3d(0, -110vh, 0) scale(1.5);opacity:0} }
-        .interactive-bubble {
-            position: fixed;
-            z-index: 9999;
-            pointer-events: auto;
-            cursor: pointer;
-            background: rgba(255,255,255,0.25);
-            border-radius: 50%;
-            animation: bubbleIdle 2s ease-in-out infinite;
-            will-change: transform;
-            box-shadow: 0 0 15px rgba(59,130,246,0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .interactive-bubble:active {
-            transform: scale(1.3);
-            opacity: 0.6;
-        }
-        @keyframes bubbleIdle {
-            0%,100%{transform:translate3d(0,0,0) scale(1)}
-            50%{transform:translate3d(0,-8px,0) scale(1.05)}
-        }
+        .interactive-bubble { position: fixed; z-index: 9999; pointer-events: auto; cursor: pointer; background: rgba(255,255,255,0.25); border-radius: 50%; animation: bubbleIdle 2s ease-in-out infinite; will-change: transform; box-shadow: 0 0 15px rgba(59,130,246,0.6); display: flex; align-items: center; justify-content: center; }
+        .interactive-bubble:active { transform: scale(1.3); opacity: 0.6; }
+        @keyframes bubbleIdle { 0%,100%{transform:translate3d(0,0,0) scale(1)} 50%{transform:translate3d(0,-8px,0) scale(1.05)} }
         .fish-swarm { position:fixed; z-index:1; pointer-events:none; font-size:18px; white-space:nowrap; animation:swimSwarm 20s linear infinite; opacity:0.5; will-change: transform; color: #60a5fa;}
         @keyframes swimSwarm { 0%{transform:translate3d(-10vw, 0, 0)} 25%{transform:translate3d(30vw, -5vh, 0)} 50%{transform:translate3d(70vw, 2vh, 0)} 75%{transform:translate3d(40vw, -3vh, 0)} 100%{transform:translate3d(-10vw, 0, 0)} }
         .seaweed { position:fixed; bottom:0; z-index:1; pointer-events:none; font-size:40px; color:#10b981; animation:swaySeaweed 6s ease-in-out infinite; transform-origin:bottom center; will-change: transform; }
@@ -141,20 +119,9 @@
         #log { height:160px; overflow-y:auto; background:rgba(0,0,0,0.5); padding:10px; border-radius:12px; font-size:12px; text-align:left; border-left:4px solid #3b82f6; margin-top:10px; }
         .log-entry { padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.05); word-break:break-word; display:flex; align-items:center; gap:5px; }
         .log-entry .material-symbols-outlined { font-size: 16px; }
-        .modal-overlay { 
-            position:fixed; top:0; left:0; width:100%; height:100%; 
-            background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; 
-            z-index:10000; backdrop-filter:blur(8px); padding:16px;
-            opacity: 0; visibility: hidden; pointer-events: none;
-            transition: opacity 0.2s ease, visibility 0.2s ease;
-        }
+        .modal-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); display:flex; justify-content:center; align-items:center; z-index:10000; backdrop-filter:blur(8px); padding:16px; opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 0.2s ease, visibility 0.2s ease; }
         .modal-overlay.active { opacity: 1; visibility: visible; pointer-events: auto; }
-        .modal-content { 
-            background:#161b22; width:100%; max-width:500px; max-height:85vh; 
-            border-radius:20px; border:1px solid #30363d; display:flex; flex-direction:column; overflow:hidden; 
-            transform: scale(0.95); opacity: 0;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
-        }
+        .modal-content { background:#161b22; width:100%; max-width:500px; max-height:85vh; border-radius:20px; border:1px solid #30363d; display:flex; flex-direction:column; overflow:hidden; transform: scale(0.95); opacity: 0; transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease; }
         .modal-overlay.active .modal-content { transform: scale(1); opacity: 1; }
         .modal-content.wide { max-width:900px; }
         .modal-header { background:#0d1117; padding:15px 20px; font-size:18px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #30363d; }
@@ -205,16 +172,7 @@
         @keyframes slideIn { from{transform:translate3d(100%,0,0);opacity:0} to{transform:translate3d(0,0,0);opacity:1} }
         @keyframes fadeOut { to{opacity:0; visibility:hidden} }
         @media (max-width:768px) { .inv-grid{grid-template-columns:1fr} .inv-col{max-height:unset; overflow:visible;} body{font-size:15px} .modal-body{font-size:15px} #chatContainer{width:250px;right:5px} }
-        @media (max-width:550px) { 
-            .container { padding:10px; max-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); }
-            .btn-grid { grid-template-columns:repeat(3,1fr); }
-            .btn-grid-2 { grid-template-columns:repeat(4,1fr); }
-            button { padding:8px 6px; font-size:11px; }
-            button .material-symbols-outlined { font-size: 20px; }
-            .modal-body { padding:12px; }
-            .modal-header { padding:12px 15px; font-size:16px;}
-            #log { height: 140px; font-size:11px; }
-        }
+        @media (max-width:550px) { .container { padding:10px; max-height:calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)); } .btn-grid { grid-template-columns:repeat(3,1fr); } .btn-grid-2 { grid-template-columns:repeat(4,1fr); } button { padding:8px 6px; font-size:11px; } button .material-symbols-outlined { font-size: 20px; } .modal-body { padding:12px; } .modal-header { padding:12px 15px; font-size:16px;} #log { height: 140px; font-size:11px; } }
     </style>
 </head>
 <body class="zone-bg-0">
@@ -310,9 +268,7 @@
 
         <svg id="fishing-line-svg"><line id="line-element" x1="0" y1="0" x2="0" y2="0" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-dasharray="3,3" /></svg>
         <div class="boat-container" id="boatContainer"><div class="fisher-emoji"><span class="material-symbols-outlined" style="font-size:inherit;">rowing</span></div></div>
-        
         <div class="boat-container auto-boat" id="autoBoatContainer" title="Auto-Angler arbeitet im Hintergrund"><div class="fisher-emoji"><span class="material-symbols-outlined" style="font-size:inherit;">smart_toy</span></div></div>
-
         <div class="bobber" id="bobber"></div>
         <div class="water-layer-2"></div>
         <div class="water-layer-1"></div>
@@ -347,7 +303,6 @@
             <div style="display:flex; gap:8px; margin-bottom:12px;">
                 <button id="btnFish" style="flex:4; padding:16px; font-size:18px; flex-direction:row;" onclick="window.handleFish()"><span class="material-symbols-outlined">phishing</span> Angeln</button>
             </div>
-            
             <div class="btn-grid">
                 <button id="btnSell" onclick="window.handleSellMenu()"><span class="material-symbols-outlined">backpack</span> Rucksack</button>
                 <button id="btnAqua" onclick="window.handleAquaMenu()"><span class="material-symbols-outlined">set_meal</span> Aquarium</button>
@@ -379,8 +334,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, set, onValue, remove, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-console.log("🚀 Virtual Fisher PRO v7.5.1 wird gestartet...");
-
 const firebaseConfig = {
     apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
     authDomain: "cc-shop-36c3b.firebaseapp.com",
@@ -388,14 +341,11 @@ const firebaseConfig = {
     projectId: "cc-shop-36c3b",
     storageBucket: "cc-shop-36c3b.firebasestorage.app"
 };
-
 let app, db;
 try {
     app = initializeApp(firebaseConfig);
     db = getDatabase(app);
-    console.log("✅ Firebase verbunden");
 } catch(e) {
-    console.error("❌ Firebase Fehler:", e);
     document.getElementById('login-error').innerText = "Verbindungsfehler! Bitte Seite neu laden.";
     document.getElementById('login-error').style.display = 'block';
     document.getElementById('btnLogin').disabled = true;
@@ -413,53 +363,42 @@ let wasMaintenance = false;
 let lastLeaderboardUsers = [];
 let guildsCache = {};
 let autoAnglerTimer = null;
-
 window.isFishingActive = false;
 window.fishingTimeLeft = 0;
 window.activeBubble = null;
 window.bubbleTimeout = null;
 
-// Logout-Funktion
 window.logout = function() {
     localStorage.removeItem('vFisher_user');
     location.reload();
 };
 
-// Login-Button Handler
 document.getElementById('btnLogin').addEventListener('click', async function() {
     if (!db) {
         document.getElementById('login-error').innerText = "Server nicht erreichbar!";
         document.getElementById('login-error').style.display = 'block';
         return;
     }
-    
     let u = document.getElementById('username').value.trim();
     let p = document.getElementById('password').value.trim();
     let err = document.getElementById('login-error');
     let load = document.getElementById('login-loading');
     let btn = document.getElementById('btnLogin');
-    
     err.style.display = 'none';
     load.style.display = 'none';
-
     if(u.length < 3 || p.length < 3) {
         err.innerText = "Benutzername und Passwort müssen mindestens 3 Zeichen lang sein.";
         err.style.display = 'block';
         return;
     }
-
     btn.disabled = true;
     btn.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">sync</span> Verbinde...';
     load.style.display = 'block';
-
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 15000));
-
     try {
         const getPromise = get(ref(db, "accounts/" + u));
         let snap = await Promise.race([getPromise, timeout]);
-        
         load.innerText = 'Anmeldung läuft...';
-        
         if(snap.exists()) {
             if(snap.val() === p) {
                 load.innerText = 'Login erfolgreich! Lade Spiel...';
@@ -477,18 +416,12 @@ document.getElementById('btnLogin').addEventListener('click', async function() {
             await loadData();
         }
     } catch(error) {
-        console.error("Login-Fehler:", error);
         btn.disabled = false;
         btn.innerHTML = '<span class="material-symbols-outlined">login</span> Einloggen';
         load.style.display = 'none';
         err.style.display = 'block';
-        if (error.message === 'TIMEOUT') {
-            err.innerText = "Server antwortet nicht! Überprüfe deine Internetverbindung.";
-        } else if (error.message === 'Falsches Passwort!') {
-            err.innerText = error.message;
-        } else {
-            err.innerText = "Verbindungsfehler! Bitte versuche es erneut.";
-        }
+        err.innerText = error.message === 'TIMEOUT' ? "Server antwortet nicht! Überprüfe deine Internetverbindung." :
+                        error.message === 'Falsches Passwort!' ? error.message : "Verbindungsfehler! Bitte versuche es erneut.";
     }
 });
 
@@ -498,13 +431,11 @@ if (savedUser && db) {
     loadData();
 }
 
-// Touch-Verhinderung
 document.addEventListener('touchmove', function(e) {
     if (e.target.closest('.modal-body, #log, #chatMessages')) return;
     e.preventDefault();
 }, { passive: false });
 
-// Sounds
 const sounds = {
     click: new Audio('https://actions.google.com/sounds/v1/ui/button_click.ogg'),
     splash: new Audio('https://actions.google.com/sounds/v1/water/water_splash.ogg'),
@@ -512,185 +443,98 @@ const sounds = {
     error: new Audio('https://actions.google.com/sounds/v1/alarms/beep_short.ogg')
 };
 Object.values(sounds).forEach(a => { a.volume = 0.4; a.load(); });
-
 window.playSound = function(type) {
-    if(sounds[type]) {
-        sounds[type].currentTime = 0;
-        sounds[type].play().catch(() => {});
-    }
+    if(sounds[type]) { sounds[type].currentTime = 0; sounds[type].play().catch(() => {}); }
 };
-
-document.addEventListener('click', (e) => {
-    if(e.target.closest('button')) window.playSound('click');
-});
+document.addEventListener('click', (e) => { if(e.target.closest('button')) window.playSound('click'); });
 
 window.showToast = function(msg, color="#3b82f6", icon="info") {
-    let tc = document.getElementById('toast-container');
-    if(!tc) return;
-    let t = document.createElement('div');
-    t.className = 'toast';
-    t.style.borderLeftColor = color;
+    let tc = document.getElementById('toast-container'); if(!tc) return;
+    let t = document.createElement('div'); t.className = 'toast'; t.style.borderLeftColor = color;
     t.innerHTML = `${window.M(icon)} <span>${msg}</span>`;
     tc.appendChild(t);
     setTimeout(() => { if(t.parentElement) t.remove(); }, 3000);
 };
-
 function log(t) {
-    let l = document.getElementById("log"); 
-    if(!l) return;
-    let e = document.createElement("div"); 
-    e.className = "log-entry"; 
-    e.innerHTML = t;
-    l.prepend(e); 
-    while(l.children.length > 30) l.removeChild(l.lastChild);
+    let l = document.getElementById("log"); if(!l) return;
+    let e = document.createElement("div"); e.className = "log-entry"; e.innerHTML = t;
+    l.prepend(e); while(l.children.length > 30) l.removeChild(l.lastChild);
 }
-
 function getTimeOfDay() {
     const h = new Date().getHours();
-    if(h >= 5 && h < 8) return 'dawn';
-    if(h >= 8 && h < 17) return 'day';
-    if(h >= 17 && h < 20) return 'dusk';
-    return 'night';
+    if(h >= 5 && h < 8) return 'dawn'; if(h >= 8 && h < 17) return 'day'; if(h >= 17 && h < 20) return 'dusk'; return 'night';
 }
-
 function updateTimeOfDay() {
     const tod = getTimeOfDay();
     document.body.classList.remove('time-dawn','time-day','time-dusk','time-night');
     document.body.classList.add('time-'+tod);
     let todStr = tod==='dawn'?window.M('wb_twilight','c-shiny')+' Morgen':tod==='day'?window.M('light_mode','c-shiny')+' Tag':tod==='dusk'?window.M('wb_twilight','c-rod')+' Abend':window.M('dark_mode','c-shiny')+' Nacht';
-    const td = document.getElementById('timeDisplay');
-    if(td) td.innerHTML = todStr;
-    ['dawn','day','dusk','night'].forEach(t => {
-        const el = document.getElementById('time-deco-'+t);
-        if(el) el.style.display = (t===tod)?'block':'none';
-    });
+    const td = document.getElementById('timeDisplay'); if(td) td.innerHTML = todStr;
+    ['dawn','day','dusk','night'].forEach(t => { const el = document.getElementById('time-deco-'+t); if(el) el.style.display = (t===tod)?'block':'none'; });
 }
-setInterval(updateTimeOfDay, 30000); 
-updateTimeOfDay();
+setInterval(updateTimeOfDay, 30000); updateTimeOfDay();
 
 function playCatchAnimation(item) {
-    window.playSound('splash');
-    const scene = document.getElementById('fishing-scene'); 
-    if(!scene) return;
+    window.playSound('splash'); const scene = document.getElementById('fishing-scene'); if(!scene) return;
     const splash = document.createElement('div');
-    if(item.isShiny) { 
-        splash.className = 'shiny-catch-effect'; 
-        splash.innerHTML = item.e; 
-        spawnGoldenParticles(15); 
-    } else { 
-        splash.className = 'catch-splash'; 
-        splash.innerHTML = item.e; 
-    }
-    const ripple = document.createElement('div'); 
-    ripple.className = 'splash-ripple';
-    scene.appendChild(splash); 
-    scene.appendChild(ripple);
+    if(item.isShiny) { splash.className = 'shiny-catch-effect'; splash.innerHTML = item.e; spawnGoldenParticles(15); }
+    else { splash.className = 'catch-splash'; splash.innerHTML = item.e; }
+    const ripple = document.createElement('div'); ripple.className = 'splash-ripple';
+    scene.appendChild(splash); scene.appendChild(ripple);
     setTimeout(() => { splash.remove(); ripple.remove(); }, 1000);
 }
-
 function spawnGoldenParticles(count) {
-    const container = document.getElementById('particlesContainer'); 
-    if(!container) return;
-    for(let i = 0; i < count; i++) {
-        const p = document.createElement('div'); 
-        p.className = 'particle particle-golden';
-        p.style.left = (40+Math.random()*20)+'%'; 
-        p.style.top = (60+Math.random()*20)+'%';
-        p.style.width = p.style.height = (4+Math.random()*6)+'px'; 
-        p.style.animationDuration = (2+Math.random()*3)+'s';
-        container.appendChild(p); 
-        setTimeout(() => p.remove(), 3500);
+    const container = document.getElementById('particlesContainer'); if(!container) return;
+    for(let i=0; i<count; i++) {
+        const p = document.createElement('div'); p.className = 'particle particle-golden';
+        p.style.left = (40+Math.random()*20)+'%'; p.style.top = (60+Math.random()*20)+'%';
+        p.style.width = p.style.height = (4+Math.random()*6)+'px'; p.style.animationDuration = (2+Math.random()*3)+'s';
+        container.appendChild(p); setTimeout(() => p.remove(), 3500);
     }
 }
-
 function updateBoatVisual() {
-    if(!gameState) return;
-    const boat = document.getElementById('boatContainer'); 
-    if(!boat) return;
-    if(gameState.boatUpgraded) { 
-        boat.classList.add('boat-upgraded'); 
-        boat.querySelector('.fisher-emoji').innerHTML = window.M('directions_boat'); 
-    } else { 
-        boat.classList.remove('boat-upgraded'); 
-        boat.querySelector('.fisher-emoji').innerHTML = window.M('rowing'); 
-    }
+    if(!gameState) return; const boat = document.getElementById('boatContainer'); if(!boat) return;
+    if(gameState.boatUpgraded) { boat.classList.add('boat-upgraded'); boat.querySelector('.fisher-emoji').innerHTML = window.M('directions_boat'); }
+    else { boat.classList.remove('boat-upgraded'); boat.querySelector('.fisher-emoji').innerHTML = window.M('rowing'); }
 }
 
-// Interaktive Blasen
 window.spawnInteractiveBubble = function() {
     if (window.activeBubble) return;
     if (!window.isFishingActive || window.fishingTimeLeft <= 0) return;
-    
-    const bubble = document.createElement('div');
-    bubble.className = 'interactive-bubble';
-    
+    const bubble = document.createElement('div'); bubble.className = 'interactive-bubble';
     const size = 50 + Math.random() * 30;
-    bubble.style.width = size + 'px';
-    bubble.style.height = size + 'px';
-    
-    const maxX = window.innerWidth - size - 20;
-    const maxY = window.innerHeight - size - 20;
-    const x = 10 + Math.random() * maxX;
-    const y = 10 + Math.random() * maxY;
-    
-    bubble.style.left = x + 'px';
-    bubble.style.top = y + 'px';
-    bubble.style.fontSize = (size * 0.4) + 'px';
-    bubble.style.display = 'flex';
-    bubble.style.alignItems = 'center';
-    bubble.style.justifyContent = 'center';
+    bubble.style.width = size+'px'; bubble.style.height = size+'px';
+    const maxX = window.innerWidth - size - 20, maxY = window.innerHeight - size - 20;
+    bubble.style.left = (10 + Math.random() * maxX)+'px'; bubble.style.top = (10 + Math.random() * maxY)+'px';
+    bubble.style.fontSize = (size * 0.4)+'px';
+    bubble.style.display = 'flex'; bubble.style.alignItems = 'center'; bubble.style.justifyContent = 'center';
     bubble.innerHTML = window.M('bubble', 'c-fish');
-    
     bubble.addEventListener('click', function(e) {
         e.stopPropagation();
         if (!window.isFishingActive || window.fishingTimeLeft <= 0) return;
-        
         const reduction = Math.max(1, Math.floor(window.fishingTimeLeft * 0.1));
         window.fishingTimeLeft = Math.max(1, window.fishingTimeLeft - reduction);
-        
-        bubble.style.transform = 'scale(1.5)';
-        bubble.style.opacity = '0.3';
-        setTimeout(() => {
-            if (bubble.parentElement) bubble.remove();
-        }, 200);
-        
-        window.activeBubble = null;
-        if (window.bubbleTimeout) clearTimeout(window.bubbleTimeout);
-        
+        bubble.style.transform = 'scale(1.5)'; bubble.style.opacity = '0.3';
+        setTimeout(() => { if (bubble.parentElement) bubble.remove(); }, 200);
+        window.activeBubble = null; if (window.bubbleTimeout) clearTimeout(window.bubbleTimeout);
         if (window.isFishingActive && window.fishingTimeLeft > 1) {
-            window.bubbleTimeout = setTimeout(() => {
-                window.spawnInteractiveBubble();
-            }, 2000 + Math.random() * 3000);
+            window.bubbleTimeout = setTimeout(() => { window.spawnInteractiveBubble(); }, 2000 + Math.random() * 3000);
         }
-        
         window.showToast(`-${reduction}s Angelzeit!`, '#10b981', 'bubble');
     });
-    
-    document.body.appendChild(bubble);
-    window.activeBubble = bubble;
-    
+    document.body.appendChild(bubble); window.activeBubble = bubble;
     setTimeout(() => {
         if (bubble.parentElement && window.activeBubble === bubble) {
-            bubble.remove();
-            window.activeBubble = null;
+            bubble.remove(); window.activeBubble = null;
             if (window.isFishingActive && window.fishingTimeLeft > 1) {
-                window.bubbleTimeout = setTimeout(() => {
-                    window.spawnInteractiveBubble();
-                }, 1500 + Math.random() * 2000);
+                window.bubbleTimeout = setTimeout(() => { window.spawnInteractiveBubble(); }, 1500 + Math.random() * 2000);
             }
         }
     }, 8000 + Math.random() * 4000);
 };
-
 window.clearInteractiveBubble = function() {
-    if (window.activeBubble) {
-        window.activeBubble.remove();
-        window.activeBubble = null;
-    }
-    if (window.bubbleTimeout) {
-        clearTimeout(window.bubbleTimeout);
-        window.bubbleTimeout = null;
-    }
+    if (window.activeBubble) { window.activeBubble.remove(); window.activeBubble = null; }
+    if (window.bubbleTimeout) { clearTimeout(window.bubbleTimeout); window.bubbleTimeout = null; }
 };
 
 const zones = [{ name:"Naturteich", reqPrestige:0 }, { name:"Bach", reqPrestige:1 }];
@@ -747,10 +591,8 @@ const rodsDB = {
     "rod5":{ name:"Karpfenrute",e:"phishing",cost:6000,maxKg:20,speed:20,luck:12,res:22,desc:"Für Dicken" },
     "rod6":{ name:"Meister-Rute",e:"star",cost:15000,maxKg:50,speed:25,luck:18,res:30,desc:"Ultimativ" }
 };
-
-const availableBaitIds = ["b1", "b2", "b3", "b4", "b5", "b6", "b7", "b8", "b9", "b10"];
+const availableBaitIds = ["b1","b2","b3","b4","b5","b6","b7","b8","b9","b10"];
 const baitCrateCost = 149;
-
 const baitsDB = {
     "b1":{ name:"Brot",e:"bakery_dining",cost:20,amt:20,speed:0,luck:2,res:2,trashRed:0 },
     "b2":{ name:"Mais",e:"grass",cost:60,amt:20,speed:0,luck:4,res:3,trashRed:0 },
@@ -763,7 +605,6 @@ const baitsDB = {
     "b9":{ name:"Fischpaste",e:"takeout_dining",cost:10000,amt:20,speed:0,luck:15,res:15,trashRed:0 },
     "b10":{ name:"Kunstköder",e:"set_meal",cost:25000,amt:20,speed:15,luck:0,res:20,trashRed:0 }
 };
-
 const questDB = {
     daily: [
         { id:"d1", desc:"Fange 5 Fische", t:"c", req:5, rew:50 },
@@ -802,7 +643,6 @@ const questDB = {
         { id:"m15", desc:"Fange 100000 Fische", t:"c", req:100000, rew:1000000 }
     ]
 };
-
 const achievementsDB = [
     { id:"first_catch", name:"Erster Fang", desc:"Fange deinen ersten Fisch", icon:"phishing", check:(gs)=>(gs.stats.totalCaught||0)>=1, rew:50, progress: (gs) => Math.min(1, gs.stats.totalCaught||0), target: 1 },
     { id:"catch_100", name:"Hundert-Fänger", desc:"Fange 100 Fische", icon:"set_meal", check:(gs)=>(gs.stats.totalCaught||0)>=100, rew:500, progress: (gs) => Math.min(100, gs.stats.totalCaught||0), target: 100 },
@@ -838,7 +678,6 @@ function checkAchievements() {
     });
     if(earned) { updateUI(); refreshCurrentMenu(); saveData(); syncGlobalLeaderboard(); }
 }
-
 function checkDexCompletionRewards() {
     if(!gameState.dexRewards) gameState.dexRewards = {};
     const z0 = items.filter(i=>i.z===0&&!i.isTrash);
@@ -854,45 +693,35 @@ function checkDexCompletionRewards() {
     }
     if(earned) { updateUI(); refreshCurrentMenu(); saveData(); }
 }
-
 function refreshCurrentMenu() {
-    setTimeout(() => {
-        const menuMap = {
-            'sell': window.handleSellMenu,
-            'aqua': window.handleAquaMenu,
-            'shop': window.handleShopMenu,
-            'inv': window.handleInvMenu,
-            'quest': window.handleQuestMenu,
-            'profile': window.handleProfileMenu,
-            'daily': window.handleDailyMenu,
-            'zone': window.handleZoneMenu,
-            'dex': window.handleDexMenu,
-            'guild': window.handleGuildMenu,
-            'guildShop': window.handleGuildShopMenu,
-            'leaderboard': () => window.handleLeaderboard(window.currentLeaderboardTab),
-            'skills': window.handleSkillsMenu,
-            'achieve': window.handleAchieveMenu,
-            'bank': window.handleBankMenu,
-            'wheel': window.handleWheelMenu,
-            'prestige': window.handlePrestigeMenu
-        };
-        if (window.currentOpenMenu && menuMap[window.currentOpenMenu]) {
-            try { menuMap[window.currentOpenMenu](); } catch(e) { console.error(e); }
-        }
-    }, 50);
+    const m = window.currentOpenMenu;
+    if(m==='sell')window.handleSellMenu();
+    if(m==='aqua')window.handleAquaMenu();
+    if(m==='shop')window.handleShopMenu();
+    if(m==='inv')window.handleInvMenu();
+    if(m==='quest')window.handleQuestMenu();
+    if(m==='profile')window.handleProfileMenu();
+    if(m==='daily')window.handleDailyMenu();
+    if(m==='zone')window.handleZoneMenu();
+    if(m==='dex')window.handleDexMenu();
+    if(m==='guild')window.handleGuildMenu();
+    if(m==='guildShop')window.handleGuildShopMenu();
+    if(m==='leaderboard')window.handleLeaderboard(window.currentLeaderboardTab);
+    if(m==='skills')window.handleSkillsMenu();
+    if(m==='achieve')window.handleAchieveMenu();
+    if(m==='bank')window.handleBankMenu();
+    if(m==='wheel')window.handleWheelMenu();
+    if(m==='prestige')window.handlePrestigeMenu();
 }
-
 function getCurrentEventInfo() {
     let now = Date.now();
     if(globalState?.event && now < globalState.event.exp) return { event:globalState.event, timeLeft:globalState.event.exp-now };
     return { event:null, timeLeft:0 };
 }
-
 function formatWeight(g) {
     if(!g) return "0 g";
     return g>=1000 ? (g/1000).toFixed(2)+" kg" : Math.floor(g)+" g";
 }
-
 function renderAquarium() {
     let bg=document.getElementById("aquarium-bg"); if(!bg) return;
     bg.innerHTML=""; if(!gameState?.aquarium?.fishes) return;
@@ -909,7 +738,6 @@ function renderAquarium() {
         },6000);
     });
 }
-
 function roll(zIdx) {
     let {event}=getCurrentEventInfo();
     let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
@@ -949,13 +777,11 @@ function roll(zIdx) {
     finalItem.id=Math.random().toString(36).substr(2,9);
     return finalItem;
 }
-
 function cloudSync() {
     if(!currentUser||!gameState) return;
     localStorage.setItem('vFisher_cloud_'+currentUser,JSON.stringify({timestamp:Date.now(),money:gameState.money,level:gameState.level,prestige:gameState.prestige}));
 }
 setInterval(cloudSync, 60000);
-
 function checkQuestResets() {
     let d=new Date(); let daily=`${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
     if(!gameState.qs||typeof gameState.qs!=='object'||Array.isArray(gameState.qs)) gameState.qs={p:{dc:0,de:0,wc:0,we:0,mc:0,me:0},c:{},d:"",w:"",m:""};
@@ -965,13 +791,11 @@ function checkQuestResets() {
     if(qs.d!==daily){qs.d=daily;qs.p.dc=0;qs.p.de=0;for(let c in qs.c)if(c.startsWith('d'))delete qs.c[c];save=true;}
     if(save) saveData();
 }
-
 function addQuestProgress(t,amt) {
     if(!gameState?.qs?.p) return;
     if(t==='c'){gameState.qs.p.dc+=amt;gameState.qs.p.wc+=amt;gameState.qs.p.mc+=amt;}
     if(t==='e'){gameState.qs.p.de+=amt;gameState.qs.p.we+=amt;gameState.qs.p.me+=amt;}
 }
-
 function getResetCountdown(t){
     let n=new Date(),tg=new Date();
     if(t==='daily') tg.setHours(24,0,0,0);
@@ -980,7 +804,6 @@ function getResetCountdown(t){
     let ms=tg-n;let h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
     return`${h}h ${m}m ${s}s`;
 }
-
 setInterval(()=>{
     if(window.currentOpenMenu==='quest'){
         let d=document.getElementById('daily-countdown'),w=document.getElementById('weekly-countdown'),m=document.getElementById('monthly-countdown');
@@ -989,14 +812,10 @@ setInterval(()=>{
         if(m) m.innerText=getResetCountdown('monthly');
     }
 },1000);
-
 async function syncGlobalLeaderboard() {
     if(!currentUser||!gameState) return;
-    try {
-        await set(ref(db,"global/leaderboard/"+currentUser),{name:currentUser,prestige:gameState.prestige||0,level:gameState.level||1,money:gameState.money||0,stats:{totalCaught:gameState.stats.totalCaught||0},guild:gameState.guild||""});
-    } catch(e) {}
+    try { await set(ref(db,"global/leaderboard/"+currentUser),{name:currentUser,prestige:gameState.prestige||0,level:gameState.level||1,money:gameState.money||0,stats:{totalCaught:gameState.stats.totalCaught||0},guild:gameState.guild||""}); } catch(e) {}
 }
-
 window.closeBroadcast = function() {
     document.getElementById("broadcast-banner").style.display="none";
     if(globalState?.broadcast){if(!gameState)gameState={};gameState.lastBroadcast=globalState.broadcast.timestamp;saveData();}
@@ -1004,7 +823,6 @@ window.closeBroadcast = function() {
 
 async function loadData() {
     if(!currentUser || !db) return;
-    
     onValue(ref(db,"accounts/"+currentUser),(snap)=>{
         if(!snap.exists()&&currentUser){
             localStorage.removeItem('vFisher_user');
@@ -1031,12 +849,9 @@ async function loadData() {
             if(gameState.boatUpgraded===undefined) gameState.boatUpgraded=false;
             if(gameState.autoFishUnlocked===undefined) gameState.autoFishUnlocked=false;
             if(!gameState.qs||typeof gameState.qs!=='object') gameState.qs={p:{dc:0,de:0,wc:0,we:0,mc:0,me:0},c:{},d:"",w:"",m:""};
-            
             checkQuestResets();renderAquarium();syncGlobalLeaderboard();
-            
             document.body.className = document.body.className.replace(/zone-bg-\d+/, '');
             document.body.classList.add('zone-bg-' + gameState.zone);
-
             if(document.getElementById("authBox").style.display!=="none"){
                 document.getElementById("authBox").style.display="none";
                 document.getElementById("game").style.display="flex";
@@ -1044,29 +859,21 @@ async function loadData() {
                 document.getElementById("btnDiscordFixed").style.display="flex";
                 document.getElementById("btnChatToggle").style.display="flex";
                 if(currentUser==="colin") document.getElementById("btnAdminTop").style.display="block";
-                initChat();
-                updateBoatVisual();
-                
+                initChat(); updateBoatVisual();
                 document.getElementById('login-loading').style.display = 'none';
                 document.getElementById('btnLogin').disabled = false;
                 document.getElementById('btnLogin').innerHTML = '<span class="material-symbols-outlined">login</span> Einloggen';
             }
-            
             if(gameState.autoFishUnlocked && !autoAnglerTimer) {
                 document.getElementById('autoBoatContainer').style.display = 'block';
                 autoAnglerTimer = setInterval(() => { executeAutoFishCatch(); }, 60000);
             }
-            
-            checkAchievements();
-            checkDexCompletionRewards();
-            updateUI();
-            refreshCurrentMenu();
+            checkAchievements(); checkDexCompletionRewards(); updateUI(); refreshCurrentMenu();
         }
     });
     setInterval(()=>{if(gameState?.aquarium?.fishes?.length>0){let am=1+((gameState.skills?.aqua||0)*0.00025);let inc=gameState.aquarium.fishes.reduce((s,f)=>s+Math.floor(f.v*0.1*am),0);if(inc>0){gameState.money+=inc;log(`${window.M('set_meal','c-fish')} Aquarium:+${inc}$`);saveData();syncGlobalLeaderboard();updateUI();}}},60000);
 }
-
-function saveData(){if(currentUser&&gameState){set(ref(db,"users/"+currentUser),gameState).catch(e=>{console.error("Save error:", e);});cloudSync();}}
+function saveData(){if(currentUser&&gameState){set(ref(db,"users/"+currentUser),gameState).catch(e=>{});cloudSync();}}
 setInterval(()=>{if(gameState&&currentUser)saveData();},5000);
 
 function updateUI(){
@@ -1077,10 +884,8 @@ function updateUI(){
     let xpN=gameState.level*50;
     if(el("ui-level")) el("ui-level").innerHTML = `${window.M('trending_up','c-fish')} Lvl ${gameState.level} (${Math.min(gameState.xp,xpN)}/${xpN})`;
     if(el("zoneDisplay")) el("zoneDisplay").innerHTML = `${window.M('water','c-fish')} ${zones[gameState.zone].name}`;
-    
     document.body.className = document.body.className.replace(/zone-bg-\d+/, '');
     document.body.classList.add('zone-bg-' + gameState.zone);
-
     if(el("deco-zone-0")) el("deco-zone-0").style.display = gameState.zone===0?"block":"none";
     if(el("deco-zone-1")) el("deco-zone-1").style.display = gameState.zone===1?"block":"none";
     let{event,timeLeft}=getCurrentEventInfo();
@@ -1106,17 +911,14 @@ window.closeModal = function(){
     document.getElementById('timing-minigame-overlay').classList.remove('active');
     setTimeout(() => { document.getElementById('modal-content').classList.remove('wide'); window.currentOpenMenu = null; }, 200);
 };
-
 function openModal(title, body, footer='', wide=false){
-    let mb = document.getElementById('modal-body'), mc = document.getElementById('modal-content'), ov = document.getElementById('modal-overlay');
-    document.getElementById('modal-title').innerHTML = title;
-    mb.innerHTML = body;
-    document.getElementById('modal-footer').innerHTML = footer;
+    let mb=document.getElementById('modal-body'),mc=document.getElementById('modal-content'),ov=document.getElementById('modal-overlay');
+    document.getElementById('modal-title').innerHTML=title;mb.innerHTML=body;
+    document.getElementById('modal-footer').innerHTML=footer;
     document.getElementById('modal-footer').style.display = footer ? 'flex' : 'none';
     if(wide) mc.classList.add('wide'); else mc.classList.remove('wide');
     ov.classList.add('active');
 }
-
 function autoEventCycle(){
     setInterval(async()=>{
         if(!globalState){try{let snap=await get(ref(db,"global"));globalState=snap.exists()?snap.val():null;}catch(e){}}
@@ -1139,33 +941,27 @@ autoEventCycle();
 
 window.handleFish = function(){
     let btn=document.getElementById('btnFish');if(btn.disabled)return;
-    
     if(gameState.eqBait!=="none"&&gameState.baits){
         gameState.baits[gameState.eqBait]--;
         if(gameState.baits[gameState.eqBait]<=0)gameState.eqBait="none";
-        updateUI();
-        saveData();
+        updateUI(); saveData();
     }
-    
     btn.disabled=true;let scene=document.getElementById('fishing-scene');scene.classList.add('fishing-active');
     let rodDef=rodsDB[gameState.eqRod]||rodsDB.rod1;
     let baitDef=baitsDB[gameState.eqBait];
     let speedBonus=(rodDef.speed||0)+(baitDef?.speed||0);if(speedBonus>90)speedBonus=90;
     let resBonus = (rodDef.res||0) + (baitDef?.res||0);
-    
     let fishTimeSec=60*(1-(speedBonus/100)); 
     let {event}=getCurrentEventInfo();
     if(event&&event.type==='speed')fishTimeSec=Math.floor(fishTimeSec/event.mult);
     if(event&&event.type==='rain')fishTimeSec=Math.floor(fishTimeSec/event.mult);
     fishTimeSec=Math.max(2,Math.floor(fishTimeSec));
     let timeLeft=fishTimeSec;
-    
     window.isFishingActive = true;
     window.fishingTimeLeft = timeLeft;
     btn.innerHTML=`${window.M('phishing')} Angeln... (${window.fishingTimeLeft}s)`;
     window.clearInteractiveBubble();
     setTimeout(() => { window.spawnInteractiveBubble(); }, 500);
-    
     if(fishInterval)clearInterval(fishInterval);
     fishInterval=setInterval(()=>{
         window.fishingTimeLeft--;
@@ -1175,9 +971,8 @@ window.handleFish = function(){
             window.isFishingActive = false;
             window.clearInteractiveBubble();
             startTimingMinigame(resBonus).then((success) => {
-                if(success) {
-                    executeFishCatch(btn, scene);
-                } else {
+                if(success) { executeFishCatch(btn, scene); }
+                else {
                     scene.classList.remove('fishing-active');
                     btn.disabled = false;
                     btn.innerHTML = `${window.M('phishing')} Angeln`;
@@ -1190,7 +985,6 @@ window.handleFish = function(){
 };
 
 let timingActive = false, timingCursor = 0, timingDir = 1, timingReqId = null, timingResolve = null, timingLastTime=0, timingSpeed=0;
-
 function timingLoop(time) {
     if(!timingActive) return;
     let delta = time - timingLastTime;
@@ -1203,7 +997,6 @@ function timingLoop(time) {
     document.getElementById('timing-cursor-wrapper').style.transform = `translate3d(${timingCursor}%, 0, 0)`;
     timingReqId = requestAnimationFrame(timingLoop);
 }
-
 function startTimingMinigame(resBonus) {
     return new Promise(resolve => {
         timingResolve = resolve;
@@ -1223,7 +1016,6 @@ function startTimingMinigame(resBonus) {
         timingReqId = requestAnimationFrame(timingLoop);
     });
 }
-
 document.getElementById('btnTimingCatch').addEventListener('click', () => {
     if(!timingActive) return;
     timingActive = false; cancelAnimationFrame(timingReqId);
@@ -1369,8 +1161,6 @@ function finishMinigame(won){
     saveData();syncGlobalLeaderboard();refreshCurrentMenu();
 }
 
-// === Alle Menü-Funktionen ===
-
 window.handleSellMenu=function(){
     window.currentOpenMenu='sell';
     if(!gameState.inventory)gameState.inventory=[];
@@ -1403,7 +1193,6 @@ window.handleSellMenu=function(){
     html+=`<div class="summary-box"><div class="summary-row"><span>Basis:</span><span style="color:#10b981;">+${baseValue.toLocaleString()}$</span></div><div class="summary-row"><span>Prestige:</span><span>+${prestigeBonus.toLocaleString()}$</span></div>${eventBonus>0?`<div class="summary-row"><span>Event ${eventNameStr}:</span><span style="color:#facc15;">+${eventBonus.toLocaleString()}$</span></div>`:''}<div class="summary-row"><span>Müll:</span><span style="color:#ef4444;">${trashValue.toLocaleString()}$</span></div><div class="summary-total"><span>Gesamt:</span><span style="color:${finalTotal>=0?'#10b981':'#ef4444'};">${finalTotal>=0?'+':''}${finalTotal.toLocaleString()}$</span></div></div>`;
     openModal(`${window.M('backpack')} Rucksack`,html,`<button class="success-btn" onclick="window.executeSell(${finalTotal})">${window.M('payments')} Alles verkaufen</button>`);
 };
-
 window.sellSingleItem = function(id) {
     let idx = gameState.inventory.findIndex(i => i.id === id);
     if(idx === -1) return;
@@ -1423,7 +1212,6 @@ window.sellSingleItem = function(id) {
     syncGlobalLeaderboard();
     checkAchievements();
 };
-
 window.executeSell=function(val){
     if(!gameState.inventory||gameState.inventory.length===0)return;
     gameState.money+=Number(val);
@@ -1433,7 +1221,6 @@ window.executeSell=function(val){
     window.handleSellMenu();
     saveData();syncGlobalLeaderboard();checkAchievements();
 };
-
 window.sendToDex = function(id) {
     let idx = gameState.inventory.findIndex(i => i.id === id);
     if(idx === -1) return;
@@ -1455,7 +1242,6 @@ window.sendToDex = function(id) {
     checkDexCompletionRewards();
     window.showToast("Dem Dex hinzugefügt!", "#10b981", "menu_book");
 };
-
 window.buyBaitCrate = function() {
     if(gameState.money < baitCrateCost) return window.showToast("Nicht genug Geld!", "#ef4444", "error");
     gameState.money -= baitCrateCost;
@@ -1482,12 +1268,10 @@ window.buyBaitCrate = function() {
     saveData();
     openModal(`${window.M('redeem')} Kiste Geöffnet!`, popupHtml, `<button class="success-btn" style="width:100%" onclick="window.handleShopMenu()">Schließen & Zurück</button>`);
 };
-
 window.handleAquaMenu=function(){window.currentOpenMenu='aqua';if(!gameState.aquarium)gameState.aquarium={unlocked:false,fishes:[]};if(!gameState.aquarium.unlocked){let c=gameState.money>=50000||gameState.prestige>=1;return openModal(`${window.M('water')} Aquarium`,`<div style="text-align:center"><p>50.000$</p>${c?`<button class="success-btn" onclick="window.unlockAquarium()">${window.M('shopping_cart')} Kaufen</button>`:'<button disabled>Nicht verfügbar</button>'}</div>`);}let h=`<h3>Kapazität (${gameState.aquarium.fishes.length}/5)</h3>`;gameState.aquarium.fishes.forEach((f,i)=>{let inc=Math.floor(f.v*0.1*(1+((gameState.skills?.aqua||0)*0.00025)));h+=`<div class="item-row"><div>${f.eObj} ${f.n} <small style="color:#10b981;">(+${inc}$/min)</small></div><button class="danger-btn" onclick="window.removeFromAquarium(${i})">Entfernen</button></div>`;});openModal(`${window.M('water')} Aquarium`,h);};
 window.unlockAquarium=function(){if(gameState.money>=50000){gameState.money-=50000; gameState.aquarium.unlocked=true;updateUI();window.handleAquaMenu();saveData();checkAchievements();renderAquarium();}};
 window.sendToAquarium=function(id){if(!gameState.aquarium.unlocked)return window.showToast("Nicht freigeschaltet!", "#ef4444", "error");if(gameState.aquarium.fishes.length>=5)return window.showToast("Max 5!", "#ef4444", "error");let idx = gameState.inventory.findIndex(i => i.id === id);if(idx === -1) return;let item=gameState.inventory[idx];if(!item||item.isTrash)return;gameState.inventory.splice(idx,1);gameState.aquarium.fishes.push({n:item.n,eObj:item.eObj,v:item.v,weightG:item.weightG}); updateUI(); window.handleSellMenu(); saveData();checkAchievements();renderAquarium();};
 window.removeFromAquarium=function(idx){let f=gameState.aquarium.fishes.splice(idx,1)[0];gameState.inventory.push({...f,id:Math.random().toString(36).substr(2,9),isShiny:f.n.startsWith("Mutierter "),isTrash:false}); updateUI(); window.handleAquaMenu(); saveData();renderAquarium();};
-
 window.handleSkillsMenu=function(){
     window.currentOpenMenu='skills';
     if(!gameState.skills)gameState.skills={shiny:0,aqua:0};
@@ -1499,7 +1283,6 @@ window.handleSkillsMenu=function(){
     openModal(`${window.M('psychology')} Skills`,h,"",true);
 };
 window.upgradeSkill=function(t){if(!gameState.skills)gameState.skills={shiny:0,aqua:0};let spent=gameState.skills.shiny+gameState.skills.aqua;let av=Math.max(0,(gameState.level-1)-spent);if(av>0&&gameState.skills[t]<999){gameState.skills[t]++; updateUI(); window.handleSkillsMenu(); saveData();}};
-
 window.handleShopMenu=function(){
     window.currentOpenMenu='shop';
     let titleStr=`${window.M('shopping_cart')} Shop (${Math.floor(gameState.money).toLocaleString()}$)`;
@@ -1511,7 +1294,6 @@ window.handleShopMenu=function(){
 };
 window.buyRod=function(id){gameState.money-=rodsDB[id].cost;if(!gameState.ownedRods)gameState.ownedRods=[];gameState.ownedRods.push(id); updateUI(); window.handleShopMenu(); saveData();syncGlobalLeaderboard();};
 window.buyAutoFish=function(){gameState.money-=100000;gameState.autoFishUnlocked=true; document.getElementById('autoBoatContainer').style.display='block'; autoAnglerTimer = setInterval(() => { executeAutoFishCatch(); }, 60000); updateUI(); window.handleShopMenu(); saveData();};
-
 window.handleInvMenu=function(){
     window.currentOpenMenu='inv';
     if(!gameState.rodStats)gameState.rodStats={};
@@ -1559,7 +1341,6 @@ window.handleGuildMenu=function(){
     h+=`</div>`;if(isO&&myG.requests?.length>0){h+=`<h4 style="color:#eab308;margin-top:10px;">Anfragen</h4>`;myG.requests.forEach(r=>{h+=`<div style="display:flex;justify-content:space-between;padding:10px;background:#0d1117;margin-top:5px;border-radius:8px;"><b>${r}</b><div style="display:flex;gap:5px;"><button class="success-btn" onclick="window.acceptGuildRequest('${r}')">${window.M('check')}</button><button class="danger-btn" onclick="window.denyGuildRequest('${r}')">${window.M('close')}</button></div></div>`;});}
     openModal(`${window.M('shield')} Gilde`,h);
 };
-
 window.handleGuildShopMenu = function() {
     window.currentOpenMenu = 'guildShop';
     let n = gameState.guild; let g = guildsCache[n]; if(!g) return;
@@ -1571,7 +1352,6 @@ window.handleGuildShopMenu = function() {
     let h = `<div style="text-align:center;margin-bottom:15px;"><p style="font-size:12px;color:#94a3b8;">Gilden-Punkte: <b style="color:#10b981;">${g.points || 0} Pkt</b></p></div><div class="inv-grid"><div class="inv-card" style="border-color:#3b82f6;"><h4 style="color:#60a5fa;">Mitgliedsplatz</h4><p style="font-size:12px;">Erhöht das Gilden-Limit (Aktuell: ${maxM})</p><div class="inv-stat"><span>Kosten:</span><span style="color:${(g.points||0)>=slotCost?'#10b981':'#ef4444'}">${slotCost} Pkt</span></div><button class="success-btn" style="width:100%;margin-top:10px;" ${!isO || (g.points||0)<slotCost ? 'disabled' : ''} onclick="window.buyGuildSlot(${slotCost})">Kaufen</button></div><div class="inv-card" style="border-color:#8b5cf6;"><h4 style="color:#a855f7;">Punkte-Multiplikator</h4><p style="font-size:12px;">Mehr Punkte beim Spenden (+10%)</p><div class="inv-stat"><span>Aktuell:</span><span style="color:#facc15;">x${mult.toFixed(1)}</span></div><div class="inv-stat"><span>Kosten:</span><span style="color:${(g.points||0)>=multCost?'#10b981':'#ef4444'}">${multCost} Pkt</span></div><button class="success-btn" style="width:100%;margin-top:10px;background:#8b5cf6;" ${!isO || (g.points||0)<multCost ? 'disabled' : ''} onclick="window.buyGuildMultiplier(${multCost})">Kaufen</button></div></div><button class="update-btn" style="width:100%;margin-top:15px;" onclick="window.handleGuildMenu()">Zurück zur Gilde</button>`;
     openModal(`${window.M('storefront')} Gilden-Shop`, h);
 };
-
 window.createGuild=async function(){const GC=1000;if(gameState.money<GC)return window.showToast(`${GC}$ nötig!`, "#ef4444", "error");let name=document.getElementById("createGuildName").value.trim().replace(/[^a-zA-Z0-9 ]/g,"").substring(0,15);if(name.length<3)return window.showToast("Min 3!", "#ef4444", "error");if(guildsCache[name])return window.showToast("Existiert!", "#ef4444", "error");await set(ref(db,"global/guilds/"+name),{owner:currentUser,points:0,members:[currentUser],requests:[], maxMembers:3, multiplier:1, donations:{[currentUser]:0}});gameState.money-=GC;gameState.guild=name; updateUI(); window.handleGuildMenu(); saveData();syncGlobalLeaderboard();checkAchievements();};
 window.requestJoinGuild=async function(n){let g=guildsCache[n];if(!g)return;let maxM = g.maxMembers || 3; if((g.members||[]).length>=maxM)return window.showToast("Voll!", "#ef4444", "error");let reqs=g.requests||[];if(reqs.includes(currentUser))return window.showToast("Bereits gesendet!", "#ef4444", "error");reqs.push(currentUser);await set(ref(db,"global/guilds/"+n+"/requests"),reqs);window.showToast("Anfrage gesendet!", "#10b981", "check_circle");window.handleGuildMenu();};
 window.acceptGuildRequest=async function(u){let n=gameState.guild;let g=guildsCache[n];if(!g)return;let maxM = g.maxMembers || 3; if((g.members||[]).length>=maxM)return window.showToast("Voll!", "#ef4444", "error");let nm=g.members||[];if(!nm.includes(u))nm.push(u);let nr=(g.requests||[]).filter(x=>x!==u);await set(ref(db,"global/guilds/"+n+"/members"),nm);await set(ref(db,"global/guilds/"+n+"/requests"),nr);let snap=await get(ref(db,"users/"+u));if(snap.exists()){let d=snap.val();d.guild=n;await set(ref(db,"users/"+u),d);}window.handleGuildMenu();};
@@ -1599,7 +1379,6 @@ window.handleAchieveMenu = function() {
     html += `</div><p style="text-align:center;margin-top:10px;color:#facc15;font-weight:bold;">${completed}/${achievementsDB.length} Erfolge</p>`;
     openModal(`${window.M('emoji_events')} Erfolge`, html);
 };
-
 window.handleBankMenu = function() {
     window.currentOpenMenu = 'bank';
     if(!gameState.bankUnlocked) {
@@ -1623,7 +1402,6 @@ window.handleBankMenu = function() {
 window.unlockBank = function() {if(gameState.money >= 25000 && gameState.prestige >= 1) {gameState.money -= 25000;gameState.bankUnlocked = true;updateUI(); window.handleBankMenu(); saveData();}};
 window.bankDeposit = function() {const amt = parseInt(document.getElementById('bankDepositAmt').value);if(isNaN(amt)||amt<=0) return window.showToast("Gültigen Betrag eingeben!", "#ef4444", "error");if(amt > gameState.money) return window.showToast("So viel Geld hast du nicht!", "#ef4444", "error");gameState.money -= amt;gameState.bank.deposited = (gameState.bank.deposited||0) + amt;if(!gameState.bank.lastInterest) gameState.bank.lastInterest = Date.now();updateUI(); window.handleBankMenu(); saveData(); syncGlobalLeaderboard();};
 window.bankWithdraw = function() {const amt = parseInt(document.getElementById('bankWithdrawAmt').value);if(isNaN(amt)||amt<=0) return window.showToast("Gültigen Betrag eingeben!", "#ef4444", "error");if(amt > (gameState.bank.deposited||0)) return window.showToast("So viel hast du nicht auf der Bank!", "#ef4444", "error");gameState.money += amt;gameState.bank.deposited -= amt;updateUI(); window.handleBankMenu(); saveData(); syncGlobalLeaderboard();};
-
 setInterval(() => {
     if(window.currentOpenMenu === 'bank' && gameState?.bank?.deposited > 0) {
         const INTERVAL = 7200000;
@@ -1667,7 +1445,6 @@ window.handleWheelMenu = function() {
     openModal(`${window.M('casino')} Glücksrad`, html);
     setTimeout(() => {const canvas = document.getElementById('wheelCanvas');if(canvas) {canvas.style.transform = `rotate(${window.currentWheelRotation || 0}deg)`;drawWheel(canvas, wheelPrizes, 0);}}, 100);
 };
-
 function drawWheel(canvas, prizes, rotation) {
     const ctx = canvas.getContext('2d');
     const cx = 125, cy = 125, r = 120;
@@ -1683,7 +1460,6 @@ function drawWheel(canvas, prizes, rotation) {
     }
     ctx.beginPath();ctx.arc(cx,cy,8,0,2*Math.PI);ctx.fillStyle = '#161b22';ctx.fill();ctx.strokeStyle = 'white';ctx.stroke();
 }
-
 window.spinWheel = function() {
     if(!gameState.lastWheelSpin) gameState.lastWheelSpin = 0;
     const now = Date.now();
@@ -1722,10 +1498,8 @@ window.spinWheel = function() {
 
 window.handleQuestMenu=function(){window.currentOpenMenu='quest';checkQuestResets();try{let qs=gameState.qs||{},qsP=qs.p||{dc:0,de:0,wc:0,we:0,mc:0,me:0},qsC=qs.c||{};let h=`<div style="background:rgba(0,0,0,0.5);padding:10px;border-radius:12px;margin-bottom:15px;text-align:center;font-size:13px;"><p>${window.M('today')} Daily: <b id="daily-countdown">${getResetCountdown('daily')}</b></p><p>${window.M('calendar_month')} Weekly: <b id="weekly-countdown">${getResetCountdown('weekly')}</b></p><p>${window.M('emoji_events')} Monthly: <b id="monthly-countdown">${getResetCountdown('monthly')}</b></p></div>`;let cats=[{n:window.M('today')+" Daily",l:questDB.daily,c:'dc',e:'de'},{n:window.M('calendar_month')+" Weekly",l:questDB.weekly,c:'wc',e:'we'},{n:window.M('emoji_events')+" Monthly",l:questDB.monthly,c:'mc',e:'me'}];cats.forEach(cat=>{h+=`<h4 style="margin-bottom:8px;">${cat.n}</h4>`;cat.l.forEach(q=>{let prog=(q.t==='c'?qsP[cat.c]:qsP[cat.e]),done=prog>=q.req,claimed=qsC[q.id],pct=Math.min(100,Math.floor((prog/q.req)*100));h+=`<div class="quest-card"><div class="quest-header"><span>${q.desc}</span><span style="color:#facc15;">${q.rew.toLocaleString()}$</span></div><div class="quest-bar-bg"><div class="quest-bar-fill" style="width:${pct}%;"></div></div><div class="quest-footer"><span>${Math.min(prog,q.req).toLocaleString()} / ${q.req.toLocaleString()}</span>${claimed?'<span style="color:#10b981;">Erledigt</span>':done?`<button class="success-btn" style="padding:4px 8px;font-size:12px;flex-direction:row;" onclick="window.claimQuest('${q.id}',${q.rew})">${window.M('download')} Abholen</button>`:'<span style="color:#ef4444;">Offen</span>'}</div></div>`;});});openModal(`${window.M('assignment')} Quests`,h);}catch(e){openModal(`${window.M('assignment')} Quests`,"<p style='color:#ef4444;'>Fehler: "+e.message+"</p>");}};
 window.claimQuest=function(id,rew){if(!gameState.qs.c) gameState.qs.c = {};if(gameState.qs.c[id]) return;gameState.qs.c[id] = true;gameState.money += rew;gameState.stats.totalEarned += rew;updateUI(); window.handleQuestMenu(); saveData(); syncGlobalLeaderboard(); checkAchievements();};
-
 window.handleDexMenu=function(){window.currentOpenMenu='dex';let h=`<div style="display:flex;gap:10px;margin-bottom:10px;"><select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)" style="padding:10px;border-radius:12px;background:#1e293b;color:white;border:1px solid #30363d;flex:1;outline:none;"><option value="all">Alle Zonen</option>${zones.map((z,i)=>`<option value="${i}">${z.name}</option>`).join('')}</select></div><div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.showDexTab('normal')" id="dexTabNormal" style="flex:1;flex-direction:row;">Normal</button><button onclick="window.showDexTab('shiny')" id="dexTabShiny" style="flex:1;flex-direction:row;">Mutiert</button></div><div id="dexGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;"></div>`;openModal(`${window.M('menu_book')} Fish-Dex`, h);window.showDexTab(window.currentDexTab);};
 window.showDexTab=function(tab){window.currentDexTab=tab;let grid=document.getElementById('dexGrid'),zF=document.getElementById('dexZoneFilter')?.value||'all';if(!grid)return;document.getElementById('dexTabNormal').style.background=tab==='normal'?'#3b82f6':'#1e293b';document.getElementById('dexTabShiny').style.background=tab==='shiny'?'#3b82f6':'#1e293b';let col=0,tot=0;grid.innerHTML='';items.forEach(i=>{if(zF!=='all'&&i.z!==parseInt(zF))return;if(tab==='shiny'&&i.isTrash)return;tot++;let d=gameState.dex?.[i.n];let has=tab==='normal'?d?.normal:d?.shiny;if(has)col++;let div=document.createElement('div');div.style.cssText='background:#0d1117;padding:8px;border-radius:12px;text-align:center;border:1px solid #30363d;cursor:pointer;'+(has?'':'opacity:0.4;filter:grayscale(1);');div.innerHTML=`<div style="font-size:36px;" class="${has?i.cClass:''}">${i.eObj}</div><div style="font-size:11px;margin-top:4px;">${has?(tab==='shiny'?'Mut. ':'')+i.n:'???'}</div>`;if(has)div.onclick=()=>window.showFishInfo(i.n,tab);grid.appendChild(div);});let info=document.getElementById('dexInfo');if(!info){info=document.createElement('div');info.id='dexInfo';info.style.cssText='text-align:center;margin-top:15px;padding:10px;background:#0d1117;border-radius:12px;';grid.parentNode.appendChild(info);}info.innerHTML=`<b>Gesammelt: ${col}/${tot}</b>`;checkDexCompletionRewards();};
-
 window.showFishInfo = function(n, tab) {
     let item = items.find(i=>i.n===n); if(!item) return;
     let d = gameState.dex[n];
@@ -1736,18 +1510,13 @@ window.showFishInfo = function(n, tab) {
     let h = `<div style="text-align:center; padding:10px;"><div style="font-size:60px;" class="${item.cClass}">${item.eObj}</div><h2 style="margin:10px 0; color:${tab==='shiny'?'#facc15':'#60a5fa'};">${tab==='shiny'?'Mutierter ':''}${item.n}</h2><div class="inv-card" style="text-align:left; margin-top:15px;"><div class="inv-stat"><span>Gefangen:</span><span style="color:#10b981;">${d?.count||0}x</span></div><div class="inv-stat"><span>Wahrscheinlichkeit:</span><span>~${prob}</span></div><div class="inv-stat"><span>Dein Rekord:</span><span style="color:#facc15;">${rec}</span></div><div class="inv-stat"><span>Gewichtsspanne:</span><span>${minK} - ${maxK}</span></div><div class="inv-stat"><span>Basis-Wert:</span><span>${item.v}$ / ${item.xp} XP</span></div></div><button class="update-btn" style="width:100%; margin-top:15px; flex-direction:row;" onclick="window.handleDexMenu()">${window.M('arrow_back')} Zurück</button></div>`;
     openModal(`${window.M('info')} Info`, h);
 };
-
 window.handleZoneMenu=function(){window.currentOpenMenu='zone';let h=zones.map((z,i)=>`<div class="item-row"><b>${z.name}</b>${gameState.zone===i?'<span style="color:#10b981;">Aktiv</span>':gameState.prestige<z.reqPrestige?`<span style="color:#ef4444;">P${z.reqPrestige} benötigt</span>`:`<button class="success-btn" style="padding:6px 12px;flex-direction:row;" onclick="window.changeZone(${i})">${window.M('directions_walk')} Reisen</button>`}</div>`).join('');openModal(`${window.M('map')} Karte`,h);};
 window.changeZone=function(i){gameState.zone=i;updateUI();window.handleZoneMenu();saveData();};
-
 window.handleLeaderboard=function(tab='users'){window.currentOpenMenu='leaderboard';window.currentLeaderboardTab=tab;let h=`<div style="display:flex;gap:10px;margin-bottom:15px;"><button onclick="window.handleLeaderboard('users')" style="flex:1;flex-direction:row;${tab==='users'?'background:#3b82f6;':'background:#1e293b;'}">${window.M('person')} Spieler</button><button onclick="window.handleLeaderboard('guilds')" style="flex:1;flex-direction:row;${tab==='guilds'?'background:#eab308;':'background:#1e293b;'}">${window.M('shield')} Gilden</button></div><div style="max-height:60vh;overflow-y:auto;padding-right:5px;">`;if(tab==='users'){h+=lastLeaderboardUsers.map((u,i)=>{let r=i===0?window.M('trophy','c-shiny'):i===1?window.M('military_tech','c-shiny'):i===2?window.M('military_tech','c-rod'):(i+1)+'.';return`<div class="leader-card" onclick="window.showPlayerProfile('${u.name}')"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="display:flex;align-items:center;gap:4px;">${r} ${u.name}</b><span style="color:#fcd34d;">P${u.prestige||0}</span></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(u.money).toLocaleString()}$</span><span style="color:#60a5fa;">${(u.stats?.totalCaught||0).toLocaleString()} Fische</span></div></div>`;}).join('');}else{let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>(b.points||0)-(a.points||0));h+=sg.slice(0,100).map((g,i)=>{let r=i===0?window.M('trophy','c-shiny'):i===1?window.M('military_tech','c-shiny'):i===2?window.M('military_tech','c-rod'):(i+1)+'.';return`<div class="leader-card"><div style="display:flex;justify-content:space-between;align-items:center;"><b style="color:#eab308;display:flex;align-items:center;gap:4px;">${r} ${g.name}</b><span>${g.owner}</span></div><div class="card-stats"><span>${g.points||0} Pkt</span><span>${(g.members||[]).length}/${g.maxMembers||10} Memb.</span></div></div>`;}).join('');}h+=`</div>`;openModal(`${window.M('leaderboard')} Leaderboard`,h);};
 window.showPlayerProfile=async function(name){let u;if(name===currentUser&&gameState)u=gameState;else{let snap=await get(ref(db,"users/"+name));if(snap.exists())u=snap.val();}if(u){let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${(u.prestige||0)>0?window.M('stars'):window.M('phishing')}</div><div><h2>${u.name}</h2><div>P${u.prestige||0} | Lvl ${u.level}</div>${u.guild?`<div style="color:#eab308;margin-top:4px;">${window.M('shield')} ${u.guild}</div>`:''}</div></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(u.money).toLocaleString()}$</span><span style="color:#60a5fa;">${(u.stats?.totalCaught||0).toLocaleString()} Fische</span></div></div>`;openModal(`${window.M('person')} Profil: ${u.name}`,h);}else window.showToast("Nicht gefunden!", "#ef4444", "error");};
-
 window.handleProfileMenu=function(){window.currentOpenMenu='profile';let h=`<div class="profile-card"><div class="profile-header"><div class="profile-avatar">${gameState.prestige>0?window.M('stars'):window.M('phishing')}</div><div><h2>${gameState.name}</h2><div>P${gameState.prestige} | Lvl ${gameState.level}</div>${gameState.guild?`<div style="color:#eab308;margin-top:4px;">${window.M('shield')} ${gameState.guild}</div>`:''}</div></div><div class="card-stats"><span style="color:#10b981;">${Math.floor(gameState.money).toLocaleString()}$</span><span style="color:#60a5fa;">${gameState.stats.totalCaught.toLocaleString()} Fische</span></div><div class="card-stats"><span>${gameState.stats.totalEarned.toLocaleString()}$ verdient</span><span style="color:#f97316;">Streak: ${gameState.dailyStreak||0}</span></div></div>`;openModal(`${window.M('person')} Profil`,h);};
-
 window.handleDailyMenu=function(){window.currentOpenMenu='daily';let now=Date.now(),DAY=86400000,can=false,streak=gameState.dailyStreak||0,td=now-gameState.lastDaily,cooldown="";if(gameState.lastDaily===0||td>=DAY*2){can=true;streak=1;}else if(td>=DAY){can=true;streak=Math.min(streak+1,7);}else{let tl=DAY-td;cooldown=`<p style="color:#ef4444;margin-top:15px;font-weight:bold;">Nächste in: ${Math.floor(tl/3600000)}h ${Math.floor((tl%3600000)/60000)}m</p>`;}let h=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">`;for(let i=1;i<=7;i++){let rew=i*100+gameState.prestige*50;let isFuture=i>(can?streak:streak);if(can&&i>streak)isFuture=true;if(!can&&i>streak)isFuture=true;let status=i<streak||(i===streak&&!can)?window.M('check_circle','c-money'):(i===streak&&can)?window.M('redeem','c-shiny'):window.M('lock','c-trash');let rewDisplay=isFuture?'???$':`${rew}$`;h+=`<div style="background:#0d1117;padding:10px;border-radius:12px;text-align:center;${i===streak&&can?'border:2px solid #3b82f6;':''}"><div>Tag ${i}</div><div style="font-size:28px;margin:5px 0;">${status}</div><div style="color:#10b981;font-size:12px;">${rewDisplay}</div></div>`;}h+=`</div>${cooldown}`;openModal(`${window.M('redeem')} Daily Belohnung`,h,can?`<button id="btnDailyClaim" class="success-btn" style="flex-direction:row;" onclick="window.claimDaily(${streak*100+gameState.prestige*50},${streak})">${window.M('download')} Abholen</button>`:'');};
 window.claimDaily=function(rew,streak){let btn = document.getElementById('btnDailyClaim');if(btn) btn.disabled = true;if(Date.now() - gameState.lastDaily < 86400000) return;gameState.money+=rew;gameState.stats.totalEarned+=rew;gameState.lastDaily=Date.now();gameState.dailyStreak=streak;updateUI(); window.handleDailyMenu(); saveData();syncGlobalLeaderboard();checkAchievements();};
-
 window.handlePrestigeMenu=function(){
     window.currentOpenMenu = 'prestige';
     let rl = 20 + gameState.prestige * 5;
@@ -1757,95 +1526,70 @@ window.handlePrestigeMenu=function(){
     openModal(`${window.M('military_tech')} Prestige`, h, can ? `<button class="success-btn" style="width:100%; font-size:18px; padding:15px; background:#8b5cf6; flex-direction:row;" onclick="window.doPrestige()">${window.M('stars')} PRESTIGE DURCHFÜHREN</button>` : `<button class="danger-btn" style="width:100%;flex-direction:row;" disabled>${window.M('lock')} Nicht alle Bedingungen erfüllt</button>`);
 };
 window.doPrestige=function(){gameState.prestige++;gameState.money=0;gameState.level=1;gameState.xp=0;gameState.inventory=[];saveData();syncGlobalLeaderboard();checkAchievements();location.reload();};
-
 window.handlePromoMenu = function() {
     let h=`<input id="inputPromoCode" placeholder="Code eingeben" style="width:100%;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;">`;
     openModal(`${window.M('local_activity')} Promo Code`,h,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.redeemPromoCode()">${window.M('check')} Einlösen</button>`);
 };
 window.redeemPromoCode=async function(){let code=document.getElementById("inputPromoCode").value.trim().toUpperCase();if(!code)return window.showToast("Code eingeben!", "#ef4444", "error");if(gameState.usedCodes?.[code])return window.showToast("Bereits eingelöst!", "#ef4444", "error");let snap=await get(ref(db,"global/promocodes/"+code));if(snap.exists()){let p=snap.val();if(p.money){gameState.money+=p.money;gameState.stats.totalEarned+=p.money;}if(p.xp)gameState.xp+=p.xp;if(p.level)gameState.level+=p.level;if(p.prestige)gameState.prestige+=p.prestige;if(p.skills){gameState.skills=gameState.skills||{shiny:0,aqua:0};}if(p.itemName){if(p.itemName.startsWith("rod_")){let rid=p.itemName.replace("rod_","");if(!gameState.ownedRods)gameState.ownedRods=[];if(!gameState.ownedRods.includes(rid))gameState.ownedRods.push(rid);}else if(p.itemName.startsWith("bait_")){let bid=p.itemName.replace("bait_","");if(!gameState.baits)gameState.baits={};gameState.baits[bid]=(gameState.baits[bid]||0)+p.itemAmt;}else{let bi=items.find(i=>i.n===p.itemName);if(bi)for(let i=0;i<p.itemAmt;i++)gameState.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});}}if(!gameState.usedCodes)gameState.usedCodes={};gameState.usedCodes[code]=true; updateUI(); saveData();syncGlobalLeaderboard();window.closeModal();window.showToast("Code eingelöst!", "#10b981", "check_circle");}else window.showToast("Ungültig!", "#ef4444", "error");};
+window.openFeedbackMenu=function(){openModal(`${window.M('chat')} Feedback`,`<textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;outline:none;"></textarea>`,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.submitFeedback()">${window.M('send')} Senden</button>`);};
+window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5 Zeichen!", "#ef4444", "error");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("Gesendet!", "#10b981", "check_circle");window.closeModal();}).catch(()=>window.showToast("Fehler", "#ef4444", "error"));};
+window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.1 - Quality Update</h3><ul><li style="margin-bottom:6px;"><b>Login-Fix:</b> Der Login-Button wurde repariert und hat jetzt eine Ladeanzeige.</li><li style="margin-bottom:6px;"><b>Köder-Kisten:</b> Köder sind nicht mehr einzeln kaufbar. Kaufe jetzt Köder-Kisten mit zufälligen Ködern!</li><li style="margin-bottom:6px;"><b>Interaktive Blasen:</b> Beim Angeln erscheinen Blasen auf dem Bildschirm. Tippe sie an für -10% Angelzeit!</li><li style="margin-bottom:6px;"><b>Plastikflasche:</b> Bringt jetzt +0,25$ statt Minus.</li><li style="margin-bottom:6px;"><b>Erfolge:</b> Zeigen jetzt Fortschrittsbalken.</li><li style="margin-bottom:6px;"><b>Dex-Fix:</b> Nur der ausgewählte Fisch wird entfernt, nicht alle.</li><li style="margin-bottom:6px;"><b>Müll im Dex:</b> Müll kann nicht mehr ins Dex gelegt werden.</li><li style="margin-bottom:6px;"><b>Widerstandsfähigkeit:</b> Köder geben jetzt Widerstand, der den Timing-Balken vergrößert.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);};
 
-window.openFeedbackMenu=function(){openModal(`${window.M('chat')} Feedback`,`", "check_circle");}else window.showToast("Ungültig!", "#ef4444", "error");};
+window.handleAdminMenu = function() {
+    let h = `<div style="padding:20px;max-height:70vh;overflow-y:auto;"><h3 style="color:#0ea5e9;">Admin Panel</h3><p style="color:#94a3b8;margin-bottom:15px;">Angemeldet als <b>${currentUser}</b></p>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #0ea5e9;margin-bottom:15px;"><h4 style="color:#0ea5e9;">Live Broadcast</h4><input id="adminBroadcastInput" placeholder="Nachricht..." style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendBroadcast()">Senden</button></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #facc15;margin-bottom:15px;"><h4 style="color:#facc15;">Events</h4><select id="adminEventSelect" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="sun">Goldene Sonne</option><option value="rain">Monsun</option><option value="hai">Raubfisch</option></select><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="adminEventMult" type="number" placeholder="Faktor" step="0.5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminEventTime" type="number" placeholder="Minuten" value="5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div><div style="display:flex;gap:8px;"><button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminSetEvent()">Start</button><button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminStopEvent()">Stop</button></div></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #10b981;margin-bottom:15px;"><h4 style="color:#10b981;">Wartung</h4><div style="display:flex;gap:8px;"><button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">AN</button><button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">AUS</button></div></div></div>`;
+    openModal(`${window.M('settings')} Admin Panel`, h);
+};
+window.adminSendBroadcast = async function() {
+    let txt = document.getElementById('adminBroadcastInput').value.trim();
+    if(!txt) return window.showToast("Text eingeben!", "#ef4444", "error");
+    await set(ref(db,"global/broadcast"),{text:txt,timestamp:Date.now()});
+    window.showToast("Gesendet!", "#10b981", "check_circle");
+};
+window.adminSetEvent = async function() {
+    let type = document.getElementById('adminEventSelect').value;
+    let mult = parseFloat(document.getElementById('adminEventMult').value) || 2;
+    let minutes = parseInt(document.getElementById('adminEventTime').value) || 5;
+    let names = {sun:"Goldene Sonne",rain:"Monsun",hai:"Raubfisch"};
+    await set(ref(db,"global/event"),{type:type,mult:mult,name:names[type]||type,exp:Date.now()+minutes*60000});
+    window.showToast(`${names[type]} gestartet!`, "#facc15", "bolt");
+};
+window.adminStopEvent = async function() {
+    await set(ref(db,"global/event"),null);
+    window.showToast("Event gestoppt!", "#10b981", "check_circle");
+};
+window.adminSetMaintenance = async function(on) {
+    await set(ref(db,"global/maintenance"), on ? true : null);
+    window.showToast(on ? "Wartung AN!" : "Wartung AUS!", "#10b981", "check_circle");
+};
 
-window.openFeedbackMenu=function(){openModal(`${window.M('chat')} Feedback`,`<textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #303<textarea id="feedbackText" placeholder="Dein Feedback..." style="width:100%;height:120px;padding:12px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;resize:none;outline:none;"></textarea>`,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.submit63d;background:#161b22;color:white;resize:none;outline:none;"></textarea>`,`<button class="success-btn" style="width:100%;flex-direction:row;" onclick="window.submitFeedback()">${window.M('send')} Senden</button>`);};
-window.submitFeedback=function(){let t=document.getElementById("feedbackFeedback()">${window.M('send')} Senden</button>`);};
-window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5 Zeichen!", "#ef4444", "error");fetch("Text").value.trim();if(t.length<5)return window.showToast("Min 5 Zeichen!", "#ef4444", "error");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAehttps://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"Feedback",description:t,",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-Dcolor:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("Gesendet!", "#10b981", "check_circle");window.closeModal();E")}]}]})}).then(()=>{window.showToast("Gesendet!", "#10b981", "check_circle");window.closeModal();}).catch(()=>window.showToast("Fehler", "#ef4444", "error"));};
-
-window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1}).catch(()=>window.showToast("Fehler", "#ef4444", "error"));};
-
-window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7..6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.1 - Quality Update</h3><ul><li style="margin-bottom:6px;"><b>Login-Fix:</b> Der Login-Button wurde5.1 - Quality Update</h3><ul><li style="margin-bottom:6px;"><b>Login-Fix:</b> Der Login-Button wurde repariert und hat jetzt eine Ladeanzeige.</li><li style="margin-bottom:6px;"><b>Köder-Kisten:</b> Köder sind nicht mehr einzeln kaufbar. Kaufe jetzt Köder-Kisten mit zufälligen Ködern!</li><li style="margin-bottom:6px repariert und hat jetzt eine Ladeanzeige.</li><li style="margin-bottom:6px;"><b>Köder-Kisten:</b> Köder sind nicht mehr einzeln kaufbar. Kaufe jetzt Köder-Kisten mit zufälligen Ködern!</li><li style="margin-bottom:6px;"><b>Interaktive Blasen:</b> Beim Angeln erscheinen Blasen auf dem Bildschirm. Tippe sie an für;"><b>Interaktive Blasen:</b> Beim Angeln erscheinen Blasen auf dem Bildschirm. Tippe sie an für -10% Angelzeit!</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);};
-
-// Chat
 function initChat() {
     if(!currentUser || !db) return;
-    const chatRef = ref(db, "global/chat");
-    onChildAdded -10% Angelzeit!</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);};
-
-// Chat
-function initChat() {
-    if(!currentUser || !db) return;
-    const chatRef = ref(db, "global/chat");
-    onChildAdded(chatRef, (snap) => {
-        let msg = snap.val();
-        let div = document.createElement('div');
-        div.className = 'chat-msg';
-        div.innerHTML =(chatRef, (snap) => {
-        let msg = snap.val();
-        let div = document.createElement('div');
-        div.className = 'chat-msg';
-        div.innerHTML = `<span `<span class="chat-msg-content"><span class="chat-user">${msg.user}:</span> ${msg.text}</span><span class="chat-time">${new Date(msg.time).toLocaleTimeString()}</span>`;
-        let container = document.getElementById('chatMessages');
-        if(container) { container.appendChild(div); class="chat-msg-content"><span class="chat-user">${msg.user}:</span> ${msg.text}</span><span class="chat-time">${new Date(msg.time).toLocaleTimeString()}</span>`;
-        let container = document.getElementById('chatMessages');
-        if(container) { container.appendChild(div); container.scrollTop = container.scrollHeight; }
-    });
-}
-window.toggleChat = function() {
-    let c = document.getElementById('chatContainer');
-    c.style.display container.scrollTop = container.scrollHeight; }
-    });
+    try {
+        const chatRef = ref(db, "global/chat");
+        onChildAdded(chatRef, (snap) => {
+            let msg = snap.val();
+            let div = document.createElement('div');
+            div.className = 'chat-msg';
+            div.innerHTML = `<span class="chat-msg-content"><span class="chat-user">${msg.user}:</span> ${msg.text}</span><span class="chat-time">${new Date(msg.time).toLocaleTimeString()}</span>`;
+            let container = document.getElementById('chatMessages');
+            if(container) { container.appendChild(div); container.scrollTop = container.scrollHeight; }
+        });
+    } catch(e) {}
 }
 window.toggleChat = function() {
     let c = document.getElementById('chatContainer');
     c.style.display = c.style.display === 'flex' ? 'none' : 'flex';
 };
-document.getElementById('chatInput')?.addEventListener(' = c.style.display === 'flex' ? 'none' : 'flex';
-};
 document.getElementById('chatInput')?.addEventListener('keypress', async function(e) {
-    if(e.key === 'Enter' && this.value.trim()) {
-        await push(ref(db, "global/chat"), {user:currentUser,textkeypress', async function(e) {
     if(e.key === 'Enter' && this.value.trim()) {
         await push(ref(db, "global/chat"), {user:currentUser,text:this.value.trim(),time:Date.now()});
         this.value = '';
     }
 });
-
-// Admin (minimal)
-window.handleAdminMenu = function() {
-    let h:this.value.trim(),time:Date.now()});
-        this.value = '';
-    }
-});
-
-// Admin (minimal)
-window.handleAdminMenu = function() {
-    let h = `<div style="padding:20px;"><h3>Admin Panel</h3><p>Funktionen nur für Admin sichtbar.</p></div>`;
-    openModal(`${window.M('settings')} Admin`, h);
-};
-
-console.log("✅ Virtual Fisher PRO vollständig geladen");
 </script>
-
-<style>
-@ = `<div style="padding:20px;"><h3>Admin Panel</h3><p>Funktionen nur für Admin sichtbar.</p></div>`;
-    openModal(`${window.M('settings')} Admin`, h);
-};
-
-console.log("✅ Virtual Fisher PRO vollständig geladen");
-</script>
-
-<style>
-@keyframes spin { 0%{transform:rotate(0deg)}100%{transform:rotate(360deg)} }
-</style>
-
+<style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
 </body>
 </html>
