@@ -759,6 +759,7 @@ function roll(zIdx) {
     let baseShinyChance=0.01+((gameState.skills?.shiny||0)*0.00025);
     let shinyChance=baseShinyChance*eventLuckMult;
     if(event&&event.type==='sun') shinyChance*=event.mult;
+    if(event&&event.type==='luck') shinyChance*=event.mult;
     let isShiny=Math.random()<shinyChance;
     let itemW=0,finalVal=baseItem.v;
     if(baseItem.minW!==undefined){
@@ -838,7 +839,7 @@ async function loadData() {
         let acc=await get(ref(db,"accounts/"+currentUser));if(!acc.exists()) return;
         if(snap.exists()) gameState=snap.val();
         else{gameState={name:currentUser,money:0,xp:0,level:1,zone:0,inventory:[],dex:{},aquarium:{unlocked:false,fishes:[]},lastDaily:0,dailyStreak:0,prestige:0,stats:{totalCaught:0,totalEarned:0},ownedRods:["rod1"],eqRod:"rod1",baits:{},eqBait:"none",bannedUntil:0,rodStats:{},usedCodes:{},guild:"",skills:{shiny:0,aqua:0},achievements:{},bank:{deposited:0,interestEarned:0,lastInterest:0},lastWheelSpin:0,dexRewards:{},boatUpgraded:false,autoFishUnlocked:false,bankUnlocked:false};saveData();}
-        if(gameState?.bannedUntil>Date.now()){let mins=Math.ceil((gameState.bannedUntil-Date.now())/60000);document.body.innerHTML=`<div style="text-align:center;background:#161b22;padding:30px;border-radius:15px;border:2px solid #ef4444;"><h1 style="color:#ef4444;"><span class="material-symbols-outlined">block</span> GESPERRT</h1><p>Noch ${mins} Min</p><button onclick="localStorage.removeItem('vFisher_user');location.reload()" style="padding:12px;background:#3b82f6;border:none;border-radius:8px;color:white;width:100%;">Abmelden</button></div>`;return;}
+        if(gameState?.bannedUntil>Date.now()){let mins=Math.ceil((gameState.bannedUntil-Date.now())/60000);let reason=gameState?.banReason||'Kein Grund angegeben';document.body.innerHTML=`<div style="text-align:center;background:#161b22;padding:30px;border-radius:15px;border:2px solid #ef4444;"><h1 style="color:#ef4444;"><span class="material-symbols-outlined">block</span> GESPERRT</h1><p>Noch ${mins} Min</p><p style="color:#f97316;font-weight:bold;">Grund: ${reason}</p><button onclick="localStorage.removeItem('vFisher_user');location.reload()" style="padding:12px;background:#3b82f6;border:none;border-radius:8px;color:white;width:100%;">Abmelden</button></div>`;return;}
         if(gameState){
             if(!Array.isArray(gameState.inventory)) gameState.inventory=[];
             if(!gameState.achievements) gameState.achievements={};
@@ -1189,6 +1190,7 @@ window.handleSellMenu=function(){
     let bonusPercent=gameState.prestige||0,prestigeBonus=Math.floor(baseValue*(bonusPercent/100));
     let eventBonus=0,{event}=getCurrentEventInfo(),eventNameStr="";
     if(event?.type==='money'){eventBonus=Math.floor(baseValue*(event.mult-1));eventNameStr=`(x${event.mult})`;}
+    if(event?.type==='sell'){eventBonus=Math.floor(baseValue*(event.mult-1));eventNameStr=`(${event.name} x${event.mult})`;}
     let finalTotal=Math.floor(baseValue+prestigeBonus+eventBonus+trashValue);
     html+=`<div class="summary-box"><div class="summary-row"><span>Basis:</span><span style="color:#10b981;">+${baseValue.toLocaleString()}$</span></div><div class="summary-row"><span>Prestige:</span><span>+${prestigeBonus.toLocaleString()}$</span></div>${eventBonus>0?`<div class="summary-row"><span>Event ${eventNameStr}:</span><span style="color:#facc15;">+${eventBonus.toLocaleString()}$</span></div>`:''}<div class="summary-row"><span>Müll:</span><span style="color:#ef4444;">${trashValue.toLocaleString()}$</span></div><div class="summary-total"><span>Gesamt:</span><span style="color:${finalTotal>=0?'#10b981':'#ef4444'};">${finalTotal>=0?'+':''}${finalTotal.toLocaleString()}$</span></div></div>`;
     openModal(`${window.M('backpack')} Rucksack`,html,`<button class="success-btn" onclick="window.executeSell(${finalTotal})">${window.M('payments')} Alles verkaufen</button>`);
@@ -1201,6 +1203,7 @@ window.sellSingleItem = function(id) {
     let bonusPercent=gameState.prestige||0,prestigeBonus=Math.floor(val*(bonusPercent/100));
     let eventBonus=0,{event}=getCurrentEventInfo();
     if(event?.type==='money'){eventBonus=Math.floor(val*(event.mult-1));}
+    if(event?.type==='sell'){eventBonus=Math.floor(val*(event.mult-1));}
     let finalVal = val;
     if(val >= 0) finalVal = val + prestigeBonus + eventBonus;
     gameState.money += finalVal;
@@ -1535,36 +1538,6 @@ window.openFeedbackMenu=function(){openModal(`${window.M('chat')} Feedback`,`<te
 window.submitFeedback=function(){let t=document.getElementById("feedbackText").value.trim();if(t.length<5)return window.showToast("Min 5 Zeichen!", "#ef4444", "error");fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({embeds:[{title:"Feedback",description:t,color:3447003,fields:[{name:"Spieler",value:currentUser},{name:"Zeit",value:new Date().toLocaleString("de-DE")}]}]})}).then(()=>{window.showToast("Gesendet!", "#10b981", "check_circle");window.closeModal();}).catch(()=>window.showToast("Fehler", "#ef4444", "error"));};
 window.handleUpdateMenu=function(){let h=`<div style="background:#0d1117;padding:15px;border-radius:12px;border-left:4px solid #10b981;line-height:1.6;max-height:60vh;overflow-y:auto;"><h3 style="color:#10b981;margin-bottom:8px;">Version 7.5.1 - Quality Update</h3><ul><li style="margin-bottom:6px;"><b>Login-Fix:</b> Der Login-Button wurde repariert und hat jetzt eine Ladeanzeige.</li><li style="margin-bottom:6px;"><b>Köder-Kisten:</b> Köder sind nicht mehr einzeln kaufbar. Kaufe jetzt Köder-Kisten mit zufälligen Ködern!</li><li style="margin-bottom:6px;"><b>Interaktive Blasen:</b> Beim Angeln erscheinen Blasen auf dem Bildschirm. Tippe sie an für -10% Angelzeit!</li><li style="margin-bottom:6px;"><b>Plastikflasche:</b> Bringt jetzt +0,25$ statt Minus.</li><li style="margin-bottom:6px;"><b>Erfolge:</b> Zeigen jetzt Fortschrittsbalken.</li><li style="margin-bottom:6px;"><b>Dex-Fix:</b> Nur der ausgewählte Fisch wird entfernt, nicht alle.</li><li style="margin-bottom:6px;"><b>Müll im Dex:</b> Müll kann nicht mehr ins Dex gelegt werden.</li><li style="margin-bottom:6px;"><b>Widerstandsfähigkeit:</b> Köder geben jetzt Widerstand, der den Timing-Balken vergrößert.</li></ul></div>`;openModal(`${window.M('campaign')} News`,h);};
 
-window.handleAdminMenu = function() {
-    let h = `<div style="padding:20px;max-height:70vh;overflow-y:auto;"><h3 style="color:#0ea5e9;">Admin Panel</h3><p style="color:#94a3b8;margin-bottom:15px;">Angemeldet als <b>${currentUser}</b></p>
-    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #0ea5e9;margin-bottom:15px;"><h4 style="color:#0ea5e9;">Live Broadcast</h4><input id="adminBroadcastInput" placeholder="Nachricht..." style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendBroadcast()">Senden</button></div>
-    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #facc15;margin-bottom:15px;"><h4 style="color:#facc15;">Events</h4><select id="adminEventSelect" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="sun">Goldene Sonne</option><option value="rain">Monsun</option><option value="hai">Raubfisch</option></select><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="adminEventMult" type="number" placeholder="Faktor" step="0.5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminEventTime" type="number" placeholder="Minuten" value="5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div><div style="display:flex;gap:8px;"><button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminSetEvent()">Start</button><button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminStopEvent()">Stop</button></div></div>
-    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #10b981;margin-bottom:15px;"><h4 style="color:#10b981;">Wartung</h4><div style="display:flex;gap:8px;"><button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">AN</button><button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">AUS</button></div></div></div>`;
-    openModal(`${window.M('settings')} Admin Panel`, h);
-};
-window.adminSendBroadcast = async function() {
-    let txt = document.getElementById('adminBroadcastInput').value.trim();
-    if(!txt) return window.showToast("Text eingeben!", "#ef4444", "error");
-    await set(ref(db,"global/broadcast"),{text:txt,timestamp:Date.now()});
-    window.showToast("Gesendet!", "#10b981", "check_circle");
-};
-window.adminSetEvent = async function() {
-    let type = document.getElementById('adminEventSelect').value;
-    let mult = parseFloat(document.getElementById('adminEventMult').value) || 2;
-    let minutes = parseInt(document.getElementById('adminEventTime').value) || 5;
-    let names = {sun:"Goldene Sonne",rain:"Monsun",hai:"Raubfisch"};
-    await set(ref(db,"global/event"),{type:type,mult:mult,name:names[type]||type,exp:Date.now()+minutes*60000});
-    window.showToast(`${names[type]} gestartet!`, "#facc15", "bolt");
-};
-window.adminStopEvent = async function() {
-    await set(ref(db,"global/event"),null);
-    window.showToast("Event gestoppt!", "#10b981", "check_circle");
-};
-window.adminSetMaintenance = async function(on) {
-    await set(ref(db,"global/maintenance"), on ? true : null);
-    window.showToast(on ? "Wartung AN!" : "Wartung AUS!", "#10b981", "check_circle");
-};
-
 function initChat() {
     if(!currentUser || !db) return;
     try {
@@ -1585,10 +1558,185 @@ window.toggleChat = function() {
 };
 document.getElementById('chatInput')?.addEventListener('keypress', async function(e) {
     if(e.key === 'Enter' && this.value.trim()) {
-        await push(ref(db, "global/chat"), {user:currentUser,text:this.value.trim(),time:Date.now()});
+        let msgText = this.value.trim();
+        let msgUser = currentUser;
+        await push(ref(db, "global/chat"), {user:msgUser, text:msgText, time:Date.now()});
+        fetch("https://discord.com/api/webhooks/1501593859593994383/BmPxmsMTRx7uUgEk0IIGA5DxZZ6reRI99_6BF7oebq2NlxWr0H87bNqn2xMo55iqOyEm", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({content: `**${msgUser}**: ${msgText}`})
+        }).catch(() => {});
         this.value = '';
     }
 });
+
+window.handleAdminMenu = function() {
+    let h = `<div style="padding:20px;max-height:70vh;overflow-y:auto;"><h3 style="color:#0ea5e9;">Admin Panel</h3><p style="color:#94a3b8;margin-bottom:15px;">Angemeldet als <b>${currentUser}</b></p>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #0ea5e9;margin-bottom:15px;"><h4 style="color:#0ea5e9;">Live Broadcast</h4><input id="adminBroadcastInput" placeholder="Nachricht..." style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendBroadcast()">Senden</button></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #0ea5e9;margin-bottom:15px;"><h4 style="color:#0ea5e9;">Discord Update senden</h4><input id="adminUpdateInput" placeholder="Update-Text..." style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="update-btn" style="width:100%;flex-direction:row;" onclick="window.adminSendUpdate()">Update absenden</button></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #facc15;margin-bottom:15px;"><h4 style="color:#facc15;">Events</h4><select id="adminEventSelect" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="sun">Goldene Sonne</option><option value="rain">Monsun</option><option value="hai">Raubfisch</option><option value="luck">Glück (Nur Admin)</option><option value="sell">Verkauf (Nur Admin)</option></select><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="adminEventMult" type="number" placeholder="Faktor" step="0.5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminEventTime" type="number" placeholder="Minuten" value="5" style="width:50%;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div><div style="display:flex;gap:8px;"><button class="success-btn" style="flex:1;flex-direction:row;" onclick="window.adminSetEvent()">Start</button><button class="danger-btn" style="flex:1;flex-direction:row;" onclick="window.adminStopEvent()">Stop</button></div></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #10b981;margin-bottom:15px;"><h4 style="color:#10b981;">Wartung</h4><div style="display:flex;gap:8px;"><button class="danger-btn" style="flex:1;" onclick="window.adminSetMaintenance(true)">AN</button><button class="success-btn" style="flex:1;" onclick="window.adminSetMaintenance(false)">AUS</button></div></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #8b5cf6;margin-bottom:15px;"><h4 style="color:#8b5cf6;">Promo Code erstellen</h4><input id="adminPromoCode" placeholder="Code Name" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;text-transform:uppercase;outline:none;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><input id="adminPromoMoney" type="number" placeholder="Geld" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminPromoXp" type="number" placeholder="XP" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminPromoLevel" type="number" placeholder="Level" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminPromoPrestige" type="number" placeholder="Prestige" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminPromoSkillShiny" type="number" placeholder="Skill Shiny" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminPromoSkillAqua" type="number" placeholder="Skill Aqua" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div><select id="adminPromoItemType" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="">Kein Item</option><optgroup label="Köder">${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">Köder: ${b.name}</option>`).join('')}</optgroup><optgroup label="Fische/Müll">${items.map(i=>`<option value="item_${i.n}">${i.isTrash?'Müll':'Fisch'}: ${i.n}</option>`).join('')}</optgroup></select><input id="adminPromoItemAmt" type="number" placeholder="Item Anzahl" value="1" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="success-btn" style="width:100%;margin-top:8px;background:#8b5cf6;flex-direction:row;" onclick="window.adminCreatePromoCode()">Code erstellen</button></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #f59e0b;margin-bottom:15px;"><h4 style="color:#f59e0b;">Give an User</h4><input id="adminGiveUser" placeholder="Username" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;"><input id="adminGiveMoney" type="number" placeholder="Geld" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminGiveXp" type="number" placeholder="XP" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminGiveLevel" type="number" placeholder="Level" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminGivePrestige" type="number" placeholder="Prestige" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminGiveSkillShiny" type="number" placeholder="Skill Shiny" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminGiveSkillAqua" type="number" placeholder="Skill Aqua" style="padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"></div><select id="adminGiveItemType" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><option value="">Kein Item</option><optgroup label="Köder">${Object.entries(baitsDB).map(([id,b])=>`<option value="bait_${id}">Köder: ${b.name}</option>`).join('')}</optgroup><optgroup label="Fische/Müll">${items.map(i=>`<option value="item_${i.n}">${i.isTrash?'Müll':'Fisch'}: ${i.n}</option>`).join('')}</optgroup></select><input id="adminGiveItemAmt" type="number" placeholder="Item Anzahl" value="1" style="width:100%;padding:10px;margin-top:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="success-btn" style="width:100%;margin-top:8px;background:#f59e0b;color:#000;flex-direction:row;" onclick="window.adminGiveToUser()">Geben</button></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #ef4444;margin-bottom:15px;"><h4 style="color:#ef4444;">Benutzer bannen</h4><input id="adminBanUser" placeholder="Username" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminBanMinutes" type="number" placeholder="Minuten" value="60" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminBanReason" placeholder="Grund" style="width:100%;padding:10px;margin-bottom:8px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="danger-btn" style="width:100%;flex-direction:row;" onclick="window.adminBanUserFunc()">Bannen</button></div>
+    <div style="background:#0d1117;padding:15px;border-radius:12px;border:1px solid #f97316;margin-bottom:15px;"><h4 style="color:#f97316;">Account-Verwaltung</h4><button class="update-btn" style="width:100%;margin-bottom:8px;flex-direction:row;" onclick="window.adminViewAccounts()">Alle Accounts anzeigen</button><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="adminAccountUser" placeholder="Username" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="danger-btn" style="flex-direction:row;" onclick="window.adminDeleteAccount()">Account löschen</button></div><div style="display:flex;gap:8px;margin-bottom:8px;"><input id="adminChangePassUser" placeholder="Username" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><input id="adminChangePassNew" placeholder="Neues Passwort" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="update-btn" style="flex-direction:row;" onclick="window.adminChangePassword()">PW ändern</button></div><div style="display:flex;gap:8px;"><input id="adminResetUser" placeholder="Username" style="flex:1;padding:10px;border-radius:8px;border:1px solid #30363d;background:#161b22;color:white;outline:none;"><button class="danger-btn" style="flex-direction:row;" onclick="window.adminResetUserData()">Spielstand löschen</button></div></div></div>`;
+    openModal(`${window.M('settings')} Admin Panel`, h);
+};
+window.adminSendBroadcast = async function() {
+    let txt = document.getElementById('adminBroadcastInput').value.trim();
+    if(!txt) return window.showToast("Text eingeben!", "#ef4444", "error");
+    await set(ref(db,"global/broadcast"),{text:txt,timestamp:Date.now()});
+    window.showToast("Gesendet!", "#10b981", "check_circle");
+};
+window.adminSendUpdate = async function() {
+    let txt = document.getElementById('adminUpdateInput').value.trim();
+    if(!txt) return window.showToast("Text eingeben!", "#ef4444", "error");
+    try {
+        await fetch("https://discord.com/api/webhooks/1500867108387684582/cEM8ww8dTB3ydM-zFmariX6Dfiyr0QBE3JMzzYH9u_xetukjudIXrLhUYZ9h72IZquZd", {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({embeds:[{title:"📢 Update",description:txt,color:3447003,timestamp:new Date().toISOString()}]})
+        });
+        window.showToast("Update an Discord gesendet!", "#10b981", "check_circle");
+        document.getElementById('adminUpdateInput').value = '';
+    } catch(e) { window.showToast("Fehler beim Senden!", "#ef4444", "error"); }
+};
+window.adminSetEvent = async function() {
+    let type = document.getElementById('adminEventSelect').value;
+    let mult = parseFloat(document.getElementById('adminEventMult').value) || 2;
+    let minutes = parseInt(document.getElementById('adminEventTime').value) || 5;
+    let names = {sun:"Goldene Sonne",rain:"Monsun",hai:"Raubfisch",luck:"Glück",sell:"Verkauf"};
+    await set(ref(db,"global/event"),{type:type,mult:mult,name:names[type]||type,exp:Date.now()+minutes*60000});
+    window.showToast(`${names[type]} gestartet!`, "#facc15", "bolt");
+};
+window.adminStopEvent = async function() {
+    await set(ref(db,"global/event"),null);
+    window.showToast("Event gestoppt!", "#10b981", "check_circle");
+};
+window.adminSetMaintenance = async function(on) {
+    await set(ref(db,"global/maintenance"), on ? true : null);
+    window.showToast(on ? "Wartung AN!" : "Wartung AUS!", "#10b981", "check_circle");
+};
+window.adminCreatePromoCode = async function() {
+    let code = document.getElementById('adminPromoCode').value.trim().toUpperCase();
+    if(!code) return window.showToast("Code-Name eingeben!", "#ef4444", "error");
+    let money = parseInt(document.getElementById('adminPromoMoney').value) || 0;
+    let xp = parseInt(document.getElementById('adminPromoXp').value) || 0;
+    let level = parseInt(document.getElementById('adminPromoLevel').value) || 0;
+    let prestige = parseInt(document.getElementById('adminPromoPrestige').value) || 0;
+    let skillShiny = parseInt(document.getElementById('adminPromoSkillShiny').value) || 0;
+    let skillAqua = parseInt(document.getElementById('adminPromoSkillAqua').value) || 0;
+    let itemType = document.getElementById('adminPromoItemType').value;
+    let itemAmt = parseInt(document.getElementById('adminPromoItemAmt').value) || 1;
+    let promoData = {};
+    if(money) promoData.money = money;
+    if(xp) promoData.xp = xp;
+    if(level) promoData.level = level;
+    if(prestige) promoData.prestige = prestige;
+    if(skillShiny || skillAqua) promoData.skills = {shiny: skillShiny, aqua: skillAqua};
+    if(itemType) {
+        if(itemType.startsWith('bait_')) { promoData.itemName = itemType; promoData.itemAmt = itemAmt; }
+        else if(itemType.startsWith('item_')) { promoData.itemName = itemType.replace('item_',''); promoData.itemAmt = itemAmt; }
+    }
+    if(Object.keys(promoData).length === 0) return window.showToast("Mindestens eine Belohnung angeben!", "#ef4444", "error");
+    await set(ref(db,"global/promocodes/"+code), promoData);
+    window.showToast(`Code ${code} erstellt!`, "#10b981", "check_circle");
+    document.getElementById('adminPromoCode').value = '';
+};
+window.adminGiveToUser = async function() {
+    let user = document.getElementById('adminGiveUser').value.trim();
+    if(!user) return window.showToast("Username eingeben!", "#ef4444", "error");
+    let snap = await get(ref(db,"users/"+user));
+    if(!snap.exists()) return window.showToast("User nicht gefunden!", "#ef4444", "error");
+    let data = snap.val();
+    let money = parseInt(document.getElementById('adminGiveMoney').value) || 0;
+    let xp = parseInt(document.getElementById('adminGiveXp').value) || 0;
+    let level = parseInt(document.getElementById('adminGiveLevel').value) || 0;
+    let prestige = parseInt(document.getElementById('adminGivePrestige').value) || 0;
+    let skillShiny = parseInt(document.getElementById('adminGiveSkillShiny').value) || 0;
+    let skillAqua = parseInt(document.getElementById('adminGiveSkillAqua').value) || 0;
+    let itemType = document.getElementById('adminGiveItemType').value;
+    let itemAmt = parseInt(document.getElementById('adminGiveItemAmt').value) || 1;
+    if(money) { data.money = (data.money||0) + money; data.stats.totalEarned = (data.stats.totalEarned||0) + money; }
+    if(xp) data.xp = (data.xp||0) + xp;
+    if(level) data.level = (data.level||1) + level;
+    if(prestige) data.prestige = (data.prestige||0) + prestige;
+    if(skillShiny || skillAqua) { data.skills = data.skills || {shiny:0,aqua:0}; if(skillShiny) data.skills.shiny = (data.skills.shiny||0) + skillShiny; if(skillAqua) data.skills.aqua = (data.skills.aqua||0) + skillAqua; }
+    if(itemType) {
+        if(itemType.startsWith('bait_')) {
+            let bid = itemType.replace('bait_','');
+            if(!data.baits) data.baits = {};
+            data.baits[bid] = (data.baits[bid]||0) + itemAmt;
+        } else if(itemType.startsWith('item_')) {
+            let iname = itemType.replace('item_','');
+            let bi = items.find(i=>i.n===iname);
+            if(bi) {
+                if(!data.inventory) data.inventory = [];
+                for(let i=0;i<itemAmt;i++) data.inventory.push({id:Math.random().toString(36).substr(2,9),n:bi.n,baseName:bi.n,v:bi.v,xp:bi.xp,e:bi.e,eObj:bi.eObj,isShiny:false,isTrash:bi.isTrash,weightG:bi.minW||0});
+            }
+        }
+    }
+    await set(ref(db,"users/"+user), data);
+    window.showToast(`${user} erfolgreich beliefert!`, "#10b981", "check_circle");
+};
+window.adminViewAccounts = async function() {
+    let snap = await get(ref(db,"accounts"));
+    if(!snap.exists()) return openModal(`${window.M('group')} Accounts`, "<p>Keine Accounts gefunden.</p>");
+    let accs = snap.val();
+    let h = '<div style="max-height:50vh;overflow-y:auto;">';
+    for(let [name, pw] of Object.entries(accs)) {
+        h += `<div class="inv-card" style="flex-direction:row;justify-content:space-between;"><div><b>${name}</b><br><small>PW: ${pw}</small></div><div style="display:flex;gap:5px;"><button class="danger-btn" style="padding:4px 8px;font-size:11px;" onclick="window.adminDeleteAccountDirect('${name}')">Löschen</button></div></div>`;
+    }
+    h += '</div>';
+    openModal(`${window.M('group')} Accounts`, h);
+};
+window.adminDeleteAccount = async function() {
+    let user = document.getElementById('adminAccountUser').value.trim();
+    if(!user) return window.showToast("Username eingeben!", "#ef4444", "error");
+    if(!confirm(`Account "${user}" WIRKLICH löschen?`)) return;
+    await remove(ref(db,"accounts/"+user));
+    await remove(ref(db,"users/"+user));
+    await remove(ref(db,"global/leaderboard/"+user));
+    window.showToast(`Account ${user} gelöscht!`, "#10b981", "check_circle");
+};
+window.adminDeleteAccountDirect = async function(user) {
+    if(!confirm(`Account "${user}" WIRKLICH löschen?`)) return;
+    await remove(ref(db,"accounts/"+user));
+    await remove(ref(db,"users/"+user));
+    await remove(ref(db,"global/leaderboard/"+user));
+    window.showToast(`Account ${user} gelöscht!`, "#10b981", "check_circle");
+    window.adminViewAccounts();
+};
+window.adminChangePassword = async function() {
+    let user = document.getElementById('adminChangePassUser').value.trim();
+    let newPw = document.getElementById('adminChangePassNew').value.trim();
+    if(!user || !newPw) return window.showToast("Username und Passwort eingeben!", "#ef4444", "error");
+    if(newPw.length < 3) return window.showToast("Passwort mind. 3 Zeichen!", "#ef4444", "error");
+    await set(ref(db,"accounts/"+user), newPw);
+    window.showToast(`Passwort für ${user} geändert!`, "#10b981", "check_circle");
+};
+window.adminBanUserFunc = async function() {
+    let user = document.getElementById('adminBanUser').value.trim();
+    let minutes = parseInt(document.getElementById('adminBanMinutes').value) || 60;
+    let reason = document.getElementById('adminBanReason').value.trim() || 'Kein Grund';
+    if(!user) return window.showToast("Username eingeben!", "#ef4444", "error");
+    let snap = await get(ref(db,"users/"+user));
+    if(!snap.exists()) return window.showToast("User nicht gefunden!", "#ef4444", "error");
+    let data = snap.val();
+    data.bannedUntil = Date.now() + minutes * 60000;
+    data.banReason = reason;
+    await set(ref(db,"users/"+user), data);
+    window.showToast(`${user} für ${minutes} Min gebannt!`, "#ef4444", "block");
+};
+window.adminResetUserData = async function() {
+    let user = document.getElementById('adminResetUser').value.trim();
+    if(!user) return window.showToast("Username eingeben!", "#ef4444", "error");
+    if(!confirm(`Spielstand von "${user}" wirklich löschen? Account bleibt erhalten.`)) return;
+    let defaultData = {name:user,money:0,xp:0,level:1,zone:0,inventory:[],dex:{},aquarium:{unlocked:false,fishes:[]},lastDaily:0,dailyStreak:0,prestige:0,stats:{totalCaught:0,totalEarned:0},ownedRods:["rod1"],eqRod:"rod1",baits:{},eqBait:"none",bannedUntil:0,rodStats:{},usedCodes:{},guild:"",skills:{shiny:0,aqua:0},achievements:{},bank:{deposited:0,interestEarned:0,lastInterest:0},lastWheelSpin:0,dexRewards:{},boatUpgraded:false,autoFishUnlocked:false,bankUnlocked:false};
+    await set(ref(db,"users/"+user), defaultData);
+    await set(ref(db,"global/leaderboard/"+user), {name:user,prestige:0,level:1,money:0,stats:{totalCaught:0},guild:""});
+    window.showToast(`Spielstand von ${user} gelöscht!`, "#10b981", "check_circle");
+};
 </script>
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
 </body>
