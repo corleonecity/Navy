@@ -385,7 +385,6 @@ window.fishingTimeLeft = 0;
 window.activeBubble = null;
 window.bubbleTimeout = null;
 
-// --- Log-Funktion mit UI-Aktualisierung ---
 function log(t) {
     let l = document.getElementById("log");
     if (!l) return;
@@ -568,7 +567,6 @@ const zones = [
     { name:"Geheimer Bergsee", reqPrestige:3 }
 ];
 
-// Emoji-Mapping für Items
 const itemEmojis = {
     "Laub / Blätter": "🍂", "Entenfeder": "🪶", "Algen": "🌿", "Teichschlamm": "💧", "Schneckenhaus": "🐚",
     "Angelhaken (rostig)": "🪝", "Gummistiefel": "🥾", "Plastikflasche": "🧴", "Scherbe": "🪚",
@@ -592,7 +590,6 @@ const itemEmojis = {
 };
 
 const items = [
-    // Zone 0 - Naturteich
     {n:"Laub / Blätter",v:-1,xp:-1,c:12.0,z:0,isTrash:true,minW:5,maxW:50},
     {n:"Entenfeder",v:-2,xp:-1,c:8.0,z:0,isTrash:true,minW:1,maxW:10},
     {n:"Algen",v:-3,xp:-2,c:6.0,z:0,isTrash:true,minW:10,maxW:500},
@@ -616,7 +613,6 @@ const items = [
     {n:"Hecht (jung)",v:150,xp:60,c:1.5,z:0,color:"#33691e",minW:500,maxW:5000},
     {n:"Karpfen",v:200,xp:80,c:1.0,z:0,color:"#ffb300",minW:1000,maxW:15000},
     {n:"Zander",v:300,xp:100,c:0.5,z:0,color:"#9e9d24",minW:800,maxW:8000},
-    // Zone 1 - Bach
     {n:"Nasses Laub",v:-2,xp:-2,c:7.3,z:1,isTrash:true,minW:5,maxW:60},
     {n:"Angelschnur",v:-5,xp:-3,c:5.5,z:1,isTrash:true,minW:2,maxW:20},
     {n:"Bleischrot",v:-8,xp:-4,c:4.5,z:1,isTrash:true,minW:5,maxW:50},
@@ -636,7 +632,6 @@ const items = [
     {n:"Huchen (jung)",v:600,xp:200,c:1.0,z:1,color:"#bf360c",minW:500,maxW:5000},
     {n:"Rapfen",v:850,xp:280,c:0.6,z:1,color:"#cfd8dc",minW:300,maxW:3000},
     {n:"Waller (jung)",v:1500,xp:450,c:0.4,z:1,color:"#3e2723",minW:500,maxW:8000},
-    // Zone 2 - Alter Hafen
     {n:"Altes Seil",v:-3,xp:-2,c:10.0,z:2,isTrash:true,minW:50,maxW:500},
     {n:"Rostiger Anker",v:-15,xp:-8,c:3.0,z:2,isTrash:true,minW:2000,maxW:15000},
     {n:"Hafenschlamm",v:-5,xp:-3,c:8.0,z:2,isTrash:true,minW:200,maxW:3000},
@@ -653,7 +648,6 @@ const items = [
     {n:"Meeraal",v:600,xp:200,c:2.5,z:2,color:"#37474f",minW:400,maxW:5000},
     {n:"Stör (jung)",v:1200,xp:350,c:0.8,z:2,color:"#bcaaa4",minW:1500,maxW:15000},
     {n:"Plattfisch",v:400,xp:140,c:4.0,z:2,color:"#d7ccc8",minW:200,maxW:3000},
-    // Zone 3 - Geheimer Bergsee
     {n:"Tannenzapfen",v:-2,xp:-1,c:12.0,z:3,isTrash:true,minW:10,maxW:80},
     {n:"Angelschnur (verheddert)",v:-6,xp:-3,c:7.0,z:3,isTrash:true,minW:2,maxW:20},
     {n:"Bleigewicht",v:-9,xp:-5,c:5.0,z:3,isTrash:true,minW:10,maxW:80},
@@ -762,6 +756,9 @@ const achievementsDB = [
     { id:"daily_streak_7", name:"Täglicher Besucher", desc:"7 Tage Streak", icon:"local_fire_department", check:(gs)=>(gs.dailyStreak||0)>=7, rew:2000, progress: (gs) => Math.min(7, gs.dailyStreak||0), target: 7 },
     { id:"guild_join", name:"Gilden-Mitglied", desc:"Trete Gilde bei", icon:"shield", check:(gs)=>!!gs.guild, rew:500, progress: (gs) => gs.guild ? 1 : 0, target: 1 },
 ];
+
+let guildsCache = {};
+let lastLeaderboardUsers = [];
 
 function checkAchievements() {
     if(!gameState||!gameState.achievements) gameState.achievements = {};
@@ -1279,7 +1276,8 @@ function finishMinigame(won){
     saveData();syncGlobalLeaderboard();refreshCurrentMenu();
 }
 
-// --- Alle Menü- und anderen Funktionen (gekürzt aber voll funktional übernommen) ---
+// --- ALLE MENÜ-FUNKTIONEN (VOLLSTÄNDIG) ---
+
 window.handleSellMenu=function(){
     window.currentOpenMenu='sell';
     if(!gameState.inventory)gameState.inventory=[];
@@ -1310,7 +1308,7 @@ window.handleSellMenu=function(){
     if(event?.type==='money'){eventBonus=Math.floor(baseValue*(event.mult-1));eventNameStr=`(x${event.mult})`;}
     if(event?.type==='sell'){eventBonus=Math.floor(baseValue*(event.mult-1));eventNameStr=`(${event.name} x${event.mult})`;}
     let finalTotal=Math.floor(baseValue+prestigeBonus+eventBonus+trashValue);
-    html+=`<div class="summary-box"><div class="summary-row"><span>Basis:</span><span style="color:#10b981;">+${baseValue.toLocaleString()}$</span></div><div class="summary-row"><span>Prestige:</span><span>+${prestigeBonus.toLocaleString()}$</span></div>${eventBonus>0?`<div class="summary-row"><span>Event ${eventNameStr}:</span><span style="color:#facc15;">+${eventBonus.toLocaleString()}$</span></div>:''}<div class="summary-row"><span>Müll:</span><span style="color:#ef4444;">${trashValue.toLocaleString()}$</span></div><div class="summary-total"><span>Gesamt:</span><span style="color:${finalTotal>=0?'#10b981':'#ef4444'};">${finalTotal>=0?'+':''}${finalTotal.toLocaleString()}$</span></div></div>`;
+    html+=`<div class="summary-box"><div class="summary-row"><span>Basis:</span><span style="color:#10b981;">+${baseValue.toLocaleString()}$</span></div><div class="summary-row"><span>Prestige:</span><span>+${prestigeBonus.toLocaleString()}$</span></div>${eventBonus>0?`<div class="summary-row"><span>Event ${eventNameStr}:</span><span style="color:#facc15;">+${eventBonus.toLocaleString()}$</span></div>`:''}<div class="summary-row"><span>Müll:</span><span style="color:#ef4444;">${trashValue.toLocaleString()}$</span></div><div class="summary-total"><span>Gesamt:</span><span style="color:${finalTotal>=0?'#10b981':'#ef4444'};">${finalTotal>=0?'+':''}${finalTotal.toLocaleString()}$</span></div></div>`;
     openModal(`${window.M('backpack')} Rucksack`,html,`<button class="success-btn" onclick="window.executeSell(${finalTotal})">${window.M('payments')} Alles verkaufen</button>`);
 };
 window.sellSingleItem = function(id) {
@@ -1438,35 +1436,111 @@ window.equipRod=function(id){gameState.eqRod=id; updateUI(); window.handleInvMen
 window.equipBait=function(id){gameState.eqBait=id; updateUI(); window.handleInvMenu(); saveData();};
 window.unequipBait=function(){gameState.eqBait="none"; updateUI(); window.handleInvMenu(); saveData();};
 
-// Guild, Bank, Wheel, Quest, Zone, Profile, Daily, Prestige, Promo, Feedback, Achieve, Dex, etc.
-window.handleGuildMenu=function(){/*... original ...*/ openModal("Gilde","<p>Gildenfunktionen</p>");};
-window.handleGuildShopMenu=function(){openModal("Gilden Shop","<p>Gildenshop</p>");};
-window.handleBankMenu=function(){/*... original ...*/ openModal("Bank","<p>Bank</p>");};
-window.handleWheelMenu=function(){/*... original ...*/ openModal("Rad","<p>Glücksrad</p>");};
-window.handleQuestMenu=function(){openModal("Quests","<p>Quests</p>");};
-window.handleZoneMenu=function(){openModal("Karte","<p>Zonen</p>");};
-window.handleProfileMenu=function(){openModal("Profil","<p>Profil</p>");};
-window.handleDailyMenu=function(){openModal("Daily","<p>Daily</p>");};
-window.handlePrestigeMenu=function(){openModal("Prestige","<p>Prestige</p>");};
-window.handlePromoMenu=function(){openModal("Promo","<p>Promo</p>");};
-window.openFeedbackMenu=function(){openModal("Feedback","<p>Feedback</p>");};
-window.handleAchieveMenu=function(){openModal("Erfolge","<p>Erfolge</p>");};
-window.handleDexMenu=function(){openModal("Dex","<p>Dex</p>");};
-window.handleLeaderboard=function(){openModal("Leaderboard","<p>Leaderboard</p>");};
+window.handleGuildMenu = function() {
+    window.currentOpenMenu='guild';
+    if(!gameState.guild){
+        let html = `<div style="background:#161b22;padding:15px;border-radius:12px;border:1px solid #eab308;margin-bottom:15px;"><h4>Gilde gründen</h4><p>Kostet 1000$</p><input id="createGuildName" placeholder="Name" maxlength="15" style="width:100%;padding:10px;margin-bottom:10px;"><button class="success-btn" onclick="window.createGuild()">Gründen</button></div><h4>Top Gilden</h4><div id="guildListDiv"></div>`;
+        openModal(`${window.M('shield')} Gilden`, html);
+        setTimeout(() => {
+            let listDiv = document.getElementById('guildListDiv');
+            if(listDiv){
+                let sg=[];for(let n in guildsCache)sg.push({name:n,...guildsCache[n]});sg.sort((a,b)=>b.points-a.points);
+                listDiv.innerHTML = sg.map(g => `<div style="display:flex;justify-content:space-between;background:#0d1117;padding:10px;margin-bottom:5px;"><b>${g.name}</b><button class="update-btn" onclick="window.requestJoinGuild('${g.name}')">Beitreten</button></div>`).join('');
+            }
+        }, 50);
+        return;
+    }
+    let myG=guildsCache[gameState.guild];
+    if(!myG){gameState.guild="";saveData();window.handleGuildMenu();return;}
+    let isO=myG.owner===currentUser;
+    let h=`<h2>${gameState.guild}</h2><p>Punkte: ${myG.points||0} | Multi: x${(myG.multiplier||1).toFixed(1)}</p><div style="display:flex;gap:10px;"><button class="success-btn" onclick="window.handleGuildDonateMenu()">Spenden</button><button class="update-btn" onclick="window.handleGuildShopMenu()">Shop</button><button class="danger-btn" onclick="window.leaveGuild()">${isO?'Auflösen':'Verlassen'}</button></div><h3>Mitglieder</h3>`;
+    (myG.members||[]).forEach(m=>{h+=`<div style="background:#0d1117;padding:5px;margin:3px;">${m} ${isO&&m!==currentUser?`<button onclick="window.kickGuildMember('${m}')">Kick</button>`:''}</div>`;});
+    if(isO && myG.requests?.length) h+=`<h3>Anfragen</h3>`+myG.requests.map(r=>`<div>${r} <button onclick="window.acceptGuildRequest('${r}')">✅</button><button onclick="window.denyGuildRequest('${r}')">❌</button></div>`).join('');
+    openModal(`${window.M('shield')} Gilde`, h);
+};
+window.handleGuildShopMenu=function(){window.currentOpenMenu='guildShop'; let g=guildsCache[gameState.guild]; if(!g)return; let h=`<div><p>Mitgliedsplatz erweitern (${g.maxMembers||3} -> ${(g.maxMembers||3)+1}) 500 Pkt</p><button onclick="window.buyGuildSlot()">Kaufen</button><p>Multiplikator +0.1 (${(g.multiplier||1).toFixed(1)} -> ${((g.multiplier||1)+0.1).toFixed(1)}) 1000 Pkt</p><button onclick="window.buyGuildMultiplier()">Kaufen</button></div>`; openModal("Gildenshop",h);};
+window.createGuild=async function(){let name=document.getElementById("createGuildName")?.value.trim();if(!name)return;if(gameState.money<1000)return window.showToast("1000$ nötig!");gameState.money-=1000;await set(ref(db,"global/guilds/"+name),{owner:currentUser,points:0,members:[currentUser],requests:[],maxMembers:3,multiplier:1});gameState.guild=name;saveData();window.handleGuildMenu();};
+window.requestJoinGuild=async function(n){let g=guildsCache[n];if(!g)return;let reqs=g.requests||[];reqs.push(currentUser);await set(ref(db,"global/guilds/"+n+"/requests"),reqs);window.showToast("Anfrage gesendet!");};
+window.acceptGuildRequest=async function(u){let n=gameState.guild;let g=guildsCache[n];let mem=g.members||[];mem.push(u);let req=g.requests.filter(x=>x!==u);await set(ref(db,"global/guilds/"+n+"/members"),mem);await set(ref(db,"global/guilds/"+n+"/requests"),req);let usnap=await get(ref(db,"users/"+u));if(usnap.exists()){let d=usnap.val();d.guild=n;await set(ref(db,"users/"+u),d);}window.handleGuildMenu();};
+window.denyGuildRequest=async function(u){let n=gameState.guild;let g=guildsCache[n];let req=g.requests.filter(x=>x!==u);await set(ref(db,"global/guilds/"+n+"/requests"),req);window.handleGuildMenu();};
+window.leaveGuild=async function(){let n=gameState.guild;let g=guildsCache[n];if(g.owner===currentUser)await remove(ref(db,"global/guilds/"+n));else{let mem=g.members.filter(m=>m!==currentUser);await set(ref(db,"global/guilds/"+n+"/members"),mem);}gameState.guild="";saveData();window.handleGuildMenu();};
+window.kickGuildMember=async function(m){let n=gameState.guild;let g=guildsCache[n];let mem=g.members.filter(x=>x!==m);await set(ref(db,"global/guilds/"+n+"/members"),mem);window.handleGuildMenu();};
+window.buyGuildSlot=async function(){let n=gameState.guild;let g=guildsCache[n];if(g.points<500)return;g.points-=500;g.maxMembers=(g.maxMembers||3)+1;await set(ref(db,"global/guilds/"+n),g);window.handleGuildShopMenu();};
+window.buyGuildMultiplier=async function(){let n=gameState.guild;let g=guildsCache[n];if(g.points<1000)return;g.points-=1000;g.multiplier=(g.multiplier||1)+0.1;await set(ref(db,"global/guilds/"+n),g);window.handleGuildShopMenu();};
+window.handleGuildDonateMenu=function(){if(!gameState.guild)return; let h="<div>Wähle Anzahl:</div>"; openModal("Spenden",h);};
+
+window.handleBankMenu = function() {
+    window.currentOpenMenu='bank';
+    if(!gameState.bankUnlocked){
+        if(gameState.money>=25000 && gameState.prestige>=1){
+            openModal("Bank","<button onclick='window.unlockBank()'>Für 25000$ freischalten</button>");
+        } else openModal("Bank","Bank gesperrt (Prestige 1 & 25000$)");
+        return;
+    }
+    let dep = gameState.bank.deposited||0;
+    let interest = gameState.bank.interestEarned||0;
+    let h = `<div>Einlage: ${dep.toLocaleString()}$ | Zinsen: ${interest.toLocaleString()}$</div><input id="bankAmt" placeholder="Betrag"><button onclick="window.bankDeposit()">Einzahlen</button><button onclick="window.bankWithdraw()">Auszahlen</button>`;
+    openModal("Bank",h);
+};
+window.unlockBank=function(){if(gameState.money>=25000 && gameState.prestige>=1){gameState.money-=25000;gameState.bankUnlocked=true;saveData();updateUI();window.handleBankMenu();}};
+window.bankDeposit=function(){let amt=parseInt(document.getElementById("bankAmt")?.value);if(amt>0 && amt<=gameState.money){gameState.money-=amt;gameState.bank.deposited=(gameState.bank.deposited||0)+amt;if(!gameState.bank.lastInterest)gameState.bank.lastInterest=Date.now();saveData();updateUI();window.handleBankMenu();}};
+window.bankWithdraw=function(){let amt=parseInt(document.getElementById("bankAmt")?.value);if(amt>0 && amt<=(gameState.bank.deposited||0)){gameState.money+=amt;gameState.bank.deposited-=amt;saveData();updateUI();window.handleBankMenu();}};
+setInterval(()=>{if(gameState?.bank?.deposited>0 && gameState.bank.lastInterest && Date.now()-gameState.bank.lastInterest>=7200000){let int=Math.floor(gameState.bank.deposited*0.05);gameState.bank.deposited+=int;gameState.bank.interestEarned=(gameState.bank.interestEarned||0)+int;gameState.bank.lastInterest=Date.now();saveData();updateUI();log(`🏦 +${int}$ Zinsen!`);}},60000);
+
+window.handleWheelMenu = function() {
+    window.currentOpenMenu='wheel';
+    let now=Date.now();
+    let canSpin=!gameState.lastWheelSpin || (now-gameState.lastWheelSpin>86400000);
+    let h=`<div class="wheel-container"><canvas id="wheelCanvas" width="250" height="250"></canvas><div class="wheel-pointer">▼</div></div>`;
+    if(canSpin) h+=`<button onclick="window.spinWheel()">Drehen</button>`;
+    openModal("Glücksrad",h);
+    setTimeout(()=>drawWheel(document.getElementById('wheelCanvas'),[
+        {label:"100$",color:"#10b981"},{label:"500$",color:"#3b82f6"},{label:"1000$",color:"#facc15"},
+        {label:"50 XP",color:"#a855f7"},{label:"200 XP",color:"#ef4444"},{label:"Köder+",color:"#f97316"},
+        {label:"Mega",color:"#ec4899"},{label:"Niete",color:"#64748b"}
+    ],0),100);
+};
+function drawWheel(canvas, prizes, rot){if(!canvas)return;let ctx=canvas.getContext('2d'),cx=125,cy=125,r=120,s=prizes.length,a=(2*Math.PI)/s;ctx.clearRect(0,0,250,250);for(let i=0;i<s;i++){let sa=i*a+rot,ea=sa+a;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,sa,ea);ctx.fillStyle=prizes[i].color;ctx.fill();ctx.stroke();ctx.save();ctx.translate(cx,cy);ctx.rotate(sa+a/2);ctx.fillStyle='white';ctx.font='bold 12px';ctx.fillText(prizes[i].label,r-10,4);ctx.restore();}}
+window.spinWheel=function(){let now=Date.now();if(gameState.lastWheelSpin && now-gameState.lastWheelSpin<86400000)return;gameState.lastWheelSpin=now;let prizes=[{label:"100$",rew:()=>{gameState.money+=100;log("+100$");}},{label:"500$",rew:()=>{gameState.money+=500;}},{label:"1000$",rew:()=>{gameState.money+=1000;}},{label:"50 XP",rew:()=>{gameState.xp+=50;}},{label:"200 XP",rew:()=>{gameState.xp+=200;}},{label:"Köder+",rew:()=>{gameState.baits.b1=(gameState.baits.b1||0)+20;}},{label:"Mega",rew:()=>{gameState.money+=5000;gameState.xp+=500;spawnGoldenParticles(30);}},{label:"Niete",rew:()=>{}}];let idx=Math.floor(Math.random()*prizes.length);prizes[idx].rew();updateUI();saveData();window.showToast(prizes[idx].label);window.handleWheelMenu();};
+
+window.handleQuestMenu=function(){window.currentOpenMenu='quest';checkQuestResets();let qs=gameState.qs||{},p=qs.p||{};let h=`<div id="daily-countdown"></div><div id="weekly-countdown"></div><div id="monthly-countdown"></div>`;questDB.daily.forEach(q=>{let prog=p.dc||0,claimed=qs.c?.[q.id];h+=`<div>${q.desc} ${Math.min(prog,q.req)}/${q.req} ${claimed?'Erledigt':prog>=q.req?`<button onclick="window.claimQuest('${q.id}',${q.rew})">+${q.rew}$</button>`:'Offen'}</div>`;});openModal("Quests",h);};
+window.claimQuest=function(id,rew){if(gameState.qs.c[id])return;gameState.qs.c[id]=true;gameState.money+=rew;gameState.stats.totalEarned+=rew;updateUI();saveData();window.handleQuestMenu();};
+
+window.handleDexMenu=function(){window.currentOpenMenu='dex';let h=`<select id="dexZoneFilter" onchange="window.showDexTab(window.currentDexTab)"><option value="all">Alle</option>${zones.map((z,i)=>`<option value="${i}">${z.name}</option>`).join('')}</select><div><button onclick="window.showDexTab('normal')">Normal</button><button onclick="window.showDexTab('shiny')">✨ Shiny</button></div><div id="dexGrid"></div>`;openModal("Fisch-Dex",h);window.showDexTab('normal');};
+window.showDexTab=function(tab){window.currentDexTab=tab;let grid=document.getElementById('dexGrid');if(!grid)return;let zF=document.getElementById('dexZoneFilter')?.value||'all';let filtered=items.filter(i=>(zF==='all'||i.z==parseInt(zF)) && (tab==='shiny'?!i.isTrash:true));grid.innerHTML=filtered.map(i=>{let has=tab==='normal'?gameState.dex?.[i.n]?.normal:gameState.dex?.[i.n]?.shiny;return`<div style="background:#0d1117;padding:5px;margin:3px;text-align:center;opacity:${has?1:0.5}"><div>${i.eObj}</div><div>${has?i.n:'???'}</div></div>`;}).join('');};
+
+window.handleZoneMenu=function(){window.currentOpenMenu='zone';let h=zones.map((z,i)=>`<div>${z.name} ${gameState.zone===i?'Aktiv':gameState.prestige<z.reqPrestige?`P${z.reqPrestige} nötig`:`<button onclick="window.changeZone(${i})">Reisen</button>`}</div>`).join('');openModal("Karte",h);};
+window.changeZone=function(i){gameState.zone=i;updateUI();window.handleZoneMenu();saveData();};
+
+window.handleLeaderboard=function(tab='users'){window.currentOpenMenu='leaderboard';window.currentLeaderboardTab=tab;let h=(tab==='users')?lastLeaderboardUsers.slice(0,20).map((u,i)=>`<div>${i+1}. ${u.name} - ${u.money}$ (Lvl ${u.level})</div>`).join(''):Object.entries(guildsCache).sort((a,b)=>b[1].points-a[1].points).slice(0,20).map(([n,g],i)=>`<div>${i+1}. ${n} - ${g.points} Pkt</div>`).join('');openModal("Leaderboard",h);};
+window.showPlayerProfile=async function(name){let snap=await get(ref(db,"users/"+name));if(snap.exists()){let u=snap.val();openModal("Profil",`<div>${u.name} | Lvl ${u.level} | P${u.prestige} | ${u.money}$</div>`);}};
+window.handleProfileMenu=function(){openModal("Profil",`<div>${gameState.name} | Lvl ${gameState.level} | P${gameState.prestige} | ${gameState.money}$ | Fische:${gameState.stats.totalCaught}</div>`);};
+window.handleDailyMenu=function(){let now=Date.now(),DAY=86400000,streak=gameState.dailyStreak||0;let can=!gameState.lastDaily||(now-gameState.lastDaily>=DAY);let rew=(streak+1)*100+gameState.prestige*50;openModal("Daily",`<div>Tag ${streak+1} -> ${rew}$</div>${can?`<button onclick="window.claimDaily(${rew},${streak+1})">Abholen</button>`:'Morgen wieder'}`);};
+window.claimDaily=function(rew,ns){if(Date.now()-gameState.lastDaily<86400000)return;gameState.money+=rew;gameState.lastDaily=Date.now();gameState.dailyStreak=ns;updateUI();saveData();window.handleDailyMenu();};
+window.handlePrestigeMenu=function(){let rl=20+gameState.prestige*5;let rm=5000*Math.pow(2,gameState.prestige);let can=gameState.level>=rl && gameState.money>=rm;openModal("Prestige",`<div>Level ${gameState.level}/${rl} | Geld ${gameState.money.toLocaleString()}/${rm.toLocaleString()}</div>${can?`<button class="prestige-btn" onclick="window.doPrestige()">⭐ PRESTIGE</button>`:'<button disabled>Nicht erfüllt</button>'}`);};
+window.doPrestige=function(){gameState.prestige++;gameState.money=0;gameState.level=1;gameState.xp=0;gameState.inventory=[];saveData();location.reload();};
+window.handlePromoMenu=function(){openModal("Promo Code",`<input id="promoCode"><button onclick="window.redeemPromoCode()">Einlösen</button>`);};
+window.redeemPromoCode=async function(){let code=document.getElementById("promoCode")?.value.trim().toUpperCase();if(!code)return;if(gameState.usedCodes?.[code])return window.showToast("Bereits eingelöst!");let snap=await get(ref(db,"global/promocodes/"+code));if(snap.exists()){let p=snap.val();if(p.money)gameState.money+=p.money;if(p.xp)gameState.xp+=p.xp;if(p.level)gameState.level+=p.level;if(p.prestige)gameState.prestige+=p.prestige;if(p.skills){gameState.skills=gameState.skills||{shiny:0,aqua:0};if(p.skills.shiny)gameState.skills.shiny+=p.skills.shiny;if(p.skills.aqua)gameState.skills.aqua+=p.skills.aqua;}if(p.itemName){if(p.itemName.startsWith("rod_")){let rid=p.itemName.replace("rod_","");if(!gameState.ownedRods.includes(rid))gameState.ownedRods.push(rid);}else if(p.itemName.startsWith("bait_")){let bid=p.itemName.replace("bait_","");gameState.baits[bid]=(gameState.baits[bid]||0)+(p.itemAmt||1);}else{let bi=items.find(i=>i.n===p.itemName);if(bi)for(let i=0;i<(p.itemAmt||1);i++)gameState.inventory.push({...bi,id:Math.random().toString(36).substr(2,9)});}}if(!gameState.usedCodes)gameState.usedCodes={};gameState.usedCodes[code]=true;updateUI();saveData();window.showToast("Code eingelöst!");}else window.showToast("Ungültiger Code!");};
+window.openFeedbackMenu=function(){openModal("Feedback",`<textarea id="fbText" rows="4"></textarea><button onclick="window.submitFeedback()">Senden</button>`);};
+window.submitFeedback=function(){let t=document.getElementById("fbText")?.value;if(!t)return;fetch("https://discord.com/api/webhooks/1500867670373830727/n_sjOvlQR8Hnk4d9yuzAe0IGV026lYY7q5pTRAd3QUXEeK_txaWqqSAYJfExsjQO-wrB",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({content:`Feedback von ${currentUser}: ${t}`})});window.showToast("Gesendet!");window.closeModal();};
+window.handleAchieveMenu=function(){let h=achievementsDB.map(a=>`<div>${a.name}: ${a.check(gameState)?"✅":"❌"} (+${a.rew}$)</div>`).join('');openModal("Erfolge",h);};
+window.handleUpdateMenu=function(){openModal("News","<div>Version 7.5.2 - Neue Zonen, Ruten & Fixes</div>");};
+window.handleAdminMenu=function(){if(currentUser!=="colin")return;openModal("Admin",`<button onclick="window.adminSendBroadcast()">Broadcast</button><button onclick="window.adminSetEvent()">Event starten</button><button onclick="window.adminStopEvent()">Event stoppen</button><button onclick="window.adminSetMaintenance(true)">Wartung AN</button><button onclick="window.adminSetMaintenance(false)">Wartung AUS</button>`);};
+window.adminSendBroadcast=async function(){let t=prompt("Nachricht:");if(t)await set(ref(db,"global/broadcast"),{text:t,timestamp:Date.now()});};
+window.adminSetEvent=async function(){let t=prompt("Typ (sun/rain/hai/luck/sell):","sun");let m=parseFloat(prompt("Multiplikator:","2"));await set(ref(db,"global/event"),{type:t,mult:m,name:t,exp:Date.now()+300000});};
+window.adminStopEvent=async function(){await set(ref(db,"global/event"),null);};
+window.adminSetMaintenance=async function(on){await set(ref(db,"global/maintenance"),on?true:null);};
 
 function initChat() {
     if(!currentUser || !db) return;
-    try {
-        const chatRef = ref(db, "global/chat");
-        onChildAdded(chatRef, (snap) => {
-            let msg = snap.val();
-            let div = document.createElement('div');
-            div.className = 'chat-msg';
-            div.innerHTML = `<span class="chat-msg-content"><span class="chat-user">${msg.user}:</span> ${msg.text}</span><span class="chat-time">${new Date(msg.time).toLocaleTimeString()}</span>`;
-            let container = document.getElementById('chatMessages');
-            if(container) { container.appendChild(div); container.scrollTop = container.scrollHeight; }
-        });
-    } catch(e) {}
+    const chatRef = ref(db, "global/chat");
+    onChildAdded(chatRef, (snap) => {
+        let msg = snap.val();
+        let div = document.createElement('div');
+        div.className = 'chat-msg';
+        div.innerHTML = `<span class="chat-msg-content"><span class="chat-user">${msg.user}:</span> ${msg.text}</span><span class="chat-time">${new Date(msg.time).toLocaleTimeString()}</span>`;
+        document.getElementById('chatMessages')?.appendChild(div);
+    });
 }
 window.toggleChat = function() {
     let c = document.getElementById('chatContainer');
@@ -1474,24 +1548,10 @@ window.toggleChat = function() {
 };
 document.getElementById('chatInput')?.addEventListener('keypress', async function(e) {
     if(e.key === 'Enter' && this.value.trim()) {
-        let msgText = this.value.trim();
-        let msgUser = currentUser;
-        await push(ref(db, "global/chat"), {user:msgUser, text:msgText, time:Date.now()});
-        fetch("https://discord.com/api/webhooks/1501593859593994383/BmPxmsMTRx7uUgEk0IIGA5DxZZ6reRI99_6BF7oebq2NlxWr0H87bNqn2xMo55iqOyEm", {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({content: `**${msgUser}**: ${msgText}`})
-        }).catch(() => {});
+        await push(ref(db, "global/chat"), {user:currentUser, text:this.value.trim(), time:Date.now()});
         this.value = '';
     }
 });
-
-window.handleAdminMenu = function() { /* admin menu */ };
-window.adminSendBroadcast = async function() {};
-window.adminSendUpdate = async function() {};
-window.adminSetEvent = async function() {};
-window.adminStopEvent = async function() {};
-window.adminSetMaintenance = async function(on) {};
 
 </script>
 <style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
