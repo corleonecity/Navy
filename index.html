@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>U.S Navy Marine Stopuhr</title>
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
@@ -27,43 +28,43 @@
             z-index: -2;
         }
 
-        /* Overlay weniger stark (0.5 statt 0.85), damit Hintergrund besser sichtbar ist */
+        /* Overlay stark reduziert, damit das Bild richtig sichtbar ist */
         .overlay {
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(5, 10, 25, 0.55);
+            background: rgba(0, 0, 0, 0.2);
             z-index: -1;
         }
 
         .container {
             width: 90%;
             max-width: 850px;
-            max-height: 90vh; /* Scrollbar für den Hauptcontainer */
+            max-height: 90vh;
             overflow-y: auto;
-            backdrop-filter: blur(8px);
-            background: rgba(10, 20, 40, 0.75);
+            backdrop-filter: blur(4px); /* Weniger Blur für mehr Transparenz */
+            background: rgba(5, 10, 20, 0.6); /* Deutlich durchsichtiger */
             padding: 30px;
             border-radius: 18px;
             border: 1px solid rgba(120,160,255,0.3);
-            box-shadow: 0 10px 50px rgba(0,0,0,0.7);
+            box-shadow: 0 10px 50px rgba(0,0,0,0.8);
             scrollbar-width: thin;
             scrollbar-color: #30475e transparent;
         }
 
         .time {
-            font-size: 80px;
+            font-size: 70px;
             letter-spacing: 4px;
-            margin: 15px 0;
+            margin: 10px 0;
             color: #cfe3ff;
-            text-shadow: 0 0 15px rgba(80,140,255,0.6);
+            text-shadow: 0 0 15px rgba(80,140,255,0.8);
             font-family: 'Courier New', monospace;
             text-align: center;
         }
 
         .header-section {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         .section-title {
@@ -71,7 +72,7 @@
             text-transform: uppercase;
             font-size: 13px;
             letter-spacing: 2px;
-            margin-top: 30px;
+            margin-top: 25px;
             margin-bottom: 15px;
             border-left: 4px solid #9cc7ff;
             padding-left: 10px;
@@ -79,7 +80,7 @@
         }
 
         .input-group {
-            margin: 20px 0;
+            margin: 15px 0;
             display: flex;
             gap: 10px;
             justify-content: center;
@@ -89,11 +90,12 @@
         input {
             padding: 12px;
             border-radius: 8px;
-            border: 1px solid rgba(156, 199, 255, 0.3);
-            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(156, 199, 255, 0.4);
+            background: rgba(0,0,0,0.6);
             color: white;
             outline: none;
             width: 250px;
+            font-size: 14px;
         }
 
         .save-grid {
@@ -103,21 +105,21 @@
         }
 
         .boat-card {
-            background: rgba(255,255,255,0.07);
+            background: rgba(0, 0, 0, 0.3);
             padding: 15px;
             border-radius: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border: 1px solid rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .boat-card h4 { margin: 0; font-size: 15px; color: #fff; }
+        .boat-card h4 { margin: 0; font-size: 14px; color: #fff; }
 
         button {
             padding: 10px 18px;
             border-radius: 8px;
-            border: 1px solid rgba(120,160,255,0.25);
+            border: 1px solid rgba(120,160,255,0.3);
             cursor: pointer;
             color: #e6f0ff;
             background: rgba(20, 40, 80, 0.7);
@@ -131,11 +133,36 @@
         }
 
         .btn-save { background: rgba(0, 150, 255, 0.2); font-size: 11px; }
-        .btn-save:hover { background: rgba(0, 150, 255, 0.4); }
+        .btn-save:hover { background: rgba(0, 150, 255, 0.5); }
+
+        .name-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(156, 199, 255, 0.1);
+        }
+
+        .name-tag {
+            background: rgba(156, 199, 255, 0.15);
+            border: 1px solid rgba(156, 199, 255, 0.3);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 13px;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .name-tag:hover {
+            background: rgba(156, 199, 255, 0.4);
+        }
 
         .search-results {
-            margin-top: 40px;
-            background: rgba(0,0,0,0.5);
+            margin-top: 25px;
+            background: rgba(0,0,0,0.4);
             padding: 20px;
             border-radius: 12px;
             border: 1px solid rgba(156, 199, 255, 0.1);
@@ -149,7 +176,7 @@
         }
 
         th {
-            background: rgba(156, 199, 255, 0.1);
+            background: rgba(156, 199, 255, 0.15);
             color: #9cc7ff;
             text-align: left;
             padding: 12px;
@@ -158,9 +185,10 @@
         td {
             padding: 12px;
             border-bottom: 1px solid rgba(255,255,255,0.05);
+            background: rgba(0,0,0,0.2);
         }
 
-        .logo { width: 70px; margin-bottom: 10px; }
+        .logo { width: 60px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
@@ -177,7 +205,7 @@
     <div class="time" id="display">00:00.00</div>
 
     <div class="input-group">
-        <input type="text" id="personName" placeholder="Name der Person..." />
+        <input type="text" id="personName" placeholder="Name der Person (zum Speichern)..." />
         <button onclick="startStop()" id="startBtn" style="border-color: #00b4ff;">Start</button>
         <button onclick="reset()" style="border-color: #ffb400;">Reset</button>
     </div>
@@ -206,13 +234,19 @@
         </div>
     </div>
 
+    <div class="section-title">Alle Registrierten Personen</div>
+    <div id="allNamesList" class="name-list">
+        <span style="color:#aaa; font-size: 13px;">Lade Personen...</span>
+    </div>
+
     <div class="search-results">
-        <h3 style="margin-top:0;">Person suchen</h3>
-        <div class="input-group" style="justify-content: flex-start;">
-            <input type="text" id="searchName" placeholder="Name eingeben...">
-            <button onclick="searchPerson()">Daten laden</button>
+        <h3 style="margin:0 0 15px 0;">Live-Ansicht (Daten)</h3>
+        <div class="input-group" style="justify-content: flex-start; margin-top:0;">
+            <input type="text" id="searchName" placeholder="Name tippen oder oben anklicken..." oninput="listenToPerson()">
         </div>
-        <div id="resultTable"></div>
+        <div id="resultTable">
+            <p style="color:#aaa; font-size: 13px; margin: 0;">Wähle eine Person aus der Liste oder tippe einen Namen ein, um die Zeiten zu sehen.</p>
+        </div>
     </div>
 </div>
 
@@ -252,7 +286,7 @@ function startStop() {
         interval = setInterval(update, 10);
         running = true;
         document.getElementById("startBtn").textContent = "Stop";
-        document.getElementById("startBtn").style.background = "rgba(255, 0, 0, 0.2)";
+        document.getElementById("startBtn").style.background = "rgba(255, 0, 0, 0.4)";
     } else {
         clearInterval(interval);
         running = false;
@@ -270,16 +304,18 @@ function reset() {
     document.getElementById("startBtn").style.background = "rgba(20, 40, 80, 0.7)";
 }
 
-// --- SPEICHER LOGIK (Pfad: Navy-boote/users/...) ---
+// --- SPEICHER LOGIK ---
 function saveTime(boatType) {
-    const name = document.getElementById("personName").value.trim();
-    if (!name) return alert("Bitte geben Sie einen Namen ein!");
+    const nameInput = document.getElementById("personName");
+    const name = nameInput.value.trim();
+    
+    if (!name) return alert("Bitte geben Sie oben einen Namen ein, um zu speichern!");
     if (elapsed === 0) return alert("Keine Zeit gemessen!");
 
     const timeStr = formatTime(elapsed);
-    // Speicherpfad aktualisiert auf Navy-boote/users/
     const userRef = database.ref('Navy-boote/users/' + name.toLowerCase() + '/boats/' + boatType);
 
+    // Erst lesen, dann anhängen
     userRef.once('value').then((snapshot) => {
         let times = snapshot.val() || [];
         if (!Array.isArray(times)) times = [];
@@ -288,22 +324,64 @@ function saveTime(boatType) {
         if (times.length > 3) times.shift(); // Nur die letzten 3 behalten
 
         userRef.set(times).then(() => {
-            alert(`Erfolg: ${timeStr} für ${name} (${boatType}) gespeichert.`);
+            // Setzt das Suchfeld automatisch auf diesen Namen, um das Ergebnis sofort zu sehen
+            document.getElementById("searchName").value = name;
+            listenToPerson(name);
         });
     });
 }
 
-// --- SUCH LOGIK ---
-function searchPerson() {
-    const name = document.getElementById("searchName").value.trim().toLowerCase();
-    if (!name) return;
+// --- LIVE LISTE ALLER NAMEN ---
+database.ref('Navy-boote/users').on('value', (snapshot) => {
+    const users = snapshot.val();
+    const listDiv = document.getElementById('allNamesList');
+    listDiv.innerHTML = '';
+    
+    if (users) {
+        Object.keys(users).forEach(nameKey => {
+            // Namen anzeigen (ersten Buchstaben groß machen)
+            const displayName = nameKey.charAt(0).toUpperCase() + nameKey.slice(1);
+            
+            const btn = document.createElement('div');
+            btn.className = 'name-tag';
+            btn.textContent = displayName;
+            btn.onclick = () => {
+                document.getElementById('personName').value = displayName; // Füllt oben aus
+                document.getElementById('searchName').value = displayName; // Füllt Suche aus
+                listenToPerson(nameKey);
+            };
+            listDiv.appendChild(btn);
+        });
+    } else {
+        listDiv.innerHTML = '<span style="color:#aaa; font-size:13px;">Noch keine Personen gespeichert.</span>';
+    }
+});
 
-    database.ref('Navy-boote/users/' + name).once('value').then((snapshot) => {
+// --- LIVE ANSICHT (ECHTZEIT TABELLE) ---
+let currentListenerRef = null;
+
+function listenToPerson(forcedName) {
+    let name = forcedName || document.getElementById("searchName").value.trim().toLowerCase();
+    const container = document.getElementById("resultTable");
+
+    if (!name) {
+        container.innerHTML = '<p style="color:#aaa; font-size: 13px; margin: 0;">Wähle eine Person aus der Liste oder tippe einen Namen ein, um die Zeiten zu sehen.</p>';
+        if (currentListenerRef) currentListenerRef.off(); // Alten Listener stoppen
+        return;
+    }
+
+    if (currentListenerRef) currentListenerRef.off(); // Alten Listener stoppen, bevor neuer startet
+
+    // Neuer Listener für diese spezielle Person
+    currentListenerRef = database.ref('Navy-boote/users/' + name.toLowerCase());
+    currentListenerRef.on('value', (snapshot) => {
         const data = snapshot.val();
-        const container = document.getElementById("resultTable");
         
         if (!data || !data.boats) {
-            container.innerHTML = "<p style='color:#ff9c9c;'>Keine Einträge für diesen Namen gefunden.</p>";
+            container.innerHTML = `
+                <p style='color:#ff9c9c; margin:0;'>
+                    Keine Einträge für <b>${name.charAt(0).toUpperCase() + name.slice(1)}</b> gefunden.
+                </p>`;
             return;
         }
 
@@ -313,7 +391,7 @@ function searchPerson() {
                     <th>Bootstyp</th>
                     <th>Zeit 1</th>
                     <th>Zeit 2</th>
-                    <th>Zeit 3</th>
+                    <th>Neueste (Zeit 3)</th>
                 </tr>
             </thead>
             <tbody>`;
@@ -331,7 +409,7 @@ function searchPerson() {
                 <td><strong>${boatMapping[type]}</strong></td>
                 <td>${t[0] || "--"}</td>
                 <td>${t[1] || "--"}</td>
-                <td>${t[2] || "--"}</td>
+                <td style="color: #9cc7ff; font-weight: bold;">${t[2] || "--"}</td>
             </tr>`;
         });
 
