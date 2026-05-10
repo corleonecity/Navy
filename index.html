@@ -28,7 +28,6 @@
             z-index: -2;
         }
 
-        /* Overlay stark reduziert, damit das Bild richtig sichtbar ist */
         .overlay {
             position: fixed;
             top: 0; left: 0;
@@ -42,8 +41,8 @@
             max-width: 850px;
             max-height: 90vh;
             overflow-y: auto;
-            backdrop-filter: blur(4px); /* Weniger Blur für mehr Transparenz */
-            background: rgba(5, 10, 20, 0.6); /* Deutlich durchsichtiger */
+            backdrop-filter: blur(4px);
+            background: rgba(5, 10, 20, 0.6);
             padding: 30px;
             border-radius: 18px;
             border: 1px solid rgba(120,160,255,0.3);
@@ -51,6 +50,11 @@
             scrollbar-width: thin;
             scrollbar-color: #30475e transparent;
         }
+
+        /* Container-Scrollbar anpassen für Webkit (Chrome/Edge/Safari) */
+        .container::-webkit-scrollbar { width: 8px; }
+        .container::-webkit-scrollbar-track { background: transparent; }
+        .container::-webkit-scrollbar-thumb { background-color: #30475e; border-radius: 10px; }
 
         .time {
             font-size: 70px;
@@ -135,6 +139,7 @@
         .btn-save { background: rgba(0, 150, 255, 0.2); font-size: 11px; }
         .btn-save:hover { background: rgba(0, 150, 255, 0.5); }
 
+        /* HIER IST DIE ÄNDERUNG FÜR DIE NAMENS-LISTE */
         .name-list {
             display: flex;
             flex-wrap: wrap;
@@ -143,7 +148,17 @@
             padding: 15px;
             border-radius: 10px;
             border: 1px solid rgba(156, 199, 255, 0.1);
+            max-height: 120px; /* Maximale Höhe der Box (ca. 3-4 Reihen) */
+            overflow-y: auto;  /* Macht die Box scrollbar, wenn es zu viele Namen gibt */
+            align-content: flex-start;
+            scrollbar-width: thin;
+            scrollbar-color: #508cff rgba(0,0,0,0.2);
         }
+
+        /* Eigener Scrollbar für die Namens-Liste (Webkit) */
+        .name-list::-webkit-scrollbar { width: 6px; }
+        .name-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 6px; }
+        .name-list::-webkit-scrollbar-thumb { background-color: #508cff; border-radius: 6px; }
 
         .name-tag {
             background: rgba(156, 199, 255, 0.15);
@@ -154,6 +169,7 @@
             color: white;
             cursor: pointer;
             transition: 0.2s;
+            height: fit-content;
         }
 
         .name-tag:hover {
@@ -235,6 +251,7 @@
     </div>
 
     <div class="section-title">Alle Registrierten Personen</div>
+    <!-- Diese Box ist jetzt scrollbar durch max-height und overflow-y im CSS -->
     <div id="allNamesList" class="name-list">
         <span style="color:#aaa; font-size: 13px;">Lade Personen...</span>
     </div>
@@ -315,7 +332,6 @@ function saveTime(boatType) {
     const timeStr = formatTime(elapsed);
     const userRef = database.ref('Navy-boote/users/' + name.toLowerCase() + '/boats/' + boatType);
 
-    // Erst lesen, dann anhängen
     userRef.once('value').then((snapshot) => {
         let times = snapshot.val() || [];
         if (!Array.isArray(times)) times = [];
@@ -324,7 +340,6 @@ function saveTime(boatType) {
         if (times.length > 3) times.shift(); // Nur die letzten 3 behalten
 
         userRef.set(times).then(() => {
-            // Setzt das Suchfeld automatisch auf diesen Namen, um das Ergebnis sofort zu sehen
             document.getElementById("searchName").value = name;
             listenToPerson(name);
         });
@@ -339,15 +354,14 @@ database.ref('Navy-boote/users').on('value', (snapshot) => {
     
     if (users) {
         Object.keys(users).forEach(nameKey => {
-            // Namen anzeigen (ersten Buchstaben groß machen)
             const displayName = nameKey.charAt(0).toUpperCase() + nameKey.slice(1);
             
             const btn = document.createElement('div');
             btn.className = 'name-tag';
             btn.textContent = displayName;
             btn.onclick = () => {
-                document.getElementById('personName').value = displayName; // Füllt oben aus
-                document.getElementById('searchName').value = displayName; // Füllt Suche aus
+                document.getElementById('personName').value = displayName;
+                document.getElementById('searchName').value = displayName;
                 listenToPerson(nameKey);
             };
             listDiv.appendChild(btn);
@@ -366,13 +380,12 @@ function listenToPerson(forcedName) {
 
     if (!name) {
         container.innerHTML = '<p style="color:#aaa; font-size: 13px; margin: 0;">Wähle eine Person aus der Liste oder tippe einen Namen ein, um die Zeiten zu sehen.</p>';
-        if (currentListenerRef) currentListenerRef.off(); // Alten Listener stoppen
+        if (currentListenerRef) currentListenerRef.off();
         return;
     }
 
-    if (currentListenerRef) currentListenerRef.off(); // Alten Listener stoppen, bevor neuer startet
+    if (currentListenerRef) currentListenerRef.off();
 
-    // Neuer Listener für diese spezielle Person
     currentListenerRef = database.ref('Navy-boote/users/' + name.toLowerCase());
     currentListenerRef.on('value', (snapshot) => {
         const data = snapshot.val();
