@@ -51,7 +51,6 @@
             scrollbar-color: #30475e transparent;
         }
 
-        /* Container-Scrollbar anpassen für Webkit (Chrome/Edge/Safari) */
         .container::-webkit-scrollbar { width: 8px; }
         .container::-webkit-scrollbar-track { background: transparent; }
         .container::-webkit-scrollbar-thumb { background-color: #30475e; border-radius: 10px; }
@@ -139,7 +138,6 @@
         .btn-save { background: rgba(0, 150, 255, 0.2); font-size: 11px; }
         .btn-save:hover { background: rgba(0, 150, 255, 0.5); }
 
-        /* HIER IST DIE ÄNDERUNG FÜR DIE NAMENS-LISTE */
         .name-list {
             display: flex;
             flex-wrap: wrap;
@@ -148,14 +146,13 @@
             padding: 15px;
             border-radius: 10px;
             border: 1px solid rgba(156, 199, 255, 0.1);
-            max-height: 120px; /* Maximale Höhe der Box (ca. 3-4 Reihen) */
-            overflow-y: auto;  /* Macht die Box scrollbar, wenn es zu viele Namen gibt */
+            max-height: 120px;
+            overflow-y: auto;
             align-content: flex-start;
             scrollbar-width: thin;
             scrollbar-color: #508cff rgba(0,0,0,0.2);
         }
 
-        /* Eigener Scrollbar für die Namens-Liste (Webkit) */
         .name-list::-webkit-scrollbar { width: 6px; }
         .name-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 6px; }
         .name-list::-webkit-scrollbar-thumb { background-color: #508cff; border-radius: 6px; }
@@ -250,8 +247,7 @@
         </div>
     </div>
 
-    <div class="section-title">Alle Registrierten Personen</div>
-    <!-- Diese Box ist jetzt scrollbar durch max-height und overflow-y im CSS -->
+    <div class="section-title">Alle Registrierten Personen (Neueste zuerst)</div>
     <div id="allNamesList" class="name-list">
         <span style="color:#aaa; font-size: 13px;">Lade Personen...</span>
     </div>
@@ -330,7 +326,8 @@ function saveTime(boatType) {
     if (elapsed === 0) return alert("Keine Zeit gemessen!");
 
     const timeStr = formatTime(elapsed);
-    const userRef = database.ref('Navy-boote/users/' + name.toLowerCase() + '/boats/' + boatType);
+    const userPath = 'Navy-boote/users/' + name.toLowerCase();
+    const userRef = database.ref(userPath + '/boats/' + boatType);
 
     userRef.once('value').then((snapshot) => {
         let times = snapshot.val() || [];
@@ -340,20 +337,36 @@ function saveTime(boatType) {
         if (times.length > 3) times.shift(); // Nur die letzten 3 behalten
 
         userRef.set(times).then(() => {
+            // NEU: Setze einen Zeitstempel, damit diese Person in der Liste nach vorne rückt
+            database.ref(userPath + '/lastUpdated').set(Date.now());
+            
             document.getElementById("searchName").value = name;
             listenToPerson(name);
         });
     });
 }
 
-// --- LIVE LISTE ALLER NAMEN ---
+// --- LIVE LISTE ALLER NAMEN (Nach Zeitstempel sortiert) ---
 database.ref('Navy-boote/users').on('value', (snapshot) => {
     const users = snapshot.val();
     const listDiv = document.getElementById('allNamesList');
     listDiv.innerHTML = '';
     
     if (users) {
-        Object.keys(users).forEach(nameKey => {
+        // Wandle das Objekt in ein Array um und hole den Zeitstempel (oder 0, falls noch keiner existiert)
+        const userArray = Object.keys(users).map(nameKey => {
+            return {
+                name: nameKey,
+                lastUpdated: users[nameKey].lastUpdated || 0
+            };
+        });
+
+        // Sortiere das Array: Die größte Zahl (neueste Zeit) zuerst
+        userArray.sort((a, b) => b.lastUpdated - a.lastUpdated);
+
+        // Gehe die sortierte Liste durch und erstelle die Buttons
+        userArray.forEach(userObj => {
+            const nameKey = userObj.name;
             const displayName = nameKey.charAt(0).toUpperCase() + nameKey.slice(1);
             
             const btn = document.createElement('div');
