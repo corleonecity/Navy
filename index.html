@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>U.S Navy Marine Stopuhr - Erweiterte Zeiterfassung</title>
+    <title>U.S Navy Marine Stopuhr - Admin Löschfunktion</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -42,17 +42,16 @@
 
         .container {
             width: 95%;
-            max-width: 1300px;
+            max-width: 1400px;
             max-height: 92vh;
             overflow-y: auto;
             backdrop-filter: blur(6px);
-            background: rgba(5, 10, 25, 0.65);
+            background: rgba(5, 10, 25, 0.7);
             padding: 25px;
             border-radius: 24px;
             border: 1px solid rgba(120, 160, 255, 0.4);
             box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7);
             scrollbar-width: thin;
-            scrollbar-color: #2c5282 #0a1220;
         }
 
         .container::-webkit-scrollbar { width: 8px; }
@@ -118,6 +117,65 @@
             width: 260px;
         }
 
+        .admin-panel {
+            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+            border: 2px solid #ffaa33;
+            border-radius: 20px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .admin-panel h4 {
+            margin: 0;
+            color: #ffaa33;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-login {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .admin-login input {
+            width: 150px;
+            background: rgba(0,0,0,0.8);
+            border-color: #ffaa33;
+        }
+
+        .btn-admin {
+            background: #ff8800;
+            color: #1a1a2e;
+            font-weight: bold;
+        }
+
+        .btn-admin:hover {
+            background: #ffaa33;
+        }
+
+        .admin-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-delete-user {
+            background: #aa2222;
+            border-color: #ff6666;
+        }
+
+        .btn-delete-user:hover {
+            background: #cc3333;
+        }
+
         .boats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -131,16 +189,11 @@
             border-radius: 20px;
             border: 1px solid rgba(59, 130, 246, 0.4);
             padding: 16px;
-            transition: 0.2s;
         }
 
         .boat-panel h4 {
             margin: 0 0 10px 0;
             font-size: 1.25rem;
-            font-weight: 600;
-            display: flex;
-            justify-content: space-between;
-            align-items: baseline;
             border-bottom: 1px dashed #3b82f6;
             padding-bottom: 8px;
         }
@@ -149,14 +202,12 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            margin-top: 8px;
         }
 
         .desc-input {
             width: 100%;
             resize: vertical;
             font-size: 13px;
-            background: rgba(0, 0, 0, 0.5);
             border-radius: 10px;
         }
 
@@ -164,21 +215,13 @@
             background: linear-gradient(135deg, #0f2b4d, #051a30);
             border: 1px solid #2c6e9e;
             width: 100%;
-            font-size: 14px;
             padding: 10px;
             font-weight: bold;
-        }
-
-        .btn-save:hover {
-            background: linear-gradient(135deg, #1e3a5f, #0a2a46);
-            border-color: #5aa9dd;
-            transform: scale(0.98);
         }
 
         button {
             padding: 10px 20px;
             border-radius: 40px;
-            border: none;
             cursor: pointer;
             font-weight: bold;
             background: #1e2a47;
@@ -210,16 +253,13 @@
             padding: 8px 16px;
             border-radius: 40px;
             font-size: 14px;
-            font-weight: 500;
             cursor: pointer;
             transition: 0.2s;
-            color: #c6e0ff;
         }
 
         .name-tag:hover {
             background: #1e3a6b;
             transform: scale(1.02);
-            border-color: #5a9eff;
         }
 
         .search-results {
@@ -245,7 +285,6 @@
             padding: 12px 8px;
             text-align: left;
             color: #b8dbff;
-            font-weight: 600;
         }
 
         td {
@@ -261,7 +300,6 @@
             display: inline-block;
             padding: 4px 8px;
             border-radius: 20px;
-            font-size: 13px;
         }
 
         .entry-description {
@@ -286,10 +324,26 @@
             transform: none;
         }
 
+        .delete-user-btn {
+            background: #8b0000;
+            border: none;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+
         .logo {
             width: 55px;
             margin-bottom: 5px;
             filter: drop-shadow(0 0 4px #3b82f6);
+        }
+
+        .admin-badge {
+            background: #ffaa33;
+            color: #1a1a2e;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
         .info-note {
@@ -297,11 +351,6 @@
             color: #9bb7e0;
             text-align: center;
             margin-top: 12px;
-        }
-
-        @media (max-width: 700px) {
-            .container { padding: 15px; }
-            .time { font-size: 46px; }
         }
     </style>
 </head>
@@ -313,8 +362,23 @@
 <div class="container">
     <div class="header-section">
         <img class="logo" src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="US Navy Logo">
-        <h2 style="margin:0; letter-spacing: 1.5px;">⚓ U.S Navy Marine Stopuhr ⚓</h2>
-        <p style="margin:5px 0 0; font-size:13px;">Zeiten speichern mit Beschreibung | Unbegrenzte Einträge</p>
+        <h2>⚓ U.S Navy Marine Stopuhr ⚓</h2>
+        <p style="margin:5px 0 0; font-size:13px;">Zeiten mit Beschreibung | Colin-Admin Löschmodus</p>
+    </div>
+
+    <!-- ADMIN PANEL - NUR COLIN mit PASSWORT 22122009 -->
+    <div class="admin-panel" id="adminPanel">
+        <h4>🔐 ADMIN-ZONE (Colin only)</h4>
+        <div class="admin-login" id="adminLoginArea">
+            <input type="text" id="adminUsername" placeholder="Benutzername" value="colin">
+            <input type="password" id="adminPassword" placeholder="Passwort">
+            <button onclick="adminLogin()" class="btn-admin">🔓 Anmelden</button>
+        </div>
+        <div id="adminActions" style="display: none;" class="admin-actions">
+            <span class="admin-badge">✅ Admin-Modus aktiv</span>
+            <button onclick="deleteCurrentPersonCompletely()" class="btn-delete-user">🗑️ GANZE PERSON LÖSCHEN</button>
+            <button onclick="adminLogout()" class="btn-admin">🚪 Logout</button>
+        </div>
     </div>
 
     <div class="time" id="display">00:00.00</div>
@@ -325,64 +389,59 @@
         <button onclick="reset()" style="background:#885500;">🔄 Reset</button>
     </div>
 
-    <!-- Boote mit individueller Beschreibung beim Speichern -->
-    <div class="section-title">🚤 BOOTE & SCHNELLE SPEICHERUNG</div>
+    <div class="section-title">🚤 BOOTE & SPEICHERN (mit Beschreibung)</div>
     <div class="boats-grid">
-        <!-- Boot 1: Predator -->
         <div class="boat-panel">
             <h4>⚡ U.S Navy Predator</h4>
             <div class="save-boat-section">
-                <textarea id="descPredator" class="desc-input" rows="2" placeholder="Beschreibung / Strecke / Bemerkung ... (z.B. 'Sturmwetter, Top Speed')"></textarea>
-                <button class="btn-save" onclick="saveTimeWithDesc('Predator', 'descPredator')">📌 Speichern + Beschreibung</button>
+                <textarea id="descPredator" class="desc-input" rows="2" placeholder="Beschreibung (z.B. 'Rekordlauf')"></textarea>
+                <button class="btn-save" onclick="saveTimeWithDesc('Predator', 'descPredator')">📌 Speichern</button>
             </div>
         </div>
-        <!-- Boot 2: Dinghy -->
         <div class="boat-panel">
             <h4>🛶 Dinghy</h4>
             <div class="save-boat-section">
-                <textarea id="descDinghy" class="desc-input" rows="2" placeholder="Beschreibung / Bemerkung ..."></textarea>
-                <button class="btn-save" onclick="saveTimeWithDesc('Dinghy', 'descDinghy')">📌 Speichern + Beschreibung</button>
+                <textarea id="descDinghy" class="desc-input" rows="2" placeholder="Beschreibung"></textarea>
+                <button class="btn-save" onclick="saveTimeWithDesc('Dinghy', 'descDinghy')">📌 Speichern</button>
             </div>
         </div>
-        <!-- Boot 3: Kurtz Patrol -->
         <div class="boat-panel">
             <h4>🚢 Kurtz 31 Patrol Boat</h4>
             <div class="save-boat-section">
-                <textarea id="descPatrolBoat" class="desc-input" rows="2" placeholder="Beschreibung / Bemerkung ..."></textarea>
-                <button class="btn-save" onclick="saveTimeWithDesc('PatrolBoat', 'descPatrolBoat')">📌 Speichern + Beschreibung</button>
+                <textarea id="descPatrolBoat" class="desc-input" rows="2" placeholder="Beschreibung"></textarea>
+                <button class="btn-save" onclick="saveTimeWithDesc('PatrolBoat', 'descPatrolBoat')">📌 Speichern</button>
             </div>
         </div>
-        <!-- Boot 4: Weaponized Dinghy -->
         <div class="boat-panel">
             <h4>🔫 Weaponized Dinghy</h4>
             <div class="save-boat-section">
-                <textarea id="descWeaponized" class="desc-input" rows="2" placeholder="Beschreibung / Bemerkung ..."></textarea>
-                <button class="btn-save" onclick="saveTimeWithDesc('WeaponizedDinghy', 'descWeaponized')">📌 Speichern + Beschreibung</button>
+                <textarea id="descWeaponized" class="desc-input" rows="2" placeholder="Beschreibung"></textarea>
+                <button class="btn-save" onclick="saveTimeWithDesc('WeaponizedDinghy', 'descWeaponized')">📌 Speichern</button>
             </div>
         </div>
     </div>
 
-    <div class="section-title">👥 REGISTRIERTE PERSONEN (neueste Aktivität oben)</div>
+    <div class="section-title">👥 REGISTRIERTE PERSONEN</div>
     <div id="allNamesList" class="name-list">
-        <span style="color:#aaa;">Lade Matrosen...</span>
+        <span style="color:#aaa;">Laden...</span>
     </div>
 
     <div class="search-results">
-        <h3 style="margin:0 0 8px 0;">📋 Detaillierte Zeiten & Beschreibungen</h3>
-        <div class="input-group" style="justify-content: flex-start; margin-top: 0;">
-            <input type="text" id="searchName" placeholder="Name eingeben oder oben anklicken..." oninput="autoLoadPerson()" autocomplete="off">
+        <h3 style="margin:0 0 8px 0;">📋 Zeiten & Beschreibungen</h3>
+        <div class="input-group" style="justify-content: flex-start;">
+            <input type="text" id="searchName" placeholder="Name eingeben oder anklicken..." oninput="autoLoadPerson()">
         </div>
         <div id="resultTable">
-            <p style="color:#bbd4ff;">🔍 Wähle eine Person, um alle gespeicherten Zeiten mit Beschreibung zu sehen.</p>
+            <p style="color:#bbd4ff;">🔍 Wähle eine Person aus.</p>
         </div>
     </div>
     <div class="info-note">
-        💡 Jede Zeit wird mit Ihrer individuellen Beschreibung gespeichert – beliebig viele Einträge pro Boot möglich. Klick auf einen Namen lädt sofort alle Daten.
+        💡 Jede Zeit mit individueller Beschreibung – unbegrenzt viele Einträge. <strong style="color:#ffaa33;">Colin (Passwort: 22122009)</strong> kann Zeiten und ganze Personen löschen.
     </div>
 </div>
 
 <script>
-    // ---------- FIREBASE INIT ----------
+    // ---------- FIREBASE ----------
     const firebaseConfig = {
         apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
         authDomain: "cc-shop-36c3b.firebaseapp.com",
@@ -394,6 +453,60 @@
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+
+    // ---------- ADMIN STATUS ----------
+    let isAdmin = false;
+
+    function adminLogin() {
+        const username = document.getElementById("adminUsername").value.trim().toLowerCase();
+        const password = document.getElementById("adminPassword").value.trim();
+        if (username === "colin" && password === "22122009") {
+            isAdmin = true;
+            document.getElementById("adminLoginArea").style.display = "none";
+            document.getElementById("adminActions").style.display = "flex";
+            alert("✅ Admin-Modus aktiviert. Du kannst jetzt Zeilen löschen oder ganze Personen entfernen.");
+            // Neu laden der aktuellen Person, damit ggf. Löschbuttons erscheinen
+            autoLoadPerson();
+        } else {
+            alert("❌ Zugriff verweigert! Nur Colin mit korrektem Passwort.");
+        }
+    }
+
+    function adminLogout() {
+        isAdmin = false;
+        document.getElementById("adminLoginArea").style.display = "flex";
+        document.getElementById("adminActions").style.display = "none";
+        document.getElementById("adminUsername").value = "colin";
+        document.getElementById("adminPassword").value = "";
+        autoLoadPerson(); // Tabelle neu laden (ohne Löschbuttons)
+        alert("Admin-Modus beendet.");
+    }
+
+    // ----- Aktuelle Person komplett löschen (NUR ADMIN) -----
+    window.deleteCurrentPersonCompletely = async function() {
+        if (!isAdmin) {
+            alert("Nur Colin kann ganze Personen löschen!");
+            return;
+        }
+        const searchField = document.getElementById("searchName");
+        const personName = searchField.value.trim();
+        if (!personName) {
+            alert("Keine Person ausgewählt. Bitte klicke einen Namen an oder tippe ihn ein.");
+            return;
+        }
+        if (!confirm(`⚠️ ADMIN: Willst du wirklich die gesamte Person "${personName}" mit ALLEN Bootszeiten unwiderruflich löschen?`)) return;
+        const nameLower = personName.toLowerCase();
+        try {
+            await database.ref(`Navy-boote/users/${nameLower}`).remove();
+            alert(`✅ Person "${personName}" wurde gelöscht.`);
+            document.getElementById("searchName").value = "";
+            document.getElementById("resultTable").innerHTML = `<p>Person gelöscht.</p>`;
+            loadAllUsersSorted();
+            autoLoadPerson();
+        } catch (err) {
+            alert("Fehler beim Löschen: " + err.message);
+        }
+    };
 
     // ---------- STOPPUHR ----------
     let startTime = 0, elapsed = 0, interval = null, running = false;
@@ -432,172 +545,50 @@
         running = false;
         elapsed = 0;
         document.getElementById("display").textContent = "00:00.00";
-        const btn = document.getElementById("startBtn");
-        btn.textContent = "▶ Start";
-        btn.style.background = "#0055aa";
+        document.getElementById("startBtn").textContent = "▶ Start";
+        document.getElementById("startBtn").style.background = "#0055aa";
     }
 
-    // ---------- NEUE SPEICHERLOGIK (unbegrenzt mit Beschreibung) ----------
+    // ---------- SPEICHERN MIT BESCHREIBUNG (UNBEGRENZT) ----------
     async function saveTimeWithDesc(boatKey, textareaId) {
         const nameInput = document.getElementById("personName");
         const personName = nameInput.value.trim();
-        if (!personName) {
-            alert("❌ Bitte einen Namen für die Person eingeben!");
-            return;
-        }
-        if (elapsed === 0) {
-            alert("⏱️ Keine Zeit gestoppt! Bitte Start/Stop verwenden.");
-            return;
-        }
+        if (!personName) { alert("Namen eingeben!"); return; }
+        if (elapsed === 0) { alert("Keine gestoppte Zeit!"); return; }
 
         const currentTimeStr = formatTime(elapsed);
         const description = document.getElementById(textareaId).value.trim();
-        const fullDescription = description === "" ? "Keine Beschreibung" : description;
-        
-        // Datenstruktur: Für jedes Boot speichern wir ein Array von Objekten { time: "00:00.00", desc: "Text", timestamp: 1234567890 }
+        const fullDescription = description || "Keine Beschreibung";
         const userPath = `Navy-boote/users/${personName.toLowerCase()}`;
         const boatRef = database.ref(`${userPath}/boats/${boatKey}`);
-        
+
         try {
             const snapshot = await boatRef.once('value');
             let entries = snapshot.val();
-            if (!entries || !Array.isArray(entries)) {
-                entries = [];
-            }
-            // Neuen Eintrag hinzufügen (unbegrenzt)
+            if (!entries || !Array.isArray(entries)) entries = [];
             entries.push({
                 time: currentTimeStr,
                 desc: fullDescription,
                 timestamp: Date.now()
             });
-            // Behalte alle Einträge, keine Löschung mehr
             await boatRef.set(entries);
-            // Aktualisiere lastUpdated der Person, damit sie in der Liste nach oben rutscht
             await database.ref(`${userPath}/lastUpdated`).set(Date.now());
-            
-            // Textarea leeren nach erfolgreichem Speichern (optional)
             document.getElementById(textareaId).value = "";
-            
-            // Automatisch die aktuelle Person im Suchfeld anzeigen und live laden
             document.getElementById("searchName").value = personName;
-            autoLoadPerson(); 
-            
-            // kleines visuelles Feedback
-            alert(`✅ Zeit ${currentTimeStr} für ${personName} (${boatKey}) gespeichert!`);
+            autoLoadPerson();
+            alert(`✅ ${currentTimeStr} für ${personName} (${boatKey}) gespeichert!`);
         } catch (error) {
-            console.error(error);
-            alert("Fehler beim Speichern: " + error.message);
+            alert("Fehler: " + error.message);
         }
     }
 
-    // ---------- PERSONELLE LIVE-ANSICHT mit Tabelle aller Boote + Beschreibungen (unbegrenzt) ----------
-    let currentPersonListenerRef = null;
-    
-    function autoLoadPerson() {
-        const rawName = document.getElementById("searchName").value.trim();
-        if (!rawName) {
-            const container = document.getElementById("resultTable");
-            container.innerHTML = `<p style="color:#bbd4ff;">✏️ Geben Sie einen Namen ein oder wählen Sie aus der Liste.</p>`;
-            if (currentPersonListenerRef) currentPersonListenerRef.off();
+    // ---------- EINTRAG LÖSCHEN (NUR ADMIN) ----------
+    window.deleteSingleEntry = async function(personNameLower, boatInternal, timestampToDelete) {
+        if (!isAdmin) {
+            alert("Löschen nur für Colin (Admin) möglich. Bitte anmelden.");
             return;
         }
-        const nameLower = rawName.toLowerCase();
-        listenToPersonData(nameLower);
-    }
-    
-    function listenToPersonData(personNameLower) {
-        if (currentPersonListenerRef) {
-            currentPersonListenerRef.off();
-        }
-        const personRef = database.ref(`Navy-boote/users/${personNameLower}`);
-        currentPersonListenerRef = personRef;
-        
-        personRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            const container = document.getElementById("resultTable");
-            const displayNameCapital = personNameLower.charAt(0).toUpperCase() + personNameLower.slice(1);
-            
-            if (!data || !data.boats || Object.keys(data.boats).length === 0) {
-                container.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:15px; border-radius:18px;">
-                    ⚓ <strong>${displayNameCapital}</strong> hat noch keine Zeiten gespeichert.</div>`;
-                return;
-            }
-            
-            // Bootstypen Mapping für schöne Anzeige
-            const boatLabels = {
-                "Predator": "🦅 U.S Navy Predator",
-                "Dinghy": "⛵ Dinghy",
-                "PatrolBoat": "🚤 Kurtz 31 Patrol Boat",
-                "WeaponizedDinghy": "💥 Weaponized Dinghy"
-            };
-            
-            let html = `<div class="table-wrapper">
-                        <h4 style="margin:0 0 12px 0;">📌 Person: ${displayNameCapital}</h4>
-                        <table style="width:100%">
-                            <thead>
-                                <tr>
-                                    <th>Bootstyp</th>
-                                    <th>Zeit</th>
-                                    <th>Beschreibung</th>
-                                    <th style="width: 50px;">Aktion</th>
-                                </tr>
-                            </thead>
-                            <tbody>`;
-            
-            // Für jedes Boot alle Einträge durchgehen (beliebig viele)
-            for (const [boatInternal, boatNice] of Object.entries(boatLabels)) {
-                const entries = data.boats[boatInternal];
-                if (entries && Array.isArray(entries) && entries.length > 0) {
-                    // Sortieren nach Zeitstempel (neueste zuerst optional, aber chronologisch anzeigen ist okay)
-                    // Wir zeigen der Übersicht halber neueste zuoberst in der Liste des Bootes
-                    const sortedEntries = [...entries].sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
-                    sortedEntries.forEach((entry, idx) => {
-                        const timeVal = entry.time || "??:??.??";
-                        const descVal = entry.desc || "Keine Beschreibung";
-                        const timestampRaw = entry.timestamp || Date.now();
-                        // Entfernen-Button pro Eintrag (optional, macht System flexibel)
-                        html += `<tr>
-                                    <td style="font-weight:600;">${idx === 0 ? boatNice : "↳ " + boatNice}</td>
-                                    <td><span class="badge-time">⏱️ ${timeVal}</span></td>
-                                    <td><div class="entry-description">📝 ${escapeHtml(descVal)}</div></td>
-                                    <td><button class="delete-btn" onclick="deleteSingleEntry('${personNameLower}', '${boatInternal}', ${timestampRaw})" title="Eintrag löschen">🗑️</button></td>
-                                 </tr>`;
-                    });
-                } else {
-                    // Zeile um zu zeigen dass keine Daten
-                    html += `<tr style="opacity:0.7;">
-                                <td>${boatNice}</td>
-                                <td colspan="3">— keine Zeiten gespeichert —</td>
-                             </tr>`;
-                }
-            }
-            html += `</tbody>
-                    </table>
-                    <p style="font-size:12px; margin-top:12px; color:#7aa5d9;">✅ Unbegrenzte Einträge pro Boot. Klick auf 🗑️ löscht nur diesen einzelnen Zeit-Eintrag.</p>
-                    </div>`;
-            container.innerHTML = html;
-        }, (error) => {
-            console.error(error);
-            document.getElementById("resultTable").innerHTML = `<p style="color:#ffaaa5;">Fehler beim Laden der Daten.</p>`;
-        });
-    }
-    
-    // Hilfsfunktion XSS-Schutz
-    function escapeHtml(str) {
-        if (!str) return "";
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
-            return c;
-        });
-    }
-    
-    // ----- Einzelnen Eintrag löschen (basierend auf timestamp) -----
-    window.deleteSingleEntry = async function(personNameLower, boatInternal, timestampToDelete) {
-        if (!confirm("Diesen Zeit-Eintrag permanent löschen?")) return;
+        if (!confirm("Diesen Zeit-Eintrag endgültig löschen?")) return;
         try {
             const boatRef = database.ref(`Navy-boote/users/${personNameLower}/boats/${boatInternal}`);
             const snapshot = await boatRef.once('value');
@@ -605,23 +596,92 @@
             if (entries && Array.isArray(entries)) {
                 const newEntries = entries.filter(entry => entry.timestamp !== timestampToDelete);
                 await boatRef.set(newEntries);
-                // Aktualisiere lastUpdated, falls nötig, für Sortierung der Personenliste
                 await database.ref(`Navy-boote/users/${personNameLower}/lastUpdated`).set(Date.now());
-                // Falls nach dem Löschen keine Einträge mehr übrig sind, aber Person bleibt, passt.
-                alert("🗑️ Eintrag gelöscht.");
-                // Aktuelle Ansicht neu laden
-                listenToPersonData(personNameLower);
-                // Namensliste ebenfalls neu rendern (optional)
+                alert("Eintrag gelöscht.");
+                autoLoadPerson(); // refresh
                 loadAllUsersSorted();
             } else {
-                alert("Eintrag nicht gefunden.");
+                alert("Eintrag nicht vorhanden.");
             }
-        } catch(e) {
-            alert("Fehler beim Löschen: " + e.message);
+        } catch (e) {
+            alert("Fehler: " + e.message);
         }
     };
-    
-    // ---------- LIVE LISTE ALLER PERSONEN (nach lastUpdated sortiert, neueste oben) ----------
+
+    // ---------- PERSONELLE LIVE-ANSICHT (mit Admin-Löschbuttons) ----------
+    let currentPersonListenerRef = null;
+
+    function autoLoadPerson() {
+        const rawName = document.getElementById("searchName").value.trim();
+        if (!rawName) {
+            document.getElementById("resultTable").innerHTML = `<p>✏️ Namen eingeben oder aus Liste wählen.</p>`;
+            if (currentPersonListenerRef) currentPersonListenerRef.off();
+            return;
+        }
+        const nameLower = rawName.toLowerCase();
+        listenToPersonData(nameLower);
+    }
+
+    function listenToPersonData(personNameLower) {
+        if (currentPersonListenerRef) currentPersonListenerRef.off();
+        const personRef = database.ref(`Navy-boote/users/${personNameLower}`);
+        currentPersonListenerRef = personRef;
+        personRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            const container = document.getElementById("resultTable");
+            const displayName = personNameLower.charAt(0).toUpperCase() + personNameLower.slice(1);
+            if (!data || !data.boats) {
+                container.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:15px;">⚓ ${displayName} hat keine Zeiten.</div>`;
+                return;
+            }
+            const boatLabels = {
+                "Predator": "⚡ U.S Navy Predator",
+                "Dinghy": "🛶 Dinghy",
+                "PatrolBoat": "🚢 Kurtz 31 Patrol Boat",
+                "WeaponizedDinghy": "💥 Weaponized Dinghy"
+            };
+            let html = `<div class="table-wrapper">
+                        <h4>👤 ${displayName} ${isAdmin ? '<span style="color:#ffaa33;">(Admin-Modus 🔓)</span>' : ''}</h4>
+                        <table>
+                            <thead><tr><th>Bootstyp</th><th>Zeit</th><th>Beschreibung</th>${isAdmin ? '<th>Aktion</th>' : ''}</tr></thead>
+                            <tbody>`;
+            for (const [boatInternal, boatNice] of Object.entries(boatLabels)) {
+                const entries = data.boats[boatInternal];
+                if (entries && Array.isArray(entries) && entries.length > 0) {
+                    const sorted = [...entries].sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
+                    sorted.forEach((entry, idx) => {
+                        const timeVal = entry.time || "??:??.??";
+                        const descVal = entry.desc || "Keine Beschreibung";
+                        const ts = entry.timestamp || Date.now();
+                        html += `<tr>
+                                    <td>${idx === 0 ? boatNice : "↳ " + boatNice}</td>
+                                    <td><span class="badge-time">⏱️ ${timeVal}</span></td>
+                                    <td><div class="entry-description">📝 ${escapeHtml(descVal)}</div></td>`;
+                        if (isAdmin) {
+                            html += `<td><button class="delete-btn" onclick="deleteSingleEntry('${personNameLower}', '${boatInternal}', ${ts})" title="Eintrag löschen">🗑️</button></td>`;
+                        }
+                        html += `</tr>`;
+                    });
+                } else {
+                    html += `<tr><td>${boatNice}</td><td colspan="2">— keine Zeiten —</td>${isAdmin ? '<td></td>' : ''}</tr>`;
+                }
+            }
+            html += `</tbody></table>${isAdmin ? '<p style="margin-top:12px; font-size:12px; color:#ffaa66;">🔐 Admin: Klick auf 🗑️ löscht nur diesen Eintrag.</p>' : ''}</div>`;
+            container.innerHTML = html;
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // ---------- PERSONENLISTE (Sortiert nach letzter Aktivität) ----------
     function loadAllUsersSorted() {
         const usersRef = database.ref('Navy-boote/users');
         usersRef.on('value', (snapshot) => {
@@ -629,52 +689,32 @@
             const listDiv = document.getElementById('allNamesList');
             listDiv.innerHTML = '';
             if (users) {
-                const userArray = [];
-                for (const [nameKey, userData] of Object.entries(users)) {
-                    let lastUpdated = userData.lastUpdated || 0;
-                    userArray.push({ name: nameKey, lastUpdated: lastUpdated });
-                }
+                const userArray = Object.keys(users).map(nameKey => ({
+                    name: nameKey,
+                    lastUpdated: users[nameKey].lastUpdated || 0
+                }));
                 userArray.sort((a, b) => b.lastUpdated - a.lastUpdated);
-                userArray.forEach(userObj => {
-                    const nameKey = userObj.name;
-                    const displayName = nameKey.charAt(0).toUpperCase() + nameKey.slice(1);
+                userArray.forEach(user => {
+                    const displayName = user.name.charAt(0).toUpperCase() + user.name.slice(1);
                     const btn = document.createElement('div');
                     btn.className = 'name-tag';
                     btn.textContent = displayName;
                     btn.onclick = () => {
                         document.getElementById('personName').value = displayName;
                         document.getElementById('searchName').value = displayName;
-                        listenToPersonData(nameKey);
+                        autoLoadPerson();
                     };
                     listDiv.appendChild(btn);
                 });
             } else {
-                listDiv.innerHTML = '<span style="color:#ccc;">⚓ Keine Personen erfasst. Speichern Sie eine Zeit!</span>';
+                listDiv.innerHTML = '<span>⚓ Keine Personen</span>';
             }
         });
     }
-    
-    // Initialisierung: Personenliste laden und ggf. bestehenden Listener aufräumen
+
+    // Init
     loadAllUsersSorted();
-    
-    // Verbesserte Suchfeld-Interaktion 
-    window.listenToPerson = autoLoadPerson;
-    
-    // Zusätzlich: Wenn im Suchfeld manuell getippt wird, aktualisieren
-    document.getElementById("searchName").addEventListener("input", function() {
-        autoLoadPerson();
-    });
-    
-    // Personennamen aus der oberen Liste in das Namensfeld übernehmen + Suchfeld sync
-    window.selectPersonAndLoad = function(fullName) {
-        document.getElementById("personName").value = fullName;
-        document.getElementById("searchName").value = fullName;
-        listenToPersonData(fullName.toLowerCase());
-    };
-    
-    // Nach dem Speichern wird automatisch die aktuelle Person geladen (bereits in saveTimeWithDesc implementiert)
-    // Cleanup Listener bei Seitenneuladung wäre nicht nötig
-    console.log("US Navy Marine Stopuhr - erweiterte Version mit Beschreibungen & unbegrenzten Einträgen");
+    document.getElementById("searchName").addEventListener("input", autoLoadPerson);
 </script>
 </body>
 </html>
