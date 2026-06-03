@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>U.S Navy Marine Stopuhr - Admin Löschfunktion</title>
+    <title>U.S Navy Marine Stopuhr - Admin Bereich</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -117,63 +117,97 @@
             width: 260px;
         }
 
-        .admin-panel {
-            background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
-            border: 2px solid #ffaa33;
+        /* Kleine, versteckte Admin-Zone */
+        .admin-collapse {
+            position: relative;
+            margin-bottom: 8px;
+            text-align: right;
+        }
+        .admin-toggle-btn {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid rgba(255,170,51,0.3);
+            color: #ffaa33;
+            font-size: 11px;
+            padding: 4px 12px;
             border-radius: 20px;
-            padding: 15px 20px;
-            margin-bottom: 20px;
+            cursor: pointer;
+            backdrop-filter: blur(2px);
+            transition: 0.2s;
+        }
+        .admin-toggle-btn:hover {
+            background: rgba(255,170,51,0.2);
+            border-color: #ffaa33;
+        }
+        .admin-hidden-panel {
+            display: none;
+            margin-top: 8px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            border: 1px solid #ffaa33;
+            border-radius: 16px;
+            padding: 12px 15px;
+            transition: 0.3s;
+        }
+        .admin-hidden-panel.show {
+            display: block;
+        }
+        .admin-flex {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
-            gap: 15px;
+            gap: 12px;
         }
-
-        .admin-panel h4 {
-            margin: 0;
-            color: #ffaa33;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
         .admin-login {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             align-items: center;
             flex-wrap: wrap;
         }
-
         .admin-login input {
-            width: 150px;
+            width: 130px;
+            padding: 6px 10px;
+            font-size: 12px;
             background: rgba(0,0,0,0.8);
             border-color: #ffaa33;
         }
-
         .btn-admin {
             background: #ff8800;
             color: #1a1a2e;
             font-weight: bold;
+            padding: 6px 14px;
+            font-size: 12px;
         }
-
         .btn-admin:hover {
             background: #ffaa33;
         }
-
         .admin-actions {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
+            align-items: center;
         }
-
         .btn-delete-user {
-            background: #aa2222;
-            border-color: #ff6666;
+            background: #8b0000;
+            border: none;
+            padding: 6px 12px;
+            font-size: 12px;
         }
-
         .btn-delete-user:hover {
             background: #cc3333;
+        }
+        .admin-badge {
+            background: #ffaa33;
+            color: #1a1a2e;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .logout-btn {
+            background: #444;
+            font-size: 11px;
+            padding: 4px 10px;
         }
 
         .boats-grid {
@@ -324,26 +358,10 @@
             transform: none;
         }
 
-        .delete-user-btn {
-            background: #8b0000;
-            border: none;
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
         .logo {
             width: 55px;
             margin-bottom: 5px;
             filter: drop-shadow(0 0 4px #3b82f6);
-        }
-
-        .admin-badge {
-            background: #ffaa33;
-            color: #1a1a2e;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
         }
 
         .info-note {
@@ -351,6 +369,11 @@
             color: #9bb7e0;
             text-align: center;
             margin-top: 12px;
+        }
+        
+        .colin-only {
+            font-size: 10px;
+            color: #ffaa55;
         }
     </style>
 </head>
@@ -363,21 +386,26 @@
     <div class="header-section">
         <img class="logo" src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="US Navy Logo">
         <h2>⚓ U.S Navy Marine Stopuhr ⚓</h2>
-        <p style="margin:5px 0 0; font-size:13px;">Zeiten mit Beschreibung | Colin-Admin Löschmodus</p>
+        <p style="margin:5px 0 0; font-size:13px;">Zeiten mit Beschreibung | Unbegrenzte Einträge</p>
     </div>
 
-    <!-- ADMIN PANEL - NUR COLIN mit PASSWORT 22122009 -->
-    <div class="admin-panel" id="adminPanel">
-        <h4>🔐 ADMIN-ZONE (Colin only)</h4>
-        <div class="admin-login" id="adminLoginArea">
-            <input type="text" id="adminUsername" placeholder="Benutzername" value="colin">
-            <input type="password" id="adminPassword" placeholder="Passwort">
-            <button onclick="adminLogin()" class="btn-admin">🔓 Anmelden</button>
-        </div>
-        <div id="adminActions" style="display: none;" class="admin-actions">
-            <span class="admin-badge">✅ Admin-Modus aktiv</span>
-            <button onclick="deleteCurrentPersonCompletely()" class="btn-delete-user">🗑️ GANZE PERSON LÖSCHEN</button>
-            <button onclick="adminLogout()" class="btn-admin">🚪 Logout</button>
+    <!-- Kleine, einklappbare ADMIN-Zone (Colin only) -->
+    <div class="admin-collapse">
+        <button class="admin-toggle-btn" onclick="toggleAdminPanel()">🔧 Admin (Colin)</button>
+        <div id="adminHiddenPanel" class="admin-hidden-panel">
+            <div class="admin-flex">
+                <div id="adminLoginArea" class="admin-login">
+                    <input type="text" id="adminUsername" placeholder="colin" value="colin" style="width:100px;">
+                    <input type="password" id="adminPassword" placeholder="Passwort" style="width:120px;">
+                    <button onclick="adminLogin()" class="btn-admin">🔓 Login</button>
+                </div>
+                <div id="adminActions" style="display: none;" class="admin-actions">
+                    <span class="admin-badge">✅ Admin</span>
+                    <button onclick="deleteCurrentPersonCompletely()" class="btn-delete-user">🗑️ Person löschen</button>
+                    <button onclick="adminLogout()" class="logout-btn btn-admin">🚪 Logout</button>
+                </div>
+            </div>
+            <div class="colin-only" style="margin-top: 8px; text-align: right;">⚓ nur colin / 22122009</div>
         </div>
     </div>
 
@@ -394,7 +422,7 @@
         <div class="boat-panel">
             <h4>⚡ U.S Navy Predator</h4>
             <div class="save-boat-section">
-                <textarea id="descPredator" class="desc-input" rows="2" placeholder="Beschreibung (z.B. 'Rekordlauf')"></textarea>
+                <textarea id="descPredator" class="desc-input" rows="2" placeholder="Beschreibung (z.B. 'Rekordlauf, Wellen')"></textarea>
                 <button class="btn-save" onclick="saveTimeWithDesc('Predator', 'descPredator')">📌 Speichern</button>
             </div>
         </div>
@@ -436,7 +464,8 @@
         </div>
     </div>
     <div class="info-note">
-        💡 Jede Zeit mit individueller Beschreibung – unbegrenzt viele Einträge. <strong style="color:#ffaa33;">Colin (Passwort: 22122009)</strong> kann Zeiten und ganze Personen löschen.
+        💡 Jede Zeit mit individueller Beschreibung – unbegrenzt viele Einträge. 
+        <span style="color:#ffaa33; font-size:11px;">Colin (Passwort: 22122009) kann Zeiten & Personen löschen (Admin-Panel oben rechts).</span>
     </div>
 </div>
 
@@ -454,8 +483,13 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // ---------- ADMIN STATUS ----------
+    // ---------- ADMIN STATUS & UI ----------
     let isAdmin = false;
+
+    function toggleAdminPanel() {
+        const panel = document.getElementById("adminHiddenPanel");
+        panel.classList.toggle("show");
+    }
 
     function adminLogin() {
         const username = document.getElementById("adminUsername").value.trim().toLowerCase();
@@ -464,11 +498,17 @@
             isAdmin = true;
             document.getElementById("adminLoginArea").style.display = "none";
             document.getElementById("adminActions").style.display = "flex";
-            alert("✅ Admin-Modus aktiviert. Du kannst jetzt Zeilen löschen oder ganze Personen entfernen.");
-            // Neu laden der aktuellen Person, damit ggf. Löschbuttons erscheinen
-            autoLoadPerson();
+            // kleinen Hinweis ohne störenden Groß-Alert
+            const smallNote = document.createElement('div');
+            smallNote.style.position = 'fixed'; smallNote.style.bottom = '10px'; smallNote.style.right = '10px';
+            smallNote.style.background = '#ffaa33'; smallNote.style.color = '#000'; smallNote.style.padding = '4px 12px';
+            smallNote.style.borderRadius = '20px'; smallNote.style.fontSize = '11px'; smallNote.style.zIndex = '9999';
+            smallNote.innerText = 'Admin-Modus aktiv (Colin)';
+            document.body.appendChild(smallNote);
+            setTimeout(() => smallNote.remove(), 2000);
+            autoLoadPerson(); // Tabelle mit Löschbuttons neu laden
         } else {
-            alert("❌ Zugriff verweigert! Nur Colin mit korrektem Passwort.");
+            alert("Zugriff verweigert! Nur Colin.");
         }
     }
 
@@ -478,34 +518,32 @@
         document.getElementById("adminActions").style.display = "none";
         document.getElementById("adminUsername").value = "colin";
         document.getElementById("adminPassword").value = "";
-        autoLoadPerson(); // Tabelle neu laden (ohne Löschbuttons)
-        alert("Admin-Modus beendet.");
+        autoLoadPerson();
+        const note = document.createElement('div');
+        note.style.position = 'fixed'; note.style.bottom = '10px'; note.style.right = '10px';
+        note.style.background = '#555'; note.style.color = '#fff'; note.style.padding = '4px 12px';
+        note.style.borderRadius = '20px'; note.style.fontSize = '11px';
+        note.innerText = 'Admin-Modus beendet';
+        document.body.appendChild(note);
+        setTimeout(() => note.remove(), 1500);
     }
 
-    // ----- Aktuelle Person komplett löschen (NUR ADMIN) -----
+    // Ganze Person löschen (nur Admin)
     window.deleteCurrentPersonCompletely = async function() {
-        if (!isAdmin) {
-            alert("Nur Colin kann ganze Personen löschen!");
-            return;
-        }
+        if (!isAdmin) { alert("Nur Colin kann Personen löschen."); return; }
         const searchField = document.getElementById("searchName");
         const personName = searchField.value.trim();
-        if (!personName) {
-            alert("Keine Person ausgewählt. Bitte klicke einen Namen an oder tippe ihn ein.");
-            return;
-        }
-        if (!confirm(`⚠️ ADMIN: Willst du wirklich die gesamte Person "${personName}" mit ALLEN Bootszeiten unwiderruflich löschen?`)) return;
+        if (!personName) { alert("Keine Person ausgewählt."); return; }
+        if (!confirm(`⚠️ ADMIN: Person "${personName}" mit ALLEN Zeiten unwiderruflich LÖSCHEN?`)) return;
         const nameLower = personName.toLowerCase();
         try {
             await database.ref(`Navy-boote/users/${nameLower}`).remove();
-            alert(`✅ Person "${personName}" wurde gelöscht.`);
+            alert(`✅ "${personName}" gelöscht.`);
             document.getElementById("searchName").value = "";
             document.getElementById("resultTable").innerHTML = `<p>Person gelöscht.</p>`;
             loadAllUsersSorted();
             autoLoadPerson();
-        } catch (err) {
-            alert("Fehler beim Löschen: " + err.message);
-        }
+        } catch (err) { alert("Fehler: " + err.message); }
     };
 
     // ---------- STOPPUHR ----------
@@ -549,19 +587,17 @@
         document.getElementById("startBtn").style.background = "#0055aa";
     }
 
-    // ---------- SPEICHERN MIT BESCHREIBUNG (UNBEGRENZT) ----------
+    // ---------- SPEICHERN ----------
     async function saveTimeWithDesc(boatKey, textareaId) {
         const nameInput = document.getElementById("personName");
         const personName = nameInput.value.trim();
-        if (!personName) { alert("Namen eingeben!"); return; }
+        if (!personName) { alert("Bitte Namen eingeben!"); return; }
         if (elapsed === 0) { alert("Keine gestoppte Zeit!"); return; }
-
         const currentTimeStr = formatTime(elapsed);
         const description = document.getElementById(textareaId).value.trim();
         const fullDescription = description || "Keine Beschreibung";
         const userPath = `Navy-boote/users/${personName.toLowerCase()}`;
         const boatRef = database.ref(`${userPath}/boats/${boatKey}`);
-
         try {
             const snapshot = await boatRef.once('value');
             let entries = snapshot.val();
@@ -577,17 +613,12 @@
             document.getElementById("searchName").value = personName;
             autoLoadPerson();
             alert(`✅ ${currentTimeStr} für ${personName} (${boatKey}) gespeichert!`);
-        } catch (error) {
-            alert("Fehler: " + error.message);
-        }
+        } catch (error) { alert("Fehler: " + error.message); }
     }
 
-    // ---------- EINTRAG LÖSCHEN (NUR ADMIN) ----------
+    // ---------- EINTRAG LÖSCHEN (nur Admin) ----------
     window.deleteSingleEntry = async function(personNameLower, boatInternal, timestampToDelete) {
-        if (!isAdmin) {
-            alert("Löschen nur für Colin (Admin) möglich. Bitte anmelden.");
-            return;
-        }
+        if (!isAdmin) { alert("Nur Colin kann Einträge löschen."); return; }
         if (!confirm("Diesen Zeit-Eintrag endgültig löschen?")) return;
         try {
             const boatRef = database.ref(`Navy-boote/users/${personNameLower}/boats/${boatInternal}`);
@@ -598,17 +629,13 @@
                 await boatRef.set(newEntries);
                 await database.ref(`Navy-boote/users/${personNameLower}/lastUpdated`).set(Date.now());
                 alert("Eintrag gelöscht.");
-                autoLoadPerson(); // refresh
+                autoLoadPerson();
                 loadAllUsersSorted();
-            } else {
-                alert("Eintrag nicht vorhanden.");
-            }
-        } catch (e) {
-            alert("Fehler: " + e.message);
-        }
+            } else { alert("Eintrag nicht gefunden."); }
+        } catch (e) { alert("Fehler: " + e.message); }
     };
 
-    // ---------- PERSONELLE LIVE-ANSICHT (mit Admin-Löschbuttons) ----------
+    // ---------- LIVE-DATEN ----------
     let currentPersonListenerRef = null;
 
     function autoLoadPerson() {
@@ -631,7 +658,7 @@
             const container = document.getElementById("resultTable");
             const displayName = personNameLower.charAt(0).toUpperCase() + personNameLower.slice(1);
             if (!data || !data.boats) {
-                container.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:15px;">⚓ ${displayName} hat keine Zeiten.</div>`;
+                container.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:15px;">⚓ ${displayName} hat noch keine Zeiten.</div>`;
                 return;
             }
             const boatLabels = {
@@ -640,11 +667,8 @@
                 "PatrolBoat": "🚢 Kurtz 31 Patrol Boat",
                 "WeaponizedDinghy": "💥 Weaponized Dinghy"
             };
-            let html = `<div class="table-wrapper">
-                        <h4>👤 ${displayName} ${isAdmin ? '<span style="color:#ffaa33;">(Admin-Modus 🔓)</span>' : ''}</h4>
-                        <table>
-                            <thead><tr><th>Bootstyp</th><th>Zeit</th><th>Beschreibung</th>${isAdmin ? '<th>Aktion</th>' : ''}</tr></thead>
-                            <tbody>`;
+            let html = `<div class="table-wrapper"><h4>👤 ${displayName} ${isAdmin ? '<span style="color:#ffaa33;">(Admin ✨)</span>' : ''}</h4>
+                        <table><thead><tr><th>Bootstyp</th><th>Zeit</th><th>Beschreibung</th>${isAdmin ? '<th>Aktion</th>' : ''}</tr></thead><tbody>`;
             for (const [boatInternal, boatNice] of Object.entries(boatLabels)) {
                 const entries = data.boats[boatInternal];
                 if (entries && Array.isArray(entries) && entries.length > 0) {
@@ -653,10 +677,9 @@
                         const timeVal = entry.time || "??:??.??";
                         const descVal = entry.desc || "Keine Beschreibung";
                         const ts = entry.timestamp || Date.now();
-                        html += `<tr>
-                                    <td>${idx === 0 ? boatNice : "↳ " + boatNice}</td>
-                                    <td><span class="badge-time">⏱️ ${timeVal}</span></td>
-                                    <td><div class="entry-description">📝 ${escapeHtml(descVal)}</div></td>`;
+                        html += `<tr><td>${idx === 0 ? boatNice : "↳ " + boatNice}</td>
+                                 <td><span class="badge-time">⏱️ ${timeVal}</span></td>
+                                 <td><div class="entry-description">📝 ${escapeHtml(descVal)}</div></td>`;
                         if (isAdmin) {
                             html += `<td><button class="delete-btn" onclick="deleteSingleEntry('${personNameLower}', '${boatInternal}', ${ts})" title="Eintrag löschen">🗑️</button></td>`;
                         }
@@ -666,7 +689,7 @@
                     html += `<tr><td>${boatNice}</td><td colspan="2">— keine Zeiten —</td>${isAdmin ? '<td></td>' : ''}</tr>`;
                 }
             }
-            html += `</tbody></table>${isAdmin ? '<p style="margin-top:12px; font-size:12px; color:#ffaa66;">🔐 Admin: Klick auf 🗑️ löscht nur diesen Eintrag.</p>' : ''}</div>`;
+            html += `</tbody></table>${isAdmin ? '<p style="margin-top:10px; font-size:12px; color:#ffaa66;">🔐 Admin: Klick auf 🗑️ löscht nur diesen Eintrag.</p>' : ''}</div>`;
             container.innerHTML = html;
         });
     }
@@ -681,7 +704,7 @@
         });
     }
 
-    // ---------- PERSONENLISTE (Sortiert nach letzter Aktivität) ----------
+    // ---------- PERSONENLISTE ----------
     function loadAllUsersSorted() {
         const usersRef = database.ref('Navy-boote/users');
         usersRef.on('value', (snapshot) => {
@@ -707,12 +730,11 @@
                     listDiv.appendChild(btn);
                 });
             } else {
-                listDiv.innerHTML = '<span>⚓ Keine Personen</span>';
+                listDiv.innerHTML = '<span>⚓ Keine Personen erfasst.</span>';
             }
         });
     }
 
-    // Init
     loadAllUsersSorted();
     document.getElementById("searchName").addEventListener("input", autoLoadPerson);
 </script>
