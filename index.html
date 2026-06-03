@@ -2,15 +2,19 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>U.S Navy Marine Stopuhr</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>U.S Navy Marine Stopuhr - Erweiterte Zeiterfassung</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
-            font-family: 'Segoe UI', Arial, sans-serif;
+            font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -32,176 +36,273 @@
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.2);
+            background: rgba(0, 0, 0, 0.3);
             z-index: -1;
         }
 
         .container {
-            width: 90%;
-            max-width: 850px;
-            max-height: 90vh;
+            width: 95%;
+            max-width: 1300px;
+            max-height: 92vh;
             overflow-y: auto;
-            backdrop-filter: blur(4px);
-            background: rgba(5, 10, 20, 0.6);
-            padding: 30px;
-            border-radius: 18px;
-            border: 1px solid rgba(120,160,255,0.3);
-            box-shadow: 0 10px 50px rgba(0,0,0,0.8);
+            backdrop-filter: blur(6px);
+            background: rgba(5, 10, 25, 0.65);
+            padding: 25px;
+            border-radius: 24px;
+            border: 1px solid rgba(120, 160, 255, 0.4);
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7);
             scrollbar-width: thin;
-            scrollbar-color: #30475e transparent;
+            scrollbar-color: #2c5282 #0a1220;
         }
 
         .container::-webkit-scrollbar { width: 8px; }
-        .container::-webkit-scrollbar-track { background: transparent; }
-        .container::-webkit-scrollbar-thumb { background-color: #30475e; border-radius: 10px; }
+        .container::-webkit-scrollbar-track { background: #0a1220; border-radius: 10px; }
+        .container::-webkit-scrollbar-thumb { background: #2c5282; border-radius: 10px; }
 
         .time {
-            font-size: 70px;
-            letter-spacing: 4px;
-            margin: 10px 0;
-            color: #cfe3ff;
-            text-shadow: 0 0 15px rgba(80,140,255,0.8);
+            font-size: 68px;
+            letter-spacing: 5px;
+            margin: 8px 0;
+            color: #d9ecff;
+            text-shadow: 0 0 18px rgba(0, 160, 255, 0.9);
             font-family: 'Courier New', monospace;
             text-align: center;
+            font-weight: 700;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 30px;
+            padding: 10px;
         }
 
         .header-section {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
 
         .section-title {
             color: #9cc7ff;
             text-transform: uppercase;
-            font-size: 13px;
+            font-size: 14px;
             letter-spacing: 2px;
             margin-top: 25px;
-            margin-bottom: 15px;
-            border-left: 4px solid #9cc7ff;
-            padding-left: 10px;
-            text-align: left;
+            margin-bottom: 12px;
+            border-left: 5px solid #3b82f6;
+            padding-left: 12px;
+            font-weight: 600;
         }
 
         .input-group {
             margin: 15px 0;
             display: flex;
-            gap: 10px;
+            gap: 12px;
             justify-content: center;
             flex-wrap: wrap;
         }
 
-        input {
+        input, textarea {
             padding: 12px;
-            border-radius: 8px;
-            border: 1px solid rgba(156, 199, 255, 0.4);
-            background: rgba(0,0,0,0.6);
+            border-radius: 12px;
+            border: 1px solid rgba(100, 150, 255, 0.5);
+            background: rgba(0, 0, 0, 0.65);
             color: white;
             outline: none;
-            width: 250px;
             font-size: 14px;
+            transition: 0.2s;
         }
 
-        .save-grid {
+        input:focus, textarea:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 8px rgba(59,130,246,0.4);
+        }
+
+        input {
+            width: 260px;
+        }
+
+        .boats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
         }
 
-        .boat-card {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 15px;
-            border-radius: 10px;
+        .boat-panel {
+            background: rgba(15, 25, 45, 0.7);
+            backdrop-filter: blur(3px);
+            border-radius: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            padding: 16px;
+            transition: 0.2s;
+        }
+
+        .boat-panel h4 {
+            margin: 0 0 10px 0;
+            font-size: 1.25rem;
+            font-weight: 600;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(255,255,255,0.1);
+            align-items: baseline;
+            border-bottom: 1px dashed #3b82f6;
+            padding-bottom: 8px;
         }
 
-        .boat-card h4 { margin: 0; font-size: 14px; color: #fff; }
+        .save-boat-section {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 8px;
+        }
 
-        button {
-            padding: 10px 18px;
-            border-radius: 8px;
-            border: 1px solid rgba(120,160,255,0.3);
-            cursor: pointer;
-            color: #e6f0ff;
-            background: rgba(20, 40, 80, 0.7);
-            transition: all 0.2s;
+        .desc-input {
+            width: 100%;
+            resize: vertical;
+            font-size: 13px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #0f2b4d, #051a30);
+            border: 1px solid #2c6e9e;
+            width: 100%;
+            font-size: 14px;
+            padding: 10px;
             font-weight: bold;
         }
 
-        button:hover { 
-            background: rgba(40, 80, 160, 0.9);
-            transform: translateY(-1px);
+        .btn-save:hover {
+            background: linear-gradient(135deg, #1e3a5f, #0a2a46);
+            border-color: #5aa9dd;
+            transform: scale(0.98);
         }
 
-        .btn-save { background: rgba(0, 150, 255, 0.2); font-size: 11px; }
-        .btn-save:hover { background: rgba(0, 150, 255, 0.5); }
+        button {
+            padding: 10px 20px;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            background: #1e2a47;
+            color: white;
+            transition: 0.2s;
+            border: 1px solid rgba(100, 150, 255, 0.4);
+        }
+
+        button:hover {
+            background: #2c3e66;
+            transform: translateY(-2px);
+        }
 
         .name-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
-            background: rgba(0, 0, 0, 0.3);
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.35);
             padding: 15px;
-            border-radius: 10px;
-            border: 1px solid rgba(156, 199, 255, 0.1);
-            max-height: 120px;
+            border-radius: 20px;
+            border: 1px solid rgba(100, 150, 255, 0.25);
+            max-height: 150px;
             overflow-y: auto;
-            align-content: flex-start;
-            scrollbar-width: thin;
-            scrollbar-color: #508cff rgba(0,0,0,0.2);
         }
 
-        .name-list::-webkit-scrollbar { width: 6px; }
-        .name-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 6px; }
-        .name-list::-webkit-scrollbar-thumb { background-color: #508cff; border-radius: 6px; }
-
         .name-tag {
-            background: rgba(156, 199, 255, 0.15);
-            border: 1px solid rgba(156, 199, 255, 0.3);
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 13px;
-            color: white;
+            background: linear-gradient(145deg, #0a1a30, #031020);
+            border: 1px solid #2c5282;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
             cursor: pointer;
             transition: 0.2s;
-            height: fit-content;
+            color: #c6e0ff;
         }
 
         .name-tag:hover {
-            background: rgba(156, 199, 255, 0.4);
+            background: #1e3a6b;
+            transform: scale(1.02);
+            border-color: #5a9eff;
         }
 
         .search-results {
-            margin-top: 25px;
-            background: rgba(0,0,0,0.4);
+            margin-top: 30px;
+            background: rgba(0, 0, 0, 0.5);
             padding: 20px;
-            border-radius: 12px;
-            border: 1px solid rgba(156, 199, 255, 0.1);
+            border-radius: 24px;
+            border: 1px solid rgba(59, 130, 246, 0.4);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
             font-size: 14px;
         }
 
         th {
-            background: rgba(156, 199, 255, 0.15);
-            color: #9cc7ff;
+            background: rgba(30, 70, 120, 0.5);
+            padding: 12px 8px;
             text-align: left;
-            padding: 12px;
+            color: #b8dbff;
+            font-weight: 600;
         }
 
         td {
-            padding: 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            background: rgba(0,0,0,0.2);
+            padding: 10px 8px;
+            border-bottom: 1px solid rgba(100, 150, 255, 0.2);
+            vertical-align: top;
         }
 
-        .logo { width: 60px; margin-bottom: 5px; }
+        .badge-time {
+            font-family: monospace;
+            font-weight: bold;
+            background: #0a1f2e;
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+
+        .entry-description {
+            color: #bfd9ff;
+            font-size: 12px;
+            margin-top: 4px;
+            word-break: break-word;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ff9494;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 20px;
+        }
+
+        .delete-btn:hover {
+            background: rgba(255, 80, 80, 0.3);
+            transform: none;
+        }
+
+        .logo {
+            width: 55px;
+            margin-bottom: 5px;
+            filter: drop-shadow(0 0 4px #3b82f6);
+        }
+
+        .info-note {
+            font-size: 12px;
+            color: #9bb7e0;
+            text-align: center;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 700px) {
+            .container { padding: 15px; }
+            .time { font-size: 46px; }
+        }
     </style>
 </head>
 <body>
@@ -211,238 +312,369 @@
 
 <div class="container">
     <div class="header-section">
-        <img class="logo" src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="Logo">
-        <h2 style="margin:0; letter-spacing: 1px;">U.S Navy Marine Stopuhr</h2>
+        <img class="logo" src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="US Navy Logo">
+        <h2 style="margin:0; letter-spacing: 1.5px;">⚓ U.S Navy Marine Stopuhr ⚓</h2>
+        <p style="margin:5px 0 0; font-size:13px;">Zeiten speichern mit Beschreibung | Unbegrenzte Einträge</p>
     </div>
 
     <div class="time" id="display">00:00.00</div>
 
     <div class="input-group">
-        <input type="text" id="personName" placeholder="Name der Person (zum Speichern)..." />
-        <button onclick="startStop()" id="startBtn" style="border-color: #00b4ff;">Start</button>
-        <button onclick="reset()" style="border-color: #ffb400;">Reset</button>
+        <input type="text" id="personName" placeholder="Name der Person (z.B. John Miller)" autocomplete="off" />
+        <button onclick="startStop()" id="startBtn" style="background:#0055aa;">▶ Start</button>
+        <button onclick="reset()" style="background:#885500;">🔄 Reset</button>
     </div>
 
-    <div class="section-title">Normale Boote</div>
-    <div class="save-grid">
-        <div class="boat-card">
-            <h4>U.S Navy Predator</h4>
-            <button class="btn-save" onclick="saveTime('Predator')">Speichern</button>
+    <!-- Boote mit individueller Beschreibung beim Speichern -->
+    <div class="section-title">🚤 BOOTE & SCHNELLE SPEICHERUNG</div>
+    <div class="boats-grid">
+        <!-- Boot 1: Predator -->
+        <div class="boat-panel">
+            <h4>⚡ U.S Navy Predator</h4>
+            <div class="save-boat-section">
+                <textarea id="descPredator" class="desc-input" rows="2" placeholder="Beschreibung / Strecke / Bemerkung ... (z.B. 'Sturmwetter, Top Speed')"></textarea>
+                <button class="btn-save" onclick="saveTimeWithDesc('Predator', 'descPredator')">📌 Speichern + Beschreibung</button>
+            </div>
         </div>
-        <div class="boat-card">
-            <h4>Dinghy</h4>
-            <button class="btn-save" onclick="saveTime('Dinghy')">Speichern</button>
+        <!-- Boot 2: Dinghy -->
+        <div class="boat-panel">
+            <h4>🛶 Dinghy</h4>
+            <div class="save-boat-section">
+                <textarea id="descDinghy" class="desc-input" rows="2" placeholder="Beschreibung / Bemerkung ..."></textarea>
+                <button class="btn-save" onclick="saveTimeWithDesc('Dinghy', 'descDinghy')">📌 Speichern + Beschreibung</button>
+            </div>
+        </div>
+        <!-- Boot 3: Kurtz Patrol -->
+        <div class="boat-panel">
+            <h4>🚢 Kurtz 31 Patrol Boat</h4>
+            <div class="save-boat-section">
+                <textarea id="descPatrolBoat" class="desc-input" rows="2" placeholder="Beschreibung / Bemerkung ..."></textarea>
+                <button class="btn-save" onclick="saveTimeWithDesc('PatrolBoat', 'descPatrolBoat')">📌 Speichern + Beschreibung</button>
+            </div>
+        </div>
+        <!-- Boot 4: Weaponized Dinghy -->
+        <div class="boat-panel">
+            <h4>🔫 Weaponized Dinghy</h4>
+            <div class="save-boat-section">
+                <textarea id="descWeaponized" class="desc-input" rows="2" placeholder="Beschreibung / Bemerkung ..."></textarea>
+                <button class="btn-save" onclick="saveTimeWithDesc('WeaponizedDinghy', 'descWeaponized')">📌 Speichern + Beschreibung</button>
+            </div>
         </div>
     </div>
 
-    <div class="section-title">Geschütz Boote</div>
-    <div class="save-grid">
-        <div class="boat-card">
-            <h4>Kurtz 31 Patrol Boat</h4>
-            <button class="btn-save" onclick="saveTime('PatrolBoat')">Speichern</button>
-        </div>
-        <div class="boat-card">
-            <h4>Weaponized Dinghy</h4>
-            <button class="btn-save" onclick="saveTime('WeaponizedDinghy')">Speichern</button>
-        </div>
-    </div>
-
-    <div class="section-title">Alle Registrierten Personen</div>
+    <div class="section-title">👥 REGISTRIERTE PERSONEN (neueste Aktivität oben)</div>
     <div id="allNamesList" class="name-list">
-        <span style="color:#aaa; font-size: 13px;">Lade Personen...</span>
+        <span style="color:#aaa;">Lade Matrosen...</span>
     </div>
 
     <div class="search-results">
-        <h3 style="margin:0 0 15px 0;">Live-Ansicht (Daten)</h3>
-        <div class="input-group" style="justify-content: flex-start; margin-top:0;">
-            <input type="text" id="searchName" placeholder="Name tippen oder oben anklicken..." oninput="listenToPerson()">
+        <h3 style="margin:0 0 8px 0;">📋 Detaillierte Zeiten & Beschreibungen</h3>
+        <div class="input-group" style="justify-content: flex-start; margin-top: 0;">
+            <input type="text" id="searchName" placeholder="Name eingeben oder oben anklicken..." oninput="autoLoadPerson()" autocomplete="off">
         </div>
         <div id="resultTable">
-            <p style="color:#aaa; font-size: 13px; margin: 0;">Wähle eine Person aus der Liste oder tippe einen Namen ein, um die Zeiten zu sehen.</p>
+            <p style="color:#bbd4ff;">🔍 Wähle eine Person, um alle gespeicherten Zeiten mit Beschreibung zu sehen.</p>
         </div>
+    </div>
+    <div class="info-note">
+        💡 Jede Zeit wird mit Ihrer individuellen Beschreibung gespeichert – beliebig viele Einträge pro Boot möglich. Klick auf einen Namen lädt sofort alle Daten.
     </div>
 </div>
 
 <script>
-// --- FIREBASE CONFIG ---
-const firebaseConfig = {
-  apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
-  authDomain: "cc-shop-36c3b.firebaseapp.com",
-  databaseURL: "https://cc-shop-36c3b-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "cc-shop-36c3b",
-  storageBucket: "cc-shop-36c3b.firebasestorage.app",
-  messagingSenderId: "376170741825",
-  appId: "1:376170741825:web:bc6102e277da5ad7cbc6c0"
-};
+    // ---------- FIREBASE INIT ----------
+    const firebaseConfig = {
+        apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
+        authDomain: "cc-shop-36c3b.firebaseapp.com",
+        databaseURL: "https://cc-shop-36c3b-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "cc-shop-36c3b",
+        storageBucket: "cc-shop-36c3b.firebasestorage.app",
+        messagingSenderId: "376170741825",
+        appId: "1:376170741825:web:bc6102e277da5ad7cbc6c0"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+    // ---------- STOPPUHR ----------
+    let startTime = 0, elapsed = 0, interval = null, running = false;
 
-// --- STOPPUHR LOGIK ---
-let startTime = 0, elapsed = 0, interval = null, running = false;
+    function formatTime(ms) {
+        let m = Math.floor(ms / 60000);
+        let s = Math.floor((ms % 60000) / 1000);
+        let c = Math.floor((ms % 1000) / 10);
+        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(c).padStart(2, '0')}`;
+    }
 
-function formatTime(ms) {
-    let m = Math.floor(ms / 60000);
-    let s = Math.floor((ms % 60000) / 1000);
-    let c = Math.floor((ms % 1000) / 10);
-    return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(c).padStart(2,'0')}`;
-}
+    function updateDisplay() {
+        elapsed = Date.now() - startTime;
+        document.getElementById("display").textContent = formatTime(elapsed);
+    }
 
-function update() {
-    elapsed = Date.now() - startTime;
-    document.getElementById("display").textContent = formatTime(elapsed);
-}
+    function startStop() {
+        if (!running) {
+            startTime = Date.now() - elapsed;
+            interval = setInterval(updateDisplay, 10);
+            running = true;
+            const btn = document.getElementById("startBtn");
+            btn.textContent = "⏸ Stop";
+            btn.style.background = "#aa3300";
+        } else {
+            clearInterval(interval);
+            running = false;
+            const btn = document.getElementById("startBtn");
+            btn.textContent = "▶ Start";
+            btn.style.background = "#0055aa";
+        }
+    }
 
-function startStop() {
-    if (!running) {
-        startTime = Date.now() - elapsed;
-        interval = setInterval(update, 10);
-        running = true;
-        document.getElementById("startBtn").textContent = "Stop";
-        document.getElementById("startBtn").style.background = "rgba(255, 0, 0, 0.4)";
-    } else {
+    function reset() {
         clearInterval(interval);
         running = false;
-        document.getElementById("startBtn").textContent = "Start";
-        document.getElementById("startBtn").style.background = "rgba(20, 40, 80, 0.7)";
-    }
-}
-
-function reset() {
-    clearInterval(interval);
-    running = false;
-    elapsed = 0;
-    document.getElementById("display").textContent = "00:00.00";
-    document.getElementById("startBtn").textContent = "Start";
-    document.getElementById("startBtn").style.background = "rgba(20, 40, 80, 0.7)";
-}
-
-// --- SPEICHER LOGIK ---
-function saveTime(boatType) {
-    const nameInput = document.getElementById("personName");
-    const name = nameInput.value.trim();
-    
-    if (!name) return alert("Bitte geben Sie oben einen Namen ein, um zu speichern!");
-    if (elapsed === 0) return alert("Keine Zeit gemessen!");
-
-    const timeStr = formatTime(elapsed);
-    const userPath = 'Navy-boote/users/' + name.toLowerCase();
-    const userRef = database.ref(userPath + '/boats/' + boatType);
-
-    userRef.once('value').then((snapshot) => {
-        let times = snapshot.val() || [];
-        if (!Array.isArray(times)) times = [];
-        
-        times.push(timeStr);
-        if (times.length > 3) times.shift(); // Nur die letzten 3 behalten
-
-        userRef.set(times).then(() => {
-            // NEU: Setze einen Zeitstempel, damit diese Person in der Liste nach vorne rückt
-            database.ref(userPath + '/lastUpdated').set(Date.now());
-            
-            document.getElementById("searchName").value = name;
-            listenToPerson(name);
-        });
-    });
-}
-
-// --- LIVE LISTE ALLER NAMEN (Nach Zeitstempel sortiert) ---
-database.ref('Navy-boote/users').on('value', (snapshot) => {
-    const users = snapshot.val();
-    const listDiv = document.getElementById('allNamesList');
-    listDiv.innerHTML = '';
-    
-    if (users) {
-        // Wandle das Objekt in ein Array um und hole den Zeitstempel (oder 0, falls noch keiner existiert)
-        const userArray = Object.keys(users).map(nameKey => {
-            return {
-                name: nameKey,
-                lastUpdated: users[nameKey].lastUpdated || 0
-            };
-        });
-
-        // Sortiere das Array: Die größte Zahl (neueste Zeit) zuerst
-        userArray.sort((a, b) => b.lastUpdated - a.lastUpdated);
-
-        // Gehe die sortierte Liste durch und erstelle die Buttons
-        userArray.forEach(userObj => {
-            const nameKey = userObj.name;
-            const displayName = nameKey.charAt(0).toUpperCase() + nameKey.slice(1);
-            
-            const btn = document.createElement('div');
-            btn.className = 'name-tag';
-            btn.textContent = displayName;
-            btn.onclick = () => {
-                document.getElementById('personName').value = displayName;
-                document.getElementById('searchName').value = displayName;
-                listenToPerson(nameKey);
-            };
-            listDiv.appendChild(btn);
-        });
-    } else {
-        listDiv.innerHTML = '<span style="color:#aaa; font-size:13px;">Noch keine Personen gespeichert.</span>';
-    }
-});
-
-// --- LIVE ANSICHT (ECHTZEIT TABELLE) ---
-let currentListenerRef = null;
-
-function listenToPerson(forcedName) {
-    let name = forcedName || document.getElementById("searchName").value.trim().toLowerCase();
-    const container = document.getElementById("resultTable");
-
-    if (!name) {
-        container.innerHTML = '<p style="color:#aaa; font-size: 13px; margin: 0;">Wähle eine Person aus der Liste oder tippe einen Namen ein, um die Zeiten zu sehen.</p>';
-        if (currentListenerRef) currentListenerRef.off();
-        return;
+        elapsed = 0;
+        document.getElementById("display").textContent = "00:00.00";
+        const btn = document.getElementById("startBtn");
+        btn.textContent = "▶ Start";
+        btn.style.background = "#0055aa";
     }
 
-    if (currentListenerRef) currentListenerRef.off();
-
-    currentListenerRef = database.ref('Navy-boote/users/' + name.toLowerCase());
-    currentListenerRef.on('value', (snapshot) => {
-        const data = snapshot.val();
-        
-        if (!data || !data.boats) {
-            container.innerHTML = `
-                <p style='color:#ff9c9c; margin:0;'>
-                    Keine Einträge für <b>${name.charAt(0).toUpperCase() + name.slice(1)}</b> gefunden.
-                </p>`;
+    // ---------- NEUE SPEICHERLOGIK (unbegrenzt mit Beschreibung) ----------
+    async function saveTimeWithDesc(boatKey, textareaId) {
+        const nameInput = document.getElementById("personName");
+        const personName = nameInput.value.trim();
+        if (!personName) {
+            alert("❌ Bitte einen Namen für die Person eingeben!");
+            return;
+        }
+        if (elapsed === 0) {
+            alert("⏱️ Keine Zeit gestoppt! Bitte Start/Stop verwenden.");
             return;
         }
 
-        let html = `<table>
-            <thead>
-                <tr>
-                    <th>Bootstyp</th>
-                    <th>Zeit 1</th>
-                    <th>Zeit 2</th>
-                    <th>Zeit 3</th>
-                </tr>
-            </thead>
-            <tbody>`;
+        const currentTimeStr = formatTime(elapsed);
+        const description = document.getElementById(textareaId).value.trim();
+        const fullDescription = description === "" ? "Keine Beschreibung" : description;
         
-        const boatMapping = {
-            "Predator": "U.S Navy Predator",
-            "Dinghy": "Dinghy",
-            "PatrolBoat": "Kurtz 31 Patrol Boat",
-            "WeaponizedDinghy": "Weaponized Dinghy"
-        };
+        // Datenstruktur: Für jedes Boot speichern wir ein Array von Objekten { time: "00:00.00", desc: "Text", timestamp: 1234567890 }
+        const userPath = `Navy-boote/users/${personName.toLowerCase()}`;
+        const boatRef = database.ref(`${userPath}/boats/${boatKey}`);
+        
+        try {
+            const snapshot = await boatRef.once('value');
+            let entries = snapshot.val();
+            if (!entries || !Array.isArray(entries)) {
+                entries = [];
+            }
+            // Neuen Eintrag hinzufügen (unbegrenzt)
+            entries.push({
+                time: currentTimeStr,
+                desc: fullDescription,
+                timestamp: Date.now()
+            });
+            // Behalte alle Einträge, keine Löschung mehr
+            await boatRef.set(entries);
+            // Aktualisiere lastUpdated der Person, damit sie in der Liste nach oben rutscht
+            await database.ref(`${userPath}/lastUpdated`).set(Date.now());
+            
+            // Textarea leeren nach erfolgreichem Speichern (optional)
+            document.getElementById(textareaId).value = "";
+            
+            // Automatisch die aktuelle Person im Suchfeld anzeigen und live laden
+            document.getElementById("searchName").value = personName;
+            autoLoadPerson(); 
+            
+            // kleines visuelles Feedback
+            alert(`✅ Zeit ${currentTimeStr} für ${personName} (${boatKey}) gespeichert!`);
+        } catch (error) {
+            console.error(error);
+            alert("Fehler beim Speichern: " + error.message);
+        }
+    }
 
-        Object.keys(boatMapping).forEach(type => {
-            const t = data.boats[type] || ["--", "--", "--"];
-            html += `<tr>
-                <td><strong>${boatMapping[type]}</strong></td>
-                <td>${t[0] || "--"}</td>
-                <td>${t[1] || "--"}</td>
-                <td style="color: #9cc7ff; font-weight: bold;">${t[2] || "--"}</td>
-            </tr>`;
+    // ---------- PERSONELLE LIVE-ANSICHT mit Tabelle aller Boote + Beschreibungen (unbegrenzt) ----------
+    let currentPersonListenerRef = null;
+    
+    function autoLoadPerson() {
+        const rawName = document.getElementById("searchName").value.trim();
+        if (!rawName) {
+            const container = document.getElementById("resultTable");
+            container.innerHTML = `<p style="color:#bbd4ff;">✏️ Geben Sie einen Namen ein oder wählen Sie aus der Liste.</p>`;
+            if (currentPersonListenerRef) currentPersonListenerRef.off();
+            return;
+        }
+        const nameLower = rawName.toLowerCase();
+        listenToPersonData(nameLower);
+    }
+    
+    function listenToPersonData(personNameLower) {
+        if (currentPersonListenerRef) {
+            currentPersonListenerRef.off();
+        }
+        const personRef = database.ref(`Navy-boote/users/${personNameLower}`);
+        currentPersonListenerRef = personRef;
+        
+        personRef.on('value', (snapshot) => {
+            const data = snapshot.val();
+            const container = document.getElementById("resultTable");
+            const displayNameCapital = personNameLower.charAt(0).toUpperCase() + personNameLower.slice(1);
+            
+            if (!data || !data.boats || Object.keys(data.boats).length === 0) {
+                container.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:15px; border-radius:18px;">
+                    ⚓ <strong>${displayNameCapital}</strong> hat noch keine Zeiten gespeichert.</div>`;
+                return;
+            }
+            
+            // Bootstypen Mapping für schöne Anzeige
+            const boatLabels = {
+                "Predator": "🦅 U.S Navy Predator",
+                "Dinghy": "⛵ Dinghy",
+                "PatrolBoat": "🚤 Kurtz 31 Patrol Boat",
+                "WeaponizedDinghy": "💥 Weaponized Dinghy"
+            };
+            
+            let html = `<div class="table-wrapper">
+                        <h4 style="margin:0 0 12px 0;">📌 Person: ${displayNameCapital}</h4>
+                        <table style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th>Bootstyp</th>
+                                    <th>Zeit</th>
+                                    <th>Beschreibung</th>
+                                    <th style="width: 50px;">Aktion</th>
+                                </tr>
+                            </thead>
+                            <tbody>`;
+            
+            // Für jedes Boot alle Einträge durchgehen (beliebig viele)
+            for (const [boatInternal, boatNice] of Object.entries(boatLabels)) {
+                const entries = data.boats[boatInternal];
+                if (entries && Array.isArray(entries) && entries.length > 0) {
+                    // Sortieren nach Zeitstempel (neueste zuerst optional, aber chronologisch anzeigen ist okay)
+                    // Wir zeigen der Übersicht halber neueste zuoberst in der Liste des Bootes
+                    const sortedEntries = [...entries].sort((a,b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    sortedEntries.forEach((entry, idx) => {
+                        const timeVal = entry.time || "??:??.??";
+                        const descVal = entry.desc || "Keine Beschreibung";
+                        const timestampRaw = entry.timestamp || Date.now();
+                        // Entfernen-Button pro Eintrag (optional, macht System flexibel)
+                        html += `<tr>
+                                    <td style="font-weight:600;">${idx === 0 ? boatNice : "↳ " + boatNice}</td>
+                                    <td><span class="badge-time">⏱️ ${timeVal}</span></td>
+                                    <td><div class="entry-description">📝 ${escapeHtml(descVal)}</div></td>
+                                    <td><button class="delete-btn" onclick="deleteSingleEntry('${personNameLower}', '${boatInternal}', ${timestampRaw})" title="Eintrag löschen">🗑️</button></td>
+                                 </tr>`;
+                    });
+                } else {
+                    // Zeile um zu zeigen dass keine Daten
+                    html += `<tr style="opacity:0.7;">
+                                <td>${boatNice}</td>
+                                <td colspan="3">— keine Zeiten gespeichert —</td>
+                             </tr>`;
+                }
+            }
+            html += `</tbody>
+                    </table>
+                    <p style="font-size:12px; margin-top:12px; color:#7aa5d9;">✅ Unbegrenzte Einträge pro Boot. Klick auf 🗑️ löscht nur diesen einzelnen Zeit-Eintrag.</p>
+                    </div>`;
+            container.innerHTML = html;
+        }, (error) => {
+            console.error(error);
+            document.getElementById("resultTable").innerHTML = `<p style="color:#ffaaa5;">Fehler beim Laden der Daten.</p>`;
         });
-
-        html += "</tbody></table>";
-        container.innerHTML = html;
+    }
+    
+    // Hilfsfunktion XSS-Schutz
+    function escapeHtml(str) {
+        if (!str) return "";
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+            return c;
+        });
+    }
+    
+    // ----- Einzelnen Eintrag löschen (basierend auf timestamp) -----
+    window.deleteSingleEntry = async function(personNameLower, boatInternal, timestampToDelete) {
+        if (!confirm("Diesen Zeit-Eintrag permanent löschen?")) return;
+        try {
+            const boatRef = database.ref(`Navy-boote/users/${personNameLower}/boats/${boatInternal}`);
+            const snapshot = await boatRef.once('value');
+            let entries = snapshot.val();
+            if (entries && Array.isArray(entries)) {
+                const newEntries = entries.filter(entry => entry.timestamp !== timestampToDelete);
+                await boatRef.set(newEntries);
+                // Aktualisiere lastUpdated, falls nötig, für Sortierung der Personenliste
+                await database.ref(`Navy-boote/users/${personNameLower}/lastUpdated`).set(Date.now());
+                // Falls nach dem Löschen keine Einträge mehr übrig sind, aber Person bleibt, passt.
+                alert("🗑️ Eintrag gelöscht.");
+                // Aktuelle Ansicht neu laden
+                listenToPersonData(personNameLower);
+                // Namensliste ebenfalls neu rendern (optional)
+                loadAllUsersSorted();
+            } else {
+                alert("Eintrag nicht gefunden.");
+            }
+        } catch(e) {
+            alert("Fehler beim Löschen: " + e.message);
+        }
+    };
+    
+    // ---------- LIVE LISTE ALLER PERSONEN (nach lastUpdated sortiert, neueste oben) ----------
+    function loadAllUsersSorted() {
+        const usersRef = database.ref('Navy-boote/users');
+        usersRef.on('value', (snapshot) => {
+            const users = snapshot.val();
+            const listDiv = document.getElementById('allNamesList');
+            listDiv.innerHTML = '';
+            if (users) {
+                const userArray = [];
+                for (const [nameKey, userData] of Object.entries(users)) {
+                    let lastUpdated = userData.lastUpdated || 0;
+                    userArray.push({ name: nameKey, lastUpdated: lastUpdated });
+                }
+                userArray.sort((a, b) => b.lastUpdated - a.lastUpdated);
+                userArray.forEach(userObj => {
+                    const nameKey = userObj.name;
+                    const displayName = nameKey.charAt(0).toUpperCase() + nameKey.slice(1);
+                    const btn = document.createElement('div');
+                    btn.className = 'name-tag';
+                    btn.textContent = displayName;
+                    btn.onclick = () => {
+                        document.getElementById('personName').value = displayName;
+                        document.getElementById('searchName').value = displayName;
+                        listenToPersonData(nameKey);
+                    };
+                    listDiv.appendChild(btn);
+                });
+            } else {
+                listDiv.innerHTML = '<span style="color:#ccc;">⚓ Keine Personen erfasst. Speichern Sie eine Zeit!</span>';
+            }
+        });
+    }
+    
+    // Initialisierung: Personenliste laden und ggf. bestehenden Listener aufräumen
+    loadAllUsersSorted();
+    
+    // Verbesserte Suchfeld-Interaktion 
+    window.listenToPerson = autoLoadPerson;
+    
+    // Zusätzlich: Wenn im Suchfeld manuell getippt wird, aktualisieren
+    document.getElementById("searchName").addEventListener("input", function() {
+        autoLoadPerson();
     });
-}
+    
+    // Personennamen aus der oberen Liste in das Namensfeld übernehmen + Suchfeld sync
+    window.selectPersonAndLoad = function(fullName) {
+        document.getElementById("personName").value = fullName;
+        document.getElementById("searchName").value = fullName;
+        listenToPersonData(fullName.toLowerCase());
+    };
+    
+    // Nach dem Speichern wird automatisch die aktuelle Person geladen (bereits in saveTimeWithDesc implementiert)
+    // Cleanup Listener bei Seitenneuladung wäre nicht nötig
+    console.log("US Navy Marine Stopuhr - erweiterte Version mit Beschreibungen & unbegrenzten Einträgen");
 </script>
 </body>
 </html>
