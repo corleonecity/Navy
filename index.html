@@ -791,7 +791,7 @@
         .confiscation-card .money-values {
             display: flex;
             gap: 15px;
-            margin: 8px 0;
+            margin: 10px 0;
             flex-wrap: wrap;
         }
 
@@ -1531,7 +1531,6 @@
         let currentUser = null;
         let isAdmin = false;
 
-        // Colin als Standard-Admin in DB anlegen (falls nicht vorhanden)
         async function ensureAdminExists() {
             const snap = await database.ref('Navy-boote/users_auth/colin').once('value');
             if (!snap.val()) {
@@ -1543,7 +1542,6 @@
             }
         }
 
-        // ==================== LOGIN / LOGOUT ====================
         async function doLogin() {
             const username = document.getElementById('loginUsername').value.trim().toLowerCase();
             const password = document.getElementById('loginPassword').value.trim();
@@ -1557,7 +1555,6 @@
             const userData = snap.val();
 
             if (userData && userData.password === password) {
-                // Erfolgreich eingeloggt
                 currentUser = { username: username, isAdmin: userData.isAdmin === true };
                 isAdmin = currentUser.isAdmin;
 
@@ -1576,11 +1573,7 @@
                 }
 
                 document.getElementById('loginError').style.display = 'none';
-
-                // Admin-Tab einrichten
                 setupAdminTab();
-
-                // Starte auf Homepage
                 switchTab('home');
             } else {
                 document.getElementById('loginError').style.display = 'block';
@@ -1601,13 +1594,11 @@
             removeAdminTab();
         }
 
-        // ==================== ADMIN TAB ====================
         function setupAdminTab() {
             const tabNav = document.getElementById('tabNav');
             removeAdminTab();
 
             if (isAdmin) {
-                // Tab-Button hinzufügen
                 const btn = document.createElement('button');
                 btn.className = 'tab-btn admin-tab';
                 btn.textContent = '🔑 Admin';
@@ -1615,20 +1606,15 @@
                 btn.id = 'adminTabBtn';
                 tabNav.appendChild(btn);
 
-                // Tab-Content erstellen (falls nicht vorhanden)
                 if (!document.getElementById('tab-admin')) {
                     const div = document.createElement('div');
                     div.id = 'tab-admin';
                     div.className = 'tab-content';
                     div.innerHTML = `
                         <h3 style="color:#ff5555; margin-bottom:16px;">🔑 Admin-Bereich</h3>
-
-                        <!-- Benutzerverwaltung -->
                         <div class="admin-section">
                             <h4>👥 Benutzerverwaltung</h4>
-                            <p style="font-size:12px; color:#ff9999; margin-bottom:10px;">
-                                Neue Benutzer erstellen. Diese können sich einloggen und alle Daten sehen, aber nichts löschen oder bearbeiten.
-                            </p>
+                            <p style="font-size:12px; color:#ff9999; margin-bottom:10px;">Neue Benutzer erstellen.</p>
                             <div class="input-group" style="justify-content:flex-start; margin-bottom:12px;">
                                 <input type="text" id="newUsername" placeholder="Neuer Benutzername" style="width:180px;">
                                 <input type="password" id="newPassword" placeholder="Passwort" style="width:180px;">
@@ -1636,23 +1622,16 @@
                             </div>
                             <div id="userList" style="margin-top:10px;"></div>
                         </div>
-
-                        <!-- Gefahrenzone -->
                         <div class="admin-section">
                             <h4>🗑️ Gefahrenzone</h4>
-                            <p style="font-size:12px; color:#ff9999; margin-bottom:8px;">
-                                Eine Person aus der Stoppuhr-Datenbank komplett löschen:
-                            </p>
+                            <p style="font-size:12px; color:#ff9999; margin-bottom:8px;">Person aus Stoppuhr komplett löschen:</p>
                             <div class="input-group" style="justify-content:flex-start;">
                                 <input type="text" id="adminDeletePerson" placeholder="Name der Person" style="width:200px;">
-                                <button class="btn-danger" onclick="adminDeletePerson()">🗑️ Person komplett löschen</button>
+                                <button class="btn-danger" onclick="adminDeletePerson()">🗑️ Person löschen</button>
                             </div>
-                        </div>
-                    `;
+                        </div>`;
                     document.querySelector('.container').appendChild(div);
                 }
-
-                // Benutzerliste laden
                 loadUserList();
             }
         }
@@ -1667,29 +1646,11 @@
         async function createUser() {
             const username = document.getElementById('newUsername').value.trim().toLowerCase();
             const password = document.getElementById('newPassword').value.trim();
-
-            if (!username || !password) {
-                alert('Bitte Benutzername und Passwort eingeben!');
-                return;
-            }
-
-            if (username === 'colin') {
-                alert('Der Benutzername "colin" ist reserviert und kann nicht überschrieben werden!');
-                return;
-            }
-
-            // Prüfen ob Benutzer bereits existiert
+            if (!username || !password) return alert('Bitte Benutzername und Passwort eingeben!');
+            if (username === 'colin') return alert('"colin" ist reserviert!');
             const snap = await database.ref('Navy-boote/users_auth/' + username).once('value');
-            if (snap.val()) {
-                if (!confirm('Benutzer "' + username + '" existiert bereits. Überschreiben?')) return;
-            }
-
-            await database.ref('Navy-boote/users_auth/' + username).set({
-                password: password,
-                isAdmin: false,
-                created: Date.now()
-            });
-
+            if (snap.val() && !confirm('Benutzer existiert bereits. Überschreiben?')) return;
+            await database.ref('Navy-boote/users_auth/' + username).set({ password, isAdmin: false, created: Date.now() });
             showToast('✅ Benutzer "' + username + '" erstellt!', '#2ecc40');
             document.getElementById('newUsername').value = '';
             document.getElementById('newPassword').value = '';
@@ -1700,60 +1661,40 @@
             const snap = await database.ref('Navy-boote/users_auth').once('value');
             const users = snap.val();
             const div = document.getElementById('userList');
-
-            if (!users) {
-                div.innerHTML = '<p style="color:#aaa;">Keine Benutzer vorhanden.</p>';
-                return;
-            }
-
-            let html = '<table class="user-table"><thead><tr><th>Benutzername</th><th>Rolle</th><th>Erstellt am</th><th>Aktion</th></tr></thead><tbody>';
-
+            if (!users) { div.innerHTML = '<p style="color:#aaa;">Keine Benutzer.</p>'; return; }
+            let html =
+                '<table class="user-table"><thead><tr><th>Benutzername</th><th>Rolle</th><th>Erstellt</th><th>Aktion</th></tr></thead><tbody>';
             for (const [name, data] of Object.entries(users)) {
-                html += '<tr>';
-                html += '<td><strong>' + esc(name) + '</strong></td>';
-                html += '<td>' + (data.isAdmin ?
-                    '<span style="color:#ff5555;">🔑 Admin</span>' :
+                html += '<tr><td><strong>' + esc(name) + '</strong></td>';
+                html += '<td>' + (data.isAdmin ? '<span style="color:#ff5555;">🔑 Admin</span>' :
                     '<span style="color:#64b4ff;">👤 User</span>') + '</td>';
                 html += '<td>' + (data.created ? new Date(data.created).toLocaleDateString('de-DE') : '-') + '</td>';
-                html += '<td>';
-                if (name !== 'colin') {
-                    html +=
-                        '<button class="btn-small btn-danger" onclick="deleteUser(\'' + name + '\')">🗑️ Löschen</button>';
-                } else {
-                    html += '<span style="color:#888;">🔒 Geschützt</span>';
-                }
-                html += '</td>';
-                html += '</tr>';
+                html += '<td>' + (name !== 'colin' ?
+                    '<button class="btn-small btn-danger" onclick="deleteUser(\'' + name + '\')">🗑️</button>' :
+                    '🔒') + '</td></tr>';
             }
-
             html += '</tbody></table>';
             div.innerHTML = html;
         }
 
         async function deleteUser(username) {
-            if (!confirm('Benutzer "' + username + '" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden!'))
-                return;
+            if (!confirm('Benutzer "' + username + '" löschen?')) return;
             await database.ref('Navy-boote/users_auth/' + username).remove();
-            showToast('🗑️ Benutzer "' + username + '" gelöscht.', '#ff4444');
+            showToast('🗑️ Benutzer gelöscht.', '#ff4444');
             loadUserList();
         }
 
         async function adminDeletePerson() {
             const name = document.getElementById('adminDeletePerson').value.trim();
-            if (!name) {
-                alert('Bitte Namen der Person eingeben!');
-                return;
-            }
-            if (!confirm('⚠️ Person "' + name + '" mit ALLEN gespeicherten Zeiten unwiderruflich LÖSCHEN?')) return;
-
+            if (!name) return alert('Name eingeben!');
+            if (!confirm('⚠️ Person "' + name + '" mit ALLEN Daten löschen?')) return;
             await database.ref('Navy-boote/users/' + name.toLowerCase()).remove();
-            showToast('🗑️ Person "' + name + '" komplett gelöscht.', '#ff4444');
+            showToast('🗑️ Person gelöscht.', '#ff4444');
             document.getElementById('adminDeletePerson').value = '';
             loadAllUsersSorted();
             autoLoadPerson();
         }
 
-        // ==================== TOAST ====================
         function showToast(msg, color) {
             const el = document.createElement('div');
             el.style.cssText =
@@ -1764,24 +1705,15 @@
             setTimeout(() => el.remove(), 2500);
         }
 
-        // ==================== TAB NAVIGATION ====================
         function switchTab(name) {
-            // Alle Tabs deaktivieren
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-            // Richtigen Tab aktivieren
             const tabs = ['home', 'stopwatch', 'confiscations', 'families', 'admin'];
             const idx = tabs.indexOf(name);
             const allBtns = document.querySelectorAll('.tab-btn');
-            if (idx >= 0 && allBtns[idx]) {
-                allBtns[idx].classList.add('active');
-            }
-
+            if (idx >= 0 && allBtns[idx]) allBtns[idx].classList.add('active');
             const tabEl = document.getElementById('tab-' + name);
             if (tabEl) tabEl.classList.add('active');
-
-            // Daten laden je nach Tab
             if (name === 'home') loadHomepageStats();
             else if (name === 'stopwatch') loadAllUsersSorted();
             else if (name === 'confiscations') loadConfiscations();
@@ -1789,274 +1721,148 @@
             else if (name === 'admin') loadUserList();
         }
 
-        // ==================== HOMEPAGE STATS ====================
         function loadHomepageStats() {
-            // Personen
             database.ref('Navy-boote/users').once('value', snap => {
-                const users = snap.val();
-                document.getElementById('statPersons').textContent = users ? Object.keys(users).length : 0;
+                document.getElementById('statPersons').textContent = snap.val() ? Object.keys(snap.val()).length : 0;
             });
-
-            // Familien
             database.ref('Navy-boote/families').once('value', snap => {
-                const data = snap.val();
-                document.getElementById('statFamilies').textContent = data ? Object.keys(data).length : 0;
+                document.getElementById('statFamilies').textContent = snap.val() ? Object.keys(snap.val()).length : 0;
             });
-
-            // Beschlagnahmungen + Geld
             database.ref('Navy-boote/confiscations').once('value', snap => {
                 const data = snap.val();
-                let count = 0;
-                let totalGreen = 0;
-                let totalBlack = 0;
-
-                if (data) {
-                    Object.keys(data).forEach(k => {
-                        count++;
-                        totalGreen += parseFloat(data[k].greenMoney || 0);
-                        totalBlack += parseFloat(data[k].blackMoney || 0);
-                    });
-                }
-
-                document.getElementById('statConfiscations').textContent = count;
-                document.getElementById('statTotalGreen').textContent = totalGreen.toFixed(0) + '€';
-                document.getElementById('statTotalBlack').textContent = totalBlack.toFixed(0) + '€';
+                let c = 0,
+                    tg = 0,
+                    tb = 0;
+                if (data) { Object.keys(data).forEach(k => { c++;
+                        tg += parseFloat(data[k].greenMoney || 0);
+                        tb += parseFloat(data[k].blackMoney || 0); }); }
+                document.getElementById('statConfiscations').textContent = c;
+                document.getElementById('statTotalGreen').textContent = tg.toFixed(0) + '€';
+                document.getElementById('statTotalBlack').textContent = tb.toFixed(0) + '€';
             });
         }
 
         // ==================== STOPPUHR ====================
-        let startTime = 0;
-        let elapsed = 0;
-        let interval = null;
-        let running = false;
+        let startTime = 0,
+            elapsed = 0,
+            interval = null,
+            running = false;
 
-        function formatTime(ms) {
-            let m = Math.floor(ms / 60000);
-            let s = Math.floor((ms % 60000) / 1000);
-            let c = Math.floor((ms % 1000) / 10);
-            return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0');
-        }
+        function formatTime(ms) { let m = Math.floor(ms / 60000),
+                s = Math.floor((ms % 60000) / 1000),
+                c = Math.floor((ms % 1000) / 10); return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') +
+                '.' + String(c).padStart(2, '0'); }
 
-        function updateDisplay() {
-            elapsed = Date.now() - startTime;
-            document.getElementById('display').textContent = formatTime(elapsed);
-        }
+        function updateDisplay() { document.getElementById('display').textContent = formatTime(Date.now() - startTime); }
 
         function startStop() {
-            if (!running) {
-                startTime = Date.now() - elapsed;
+            if (!running) { startTime = Date.now() - elapsed;
                 interval = setInterval(updateDisplay, 10);
                 running = true;
-                const btn = document.getElementById('startBtn');
-                btn.textContent = '⏸ Stop';
-                btn.style.background = '#aa3300';
-            } else {
-                clearInterval(interval);
+                document.getElementById('startBtn').textContent = '⏸ Stop';
+                document.getElementById('startBtn').style.background = '#aa3300'; } else { clearInterval(interval);
                 running = false;
-                const btn = document.getElementById('startBtn');
-                btn.textContent = '▶ Start';
-                btn.style.background = '#0055aa';
-            }
+                document.getElementById('startBtn').textContent = '▶ Start';
+                document.getElementById('startBtn').style.background = '#0055aa'; }
         }
 
-        function resetTimer() {
-            clearInterval(interval);
+        function resetTimer() { clearInterval(interval);
             running = false;
             elapsed = 0;
             document.getElementById('display').textContent = '00:00.00';
-            const btn = document.getElementById('startBtn');
-            btn.textContent = '▶ Start';
-            btn.style.background = '#0055aa';
-        }
+            document.getElementById('startBtn').textContent = '▶ Start';
+            document.getElementById('startBtn').style.background = '#0055aa'; }
 
         async function saveTimeWithDesc(boatKey, textareaId) {
             const personName = document.getElementById('personName').value.trim();
-            if (!personName) {
-                alert('Bitte Namen eingeben!');
-                return;
-            }
-            if (elapsed === 0 && !running) {
-                alert('Keine gestoppte Zeit!');
-                return;
-            }
-
-            const currentTimeStr = formatTime(running ? Date.now() - startTime : elapsed);
-            const description = document.getElementById(textareaId).value.trim();
-            const fullDescription = description || 'Keine Beschreibung';
-
-            const userPath = 'Navy-boote/users/' + personName.toLowerCase();
-            const boatRef = database.ref(userPath + '/boats/' + boatKey);
-
-            try {
-                const snapshot = await boatRef.once('value');
-                let entries = snapshot.val();
-                if (!entries || !Array.isArray(entries)) entries = [];
-
-                entries.push({
-                    time: currentTimeStr,
-                    desc: fullDescription,
-                    timestamp: Date.now()
-                });
-
-                await boatRef.set(entries);
-                await database.ref(userPath + '/lastUpdated').set(Date.now());
-
-                document.getElementById(textareaId).value = '';
-                document.getElementById('searchName').value = personName;
-                autoLoadPerson();
-                alert('✅ ' + currentTimeStr + ' für ' + personName + ' (' + boatKey + ') gespeichert!');
-            } catch (error) {
-                alert('Fehler: ' + error.message);
-            }
+            if (!personName) return alert('Bitte Namen eingeben!');
+            if (elapsed === 0 && !running) return alert('Keine gestoppte Zeit!');
+            const timeStr = formatTime(running ? Date.now() - startTime : elapsed);
+            const desc = document.getElementById(textareaId).value.trim();
+            const ref = database.ref('Navy-boote/users/' + personName.toLowerCase() + '/boats/' + boatKey);
+            const snap = await ref.once('value');
+            let arr = snap.val();
+            if (!arr || !Array.isArray(arr)) arr = [];
+            arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now() });
+            await ref.set(arr);
+            await database.ref('Navy-boote/users/' + personName.toLowerCase() + '/lastUpdated').set(Date.now());
+            document.getElementById(textareaId).value = '';
+            document.getElementById('searchName').value = personName;
+            autoLoadPerson();
+            alert('✅ ' + timeStr + ' gespeichert!');
         }
 
-        // Eintrag löschen (nur Admin)
-        window.deleteSingleEntry = async function(personNameLower, boatInternal, timestampToDelete) {
-            if (!isAdmin) {
-                alert('⛔ Nur der Admin (Colin) kann Einträge löschen!');
-                return;
-            }
-            if (!confirm('Diesen Zeit-Eintrag endgültig löschen?')) return;
-
-            try {
-                const boatRef = database.ref('Navy-boote/users/' + personNameLower + '/boats/' + boatInternal);
-                const snapshot = await boatRef.once('value');
-                let entries = snapshot.val();
-
-                if (entries && Array.isArray(entries)) {
-                    const newEntries = entries.filter(entry => entry.timestamp !== timestampToDelete);
-                    await boatRef.set(newEntries);
-                    await database.ref('Navy-boote/users/' + personNameLower + '/lastUpdated').set(Date.now());
-                    alert('Eintrag gelöscht.');
-                    autoLoadPerson();
-                    loadAllUsersSorted();
-                } else {
-                    alert('Eintrag nicht gefunden.');
-                }
-            } catch (e) {
-                alert('Fehler: ' + e.message);
-            }
+        window.deleteSingleEntry = async function(nl, bi, ts) {
+            if (!isAdmin) return alert('⛔ Nur Admin kann löschen!');
+            if (!confirm('Eintrag löschen?')) return;
+            const ref = database.ref('Navy-boote/users/' + nl + '/boats/' + bi);
+            const snap = await ref.once('value');
+            let arr = snap.val();
+            if (arr && Array.isArray(arr)) { await ref.set(arr.filter(e => e.timestamp !== ts));
+                await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now());
+                autoLoadPerson();
+                loadAllUsersSorted(); }
         };
 
-        let currentPersonListenerRef = null;
+        let currentListener = null;
 
         function autoLoadPerson() {
-            const rawName = document.getElementById('searchName').value.trim();
-            if (!rawName) {
-                document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben oder aus Liste wählen.</p>';
-                if (currentPersonListenerRef) currentPersonListenerRef.off();
-                return;
-            }
-            listenToPersonData(rawName.toLowerCase());
+            const raw = document.getElementById('searchName').value.trim();
+            if (!raw) { document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>'; if (
+                    currentListener) currentListener.off(); return; }
+            listenToPersonData(raw.toLowerCase());
         }
 
-        function listenToPersonData(personNameLower) {
-            if (currentPersonListenerRef) currentPersonListenerRef.off();
-            const personRef = database.ref('Navy-boote/users/' + personNameLower);
-            currentPersonListenerRef = personRef;
-
-            personRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                const container = document.getElementById('resultTable');
-                const displayName = personNameLower.charAt(0).toUpperCase() + personNameLower.slice(1);
-
-                if (!data || !data.boats) {
-                    container.innerHTML =
-                        '<div style="background:rgba(0,0,0,0.5); padding:15px;">⚓ ' + displayName +
-                        ' hat noch keine Zeiten.</div>';
-                    return;
-                }
-
-                const boatLabels = {
-                    "Predator": "⚡ U.S Navy Predator",
-                    "Dinghy": "🛶 Dinghy",
-                    "PatrolBoat": "🚢 Kurtz 31 Patrol Boat",
-                    "WeaponizedDinghy": "💥 Weaponized Dinghy"
-                };
-
-                let html = '<div class="table-wrapper"><h4>👤 ' + displayName + '</h4>';
-                html += '<table><thead><tr><th>Bootstyp</th><th>Zeit</th><th>Beschreibung</th>';
-                if (isAdmin) html += '<th>Aktion</th>';
-                html += '</tr></thead><tbody>';
-
-                for (const [boatInternal, boatNice] of Object.entries(boatLabels)) {
-                    const entries = data.boats[boatInternal];
-                    if (entries && Array.isArray(entries) && entries.length > 0) {
-                        const sorted = [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                        sorted.forEach((entry, idx) => {
-                            const timeVal = entry.time || '??:??.??';
-                            const descVal = entry.desc || 'Keine Beschreibung';
-                            const ts = entry.timestamp || Date.now();
-
-                            html += '<tr>';
-                            html += '<td>' + (idx === 0 ? boatNice : '↳ ' + boatNice) + '</td>';
-                            html += '<td><span class="badge-time">⏱️ ' + timeVal + '</span></td>';
-                            html += '<td><div class="entry-description">📝 ' + esc(descVal) + '</div></td>';
-                            if (isAdmin) {
-                                html += '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' +
-                                    personNameLower + '\',\'' + boatInternal + '\',' + ts +
-                                    ')" title="Eintrag löschen">🗑️</button></td>';
-                            }
-                            html += '</tr>';
+        function listenToPersonData(nl) {
+            if (currentListener) currentListener.off();
+            currentListener = database.ref('Navy-boote/users/' + nl);
+            currentListener.on('value', snap => {
+                const data = snap.val();
+                const c = document.getElementById('resultTable');
+                const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
+                if (!data || !data.boats) { c.innerHTML = '<div style="padding:15px;">⚓ ' + dn +
+                        ' hat noch keine Zeiten.</div>'; return; }
+                const bl = { "Predator": "⚡ Predator", "Dinghy": "🛶 Dinghy", "PatrolBoat": "🚢 Kurtz 31",
+                    "WeaponizedDinghy": "💥 Weaponized" };
+                let h = '<div class="table-wrapper"><h4>👤 ' + dn +
+                    '</h4><table><thead><tr><th>Boot</th><th>Zeit</th><th>Beschreibung</th>' + (isAdmin ? '<th>Aktion</th>' :
+                        '') + '</tr></thead><tbody>';
+                for (const [bi, bn] of Object.entries(bl)) {
+                    const entries = data.boats[bi];
+                    if (entries && Array.isArray(entries) && entries.length) {
+                        [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => {
+                            h += '<tr><td>' + (i === 0 ? bn : '↳ ' + bn) +
+                                '</td><td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') +
+                                '</span></td><td>' + esc(e.desc || '-') + '</td>';
+                            if (isAdmin) h +=
+                                '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' + nl + '\',\'' + bi +
+                                '\',' + (e.timestamp || Date.now()) + ')">🗑️</button></td>';
+                            h += '</tr>';
                         });
-                    } else {
-                        const colspanVal = isAdmin ? 3 : 2;
-                        html += '<tr><td>' + boatNice + '</td><td colspan="' + colspanVal +
-                            '">— keine Zeiten —</td>';
-                        if (isAdmin) html += '<td></td>';
-                        html += '</tr>';
-                    }
+                    } else h += '<tr><td>' + bn + '</td><td colspan="' + (isAdmin ? 3 : 2) + '">— keine —</td>' + (isAdmin ?
+                        '<td></td>' : '') + '</tr>';
                 }
-
-                html += '</tbody></table>';
-                if (isAdmin) {
-                    html +=
-                        '<p style="margin-top:10px; font-size:11px; color:#ffaa66;">🔐 Admin: Klick auf 🗑️ löscht nur diesen Eintrag.</p>';
-                }
-                html += '</div>';
-                container.innerHTML = html;
+                h += '</tbody></table></div>';
+                c.innerHTML = h;
             });
         }
 
-        function esc(str) {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        }
+        function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''; }
 
         function loadAllUsersSorted() {
-            const usersRef = database.ref('Navy-boote/users');
-            usersRef.on('value', (snapshot) => {
-                const users = snapshot.val();
-                const listDiv = document.getElementById('allNamesList');
-                listDiv.innerHTML = '';
-
-                if (users) {
-                    const userArray = Object.keys(users).map(nameKey => ({
-                        name: nameKey,
-                        lastUpdated: users[nameKey].lastUpdated || 0
-                    }));
-                    userArray.sort((a, b) => b.lastUpdated - a.lastUpdated);
-
-                    userArray.forEach(user => {
-                        const displayName = user.name.charAt(0).toUpperCase() + user.name.slice(1);
+            database.ref('Navy-boote/users').on('value', snap => {
+                const users = snap.val();
+                const d = document.getElementById('allNamesList');
+                d.innerHTML = '';
+                if (users) { Object.keys(users).map(k => ({ name: k, lu: users[k].lastUpdated || 0 })).sort((a, b) => b.lu -
+                        a.lu).forEach(u => { const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1);
                         const btn = document.createElement('div');
                         btn.className = 'name-tag';
-                        btn.textContent = displayName;
-                        btn.onclick = () => {
-                            document.getElementById('personName').value = displayName;
-                            document.getElementById('searchName').value = displayName;
-                            autoLoadPerson();
-                        };
-                        listDiv.appendChild(btn);
-                    });
-                } else {
-                    listDiv.innerHTML = '<span style="color:#aaa;">⚓ Keine Personen erfasst.</span>';
-                }
+                        btn.textContent = dn;
+                        btn.onclick = () => { document.getElementById('personName').value = dn;
+                            document.getElementById('searchName').value = dn;
+                            autoLoadPerson(); };
+                        d.appendChild(btn); }); } else d.innerHTML = '<span>⚓ Keine Personen.</span>';
             });
         }
 
@@ -2068,7 +1874,6 @@
             const now = new Date();
             const dateStr = now.toISOString().split('T')[0];
             const timeStr = now.toTimeString().slice(0, 5);
-
             if (editData) {
                 editingConfiscationId = editData.id;
                 document.getElementById('modalAkteName').value = editData.akteName || '';
@@ -2110,10 +1915,8 @@
             }
         }
 
-        function closeConfiscationModal() {
-            document.getElementById('confiscationModalOverlay').classList.remove('show');
-            editingConfiscationId = null;
-        }
+        function closeConfiscationModal() { document.getElementById('confiscationModalOverlay').classList.remove('show');
+            editingConfiscationId = null; }
 
         async function saveConfiscation() {
             const data = {
@@ -2135,165 +1938,99 @@
                 notes: document.getElementById('modalNotes').value.trim(),
                 timestamp: Date.now()
             };
-
-            if (!data.akteName) { alert('Bitte Name der Akte eingeben!'); return; }
-            if (!data.type) { alert('Bitte Typ auswählen (Zivil/Familie)!'); return; }
-            if (!data.takenBy) { alert('Bitte "Abgenommen von" auswählen!'); return; }
-            if (!data.givenTo) { alert('Bitte "Abgegeben an" auswählen!'); return; }
-
+            if (!data.akteName) return alert('Name der Akte eingeben!');
+            if (!data.type) return alert('Typ auswählen!');
+            if (!data.takenBy) return alert('Abgenommen von auswählen!');
+            if (!data.givenTo) return alert('Abgegeben an auswählen!');
             try {
                 const ref = database.ref('Navy-boote/confiscations');
-                if (editingConfiscationId) {
-                    await ref.child(editingConfiscationId).update(data);
-                    showToast('✅ Beschlagnahmung aktualisiert!', '#2ecc40');
-                } else {
-                    await ref.push(data);
-                    showToast('✅ Beschlagnahmung gespeichert!', '#2ecc40');
-                }
+                if (editingConfiscationId) { await ref.child(editingConfiscationId).update(data);
+                    showToast('✅ Aktualisiert!', '#2ecc40'); } else { await ref.push(data);
+                    showToast('✅ Gespeichert!', '#2ecc40'); }
                 closeConfiscationModal();
                 loadConfiscations();
                 loadHomepageStats();
-            } catch (e) {
-                alert('Fehler beim Speichern: ' + e.message);
-            }
+            } catch (e) { alert('Fehler: ' + e.message); }
         }
 
         function loadConfiscations() {
             database.ref('Navy-boote/confiscations').on('value', snap => {
                 const data = snap.val();
                 const cardsDiv = document.getElementById('confiscationCards');
-                let totalGreen = 0;
-                let totalBlack = 0;
-                let totalItemsSum = 0;
+                let tg = 0,
+                    tb = 0,
+                    tiTotal = 0;
                 const entries = [];
-
-                if (data) {
-                    Object.entries(data).forEach(([id, entry]) => {
-                        entries.push({ id, ...entry });
-                        totalGreen += parseFloat(entry.greenMoney || 0);
-                        totalBlack += parseFloat(entry.blackMoney || 0);
-                        totalItemsSum += parseInt(entry.itemsTotal || 0);
-                    });
-                }
-
+                if (data) Object.entries(data).forEach(([id, e]) => { entries.push({ id, ...e });
+                    tg += parseFloat(e.greenMoney || 0);
+                    tb += parseFloat(e.blackMoney || 0);
+                    tiTotal += parseInt(e.itemsTotal || 0); });
                 entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
                 if (entries.length === 0) {
                     cardsDiv.innerHTML =
-                        '<p style="color:#aaa; grid-column:1/-1;">Keine Beschlagnahmungen vorhanden.</p>';
+                        '<p style="color:#aaa;grid-column:1/-1;">Keine Beschlagnahmungen vorhanden.</p>';
                 } else {
                     cardsDiv.innerHTML = entries.map(e => {
-                        let html = '<div class="confiscation-card">';
-
-                        // Header
-                        html += '<div class="card-header">';
-                        html += '<h4>📋 ' + esc(e.akteName || 'Unbekannt') + '</h4>';
-                        const typeClass = (e.type || '').toLowerCase();
-                        html += '<span class="card-type ' + typeClass + '">' + esc(e.type || '-');
-                        if (e.familyName) html += ' | ' + esc(e.familyName);
-                        html += '</span>';
-                        html += '</div>';
-
-                        // Details
-                        html += '<div class="card-row"><span class="card-label">👮 Abg. von:</span>';
-                        html += '<span class="card-value">' + esc(e.takenBy || '-');
-                        if (e.takenByName) html += ' (' + esc(e.takenByName) + ')';
-                        html += '</span></div>';
-
-                        html += '<div class="card-row"><span class="card-label">📤 Abg. an:</span>';
-                        html += '<span class="card-value">' + esc(e.givenTo || '-');
-                        if (e.givenToName) html += ' (' + esc(e.givenToName) + ')';
-                        html += '</span></div>';
-
-                        html += '<div class="card-row"><span class="card-label">📅 Datum:</span>';
-                        html += '<span class="card-value">' + esc(e.date || '-') + ' ' + esc(e.time || '') +
+                        let h = '<div class="confiscation-card">';
+                        h += '<div class="card-header"><h4>📋 ' + esc(e.akteName || 'Unbekannt') + '</h4>';
+                        h += '<span class="card-type ' + (e.type || '').toLowerCase() + '">' + esc(e.type || '-') +
+                            (e.familyName ? ' | ' + esc(e.familyName) : '') + '</span></div>';
+                        // 👮 Abgenommen von + Name
+                        h += '<div class="card-row"><span class="card-label">👮 Abg. von:</span><span class="card-value">' +
+                            esc(e.takenBy || '-') + (e.takenByName ? ' (' + esc(e.takenByName) + ')' : '') +
                             '</span></div>';
-
+                        // 📅 Datum
+                        h += '<div class="card-row"><span class="card-label">📅 Datum:</span><span class="card-value">' +
+                            esc(e.date || '-') + ' ' + esc(e.time || '') + '</span></div>';
+                        // 📤 Abgegeben an + Name
+                        h += '<div class="card-row"><span class="card-label">📤 Abg. an:</span><span class="card-value">' +
+                            esc(e.givenTo || '-') + (e.givenToName ? ' (' + esc(e.givenToName) + ')' : '') +
+                            '</span></div>';
+                        // 📅 Abgabe
                         if (e.givenDate) {
-                            html += '<div class="card-row"><span class="card-label">📅 Abgabe:</span>';
-                            html += '<span class="card-value">' + esc(e.givenDate) + ' ' + esc(e.givenTime || '') +
-                                '</span></div>';
+                            h +=
+                                '<div class="card-row"><span class="card-label">📅 Abgabe:</span><span class="card-value">' +
+                                esc(e.givenDate) + ' ' + esc(e.givenTime || '') + '</span></div>';
                         }
-
                         // Geld + Menge
-                        html += '<div class="money-values">';
-                        html += '<span class="money-green">🟢 ' + (e.greenMoney || 0).toFixed(0) + '€</span>';
-                        html += '<span class="money-black">⚫ ' + (e.blackMoney || 0).toFixed(0) + '€</span>';
-                        html += '<span style="color:#64b4ff;">📦 ' + (e.itemsTotal || 0) + ' Items</span>';
-                        html += '</div>';
-
+                        h += '<div class="money-values"><span class="money-green">🟢 ' + (e.greenMoney || 0).toFixed(0) +
+                            '€</span><span class="money-black">⚫ ' + (e.blackMoney || 0).toFixed(0) +
+                            '€</span><span style="color:#64b4ff;">📦 ' + (e.itemsTotal || 0) + ' Items</span></div>';
                         // Gegenstände
-                        if (e.items) {
-                            html += '<div class="card-items">' + esc(e.items) + '</div>';
-                        }
-
+                        if (e.items) h += '<div class="card-items">' + esc(e.items) + '</div>';
                         // Notizen
-                        if (e.notes) {
-                            html += '<div class="card-notes">📝 ' + esc(e.notes) + '</div>';
-                        }
-
-                        // Aktionen (nur Admin)
-                        if (isAdmin) {
-                            html += '<div class="card-actions">';
-                            html += '<button class="btn-card-action" onclick="editConfiscation(\'' + e.id +
-                                '\')">✏️ Bearbeiten</button>';
-                            html += '<button class="btn-card-action btn-danger" onclick="deleteConfiscation(\'' + e
-                                .id + '\')">🗑️ Löschen</button>';
-                            html += '</div>';
-                        }
-
-                        html += '</div>';
-                        return html;
+                        if (e.notes) h += '<div class="card-notes">📝 ' + esc(e.notes) + '</div>';
+                        // Aktionen
+                        if (isAdmin) h +=
+                            '<div class="card-actions"><button class="btn-card-action" onclick="editConfiscation(\'' + e
+                            .id + '\')">✏️ Bearbeiten</button><button class="btn-card-action btn-danger" onclick="deleteConfiscation(\'' +
+                            e.id + '\')">🗑️ Löschen</button></div>';
+                        h += '</div>';
+                        return h;
                     }).join('');
                 }
-
-                document.getElementById('totalGreenDisplay').textContent = totalGreen.toFixed(0) + ' €';
-                document.getElementById('totalBlackDisplay').textContent = totalBlack.toFixed(0) + ' €';
-                document.getElementById('totalItemsDisplay').textContent = totalItemsSum;
+                document.getElementById('totalGreenDisplay').textContent = tg.toFixed(0) + ' €';
+                document.getElementById('totalBlackDisplay').textContent = tb.toFixed(0) + ' €';
+                document.getElementById('totalItemsDisplay').textContent = tiTotal;
             });
         }
 
-        async function deleteConfiscation(id) {
-            if (!isAdmin) {
-                alert('⛔ Nur der Admin (Colin) kann Beschlagnahmungen löschen!');
-                return;
-            }
-            if (!confirm('Diese Beschlagnahmung endgültig löschen?')) return;
-            try {
-                await database.ref('Navy-boote/confiscations/' + id).remove();
-                showToast('🗑️ Beschlagnahmung gelöscht.', '#ff4444');
-                loadConfiscations();
-                loadHomepageStats();
-            } catch (err) {
-                alert('Fehler: ' + err.message);
-            }
-        }
-
-        async function editConfiscation(id) {
-            if (!isAdmin) {
-                alert('⛔ Nur der Admin (Colin) kann Beschlagnahmungen bearbeiten!');
-                return;
-            }
-            try {
-                const snap = await database.ref('Navy-boote/confiscations/' + id).once('value');
-                const data = snap.val();
-                if (data) openNewConfiscationModal({ id, ...data });
-            } catch (err) {
-                alert('Fehler: ' + err.message);
-            }
-        }
-
-        // Modal schließen bei Klick außerhalb
-        document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) closeConfiscationModal();
-        });
+        async function deleteConfiscation(id) { if (!isAdmin) return alert('⛔ Nur Admin!'); if (!confirm('Löschen?')) return;
+            await database.ref('Navy-boote/confiscations/' + id).remove();
+            showToast('🗑️ Gelöscht.', '#ff4444');
+            loadConfiscations();
+            loadHomepageStats(); }
+        async function editConfiscation(id) { if (!isAdmin) return alert('⛔ Nur Admin!'); const snap = await database.ref(
+                'Navy-boote/confiscations/' + id).once('value');
+            const data = snap.val(); if (data) openNewConfiscationModal({ id, ...data }); }
+        document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) { if (e.target === this)
+                closeConfiscationModal(); });
 
         // ==================== FAMILIEN ====================
         let editingFamilyId = null;
 
         function openFamilyModal(editData = null) {
             document.getElementById('familyModalOverlay').classList.add('show');
-
             if (editData) {
                 editingFamilyId = editData.id;
                 document.getElementById('familyName').value = editData.name || '';
@@ -2323,41 +2060,29 @@
                 document.getElementById('familyNotes').value = '';
                 document.getElementById('familyModalTitle').textContent = '👨‍👩‍👧‍👦 Neue Familie';
             }
-
             updateFamilyPreviews();
         }
 
-        function closeFamilyModal() {
-            document.getElementById('familyModalOverlay').classList.remove('show');
-            editingFamilyId = null;
-        }
+        function closeFamilyModal() { document.getElementById('familyModalOverlay').classList.remove('show');
+            editingFamilyId = null; }
 
         function updateFamilyPreviews() {
             const vUrl = document.getElementById('vehicleImageUrl').value.trim();
-            document.getElementById('vehicleImagePreview').innerHTML = vUrl ?
-                '<img src="' + vUrl + '" style="max-width:200px; border-radius:10px;">' : '';
-
+            document.getElementById('vehicleImagePreview').innerHTML = vUrl ? '<img src="' + vUrl +
+                '" style="max-width:200px;border-radius:10px;">' : '';
             const eUrl = document.getElementById('estateImageUrl').value.trim();
-            document.getElementById('estateImagePreview').innerHTML = eUrl ?
-                '<img src="' + eUrl + '" style="max-width:200px; border-radius:10px;">' : '';
-
+            document.getElementById('estateImagePreview').innerHTML = eUrl ? '<img src="' + eUrl +
+                '" style="max-width:200px;border-radius:10px;">' : '';
             const cUrls = document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim()).filter(s =>
-                s);
-            document.getElementById('clothingImagesPreview').innerHTML = cUrls.map(u =>
-                '<img src="' + u +
-                '" style="width:80px; height:60px; object-fit:cover; border-radius:8px; border:1px solid rgba(100,150,255,0.4);">'
-            ).join('');
+            s);
+            document.getElementById('clothingImagesPreview').innerHTML = cUrls.map(u => '<img src="' + u +
+                '" style="width:80px;height:60px;object-fit:cover;border-radius:8px;">').join('');
         }
 
         async function saveFamily() {
-            const name = document.getElementById('familyName').value.trim();
-            if (!name) {
-                alert('Bitte Familienname eingeben!');
-                return;
-            }
-
+            const name = document.getElementById('familyName').value.trim(); if (!name) return alert('Name eingeben!');
             const data = {
-                name: name,
+                name,
                 vehicleColor: document.getElementById('vehicleColor').value,
                 vehicleColorName: document.getElementById('vehicleColorName').value.trim(),
                 vehicleType: document.getElementById('vehicleType').value.trim(),
@@ -2366,162 +2091,81 @@
                 estateDescription: document.getElementById('estateDescription').value.trim(),
                 estateImage: document.getElementById('estateImageUrl').value.trim(),
                 clothingDescription: document.getElementById('clothingDescription').value.trim(),
-                clothingImages: document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim())
-                    .filter(s => s),
+                clothingImages: document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim()).filter(
+                    s => s),
                 notes: document.getElementById('familyNotes').value.trim(),
                 timestamp: Date.now()
             };
-
             try {
                 const ref = database.ref('Navy-boote/families');
-                if (editingFamilyId) {
-                    await ref.child(editingFamilyId).update(data);
-                    showToast('✅ Familie aktualisiert!', '#64b4ff');
-                } else {
-                    await ref.push(data);
-                    showToast('✅ Familie gespeichert!', '#64b4ff');
-                }
+                if (editingFamilyId) { await ref.child(editingFamilyId).update(data);
+                    showToast('✅ Aktualisiert!', '#64b4ff'); } else { await ref.push(data);
+                    showToast('✅ Gespeichert!', '#64b4ff'); }
                 closeFamilyModal();
                 loadFamilies();
                 loadHomepageStats();
-            } catch (e) {
-                alert('Fehler beim Speichern: ' + e.message);
-            }
+            } catch (e) { alert('Fehler: ' + e.message); }
         }
 
         function loadFamilies() {
             database.ref('Navy-boote/families').on('value', snap => {
                 const data = snap.val();
                 const grid = document.getElementById('familiesGrid');
-
-                if (!data) {
-                    grid.innerHTML =
-                        '<p style="color:#aaa; grid-column:1/-1;">Keine Familien vorhanden.</p>';
-                    return;
-                }
-
-                const entries = Object.entries(data).map(([id, f]) => ({ id, ...f }));
-                entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
+                if (!data) { grid.innerHTML = '<p style="color:#aaa;grid-column:1/-1;">Keine Familien.</p>'; return; }
+                const entries = Object.entries(data).map(([id, f]) => ({ id, ...f })).sort((a, b) => (b.timestamp || 0) - (
+                    a.timestamp || 0));
                 grid.innerHTML = entries.map(f => {
-                    let html = '<div class="family-card">';
-
-                    // Header
-                    html += '<h4>👨‍👩‍👧‍👦 ' + esc(f.name || 'Unbekannt');
-                    html += '<span>';
-                    if (isAdmin) {
-                        html += '<button class="btn-small" onclick="editFamily(\'' + f.id +
-                            '\')" style="background:rgba(100,150,255,0.3); border-color:#64b4ff; color:#64b4ff;">✏️</button> ';
-                        html +=
-                            '<button class="btn-small btn-danger" onclick="deleteFamily(\'' + f.id +
-                            '\')">🗑️</button>';
-                    }
-                    html += '</span>';
-                    html += '</h4>';
-
-                    // Fahrzeug
+                    let h = '<div class="family-card"><h4>👨‍👩‍👧‍👦 ' + esc(f.name || '?') + '<span>' + (isAdmin ?
+                        '<button class="btn-small" onclick="editFamily(\'' + f.id +
+                        '\')" style="background:rgba(100,150,255,0.3);border-color:#64b4ff;color:#64b4ff;">✏️</button> <button class="btn-small btn-danger" onclick="deleteFamily(\'' +
+                        f.id + '\')">🗑️</button>' : '') + '</span></h4>';
                     if (f.vehicleType || f.vehicleColorName) {
-                        html += '<div class="family-section">';
-                        html += '<h5>🚗 Fahrzeug</h5>';
-                        html += '<p><span class="family-color-dot" style="background:' + (f.vehicleColor || '#888') +
-                            ';"></span>';
-                        html += esc(f.vehicleColorName || '') + ' ' + esc(f.vehicleType || '');
-                        if (f.vehiclePlate) html += ' (' + esc(f.vehiclePlate) + ')';
-                        html += '</p>';
-                        if (f.vehicleImage) {
-                            html += '<div class="family-images"><img src="' + f.vehicleImage +
-                                '" onclick="window.open(\'' + f.vehicleImage + '\')"></div>';
-                        }
-                        html += '</div>';
+                        h +=
+                            '<div class="family-section"><h5>🚗 Fahrzeug</h5><p><span class="family-color-dot" style="background:' +
+                            (f.vehicleColor || '#888') + ';"></span>' + esc(f.vehicleColorName || '') + ' ' + esc(f
+                                .vehicleType || '') + (f.vehiclePlate ? ' (' + esc(f.vehiclePlate) + ')' : '') + '</p>' +
+                            (f.vehicleImage ? '<div class="family-images"><img src="' + f.vehicleImage +
+                                '" onclick="window.open(\'' + f.vehicleImage + '\')"></div>' : '') + '</div>';
                     }
-
-                    // Anwesen
                     if (f.estateDescription || f.estateImage) {
-                        html += '<div class="family-section">';
-                        html += '<h5>🏠 Anwesen</h5>';
-                        html += '<p>' + esc(f.estateDescription || '') + '</p>';
-                        if (f.estateImage) {
-                            html += '<div class="family-images"><img src="' + f.estateImage +
-                                '" onclick="window.open(\'' + f.estateImage + '\')"></div>';
-                        }
-                        html += '</div>';
+                        h += '<div class="family-section"><h5>🏠 Anwesen</h5><p>' + esc(f.estateDescription || '') + '</p>' +
+                            (f.estateImage ? '<div class="family-images"><img src="' + f.estateImage +
+                                '" onclick="window.open(\'' + f.estateImage + '\')"></div>' : '') + '</div>';
                     }
-
-                    // Kleidung
                     if (f.clothingDescription || (f.clothingImages && f.clothingImages.length)) {
-                        html += '<div class="family-section">';
-                        html += '<h5>👔 Kleidung</h5>';
-                        html += '<p>' + esc(f.clothingDescription || '') + '</p>';
-                        if (f.clothingImages && f.clothingImages.length) {
-                            html += '<div class="family-images">';
-                            f.clothingImages.forEach(u => {
-                                html += '<img src="' + u + '" onclick="window.open(\'' + u + '\')">';
-                            });
-                            html += '</div>';
-                        }
-                        html += '</div>';
+                        h += '<div class="family-section"><h5>👔 Kleidung</h5><p>' + esc(f.clothingDescription || '') +
+                            '</p>' + (f.clothingImages && f.clothingImages.length ? '<div class="family-images">' + f
+                                .clothingImages.map(u => '<img src="' + u + '" onclick="window.open(\'' + u + '\')">')
+                                .join('') + '</div>' : '') + '</div>';
                     }
-
-                    // Notizen
-                    if (f.notes) {
-                        html += '<div class="family-section">';
-                        html += '<h5>📋 Notizen</h5>';
-                        html += '<p style="white-space:pre-wrap;">' + esc(f.notes) + '</p>';
-                        html += '</div>';
-                    }
-
-                    html += '</div>';
-                    return html;
+                    if (f.notes) h += '<div class="family-section"><h5>📋 Notizen</h5><p style="white-space:pre-wrap;">' +
+                        esc(f.notes) + '</p></div>';
+                    h += '</div>';
+                    return h;
                 }).join('');
             });
         }
 
-        async function deleteFamily(id) {
-            if (!isAdmin) {
-                alert('⛔ Nur der Admin (Colin) kann Familien löschen!');
-                return;
-            }
-            if (!confirm('Diese Familie endgültig löschen?')) return;
-            try {
-                await database.ref('Navy-boote/families/' + id).remove();
-                showToast('🗑️ Familie gelöscht.', '#ff4444');
-                loadFamilies();
-                loadHomepageStats();
-            } catch (err) {
-                alert('Fehler: ' + err.message);
-            }
-        }
-
-        async function editFamily(id) {
-            if (!isAdmin) {
-                alert('⛔ Nur der Admin (Colin) kann Familien bearbeiten!');
-                return;
-            }
-            try {
-                const snap = await database.ref('Navy-boote/families/' + id).once('value');
-                const data = snap.val();
-                if (data) openFamilyModal({ id, ...data });
-            } catch (err) {
-                alert('Fehler: ' + err.message);
-            }
-        }
-
-        // Modal schließen bei Klick außerhalb
-        document.getElementById('familyModalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) closeFamilyModal();
-        });
+        async function deleteFamily(id) { if (!isAdmin) return alert('⛔ Nur Admin!'); if (!confirm('Löschen?')) return;
+            await database.ref('Navy-boote/families/' + id).remove();
+            showToast('🗑️ Gelöscht.', '#ff4444');
+            loadFamilies();
+            loadHomepageStats(); }
+        async function editFamily(id) { if (!isAdmin) return alert('⛔ Nur Admin!'); const snap = await database.ref(
+                'Navy-boote/families/' + id).once('value');
+            const data = snap.val(); if (data) openFamilyModal({ id, ...data }); }
+        document.getElementById('familyModalOverlay').addEventListener('click', function(e) { if (e.target === this)
+                closeFamilyModal(); });
 
         // ==================== INIT ====================
         async function init() {
             await ensureAdminExists();
             loadAllUsersSorted();
             document.getElementById('searchName').addEventListener('input', autoLoadPerson);
-
             const now = new Date();
             document.getElementById('modalDate').value = now.toISOString().split('T')[0];
             document.getElementById('modalTime').value = now.toTimeString().slice(0, 5);
         }
-
         init();
     </script>
 </body>
