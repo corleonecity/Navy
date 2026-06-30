@@ -204,8 +204,8 @@
                     <div class="stat-card"><div class="stat-number" id="statPersons">0</div><div class="stat-label">Personen</div></div>
                     <div class="stat-card"><div class="stat-number" id="statFamilies">0</div><div class="stat-label">Familien</div></div>
                     <div class="stat-card"><div class="stat-number" id="statConfiscations">0</div><div class="stat-label">Beschlagnahmungen</div></div>
-                    <div class="stat-card"><div class="stat-number" id="statTotalGreen">0€</div><div class="stat-label">Grüngeld</div></div>
-                    <div class="stat-card"><div class="stat-number" id="statTotalBlack">0€</div><div class="stat-label">Schwarzgeld</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statTotalGreen">0 €</div><div class="stat-label">Grüngeld</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statTotalBlack">0 €</div><div class="stat-label">Schwarzgeld</div></div>
                 </div>
             </div>
         </div>
@@ -296,7 +296,10 @@
             <div class="modal-field"><label>📤 Abgegeben an</label><div class="dropdown-with-text"><select id="modalGivenTo"><option value="">Bitte wählen...</option><option value="Asservatenkammer">Asservatenkammer</option><option value="SEAL">SEAL</option><option value="USA">USA</option><option value="PD">PD</option><option value="DOJ">DOJ</option><option value="FIB">FIB</option></select><input type="text" id="modalGivenToName" placeholder="Name der Person"></div></div>
             <div class="modal-field" style="flex:0.8;min-width:200px;"><label>📅 Abgabe Datum & Uhrzeit</label><div style="display:flex;gap:6px;"><input type="date" id="modalGivenDate"><input type="time" id="modalGivenTime"></div></div>
         </div>
-        <div class="modal-row"><div class="modal-field"><label>🟢 Grüngeld</label><input type="number" id="modalGreenMoney" value="0" min="0" step="0.01"></div><div class="modal-field"><label>⚫ Schwarzgeld</label><input type="number" id="modalBlackMoney" value="0" min="0" step="0.01"></div></div>
+        <div class="modal-row">
+            <div class="modal-field"><label>🟢 Grüngeld (€)</label><input type="text" id="modalGreenMoney" value="0" placeholder="0" oninput="formatMoneyInput(this)"></div>
+            <div class="modal-field"><label>⚫ Schwarzgeld (€)</label><input type="text" id="modalBlackMoney" value="0" placeholder="0" oninput="formatMoneyInput(this)"></div>
+        </div>
         <div class="modal-row"><div class="modal-field" style="max-width:200px;"><label>🔢 Gesamtmenge</label><input type="number" id="modalItemsTotal" value="0" min="0"></div></div>
         <div class="modal-row"><div class="modal-field"><label>📦 Abgenommene Gegenstände</label><textarea id="modalItems" rows="3" placeholder="z.B.: 5x Waffenteile"></textarea></div></div>
         <div class="modal-row"><div class="modal-field"><label>📋 Notizen</label><textarea id="modalNotes" rows="2"></textarea></div></div>
@@ -334,6 +337,33 @@ let currentUser = null;
 let isAdmin = false;
 const PRICE_PER_CHECK = 5000;
 
+// ==================== HILFSFUNKTIONEN ====================
+function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''; }
+
+function formatNumber(n) {
+    if (n === null || n === undefined || isNaN(n)) return '0';
+    return Number(n).toLocaleString('de-DE');
+}
+
+function formatMoneyInput(input) {
+    let val = input.value.replace(/\./g, '').replace(/,/g, '.');
+    if (val === '' || isNaN(val)) { input.dataset.raw = '0'; return; }
+    input.dataset.raw = val;
+    const num = parseFloat(val);
+    input.value = formatNumber(num);
+}
+
+function getRawMoneyValue(input) {
+    return parseFloat(input.dataset.raw || input.value.replace(/\./g, '').replace(/,/g, '.')) || 0;
+}
+
+function showToast(msg, color) {
+    const el = document.createElement('div');
+    el.style.cssText = `position:fixed;bottom:15px;right:15px;background:${color};color:#000;padding:8px 18px;border-radius:20px;font-size:13px;z-index:9999;font-weight:bold;`;
+    el.innerText = msg; document.body.appendChild(el); setTimeout(() => el.remove(), 2500);
+}
+
+// ==================== AUTH ====================
 async function ensureAdminExists() {
     const snap = await database.ref('Navy-boote/users_auth/colin').once('value');
     if (!snap.val()) await database.ref('Navy-boote/users_auth/colin').set({ password: '22122009', isAdmin: true, created: Date.now() });
@@ -417,11 +447,6 @@ async function adminDeletePerson() {
     await database.ref('Navy-boote/users/' + n.toLowerCase()).remove(); showToast('Gelöscht.', '#ff4444');
     document.getElementById('adminDeletePerson').value = ''; loadAllUsersSorted(); autoLoadPerson();
 }
-function showToast(msg, color) {
-    const el = document.createElement('div');
-    el.style.cssText = `position:fixed;bottom:15px;right:15px;background:${color};color:#000;padding:8px 18px;border-radius:20px;font-size:13px;z-index:9999;font-weight:bold;`;
-    el.innerText = msg; document.body.appendChild(el); setTimeout(() => el.remove(), 2500);
-}
 
 function switchTab(name) {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -447,145 +472,56 @@ function loadHomepageStats() {
         const d = s.val(); let c = 0, tg = 0, tb = 0;
         if (d) { Object.keys(d).forEach(k => { c++; tg += parseFloat(d[k].greenMoney || 0); tb += parseFloat(d[k].blackMoney || 0); }); }
         document.getElementById('statConfiscations').textContent = c;
-        document.getElementById('statTotalGreen').textContent = tg.toFixed(0) + '€';
-        document.getElementById('statTotalBlack').textContent = tb.toFixed(0) + '€';
+        document.getElementById('statTotalGreen').textContent = formatNumber(tg) + ' €';
+        document.getElementById('statTotalBlack').textContent = formatNumber(tb) + ' €';
     });
 }
 
-// ==================== STOPPUHR (KORRIGIERT) ====================
-let startTime = 0;
-let elapsed = 0;
-let interval = null;
-let running = false;
-
-function formatTime(ms) {
-    let m = Math.floor(ms / 60000);
-    let s = Math.floor((ms % 60000) / 1000);
-    let c = Math.floor((ms % 1000) / 10);
-    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0');
-}
-
-function updateDisplay() {
-    const now = Date.now();
-    elapsed = now - startTime;
-    document.getElementById('display').textContent = formatTime(elapsed);
-}
-
+// ==================== STOPPUHR ====================
+let startTime = 0, elapsed = 0, interval = null, running = false;
+function formatTime(ms) { let m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000), c = Math.floor((ms % 1000) / 10); return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0'); }
+function updateDisplay() { elapsed = Date.now() - startTime; document.getElementById('display').textContent = formatTime(elapsed); }
 function startStop() {
-    if (!running) {
-        // Starten oder Fortsetzen
-        startTime = Date.now() - elapsed;
-        interval = setInterval(updateDisplay, 10);
-        running = true;
-        const btn = document.getElementById('startBtn');
-        btn.textContent = '⏸ Stop';
-        btn.style.background = '#aa3300';
-    } else {
-        // Pausieren
-        clearInterval(interval);
-        running = false;
-        const btn = document.getElementById('startBtn');
-        btn.textContent = '▶ Start';
-        btn.style.background = '#0055aa';
-    }
+    if (!running) { startTime = Date.now() - elapsed; interval = setInterval(updateDisplay, 10); running = true; document.getElementById('startBtn').textContent = '⏸ Stop'; document.getElementById('startBtn').style.background = '#aa3300'; }
+    else { clearInterval(interval); running = false; document.getElementById('startBtn').textContent = '▶ Start'; document.getElementById('startBtn').style.background = '#0055aa'; }
 }
-
-function resetTimer() {
-    clearInterval(interval);
-    running = false;
-    elapsed = 0;
-    startTime = 0;
-    document.getElementById('display').textContent = '00:00.00';
-    const btn = document.getElementById('startBtn');
-    btn.textContent = '▶ Start';
-    btn.style.background = '#0055aa';
-}
-
+function resetTimer() { clearInterval(interval); running = false; elapsed = 0; startTime = 0; document.getElementById('display').textContent = '00:00.00'; document.getElementById('startBtn').textContent = '▶ Start'; document.getElementById('startBtn').style.background = '#0055aa'; }
 async function saveTimeWithDesc(boatKey, taId) {
-    const name = document.getElementById('personName').value.trim();
-    if (!name) return alert('Name eingeben!');
-
-    // Aktuelle Zeit verwenden (auch wenn pausiert)
+    const name = document.getElementById('personName').value.trim(); if (!name) return alert('Name eingeben!');
     const currentElapsed = running ? (Date.now() - startTime) : elapsed;
     if (currentElapsed === 0) return alert('Keine Zeit gestoppt!');
-
     const timeStr = formatTime(currentElapsed);
     const desc = document.getElementById(taId).value.trim();
     const ref = database.ref('Navy-boote/users/' + name.toLowerCase() + '/boats/' + boatKey);
-    const snap = await ref.once('value');
-    let arr = snap.val();
-    if (!arr || !Array.isArray(arr)) arr = [];
-    arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now() });
-    await ref.set(arr);
+    const snap = await ref.once('value'); let arr = snap.val(); if (!arr || !Array.isArray(arr)) arr = [];
+    arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now() }); await ref.set(arr);
     await database.ref('Navy-boote/users/' + name.toLowerCase() + '/lastUpdated').set(Date.now());
-    document.getElementById(taId).value = '';
-    document.getElementById('searchName').value = name;
-    autoLoadPerson();
-    alert('✅ ' + timeStr + ' gespeichert!');
+    document.getElementById(taId).value = ''; document.getElementById('searchName').value = name; autoLoadPerson(); alert('✅ ' + timeStr + ' gespeichert!');
 }
-
-window.deleteSingleEntry = async function(nl, bi, ts) {
-    if (!isAdmin) return alert('Nur Admin!');
-    if (!confirm('Löschen?')) return;
-    const ref = database.ref('Navy-boote/users/' + nl + '/boats/' + bi);
-    const snap = await ref.once('value');
-    let arr = snap.val();
-    if (arr && Array.isArray(arr)) {
-        await ref.set(arr.filter(e => e.timestamp !== ts));
-        await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now());
-        autoLoadPerson();
-        loadAllUsersSorted();
-    }
-};
-
+window.deleteSingleEntry = async function(nl, bi, ts) { if (!isAdmin) return alert('Nur Admin!'); if (!confirm('Löschen?')) return; const ref = database.ref('Navy-boote/users/' + nl + '/boats/' + bi); const snap = await ref.once('value'); let arr = snap.val(); if (arr && Array.isArray(arr)) { await ref.set(arr.filter(e => e.timestamp !== ts)); await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now()); autoLoadPerson(); loadAllUsersSorted(); } };
 let currentListener = null;
-function autoLoadPerson() {
-    const raw = document.getElementById('searchName').value.trim();
-    if (!raw) { document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>'; if (currentListener) currentListener.off(); return; }
-    listenToPersonData(raw.toLowerCase());
-}
+function autoLoadPerson() { const raw = document.getElementById('searchName').value.trim(); if (!raw) { document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>'; if (currentListener) currentListener.off(); return; } listenToPersonData(raw.toLowerCase()); }
 function listenToPersonData(nl) {
-    if (currentListener) currentListener.off();
-    currentListener = database.ref('Navy-boote/users/' + nl);
+    if (currentListener) currentListener.off(); currentListener = database.ref('Navy-boote/users/' + nl);
     currentListener.on('value', snap => {
-        const data = snap.val();
-        const c = document.getElementById('resultTable');
-        const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
+        const data = snap.val(); const c = document.getElementById('resultTable'); const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
         if (!data || !data.boats) { c.innerHTML = '<div style="padding:15px;">⚓ ' + dn + ' hat noch keine Zeiten.</div>'; return; }
         const bl = { "Predator": "⚡ Predator", "Dinghy": "🛶 Dinghy", "PatrolBoat": "🚢 Kurtz 31", "WeaponizedDinghy": "💥 Weaponized" };
         let h = '<div class="table-wrapper"><h4>👤 ' + dn + '</h4><table><thead><tr><th>Boot</th><th>Zeit</th><th>Beschreibung</th>' + (isAdmin ? '<th>Aktion</th>' : '') + '</tr></thead><tbody>';
         for (const [bi, bn] of Object.entries(bl)) {
             const entries = data.boats[bi];
             if (entries && Array.isArray(entries) && entries.length) {
-                [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => {
-                    h += '<tr><td>' + (i === 0 ? bn : '↳ ' + bn) + '</td><td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td><td>' + esc(e.desc || '-') + '</td>';
-                    if (isAdmin) h += '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' + nl + '\',\'' + bi + '\',' + (e.timestamp || Date.now()) + ')">🗑️</button></td>';
-                    h += '</tr>';
-                });
-            } else {
-                h += '<tr><td>' + bn + '</td><td colspan="' + (isAdmin ? 3 : 2) + '">— keine —</td>' + (isAdmin ? '<td></td>' : '') + '</tr>';
-            }
+                [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => { h += '<tr><td>' + (i === 0 ? bn : '↳ ' + bn) + '</td><td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td><td>' + esc(e.desc || '-') + '</td>'; if (isAdmin) h += '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' + nl + '\',\'' + bi + '\',' + (e.timestamp || Date.now()) + ')">🗑️</button></td>'; h += '</tr>'; });
+            } else h += '<tr><td>' + bn + '</td><td colspan="' + (isAdmin ? 3 : 2) + '">— keine —</td>' + (isAdmin ? '<td></td>' : '') + '</tr>';
         }
-        h += '</tbody></table></div>';
-        c.innerHTML = h;
+        h += '</tbody></table></div>'; c.innerHTML = h;
     });
 }
-function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''; }
 function loadAllUsersSorted() {
     database.ref('Navy-boote/users').on('value', snap => {
-        const users = snap.val();
-        const d = document.getElementById('allNamesList');
-        d.innerHTML = '';
-        if (users) {
-            Object.keys(users).map(k => ({ name: k, lu: users[k].lastUpdated || 0 })).sort((a, b) => b.lu - a.lu).forEach(u => {
-                const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1);
-                const btn = document.createElement('div');
-                btn.className = 'name-tag';
-                btn.textContent = dn;
-                btn.onclick = () => { document.getElementById('personName').value = dn; document.getElementById('searchName').value = dn; autoLoadPerson(); };
-                d.appendChild(btn);
-            });
-        } else { d.innerHTML = '<span>⚓ Keine Personen.</span>'; }
+        const users = snap.val(); const d = document.getElementById('allNamesList'); d.innerHTML = '';
+        if (users) { Object.keys(users).map(k => ({ name: k, lu: users[k].lastUpdated || 0 })).sort((a, b) => b.lu - a.lu).forEach(u => { const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1); const btn = document.createElement('div'); btn.className = 'name-tag'; btn.textContent = dn; btn.onclick = () => { document.getElementById('personName').value = dn; document.getElementById('searchName').value = dn; autoLoadPerson(); }; d.appendChild(btn); }); }
+        else d.innerHTML = '<span>⚓ Keine Personen.</span>';
     });
 }
 
@@ -593,9 +529,7 @@ function loadAllUsersSorted() {
 let editingConfiscationId = null;
 function openNewConfiscationModal(editData = null) {
     document.getElementById('confiscationModalOverlay').classList.add('show');
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toTimeString().slice(0, 5);
+    const now = new Date(); const dateStr = now.toISOString().split('T')[0]; const timeStr = now.toTimeString().slice(0, 5);
     if (editData) {
         editingConfiscationId = editData.id;
         document.getElementById('modalAkteName').value = editData.akteName || '';
@@ -609,8 +543,10 @@ function openNewConfiscationModal(editData = null) {
         document.getElementById('modalGivenToName').value = editData.givenToName || '';
         document.getElementById('modalGivenDate').value = editData.givenDate || '';
         document.getElementById('modalGivenTime').value = editData.givenTime || '';
-        document.getElementById('modalGreenMoney').value = editData.greenMoney || 0;
-        document.getElementById('modalBlackMoney').value = editData.blackMoney || 0;
+        document.getElementById('modalGreenMoney').value = formatNumber(editData.greenMoney || 0);
+        document.getElementById('modalGreenMoney').dataset.raw = String(editData.greenMoney || 0);
+        document.getElementById('modalBlackMoney').value = formatNumber(editData.blackMoney || 0);
+        document.getElementById('modalBlackMoney').dataset.raw = String(editData.blackMoney || 0);
         document.getElementById('modalItemsTotal').value = editData.itemsTotal || 0;
         document.getElementById('modalItems').value = editData.items || '';
         document.getElementById('modalNotes').value = editData.notes || '';
@@ -628,8 +564,10 @@ function openNewConfiscationModal(editData = null) {
         document.getElementById('modalGivenToName').value = '';
         document.getElementById('modalGivenDate').value = '';
         document.getElementById('modalGivenTime').value = '';
-        document.getElementById('modalGreenMoney').value = 0;
-        document.getElementById('modalBlackMoney').value = 0;
+        document.getElementById('modalGreenMoney').value = '0';
+        document.getElementById('modalGreenMoney').dataset.raw = '0';
+        document.getElementById('modalBlackMoney').value = '0';
+        document.getElementById('modalBlackMoney').dataset.raw = '0';
         document.getElementById('modalItemsTotal').value = 0;
         document.getElementById('modalItems').value = '';
         document.getElementById('modalNotes').value = '';
@@ -650,8 +588,8 @@ async function saveConfiscation() {
         givenToName: document.getElementById('modalGivenToName').value.trim(),
         givenDate: document.getElementById('modalGivenDate').value,
         givenTime: document.getElementById('modalGivenTime').value,
-        greenMoney: parseFloat(document.getElementById('modalGreenMoney').value) || 0,
-        blackMoney: parseFloat(document.getElementById('modalBlackMoney').value) || 0,
+        greenMoney: getRawMoneyValue(document.getElementById('modalGreenMoney')),
+        blackMoney: getRawMoneyValue(document.getElementById('modalBlackMoney')),
         itemsTotal: parseInt(document.getElementById('modalItemsTotal').value) || 0,
         items: document.getElementById('modalItems').value.trim(),
         notes: document.getElementById('modalNotes').value.trim(),
@@ -665,10 +603,8 @@ async function saveConfiscation() {
 }
 function loadConfiscations() {
     database.ref('Navy-boote/confiscations').on('value', snap => {
-        const data = snap.val();
-        const cardsDiv = document.getElementById('confiscationCards');
-        let tg = 0, tb = 0, tiTotal = 0;
-        const entries = [];
+        const data = snap.val(); const cardsDiv = document.getElementById('confiscationCards');
+        let tg = 0, tb = 0, tiTotal = 0; const entries = [];
         if (data) Object.entries(data).forEach(([id, e]) => { entries.push({ id, ...e }); tg += parseFloat(e.greenMoney || 0); tb += parseFloat(e.blackMoney || 0); tiTotal += parseInt(e.itemsTotal || 0); });
         entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         cardsDiv.innerHTML = entries.length === 0 ? '<p style="color:#aaa;grid-column:1/-1;">Keine Beschlagnahmungen.</p>' : entries.map(e => `
@@ -678,14 +614,14 @@ function loadConfiscations() {
                 <div class="card-row"><span class="card-label">📅 Datum:</span><span class="card-value">${esc(e.date||'-')} ${esc(e.time||'')}</span></div>
                 <div class="card-row"><span class="card-label">📤 Abg. an:</span><span class="card-value">${esc(e.givenTo||'-')}${e.givenToName?' ('+esc(e.givenToName)+')':''}</span></div>
                 ${e.givenDate?`<div class="card-row"><span class="card-label">📅 Abgabe:</span><span class="card-value">${esc(e.givenDate)} ${esc(e.givenTime||'')}</span></div>`:''}
-                <div class="money-values"><span class="money-green">🟢 ${(e.greenMoney||0).toFixed(0)}€</span><span class="money-black">⚫ ${(e.blackMoney||0).toFixed(0)}€</span><span style="color:#64b4ff;">📦 ${e.itemsTotal||0} Items</span></div>
+                <div class="money-values"><span class="money-green">🟢 ${formatNumber(e.greenMoney||0)} €</span><span class="money-black">⚫ ${formatNumber(e.blackMoney||0)} €</span><span style="color:#64b4ff;">📦 ${e.itemsTotal||0} Items</span></div>
                 ${e.items?`<div class="card-items">${esc(e.items)}</div>`:''}
                 ${e.notes?`<div class="card-notes">📝 ${esc(e.notes)}</div>`:''}
                 ${isAdmin?`<div class="card-actions"><button class="btn-card-action" onclick="editConfiscation('${e.id}')">✏️ Bearbeiten</button><button class="btn-card-action btn-danger" onclick="deleteConfiscation('${e.id}')">🗑️ Löschen</button></div>`:''}
             </div>`).join('');
-        document.getElementById('totalGreenDisplay').textContent = tg.toFixed(0) + ' €';
-        document.getElementById('totalBlackDisplay').textContent = tb.toFixed(0) + ' €';
-        document.getElementById('totalItemsDisplay').textContent = tiTotal;
+        document.getElementById('totalGreenDisplay').textContent = formatNumber(tg) + ' €';
+        document.getElementById('totalBlackDisplay').textContent = formatNumber(tb) + ' €';
+        document.getElementById('totalItemsDisplay').textContent = formatNumber(tiTotal);
     });
 }
 async function deleteConfiscation(id) { if (!isAdmin) return alert('Nur Admin!'); if (!confirm('Löschen?')) return; await database.ref('Navy-boote/confiscations/' + id).remove(); showToast('Gelöscht.', '#ff4444'); loadConfiscations(); loadHomepageStats(); }
@@ -738,8 +674,8 @@ async function loadPayoutData() {
                 <tr>
                     <td><strong>${esc(displayName)}</strong> ${allUsers[name].isAdmin ? '<span style="color:#ff5555;font-size:10px;">Admin</span>' : ''}</td>
                     <td>${isAdmin ? `<input type="number" class="count-input" value="${saved.count}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : `<strong>${saved.count}</strong>`}</td>
-                    <td>${PRICE_PER_CHECK.toLocaleString('de-DE')} $</td>
-                    <td class="amount-cell">${summe.toLocaleString('de-DE')} $</td>
+                    <td>${formatNumber(PRICE_PER_CHECK)} $</td>
+                    <td class="amount-cell">${formatNumber(summe)} $</td>
                     <td style="display:flex;align-items:center;gap:4px;">
                         ${isAdmin ? `<input type="checkbox" class="payout-checkbox" ${saved.paid ? 'checked' : ''} onchange="togglePayoutPaid('${esc(name)}', this.checked)" style="margin:0;">` : ''}
                         ${paidStatus}
@@ -748,10 +684,10 @@ async function loadPayoutData() {
         }
     }
 
-    document.getElementById('totalKontrollen').textContent = totalKontrollen;
-    document.getElementById('totalSumme').textContent = totalSumme.toLocaleString('de-DE') + ' $';
-    document.getElementById('totalAusgezahlt').textContent = totalAusgezahlt.toLocaleString('de-DE') + ' $';
-    document.getElementById('totalOffen').textContent = totalOffen.toLocaleString('de-DE') + ' $';
+    document.getElementById('totalKontrollen').textContent = formatNumber(totalKontrollen);
+    document.getElementById('totalSumme').textContent = formatNumber(totalSumme) + ' $';
+    document.getElementById('totalAusgezahlt').textContent = formatNumber(totalAusgezahlt) + ' $';
+    document.getElementById('totalOffen').textContent = formatNumber(totalOffen) + ' $';
 
     await database.ref('Navy-boote/payouts/' + weekKey + '/_weekInfo').update({
         monday: weekKey, sunday: getWeekKey(sunday), weekString: getWeekString(monday),
@@ -766,35 +702,8 @@ async function togglePayoutPaid(name, isPaid) { if (!isAdmin) return; const week
 let editingFamilyId = null;
 function openFamilyModal(editData = null) {
     document.getElementById('familyModalOverlay').classList.add('show');
-    if (editData) {
-        editingFamilyId = editData.id;
-        document.getElementById('familyName').value = editData.name || '';
-        document.getElementById('vehicleColor').value = editData.vehicleColor || '#3b82f6';
-        document.getElementById('vehicleColorName').value = editData.vehicleColorName || '';
-        document.getElementById('vehicleType').value = editData.vehicleType || '';
-        document.getElementById('vehiclePlate').value = editData.vehiclePlate || '';
-        document.getElementById('vehicleImageUrl').value = editData.vehicleImage || '';
-        document.getElementById('estateDescription').value = editData.estateDescription || '';
-        document.getElementById('estateImageUrl').value = editData.estateImage || '';
-        document.getElementById('clothingDescription').value = editData.clothingDescription || '';
-        document.getElementById('clothingImagesInput').value = (editData.clothingImages || []).join(', ');
-        document.getElementById('familyNotes').value = editData.notes || '';
-        document.getElementById('familyModalTitle').textContent = '✏️ Bearbeiten';
-    } else {
-        editingFamilyId = null;
-        document.getElementById('familyName').value = '';
-        document.getElementById('vehicleColor').value = '#3b82f6';
-        document.getElementById('vehicleColorName').value = '';
-        document.getElementById('vehicleType').value = '';
-        document.getElementById('vehiclePlate').value = '';
-        document.getElementById('vehicleImageUrl').value = '';
-        document.getElementById('estateDescription').value = '';
-        document.getElementById('estateImageUrl').value = '';
-        document.getElementById('clothingDescription').value = '';
-        document.getElementById('clothingImagesInput').value = '';
-        document.getElementById('familyNotes').value = '';
-        document.getElementById('familyModalTitle').textContent = '👨‍👩‍👧‍👦 Neue Familie';
-    }
+    if (editData) { editingFamilyId = editData.id; document.getElementById('familyName').value = editData.name || ''; document.getElementById('vehicleColor').value = editData.vehicleColor || '#3b82f6'; document.getElementById('vehicleColorName').value = editData.vehicleColorName || ''; document.getElementById('vehicleType').value = editData.vehicleType || ''; document.getElementById('vehiclePlate').value = editData.vehiclePlate || ''; document.getElementById('vehicleImageUrl').value = editData.vehicleImage || ''; document.getElementById('estateDescription').value = editData.estateDescription || ''; document.getElementById('estateImageUrl').value = editData.estateImage || ''; document.getElementById('clothingDescription').value = editData.clothingDescription || ''; document.getElementById('clothingImagesInput').value = (editData.clothingImages || []).join(', '); document.getElementById('familyNotes').value = editData.notes || ''; document.getElementById('familyModalTitle').textContent = '✏️ Bearbeiten'; }
+    else { editingFamilyId = null; document.getElementById('familyName').value = ''; document.getElementById('vehicleColor').value = '#3b82f6'; document.getElementById('vehicleColorName').value = ''; document.getElementById('vehicleType').value = ''; document.getElementById('vehiclePlate').value = ''; document.getElementById('vehicleImageUrl').value = ''; document.getElementById('estateDescription').value = ''; document.getElementById('estateImageUrl').value = ''; document.getElementById('clothingDescription').value = ''; document.getElementById('clothingImagesInput').value = ''; document.getElementById('familyNotes').value = ''; document.getElementById('familyModalTitle').textContent = '👨‍👩‍👧‍👦 Neue Familie'; }
     updateFamilyPreviews();
 }
 function closeFamilyModal() { document.getElementById('familyModalOverlay').classList.remove('show'); editingFamilyId = null; }
@@ -805,22 +714,8 @@ function updateFamilyPreviews() {
     document.getElementById('clothingImagesPreview').innerHTML = cUrls.map(u => '<img src="' + u + '" style="width:80px;height:60px;object-fit:cover;border-radius:8px;">').join('');
 }
 async function saveFamily() {
-    const name = document.getElementById('familyName').value.trim();
-    if (!name) return alert('Name!');
-    const data = {
-        name,
-        vehicleColor: document.getElementById('vehicleColor').value,
-        vehicleColorName: document.getElementById('vehicleColorName').value.trim(),
-        vehicleType: document.getElementById('vehicleType').value.trim(),
-        vehiclePlate: document.getElementById('vehiclePlate').value.trim(),
-        vehicleImage: document.getElementById('vehicleImageUrl').value.trim(),
-        estateDescription: document.getElementById('estateDescription').value.trim(),
-        estateImage: document.getElementById('estateImageUrl').value.trim(),
-        clothingDescription: document.getElementById('clothingDescription').value.trim(),
-        clothingImages: document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim()).filter(s => s),
-        notes: document.getElementById('familyNotes').value.trim(),
-        timestamp: Date.now()
-    };
+    const name = document.getElementById('familyName').value.trim(); if (!name) return alert('Name!');
+    const data = { name, vehicleColor: document.getElementById('vehicleColor').value, vehicleColorName: document.getElementById('vehicleColorName').value.trim(), vehicleType: document.getElementById('vehicleType').value.trim(), vehiclePlate: document.getElementById('vehiclePlate').value.trim(), vehicleImage: document.getElementById('vehicleImageUrl').value.trim(), estateDescription: document.getElementById('estateDescription').value.trim(), estateImage: document.getElementById('estateImageUrl').value.trim(), clothingDescription: document.getElementById('clothingDescription').value.trim(), clothingImages: document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim()).filter(s => s), notes: document.getElementById('familyNotes').value.trim(), timestamp: Date.now() };
     const ref = database.ref('Navy-boote/families');
     if (editingFamilyId) { await ref.child(editingFamilyId).update(data); showToast('✅ Aktualisiert!', '#64b4ff'); }
     else { await ref.push(data); showToast('✅ Gespeichert!', '#64b4ff'); }
@@ -828,8 +723,7 @@ async function saveFamily() {
 }
 function loadFamilies() {
     database.ref('Navy-boote/families').on('value', snap => {
-        const data = snap.val();
-        const grid = document.getElementById('familiesGrid');
+        const data = snap.val(); const grid = document.getElementById('familiesGrid');
         if (!data) { grid.innerHTML = '<p style="color:#aaa;grid-column:1/-1;">Keine Familien.</p>'; return; }
         const entries = Object.entries(data).map(([id, f]) => ({ id, ...f })).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         grid.innerHTML = entries.map(f => `
