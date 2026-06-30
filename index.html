@@ -160,7 +160,6 @@
         .badge-time { font-family: monospace; font-weight: bold; background: #0a1f2e; display: inline-block; padding: 4px 8px; border-radius: 20px; }
         .entry-description { color: #bfd9ff; font-size: 12px; margin-top: 4px; word-break: break-word; }
 
-        /* BESCHLAGNAHMUNGEN */
         .confiscation-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
         .confiscation-summary { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
         .money-badge { padding: 10px 16px; border-radius: 12px; font-weight: bold; font-size: 14px; text-align: center; min-width: 120px; }
@@ -188,7 +187,6 @@
         .confiscation-card .card-notes { font-size: 12px; color: #9bb7e0; font-style: italic; margin-top: 6px; }
         .confiscation-card .card-actions { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-end; }
 
-        /* MODAL */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 1000; justify-content: center; align-items: center; }
         .modal-overlay.show { display: flex; }
         .modal { background: rgba(8,18,38,0.95); backdrop-filter: blur(12px); border: 2px solid rgba(59,130,246,0.6); border-radius: 20px; padding: 24px; width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
@@ -205,7 +203,6 @@
         .dropdown-with-text input { flex: 1; min-width: 100px; padding: 8px 10px; font-size: 13px; }
         .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(100,150,255,0.2); }
 
-        /* FAMILIEN */
         .families-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
         .families-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
         .family-card { background: rgba(10,20,40,0.75); border: 1px solid rgba(100,150,255,0.4); border-radius: 18px; padding: 18px; }
@@ -216,7 +213,6 @@
         .family-images img { width: 80px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(100,150,255,0.4); cursor: pointer; }
         .family-color-dot { display: inline-block; width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); vertical-align: middle; margin-right: 6px; }
 
-        /* AUSZAHLUNG */
         .payout-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
         .payout-week-selector { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .payout-week-selector input { width: 160px; padding: 8px 12px; font-size: 13px; }
@@ -226,16 +222,16 @@
         .payout-table td { padding: 10px 8px; border-bottom: 1px solid rgba(100,150,255,0.2); font-size: 14px; }
         .payout-table .count-input { width: 70px; text-align: center; padding: 6px; font-size: 14px; }
         .payout-table .amount-cell { font-weight: bold; color: #2ecc40; }
-        .payout-checkbox { width: 20px; height: 20px; cursor: pointer; accent-color: #2ecc40; }
-        .payout-status { font-size: 12px; padding: 3px 8px; border-radius: 20px; font-weight: bold; }
+        .payout-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: #2ecc40; }
+        .payout-status { font-size: 12px; padding: 3px 8px; border-radius: 20px; font-weight: bold; display: inline-block; margin-left: 6px; }
         .payout-status.paid { background: rgba(46,204,64,0.2); color: #2ecc40; border: 1px solid #2ecc40; }
         .payout-status.unpaid { background: rgba(255,170,51,0.2); color: #ffaa33; border: 1px solid #ffaa33; }
         .payout-total { margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid rgba(46,204,64,0.3); display: flex; gap: 20px; flex-wrap: wrap; }
         .payout-total-item { text-align: center; }
         .payout-total-item .big { font-size: 1.8rem; font-weight: bold; color: #2ecc40; }
         .payout-total-item .lbl { font-size: 0.8rem; color: #8ab4e0; }
+        .btn-delete-payout-user { background: none; border: none; color: #ff5555; cursor: pointer; font-size: 16px; padding: 0 4px; }
 
-        /* ADMIN */
         .admin-section { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,85,85,0.3); border-radius: 14px; padding: 16px; margin-bottom: 18px; }
         .admin-section h4 { color: #ff5555; margin-bottom: 12px; border-bottom: 1px solid rgba(255,85,85,0.3); padding-bottom: 8px; }
         .user-table { width: 100%; border-collapse: collapse; }
@@ -247,7 +243,6 @@
 <div class="background"></div>
 <div class="overlay"></div>
 
-<!-- LOGIN -->
 <div id="loginScreen">
     <div class="login-box">
         <img src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="Navy Logo">
@@ -260,7 +255,6 @@
     </div>
 </div>
 
-<!-- MAIN APP -->
 <div id="mainApp">
     <div class="container">
         <div class="top-bar">
@@ -280,7 +274,6 @@
             <button class="tab-btn" onclick="switchTab('families')">👨‍👩‍👧‍👦 Familien</button>
         </div>
 
-        <!-- HOME -->
         <div id="tab-home" class="tab-content active">
             <div class="homepage">
                 <h1>U.S NAVY MARINE</h1>
@@ -295,7 +288,6 @@
             </div>
         </div>
 
-        <!-- STOPPUHR -->
         <div id="tab-stopwatch" class="tab-content">
             <div class="time" id="display">00:00.00</div>
             <div class="input-group">
@@ -319,7 +311,6 @@
             </div>
         </div>
 
-        <!-- BESCHLAGNAHMUNGEN -->
         <div id="tab-confiscations" class="tab-content">
             <div class="confiscation-header">
                 <h3 style="color:#ffaa33;margin:0;">📋 Beschlagnahmungen</h3>
@@ -333,7 +324,6 @@
             <div id="confiscationCards" class="confiscation-cards"><p style="color:#aaa;grid-column:1/-1;">Keine Beschlagnahmungen.</p></div>
         </div>
 
-        <!-- AUSZAHLUNG -->
         <div id="tab-payout" class="tab-content">
             <div class="payout-header">
                 <h3 style="color:#2ecc40;margin:0;">💰 Auszahlung</h3>
@@ -346,27 +336,31 @@
                 </div>
             </div>
             <div id="payoutInfo" style="margin-bottom:10px;color:#8ab4e0;font-size:13px;"></div>
+            <div style="margin-bottom:12px;">
+                <span style="color:#8ab4e0;font-size:13px;">💡 Pro Kontrolle: <strong>2.500 $</strong></span>
+                <span style="margin-left:20px;color:#8ab4e0;font-size:13px;">👥 Auszahlungs-User (nur für Auszahlung):</span>
+                <div class="input-group" style="justify-content:flex-start;margin-top:6px;">
+                    <input type="text" id="newPayoutUser" placeholder="Neuer User Name" style="width:180px;" autocomplete="off">
+                    <button onclick="addPayoutUser()" style="background:#2e7d32;font-size:12px;padding:8px 14px;">➕ User hinzufügen</button>
+                </div>
+                <div id="payoutUserList" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"></div>
+            </div>
             <div class="payout-table-wrapper">
                 <table class="payout-table">
                     <thead>
-                        <tr>
-                            <th>Name</th><th>Bootskontrollen</th><th>Pro Kontrolle</th><th>Summe</th><th>Status</th>
-                        </tr>
+                        <tr><th>Name</th><th>Bootskontrollen</th><th>Pro Kontrolle</th><th>Summe</th><th>Status</th></tr>
                     </thead>
-                    <tbody id="payoutTableBody">
-                        <tr><td colspan="5" style="text-align:center;color:#aaa;">Laden...</td></tr>
-                    </tbody>
+                    <tbody id="payoutTableBody"><tr><td colspan="5" style="text-align:center;color:#aaa;">Laden...</td></tr></tbody>
                 </table>
             </div>
             <div class="payout-total" id="payoutTotal">
                 <div class="payout-total-item"><div class="big" id="totalKontrollen">0</div><div class="lbl">Kontrollen</div></div>
-                <div class="payout-total-item"><div class="big" id="totalAusgezahlt">0 €</div><div class="lbl">Ausgezahlt</div></div>
-                <div class="payout-total-item"><div class="big" id="totalOffen">0 €</div><div class="lbl">Offen</div></div>
-                <div class="payout-total-item"><div class="big" id="totalSumme">0 €</div><div class="lbl">Gesamt</div></div>
+                <div class="payout-total-item"><div class="big" id="totalAusgezahlt">0 $</div><div class="lbl">Ausgezahlt</div></div>
+                <div class="payout-total-item"><div class="big" id="totalOffen">0 $</div><div class="lbl">Offen</div></div>
+                <div class="payout-total-item"><div class="big" id="totalSumme">0 $</div><div class="lbl">Gesamt</div></div>
             </div>
         </div>
 
-        <!-- FAMILIEN -->
         <div id="tab-families" class="tab-content">
             <div class="families-header">
                 <h3 style="color:#ffaa33;margin:0;">👨‍👩‍👧‍👦 Familien</h3>
@@ -377,7 +371,6 @@
     </div>
 </div>
 
-<!-- MODAL Beschlagnahmung -->
 <div class="modal-overlay" id="confiscationModalOverlay">
     <div class="modal">
         <button class="close-modal-x" onclick="closeConfiscationModal()">✕</button>
@@ -400,7 +393,6 @@
     </div>
 </div>
 
-<!-- MODAL Familie -->
 <div class="modal-overlay" id="familyModalOverlay">
     <div class="modal" style="max-width:700px;">
         <button class="close-modal-x" onclick="closeFamilyModal()">✕</button>
@@ -415,7 +407,6 @@
 </div>
 
 <script>
-// ==================== FIREBASE ====================
 const firebaseConfig = {
     apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
     authDomain: "cc-shop-36c3b.firebaseapp.com",
@@ -428,7 +419,6 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
-// ==================== AUTH ====================
 let currentUser = null;
 let isAdmin = false;
 const PRICE_PER_CHECK = 2500;
@@ -534,7 +524,7 @@ function switchTab(name) {
     if (name === 'home') loadHomepageStats();
     else if (name === 'stopwatch') loadAllUsersSorted();
     else if (name === 'confiscations') loadConfiscations();
-    else if (name === 'payout') { setCurrentWeekIfNeeded(); loadPayoutData(); }
+    else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); loadPayoutUsers(); }
     else if (name === 'families') loadFamilies();
     else if (name === 'admin') loadUserList();
 }
@@ -551,7 +541,6 @@ function loadHomepageStats() {
     });
 }
 
-// ==================== STOPPUHR ====================
 let startTime = 0, elapsed = 0, interval = null, running = false;
 function formatTime(ms) { let m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000), c = Math.floor((ms % 1000) / 10); return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0'); }
 function updateDisplay() { document.getElementById('display').textContent = formatTime(Date.now() - startTime); }
@@ -599,7 +588,6 @@ function loadAllUsersSorted() {
     });
 }
 
-// ==================== BESCHLAGNAHMUNGEN ====================
 let editingConfiscationId = null;
 function openNewConfiscationModal(editData = null) {
     document.getElementById('confiscationModalOverlay').classList.add('show'); const now = new Date(); const dateStr = now.toISOString().split('T')[0]; const timeStr = now.toTimeString().slice(0, 5);
@@ -640,76 +628,132 @@ async function deleteConfiscation(id) { if (!isAdmin) return alert('Nur Admin!')
 async function editConfiscation(id) { if (!isAdmin) return alert('Nur Admin!'); const snap = await database.ref('Navy-boote/confiscations/' + id).once('value'); const data = snap.val(); if (data) openNewConfiscationModal({ id, ...data }); }
 document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) { if (e.target === this) closeConfiscationModal(); });
 
-// ==================== AUSZAHLUNG ====================
+// ==================== AUSZAHLUNG (EIGENES SYSTEM) ====================
 let currentPayoutWeek = '';
 
-function getMonday(date) { const d = new Date(date); const day = d.getDay(); const diff = d.getDate() - day + (day === 0 ? -6 : 1); d.setDate(diff); d.setHours(0, 0, 0, 0); return d; }
-function getSunday(monday) { const d = new Date(monday); d.setDate(d.getDate() + 6); d.setHours(23, 59, 59, 999); return d; }
-function getWeekKey(monday) { return monday.toISOString().split('T')[0]; }
-function getWeekString(monday) { const sun = getSunday(monday); const mo = monday.getDate() + '.' + (monday.getMonth() + 1); const so = sun.getDate() + '.' + (sun.getMonth() + 1); return mo + ' - ' + so + '.' + (sun.getMonth() + 1) + '.' + sun.getFullYear(); }
-
-function setCurrentWeekIfNeeded() {
-    if (!currentPayoutWeek) {
-        const monday = getMonday(new Date());
-        currentPayoutWeek = getWeekKey(monday);
-        document.getElementById('payoutWeekInput').value = currentPayoutWeek;
-    }
+function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
 }
 
-function previousWeek() { const d = new Date(currentPayoutWeek + 'T00:00:00'); d.setDate(d.getDate() - 7); currentPayoutWeek = getWeekKey(d); document.getElementById('payoutWeekInput').value = currentPayoutWeek; loadPayoutData(); }
-function nextWeek() { const d = new Date(currentPayoutWeek + 'T00:00:00'); d.setDate(d.getDate() + 7); currentPayoutWeek = getWeekKey(d); document.getElementById('payoutWeekInput').value = currentPayoutWeek; loadPayoutData(); }
-function goToCurrentWeek() { const monday = getMonday(new Date()); currentPayoutWeek = getWeekKey(monday); document.getElementById('payoutWeekInput').value = currentPayoutWeek; loadPayoutData(); }
+function getSunday(monday) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + 6);
+    d.setHours(23, 59, 59, 999);
+    return d;
+}
+
+function getWeekKey(monday) {
+    const y = monday.getFullYear();
+    const m = String(monday.getMonth() + 1).padStart(2, '0');
+    const d = String(monday.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+}
+
+function getWeekString(monday) {
+    const sun = getSunday(monday);
+    const mo = monday.getDate() + '.' + (monday.getMonth() + 1);
+    const so = sun.getDate() + '.' + (sun.getMonth() + 1) + '.' + sun.getFullYear();
+    return mo + ' - ' + so;
+}
+
+function goToCurrentWeek() {
+    const monday = getMonday(new Date());
+    currentPayoutWeek = getWeekKey(monday);
+    document.getElementById('payoutWeekInput').value = currentPayoutWeek;
+}
+
+function previousWeek() {
+    const d = new Date(currentPayoutWeek + 'T00:00:00');
+    d.setDate(d.getDate() - 7);
+    currentPayoutWeek = getWeekKey(d);
+    document.getElementById('payoutWeekInput').value = currentPayoutWeek;
+    loadPayoutData();
+}
+
+function nextWeek() {
+    const d = new Date(currentPayoutWeek + 'T00:00:00');
+    d.setDate(d.getDate() + 7);
+    currentPayoutWeek = getWeekKey(d);
+    document.getElementById('payoutWeekInput').value = currentPayoutWeek;
+    loadPayoutData();
+}
+
+async function loadPayoutUsers() {
+    const snap = await database.ref('Navy-boote/payout_users').once('value');
+    const users = snap.val() || [];
+    const listDiv = document.getElementById('payoutUserList');
+    if (!users || users.length === 0) {
+        listDiv.innerHTML = '<span style="color:#aaa;font-size:12px;">Keine User. Admin kann welche hinzufügen.</span>';
+        return;
+    }
+    listDiv.innerHTML = users.map((name, index) => `
+        <span style="background:rgba(100,180,255,0.15);border:1px solid #64b4ff;padding:4px 10px;border-radius:20px;font-size:12px;color:#64b4ff;">
+            👤 ${esc(name)}
+            ${isAdmin ? `<button class="btn-delete-payout-user" onclick="removePayoutUser(${index})" title="Entfernen">✕</button>` : ''}
+        </span>
+    `).join('');
+}
+
+async function addPayoutUser() {
+    if (!isAdmin) return alert('Nur Admin kann User hinzufügen!');
+    const name = document.getElementById('newPayoutUser').value.trim();
+    if (!name) return alert('Name eingeben!');
+    const snap = await database.ref('Navy-boote/payout_users').once('value');
+    const users = snap.val() || [];
+    if (users.includes(name)) return alert('User existiert bereits!');
+    users.push(name);
+    await database.ref('Navy-boote/payout_users').set(users);
+    document.getElementById('newPayoutUser').value = '';
+    loadPayoutUsers();
+    loadPayoutData();
+    showToast('✅ User hinzugefügt!', '#2ecc40');
+}
+
+async function removePayoutUser(index) {
+    if (!isAdmin) return;
+    if (!confirm('User aus Auszahlung entfernen?')) return;
+    const snap = await database.ref('Navy-boote/payout_users').once('value');
+    const users = snap.val() || [];
+    users.splice(index, 1);
+    await database.ref('Navy-boote/payout_users').set(users);
+    loadPayoutUsers();
+    loadPayoutData();
+    showToast('User entfernt.', '#ff4444');
+}
 
 async function loadPayoutData() {
     const weekInput = document.getElementById('payoutWeekInput').value;
     if (!weekInput) return;
     currentPayoutWeek = weekInput;
+
     const monday = new Date(weekInput + 'T00:00:00');
     const sunday = getSunday(monday);
     const weekKey = getWeekKey(monday);
+
     document.getElementById('payoutInfo').textContent = '📅 Woche: ' + getWeekString(monday) + ' | Mo ' + weekKey + ' bis So ' + getWeekKey(sunday);
 
-    // Alle User aus Stoppuhr holen
-    const usersSnap = await database.ref('Navy-boote/users').once('value');
-    const users = usersSnap.val() || {};
-    const userNames = Object.keys(users);
+    // Payout-User laden
+    const usersSnap = await database.ref('Navy-boote/payout_users').once('value');
+    const userNames = usersSnap.val() || [];
 
-    // Bestehende Auszahlungsdaten für diese Woche
+    // Bestehende Daten
     const payoutSnap = await database.ref('Navy-boote/payouts/' + weekKey).once('value');
     const payoutData = payoutSnap.val() || {};
 
-    // Bootskontrollen pro User in dieser Woche zählen
     const tbody = document.getElementById('payoutTableBody');
     let totalKontrollen = 0, totalSumme = 0, totalAusgezahlt = 0, totalOffen = 0;
 
     if (userNames.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Keine Personen vorhanden.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Keine Auszahlungs-User. Admin kann welche hinzufügen.</td></tr>';
     } else {
         tbody.innerHTML = '';
         for (const name of userNames) {
-            const userData = users[name];
-            let count = 0;
-            // Bootskontrollen in dieser Woche zählen
-            if (userData.boats) {
-                for (const boatKey of Object.keys(userData.boats)) {
-                    const entries = userData.boats[boatKey];
-                    if (Array.isArray(entries)) {
-                        entries.forEach(entry => {
-                            const ts = entry.timestamp || 0;
-                            if (ts >= monday.getTime() && ts <= sunday.getTime()) {
-                                count++;
-                            }
-                        });
-                    }
-                }
-            }
-
-            const saved = payoutData[name] || { count: count, paid: false };
-            // Wenn neue Kontrollen dazugekommen sind, Count aktualisieren
-            if (count > saved.count && !saved.paid) {
-                saved.count = count;
-            }
-
+            const saved = payoutData[name] || { count: 0, paid: false };
             const summe = saved.count * PRICE_PER_CHECK;
             totalKontrollen += saved.count;
             totalSumme += summe;
@@ -723,12 +767,13 @@ async function loadPayoutData() {
                 <tr>
                     <td><strong>${esc(displayName)}</strong></td>
                     <td>
-                        ${isAdmin ? `<input type="number" class="count-input" value="${saved.count}" min="0" onchange="updatePayoutCount('${name}', this.value)" id="count_${name}">` : `<strong>${saved.count}</strong>`}
+                        ${isAdmin ? `<input type="number" class="count-input" value="${saved.count}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : `<strong>${saved.count}</strong>`}
                     </td>
                     <td>${PRICE_PER_CHECK.toLocaleString('de-DE')} $</td>
                     <td class="amount-cell">${summe.toLocaleString('de-DE')} $</td>
-                    <td>
-                        ${isAdmin ? `<input type="checkbox" class="payout-checkbox" ${saved.paid ? 'checked' : ''} onchange="togglePayoutPaid('${name}', this.checked)" id="paid_${name}"> ${paidStatus}` : paidStatus}
+                    <td style="display:flex;align-items:center;gap:4px;">
+                        ${isAdmin ? `<input type="checkbox" class="payout-checkbox" ${saved.paid ? 'checked' : ''} onchange="togglePayoutPaid('${esc(name)}', this.checked)" style="margin:0;">` : ''}
+                        ${paidStatus}
                     </td>
                 </tr>`;
         }
@@ -739,15 +784,14 @@ async function loadPayoutData() {
     document.getElementById('totalAusgezahlt').textContent = totalAusgezahlt.toLocaleString('de-DE') + ' $';
     document.getElementById('totalOffen').textContent = totalOffen.toLocaleString('de-DE') + ' $';
 
-    // Payout-Daten speichern
     await database.ref('Navy-boote/payouts/' + weekKey + '/_weekInfo').update({
         monday: weekKey,
         sunday: getWeekKey(sunday),
         weekString: getWeekString(monday),
-        totalKontrollen: totalKontrollen,
-        totalSumme: totalSumme,
-        totalAusgezahlt: totalAusgezahlt,
-        totalOffen: totalOffen,
+        totalKontrollen,
+        totalSumme,
+        totalAusgezahlt,
+        totalOffen,
         lastUpdated: Date.now()
     });
 }
@@ -756,28 +800,20 @@ async function updatePayoutCount(name, newCount) {
     if (!isAdmin) return;
     const count = parseInt(newCount) || 0;
     const weekKey = currentPayoutWeek;
-    const ref = database.ref('Navy-boote/payouts/' + weekKey + '/' + name);
-    const snap = await ref.once('value');
-    const data = snap.val() || {};
-    data.count = count;
-    await ref.set(data);
+    await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ count });
     loadPayoutData();
 }
 
 async function togglePayoutPaid(name, isPaid) {
     if (!isAdmin) return;
     const weekKey = currentPayoutWeek;
-    const ref = database.ref('Navy-boote/payouts/' + weekKey + '/' + name);
-    const snap = await ref.once('value');
-    const data = snap.val() || {};
-    data.paid = isPaid;
-    if (isPaid) data.paidAt = Date.now();
-    else delete data.paidAt;
-    await ref.set(data);
+    const updateData = { paid: isPaid };
+    if (isPaid) updateData.paidAt = Date.now();
+    else updateData.paidAt = null;
+    await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update(updateData);
     loadPayoutData();
 }
 
-// ==================== FAMILIEN ====================
 let editingFamilyId = null;
 function openFamilyModal(editData = null) {
     document.getElementById('familyModalOverlay').classList.add('show');
@@ -817,7 +853,6 @@ async function deleteFamily(id) { if (!isAdmin) return alert('Nur Admin!'); if (
 async function editFamily(id) { if (!isAdmin) return alert('Nur Admin!'); const snap = await database.ref('Navy-boote/families/' + id).once('value'); const data = snap.val(); if (data) openFamilyModal({ id, ...data }); }
 document.getElementById('familyModalOverlay').addEventListener('click', function(e) { if (e.target === this) closeFamilyModal(); });
 
-// ==================== INIT ====================
 async function init() {
     await ensureAdminExists();
     loadAllUsersSorted();
