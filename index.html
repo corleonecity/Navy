@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>U.S Navy Marine Stopuhr - Admin Bereich</title>
+    <title>U.S Navy Marine - Verwaltungssystem</title>
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
         body {
-            margin: 0;
             font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
             height: 100vh;
             display: flex;
@@ -26,16 +27,20 @@
 
         .background {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: url('https://cdn.corleonecity.de/api/raw/4c9a9333-d321-4faa-ac7e-4f210465d911') no-repeat center center/cover;
             z-index: -2;
         }
 
         .overlay {
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.3);
             z-index: -1;
         }
@@ -47,17 +52,146 @@
             overflow-y: auto;
             backdrop-filter: blur(6px);
             background: rgba(5, 10, 25, 0.7);
-            padding: 25px;
             border-radius: 24px;
             border: 1px solid rgba(120, 160, 255, 0.4);
             box-shadow: 0 15px 45px rgba(0, 0, 0, 0.7);
             scrollbar-width: thin;
+            display: flex;
+            flex-direction: column;
         }
 
-        .container::-webkit-scrollbar { width: 8px; }
-        .container::-webkit-scrollbar-track { background: #0a1220; border-radius: 10px; }
-        .container::-webkit-scrollbar-thumb { background: #2c5282; border-radius: 10px; }
+        .container::-webkit-scrollbar {
+            width: 8px;
+        }
+        .container::-webkit-scrollbar-track {
+            background: #0a1220;
+            border-radius: 10px;
+        }
+        .container::-webkit-scrollbar-thumb {
+            background: #2c5282;
+            border-radius: 10px;
+        }
 
+        /* ========== TAB NAVIGATION ========== */
+        .tab-nav {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px 0 16px;
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 10px 22px;
+            border-radius: 12px 12px 0 0;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            border: 1px solid transparent;
+            border-bottom: none;
+            transition: 0.25s;
+            color: #a0b8d8;
+            background: rgba(10, 20, 40, 0.5);
+            position: relative;
+            top: 2px;
+        }
+
+        .tab-btn:hover {
+            color: #d0e0ff;
+            background: rgba(30, 60, 120, 0.5);
+        }
+        .tab-btn.active {
+            color: #fff;
+            background: rgba(30, 70, 140, 0.7);
+            border-color: rgba(59, 130, 246, 0.6);
+            border-bottom: 2px solid #3b82f6;
+            box-shadow: 0 -2px 15px rgba(59, 130, 246, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            flex: 1;
+            overflow-y: auto;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* ========== TAB 1: HAUPTSEITE ========== */
+        .homepage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            text-align: center;
+        }
+
+        .homepage .navy-logo {
+            width: 180px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6));
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-8px);
+            }
+        }
+
+        .homepage h1 {
+            font-size: 2.8rem;
+            letter-spacing: 4px;
+            color: #d9ecff;
+            text-shadow: 0 0 30px rgba(0, 160, 255, 0.8), 0 0 60px rgba(0, 100, 255, 0.4);
+            font-family: 'Georgia', 'Times New Roman', serif;
+            margin-bottom: 8px;
+        }
+
+        .homepage .subtitle {
+            font-size: 1.1rem;
+            color: #8ab4e0;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        .homepage .quick-stats {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .stat-card {
+            background: rgba(15, 25, 50, 0.7);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            border-radius: 16px;
+            padding: 18px 28px;
+            min-width: 140px;
+            backdrop-filter: blur(4px);
+        }
+        .stat-card .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffaa33;
+        }
+        .stat-card .stat-label {
+            font-size: 0.75rem;
+            color: #8ab4e0;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        /* ========== TAB 2: STOPPUHR ========== */
         .time {
             font-size: 68px;
             letter-spacing: 5px;
@@ -70,11 +204,6 @@
             background: rgba(0, 0, 0, 0.3);
             border-radius: 30px;
             padding: 10px;
-        }
-
-        .header-section {
-            text-align: center;
-            margin-bottom: 15px;
         }
 
         .section-title {
@@ -95,9 +224,12 @@
             gap: 12px;
             justify-content: center;
             flex-wrap: wrap;
+            align-items: center;
         }
 
-        input, textarea {
+        input,
+        textarea,
+        select {
             padding: 12px;
             border-radius: 12px;
             border: 1px solid rgba(100, 150, 255, 0.5);
@@ -108,24 +240,39 @@
             transition: 0.2s;
         }
 
-        input:focus, textarea:focus {
+        input:focus,
+        textarea:focus,
+        select:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 8px rgba(59,130,246,0.4);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+        }
+
+        select option {
+            background: #0a1220;
+            color: white;
         }
 
         input {
             width: 260px;
         }
+        select {
+            width: 260px;
+            cursor: pointer;
+        }
+        textarea {
+            width: 100%;
+            resize: vertical;
+            font-size: 13px;
+            border-radius: 10px;
+        }
 
-        /* Kleine, versteckte Admin-Zone */
         .admin-collapse {
-            position: relative;
-            margin-bottom: 8px;
             text-align: right;
+            margin-bottom: 8px;
         }
         .admin-toggle-btn {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,170,51,0.3);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 170, 51, 0.3);
             color: #ffaa33;
             font-size: 11px;
             padding: 4px 12px;
@@ -135,7 +282,7 @@
             transition: 0.2s;
         }
         .admin-toggle-btn:hover {
-            background: rgba(255,170,51,0.2);
+            background: rgba(255, 170, 51, 0.2);
             border-color: #ffaa33;
         }
         .admin-hidden-panel {
@@ -168,7 +315,7 @@
             width: 130px;
             padding: 6px 10px;
             font-size: 12px;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0, 0, 0, 0.8);
             border-color: #ffaa33;
         }
         .btn-admin {
@@ -209,6 +356,10 @@
             font-size: 11px;
             padding: 4px 10px;
         }
+        .colin-only {
+            font-size: 10px;
+            color: #ffaa55;
+        }
 
         .boats-grid {
             display: grid;
@@ -236,13 +387,6 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-        }
-
-        .desc-input {
-            width: 100%;
-            resize: vertical;
-            font-size: 13px;
-            border-radius: 10px;
         }
 
         .btn-save {
@@ -297,7 +441,7 @@
         }
 
         .search-results {
-            margin-top: 30px;
+            margin-top: 20px;
             background: rgba(0, 0, 0, 0.5);
             padding: 20px;
             border-radius: 24px;
@@ -352,16 +496,9 @@
             padding: 2px 8px;
             border-radius: 20px;
         }
-
         .delete-btn:hover {
             background: rgba(255, 80, 80, 0.3);
             transform: none;
-        }
-
-        .logo {
-            width: 55px;
-            margin-bottom: 5px;
-            filter: drop-shadow(0 0 4px #3b82f6);
         }
 
         .info-note {
@@ -370,373 +507,944 @@
             text-align: center;
             margin-top: 12px;
         }
-        
-        .colin-only {
-            font-size: 10px;
-            color: #ffaa55;
+
+        /* ========== TAB 3: BESCHLAGNAHMUNGEN ========== */
+        .confiscation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .confiscation-summary {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .money-badge {
+            padding: 12px 20px;
+            border-radius: 14px;
+            font-weight: bold;
+            font-size: 15px;
+            text-align: center;
+            min-width: 140px;
+        }
+        .money-badge.green {
+            background: rgba(34, 139, 34, 0.3);
+            border: 1px solid #2ecc40;
+            color: #2ecc40;
+        }
+        .money-badge.black {
+            background: rgba(40, 40, 40, 0.4);
+            border: 1px solid #999;
+            color: #ccc;
+        }
+
+        .btn-new-confiscation {
+            background: linear-gradient(135deg, #1a472a, #0d2818);
+            border: 2px solid #2ecc40;
+            color: #2ecc40;
+            font-size: 15px;
+            padding: 12px 24px;
+            letter-spacing: 1px;
+        }
+        .btn-new-confiscation:hover {
+            background: linear-gradient(135deg, #2a573a, #1a3a28);
+            box-shadow: 0 0 20px rgba(46, 204, 64, 0.3);
+        }
+
+        .confiscation-table-wrapper {
+            overflow-x: auto;
+            margin-top: 15px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 16px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+        .stat-item {
+            text-align: center;
+            min-width: 100px;
+        }
+        .stat-item .stat-val {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffaa33;
+        }
+        .stat-item .stat-lbl {
+            font-size: 0.7rem;
+            color: #8ab4e0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ========== POPUP / MODAL ========== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: rgba(8, 18, 38, 0.95);
+            backdrop-filter: blur(12px);
+            border: 2px solid rgba(59, 130, 246, 0.6);
+            border-radius: 20px;
+            padding: 28px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            scrollbar-width: thin;
+        }
+        .modal::-webkit-scrollbar {
+            width: 6px;
+        }
+        .modal::-webkit-scrollbar-track {
+            background: #0a1220;
+            border-radius: 8px;
+        }
+        .modal::-webkit-scrollbar-thumb {
+            background: #2c5282;
+            border-radius: 8px;
+        }
+
+        .modal h3 {
+            color: #ffaa33;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 170, 51, 0.3);
+            padding-bottom: 10px;
+        }
+
+        .modal-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        @media (max-width: 700px) {
+            .modal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .modal-field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .modal-field label {
+            font-size: 12px;
+            color: #9cc7ff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+        .modal-field input,
+        .modal-field select,
+        .modal-field textarea {
+            width: 100%;
+            font-size: 13px;
+        }
+        .modal-field textarea {
+            min-height: 70px;
+        }
+
+        .modal-full {
+            grid-column: 1 / -1;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        .btn-cancel {
+            background: #444;
+        }
+        .btn-submit {
+            background: #2e7d32;
+            border-color: #4caf50;
+            font-weight: bold;
+        }
+        .btn-submit:hover {
+            background: #388e3c;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .close-modal-x {
+            position: sticky;
+            top: 0;
+            float: right;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0 8px;
+            z-index: 10;
+        }
+        .close-modal-x:hover {
+            color: #ff4444;
+            background: none;
+            transform: none;
         }
     </style>
 </head>
 <body>
 
-<div class="background"></div>
-<div class="overlay"></div>
+    <div class="background"></div>
+    <div class="overlay"></div>
 
-<div class="container">
-    <div class="header-section">
-        <img class="logo" src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="US Navy Logo">
-        <h2>⚓ U.S Navy Marine Stopuhr ⚓</h2>
-        <p style="margin:5px 0 0; font-size:13px;">Zeiten mit Beschreibung | Unbegrenzte Einträge</p>
-    </div>
+    <div class="container">
+        <!-- ========== TAB NAVIGATION ========== -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('home')">🏠 Hauptseite</button>
+            <button class="tab-btn" onclick="switchTab('stopwatch')">⏱️ Stoppuhr</button>
+            <button class="tab-btn" onclick="switchTab('confiscations')">📋 Beschlagnahmungen</button>
+        </div>
 
-    <!-- Kleine, einklappbare ADMIN-Zone (Colin only) -->
-    <div class="admin-collapse">
-        <button class="admin-toggle-btn" onclick="toggleAdminPanel()">🔧 Admin (Colin)</button>
-        <div id="adminHiddenPanel" class="admin-hidden-panel">
-            <div class="admin-flex">
-                <div id="adminLoginArea" class="admin-login">
-                    <input type="text" id="adminUsername" placeholder="colin" value="colin" style="width:100px;">
-                    <input type="password" id="adminPassword" placeholder="Passwort" style="width:120px;">
-                    <button onclick="adminLogin()" class="btn-admin">🔓 Login</button>
-                </div>
-                <div id="adminActions" style="display: none;" class="admin-actions">
-                    <span class="admin-badge">✅ Admin</span>
-                    <button onclick="deleteCurrentPersonCompletely()" class="btn-delete-user">🗑️ Person löschen</button>
-                    <button onclick="adminLogout()" class="logout-btn btn-admin">🚪 Logout</button>
+        <!-- ========== TAB 1: HAUPTSEITE ========== -->
+        <div id="tab-home" class="tab-content active">
+            <div class="homepage">
+                <img class="navy-logo" src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="US Navy Logo">
+                <h1>U.S NAVY MARINE</h1>
+                <p class="subtitle">⚓ Verwaltungssystem ⚓</p>
+                <div class="quick-stats" id="homepageStats">
+                    <div class="stat-card"><div class="stat-number" id="statPersons">0</div><div class="stat-label">Personen</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statConfiscations">0</div><div class="stat-label">Beschlagnahmungen</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statTotalGreen">0€</div><div class="stat-label">Grüngeld</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statTotalBlack">0€</div><div class="stat-label">Schwarzgeld</div></div>
                 </div>
             </div>
-            <div class="colin-only" style="margin-top: 8px; text-align: right;"></div>
         </div>
-    </div>
 
-    <div class="time" id="display">00:00.00</div>
+        <!-- ========== TAB 2: STOPPUHR ========== -->
+        <div id="tab-stopwatch" class="tab-content">
+            <div style="text-align:center; margin-bottom:10px;">
+                <img src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="US Navy Logo" style="width:45px; filter: drop-shadow(0 0 4px #3b82f6);">
+                <h3 style="margin:4px 0;">⚓ U.S Navy Marine Stopuhr ⚓</h3>
+            </div>
 
-    <div class="input-group">
-        <input type="text" id="personName" placeholder="Name der Person (z.B. John Miller)" autocomplete="off" />
-        <button onclick="startStop()" id="startBtn" style="background:#0055aa;">▶ Start</button>
-        <button onclick="reset()" style="background:#885500;">🔄 Reset</button>
-    </div>
+            <!-- Admin -->
+            <div class="admin-collapse">
+                <button class="admin-toggle-btn" onclick="toggleAdminPanel()">🔧 Admin (Colin)</button>
+                <div id="adminHiddenPanel" class="admin-hidden-panel">
+                    <div class="admin-flex">
+                        <div id="adminLoginArea" class="admin-login">
+                            <input type="text" id="adminUsername" placeholder="colin" value="colin" style="width:100px;">
+                            <input type="password" id="adminPassword" placeholder="Passwort" style="width:120px;">
+                            <button onclick="adminLogin()" class="btn-admin">🔓 Login</button>
+                        </div>
+                        <div id="adminActions" style="display: none;" class="admin-actions">
+                            <span class="admin-badge">✅ Admin</span>
+                            <button onclick="deleteCurrentPersonCompletely()" class="btn-delete-user">🗑️ Person löschen</button>
+                            <button onclick="adminLogout()" class="logout-btn btn-admin">🚪 Logout</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-    <div class="section-title">🚤 BOOTE & SPEICHERN (mit Beschreibung)</div>
-    <div class="boats-grid">
-        <div class="boat-panel">
-            <h4>⚡ U.S Navy Predator</h4>
-            <div class="save-boat-section">
-                <textarea id="descPredator" class="desc-input" rows="2" placeholder="Beschreibung (z.B. 'Rekordlauf, Wellen')"></textarea>
-                <button class="btn-save" onclick="saveTimeWithDesc('Predator', 'descPredator')">📌 Speichern</button>
+            <div class="time" id="display">00:00.00</div>
+
+            <div class="input-group">
+                <input type="text" id="personName" placeholder="Name der Person (z.B. John Miller)" autocomplete="off" />
+                <button onclick="startStop()" id="startBtn" style="background:#0055aa;">▶ Start</button>
+                <button onclick="resetTimer()" style="background:#885500;">🔄 Reset</button>
+            </div>
+
+            <div class="section-title">🚤 BOOTE & SPEICHERN (mit Beschreibung)</div>
+            <div class="boats-grid">
+                <div class="boat-panel">
+                    <h4>⚡ U.S Navy Predator</h4>
+                    <div class="save-boat-section">
+                        <textarea id="descPredator" class="desc-input" rows="2" placeholder="Beschreibung (z.B. 'Rekordlauf, Wellen')"></textarea>
+                        <button class="btn-save" onclick="saveTimeWithDesc('Predator', 'descPredator')">📌 Speichern</button>
+                    </div>
+                </div>
+                <div class="boat-panel">
+                    <h4>🛶 Dinghy</h4>
+                    <div class="save-boat-section">
+                        <textarea id="descDinghy" class="desc-input" rows="2" placeholder="Beschreibung"></textarea>
+                        <button class="btn-save" onclick="saveTimeWithDesc('Dinghy', 'descDinghy')">📌 Speichern</button>
+                    </div>
+                </div>
+                <div class="boat-panel">
+                    <h4>🚢 Kurtz 31 Patrol Boat</h4>
+                    <div class="save-boat-section">
+                        <textarea id="descPatrolBoat" class="desc-input" rows="2" placeholder="Beschreibung"></textarea>
+                        <button class="btn-save" onclick="saveTimeWithDesc('PatrolBoat', 'descPatrolBoat')">📌 Speichern</button>
+                    </div>
+                </div>
+                <div class="boat-panel">
+                    <h4>🔫 Weaponized Dinghy</h4>
+                    <div class="save-boat-section">
+                        <textarea id="descWeaponized" class="desc-input" rows="2" placeholder="Beschreibung"></textarea>
+                        <button class="btn-save" onclick="saveTimeWithDesc('WeaponizedDinghy', 'descWeaponized')">📌 Speichern</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section-title">👥 REGISTRIERTE PERSONEN</div>
+            <div id="allNamesList" class="name-list"><span style="color:#aaa;">Laden...</span></div>
+
+            <div class="search-results">
+                <h3 style="margin:0 0 8px 0;">📋 Zeiten & Beschreibungen</h3>
+                <div class="input-group" style="justify-content: flex-start;">
+                    <input type="text" id="searchName" placeholder="Name eingeben oder anklicken..." oninput="autoLoadPerson()">
+                </div>
+                <div id="resultTable"><p style="color:#bbd4ff;">🔍 Wähle eine Person aus.</p></div>
+            </div>
+            <div class="info-note">💡 Jede Zeit mit individueller Beschreibung – unbegrenzt viele Einträge.</div>
+        </div>
+
+        <!-- ========== TAB 3: BESCHLAGNAHMUNGEN ========== -->
+        <div id="tab-confiscations" class="tab-content">
+            <div class="confiscation-header">
+                <h3 style="color:#ffaa33; margin:0;">📋 Beschlagnahmungen</h3>
+                <button class="btn-new-confiscation" onclick="openNewConfiscationModal()">➕ Neue Beschlagnahmung</button>
+            </div>
+
+            <div class="confiscation-summary" id="confiscationMoneySummary">
+                <div class="money-badge green">🟢 Grüngeld: <span id="totalGreenDisplay">0 €</span></div>
+                <div class="money-badge black">⚫ Schwarzgeld: <span id="totalBlackDisplay">0 €</span></div>
+            </div>
+
+            <div class="confiscation-table-wrapper">
+                <table id="confiscationTable">
+                    <thead>
+                        <tr>
+                            <th>Typ</th><th>Name</th><th>Datum</th><th>Uhrzeit</th>
+                            <th>Abgenommen von</th><th>Abgegeben an</th>
+                            <th>Grüngeld</th><th>Schwarzgeld</th>
+                            <th>Gegenstände</th><th>Notizen</th><th>Aktion</th>
+                        </tr>
+                    </thead>
+                    <tbody id="confiscationTableBody">
+                        <tr><td colspan="11" style="text-align:center;">Keine Beschlagnahmungen vorhanden.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="stats-bar" id="confiscationStats">
+                <div class="stat-item"><div class="stat-val" id="statTotalItems">0</div><div class="stat-lbl">Gegenstände Gesamt</div></div>
+                <div class="stat-item"><div class="stat-val" id="statWeaponParts">0</div><div class="stat-lbl">Waffenteile</div></div>
+                <div class="stat-item"><div class="stat-val" id="statTotalConfiscations">0</div><div class="stat-lbl">Beschlagnahmungen</div></div>
             </div>
         </div>
-        <div class="boat-panel">
-            <h4>🛶 Dinghy</h4>
-            <div class="save-boat-section">
-                <textarea id="descDinghy" class="desc-input" rows="2" placeholder="Beschreibung"></textarea>
-                <button class="btn-save" onclick="saveTimeWithDesc('Dinghy', 'descDinghy')">📌 Speichern</button>
+    </div>
+
+    <!-- ========== MODAL: Neue Beschlagnahmung ========== -->
+    <div class="modal-overlay" id="confiscationModalOverlay">
+        <div class="modal" id="confiscationModal">
+            <button class="close-modal-x" onclick="closeConfiscationModal()">✕</button>
+            <h3>📝 Neue Beschlagnahmung</h3>
+            <div class="modal-grid">
+                <!-- Linke Spalte -->
+                <div class="modal-field">
+                    <label>👤 Typ (Zivil / Familie)</label>
+                    <select id="modalType">
+                        <option value="">Bitte wählen...</option>
+                        <option value="Zivil">Zivil</option>
+                        <option value="Familie">Familie</option>
+                    </select>
+                </div>
+                <div class="modal-field">
+                    <label>🕐 Uhrzeit</label>
+                    <input type="time" id="modalTime" value="">
+                </div>
+                <div class="modal-field">
+                    <label>👮 Abgenommen von</label>
+                    <select id="modalTakenBy">
+                        <option value="">Bitte wählen...</option>
+                        <option value="SEAL">SEAL</option>
+                        <option value="USA">USA</option>
+                        <option value="PD">PD</option>
+                        <option value="DOJ">DOJ</option>
+                        <option value="FIB">FIB</option>
+                    </select>
+                </div>
+                <div class="modal-field">
+                    <label>📤 Abgegeben an</label>
+                    <select id="modalGivenTo">
+                        <option value="">Bitte wählen...</option>
+                        <option value="SEAL">SEAL</option>
+                        <option value="USA">USA</option>
+                        <option value="PD">PD</option>
+                        <option value="DOJ">DOJ</option>
+                        <option value="FIB">FIB</option>
+                    </select>
+                </div>
+                <div class="modal-field">
+                    <label>📅 Datum</label>
+                    <input type="date" id="modalDate" value="">
+                </div>
+                <!-- Rechte Spalte -->
+                <div class="modal-field">
+                    <label>🟢 Grüngeld (€)</label>
+                    <input type="number" id="modalGreenMoney" placeholder="0" min="0" step="0.01" value="0">
+                </div>
+                <div class="modal-field">
+                    <label>⚫ Schwarzgeld (€)</label>
+                    <input type="number" id="modalBlackMoney" placeholder="0" min="0" step="0.01" value="0">
+                </div>
+                <!-- Volle Breite -->
+                <div class="modal-field modal-full">
+                    <label>📦 Erhaltene Gegenstände</label>
+                    <textarea id="modalItems" rows="3" placeholder="z.B.: 5x Waffenteile, 2x Munition, 1x Kokain..."></textarea>
+                </div>
+                <div class="modal-field modal-full">
+                    <label>📝 Notizen</label>
+                    <textarea id="modalNotes" rows="3" placeholder="Weitere Details zur Beschlagnahmung..."></textarea>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeConfiscationModal()">Abbrechen</button>
+                <button class="btn-submit" onclick="saveConfiscation()">✅ Beschlagnahmung speichern</button>
             </div>
         </div>
-        <div class="boat-panel">
-            <h4>🚢 Kurtz 31 Patrol Boat</h4>
-            <div class="save-boat-section">
-                <textarea id="descPatrolBoat" class="desc-input" rows="2" placeholder="Beschreibung"></textarea>
-                <button class="btn-save" onclick="saveTimeWithDesc('PatrolBoat', 'descPatrolBoat')">📌 Speichern</button>
-            </div>
-        </div>
-        <div class="boat-panel">
-            <h4>🔫 Weaponized Dinghy</h4>
-            <div class="save-boat-section">
-                <textarea id="descWeaponized" class="desc-input" rows="2" placeholder="Beschreibung"></textarea>
-                <button class="btn-save" onclick="saveTimeWithDesc('WeaponizedDinghy', 'descWeaponized')">📌 Speichern</button>
-            </div>
-        </div>
     </div>
 
-    <div class="section-title">👥 REGISTRIERTE PERSONEN</div>
-    <div id="allNamesList" class="name-list">
-        <span style="color:#aaa;">Laden...</span>
-    </div>
+    <script>
+        // ---------- FIREBASE ----------
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
+            authDomain: "cc-shop-36c3b.firebaseapp.com",
+            databaseURL: "https://cc-shop-36c3b-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "cc-shop-36c3b",
+            storageBucket: "cc-shop-36c3b.firebasestorage.app",
+            messagingSenderId: "376170741825",
+            appId: "1:376170741825:web:bc6102e277da5ad7cbc6c0"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-    <div class="search-results">
-        <h3 style="margin:0 0 8px 0;">📋 Zeiten & Beschreibungen</h3>
-        <div class="input-group" style="justify-content: flex-start;">
-            <input type="text" id="searchName" placeholder="Name eingeben oder anklicken..." oninput="autoLoadPerson()">
-        </div>
-        <div id="resultTable">
-            <p style="color:#bbd4ff;">🔍 Wähle eine Person aus.</p>
-        </div>
-    </div>
-    <div class="info-note">
-        💡 Jede Zeit mit individueller Beschreibung – unbegrenzt viele Einträge. 
-        <span style="color:#ffaa33; font-size:11px;"></span>
-    </div>
-</div>
+        // ---------- TAB NAVIGATION ----------
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
 
-<script>
-    // ---------- FIREBASE ----------
-    const firebaseConfig = {
-        apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
-        authDomain: "cc-shop-36c3b.firebaseapp.com",
-        databaseURL: "https://cc-shop-36c3b-default-rtdb.europe-west1.firebasedatabase.app",
-        projectId: "cc-shop-36c3b",
-        storageBucket: "cc-shop-36c3b.firebasestorage.app",
-        messagingSenderId: "376170741825",
-        appId: "1:376170741825:web:bc6102e277da5ad7cbc6c0"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-
-    // ---------- ADMIN STATUS & UI ----------
-    let isAdmin = false;
-
-    function toggleAdminPanel() {
-        const panel = document.getElementById("adminHiddenPanel");
-        panel.classList.toggle("show");
-    }
-
-    function adminLogin() {
-        const username = document.getElementById("adminUsername").value.trim().toLowerCase();
-        const password = document.getElementById("adminPassword").value.trim();
-        if (username === "colin" && password === "22122009") {
-            isAdmin = true;
-            document.getElementById("adminLoginArea").style.display = "none";
-            document.getElementById("adminActions").style.display = "flex";
-            // kleinen Hinweis ohne störenden Groß-Alert
-            const smallNote = document.createElement('div');
-            smallNote.style.position = 'fixed'; smallNote.style.bottom = '10px'; smallNote.style.right = '10px';
-            smallNote.style.background = '#ffaa33'; smallNote.style.color = '#000'; smallNote.style.padding = '4px 12px';
-            smallNote.style.borderRadius = '20px'; smallNote.style.fontSize = '11px'; smallNote.style.zIndex = '9999';
-            smallNote.innerText = 'Admin-Modus aktiv (Colin)';
-            document.body.appendChild(smallNote);
-            setTimeout(() => smallNote.remove(), 2000);
-            autoLoadPerson(); // Tabelle mit Löschbuttons neu laden
-        } else {
-            alert("Zugriff verweigert! Nur Colin.");
+            if (tabName === 'home') {
+                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+                document.getElementById('tab-home').classList.add('active');
+                loadHomepageStats();
+            } else if (tabName === 'stopwatch') {
+                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+                document.getElementById('tab-stopwatch').classList.add('active');
+                loadAllUsersSorted();
+            } else if (tabName === 'confiscations') {
+                document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
+                document.getElementById('tab-confiscations').classList.add('active');
+                loadConfiscations();
+            }
         }
-    }
 
-    function adminLogout() {
-        isAdmin = false;
-        document.getElementById("adminLoginArea").style.display = "flex";
-        document.getElementById("adminActions").style.display = "none";
-        document.getElementById("adminUsername").value = "colin";
-        document.getElementById("adminPassword").value = "";
-        autoLoadPerson();
-        const note = document.createElement('div');
-        note.style.position = 'fixed'; note.style.bottom = '10px'; note.style.right = '10px';
-        note.style.background = '#555'; note.style.color = '#fff'; note.style.padding = '4px 12px';
-        note.style.borderRadius = '20px'; note.style.fontSize = '11px';
-        note.innerText = 'Admin-Modus beendet';
-        document.body.appendChild(note);
-        setTimeout(() => note.remove(), 1500);
-    }
+        // ---------- HOMEPAGE STATS ----------
+        function loadHomepageStats() {
+            // Personen zählen
+            database.ref('Navy-boote/users').once('value', (snap) => {
+                const users = snap.val();
+                document.getElementById('statPersons').textContent = users ? Object.keys(users).length : 0;
+            });
+            // Beschlagnahmungen & Geld
+            database.ref('Navy-boote/confiscations').once('value', (snap) => {
+                const data = snap.val();
+                let count = 0;
+                let totalGreen = 0;
+                let totalBlack = 0;
+                if (data) {
+                    const keys = Object.keys(data);
+                    count = keys.length;
+                    keys.forEach(k => {
+                        totalGreen += parseFloat(data[k].greenMoney || 0);
+                        totalBlack += parseFloat(data[k].blackMoney || 0);
+                    });
+                }
+                document.getElementById('statConfiscations').textContent = count;
+                document.getElementById('statTotalGreen').textContent = totalGreen.toFixed(0) + '€';
+                document.getElementById('statTotalBlack').textContent = totalBlack.toFixed(0) + '€';
+            });
+        }
 
-    // Ganze Person löschen (nur Admin)
-    window.deleteCurrentPersonCompletely = async function() {
-        if (!isAdmin) { alert("Nur Colin kann Personen löschen."); return; }
-        const searchField = document.getElementById("searchName");
-        const personName = searchField.value.trim();
-        if (!personName) { alert("Keine Person ausgewählt."); return; }
-        if (!confirm(`⚠️ ADMIN: Person "${personName}" mit ALLEN Zeiten unwiderruflich LÖSCHEN?`)) return;
-        const nameLower = personName.toLowerCase();
-        try {
-            await database.ref(`Navy-boote/users/${nameLower}`).remove();
-            alert(`✅ "${personName}" gelöscht.`);
-            document.getElementById("searchName").value = "";
-            document.getElementById("resultTable").innerHTML = `<p>Person gelöscht.</p>`;
-            loadAllUsersSorted();
+        // ---------- ADMIN ----------
+        let isAdmin = false;
+
+        function toggleAdminPanel() {
+            document.getElementById("adminHiddenPanel").classList.toggle("show");
+        }
+
+        function adminLogin() {
+            const username = document.getElementById("adminUsername").value.trim().toLowerCase();
+            const password = document.getElementById("adminPassword").value.trim();
+            if (username === "colin" && password === "22122009") {
+                isAdmin = true;
+                document.getElementById("adminLoginArea").style.display = "none";
+                document.getElementById("adminActions").style.display = "flex";
+                showToast('Admin-Modus aktiv (Colin)', '#ffaa33');
+                autoLoadPerson();
+            } else {
+                alert("Zugriff verweigert! Nur Colin.");
+            }
+        }
+
+        function adminLogout() {
+            isAdmin = false;
+            document.getElementById("adminLoginArea").style.display = "flex";
+            document.getElementById("adminActions").style.display = "none";
+            document.getElementById("adminUsername").value = "colin";
+            document.getElementById("adminPassword").value = "";
             autoLoadPerson();
-        } catch (err) { alert("Fehler: " + err.message); }
-    };
+            showToast('Admin-Modus beendet', '#555');
+        }
 
-    // ---------- STOPPUHR ----------
-    let startTime = 0, elapsed = 0, interval = null, running = false;
+        window.deleteCurrentPersonCompletely = async function() {
+            if (!isAdmin) { alert("Nur Colin kann Personen löschen."); return; }
+            const searchField = document.getElementById("searchName");
+            const personName = searchField.value.trim();
+            if (!personName) { alert("Keine Person ausgewählt."); return; }
+            if (!confirm(`⚠️ ADMIN: Person "${personName}" mit ALLEN Zeiten unwiderruflich LÖSCHEN?`)) return;
+            const nameLower = personName.toLowerCase();
+            try {
+                await database.ref(`Navy-boote/users/${nameLower}`).remove();
+                alert(`✅ "${personName}" gelöscht.`);
+                document.getElementById("searchName").value = "";
+                document.getElementById("resultTable").innerHTML = `<p>Person gelöscht.</p>`;
+                loadAllUsersSorted();
+                autoLoadPerson();
+            } catch (err) { alert("Fehler: " + err.message); }
+        };
 
-    function formatTime(ms) {
-        let m = Math.floor(ms / 60000);
-        let s = Math.floor((ms % 60000) / 1000);
-        let c = Math.floor((ms % 1000) / 10);
-        return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(c).padStart(2, '0')}`;
-    }
+        function showToast(msg, color) {
+            const note = document.createElement('div');
+            note.style.cssText = `position:fixed;bottom:10px;right:10px;background:${color};color:#000;padding:6px 16px;border-radius:20px;font-size:12px;z-index:9999;font-weight:bold;`;
+            note.innerText = msg;
+            document.body.appendChild(note);
+            setTimeout(() => note.remove(), 2000);
+        }
 
-    function updateDisplay() {
-        elapsed = Date.now() - startTime;
-        document.getElementById("display").textContent = formatTime(elapsed);
-    }
+        // ---------- STOPPUHR ----------
+        let startTime = 0,
+            elapsed = 0,
+            interval = null,
+            running = false;
 
-    function startStop() {
-        if (!running) {
-            startTime = Date.now() - elapsed;
-            interval = setInterval(updateDisplay, 10);
-            running = true;
-            const btn = document.getElementById("startBtn");
-            btn.textContent = "⏸ Stop";
-            btn.style.background = "#aa3300";
-        } else {
+        function formatTime(ms) {
+            let m = Math.floor(ms / 60000);
+            let s = Math.floor((ms % 60000) / 1000);
+            let c = Math.floor((ms % 1000) / 10);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(c).padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            elapsed = Date.now() - startTime;
+            document.getElementById("display").textContent = formatTime(elapsed);
+        }
+
+        function startStop() {
+            if (!running) {
+                startTime = Date.now() - elapsed;
+                interval = setInterval(updateDisplay, 10);
+                running = true;
+                const btn = document.getElementById("startBtn");
+                btn.textContent = "⏸ Stop";
+                btn.style.background = "#aa3300";
+            } else {
+                clearInterval(interval);
+                running = false;
+                const btn = document.getElementById("startBtn");
+                btn.textContent = "▶ Start";
+                btn.style.background = "#0055aa";
+            }
+        }
+
+        function resetTimer() {
             clearInterval(interval);
             running = false;
-            const btn = document.getElementById("startBtn");
-            btn.textContent = "▶ Start";
-            btn.style.background = "#0055aa";
+            elapsed = 0;
+            document.getElementById("display").textContent = "00:00.00";
+            document.getElementById("startBtn").textContent = "▶ Start";
+            document.getElementById("startBtn").style.background = "#0055aa";
         }
-    }
 
-    function reset() {
-        clearInterval(interval);
-        running = false;
-        elapsed = 0;
-        document.getElementById("display").textContent = "00:00.00";
-        document.getElementById("startBtn").textContent = "▶ Start";
-        document.getElementById("startBtn").style.background = "#0055aa";
-    }
-
-    // ---------- SPEICHERN ----------
-    async function saveTimeWithDesc(boatKey, textareaId) {
-        const nameInput = document.getElementById("personName");
-        const personName = nameInput.value.trim();
-        if (!personName) { alert("Bitte Namen eingeben!"); return; }
-        if (elapsed === 0) { alert("Keine gestoppte Zeit!"); return; }
-        const currentTimeStr = formatTime(elapsed);
-        const description = document.getElementById(textareaId).value.trim();
-        const fullDescription = description || "Keine Beschreibung";
-        const userPath = `Navy-boote/users/${personName.toLowerCase()}`;
-        const boatRef = database.ref(`${userPath}/boats/${boatKey}`);
-        try {
-            const snapshot = await boatRef.once('value');
-            let entries = snapshot.val();
-            if (!entries || !Array.isArray(entries)) entries = [];
-            entries.push({
-                time: currentTimeStr,
-                desc: fullDescription,
-                timestamp: Date.now()
-            });
-            await boatRef.set(entries);
-            await database.ref(`${userPath}/lastUpdated`).set(Date.now());
-            document.getElementById(textareaId).value = "";
-            document.getElementById("searchName").value = personName;
-            autoLoadPerson();
-            alert(`✅ ${currentTimeStr} für ${personName} (${boatKey}) gespeichert!`);
-        } catch (error) { alert("Fehler: " + error.message); }
-    }
-
-    // ---------- EINTRAG LÖSCHEN (nur Admin) ----------
-    window.deleteSingleEntry = async function(personNameLower, boatInternal, timestampToDelete) {
-        if (!isAdmin) { alert("Nur Colin kann Einträge löschen."); return; }
-        if (!confirm("Diesen Zeit-Eintrag endgültig löschen?")) return;
-        try {
-            const boatRef = database.ref(`Navy-boote/users/${personNameLower}/boats/${boatInternal}`);
-            const snapshot = await boatRef.once('value');
-            let entries = snapshot.val();
-            if (entries && Array.isArray(entries)) {
-                const newEntries = entries.filter(entry => entry.timestamp !== timestampToDelete);
-                await boatRef.set(newEntries);
-                await database.ref(`Navy-boote/users/${personNameLower}/lastUpdated`).set(Date.now());
-                alert("Eintrag gelöscht.");
+        async function saveTimeWithDesc(boatKey, textareaId) {
+            const nameInput = document.getElementById("personName");
+            const personName = nameInput.value.trim();
+            if (!personName) { alert("Bitte Namen eingeben!"); return; }
+            if (elapsed === 0) { alert("Keine gestoppte Zeit!"); return; }
+            const currentTimeStr = formatTime(elapsed);
+            const description = document.getElementById(textareaId).value.trim();
+            const fullDescription = description || "Keine Beschreibung";
+            const userPath = `Navy-boote/users/${personName.toLowerCase()}`;
+            const boatRef = database.ref(`${userPath}/boats/${boatKey}`);
+            try {
+                const snapshot = await boatRef.once('value');
+                let entries = snapshot.val();
+                if (!entries || !Array.isArray(entries)) entries = [];
+                entries.push({
+                    time: currentTimeStr,
+                    desc: fullDescription,
+                    timestamp: Date.now()
+                });
+                await boatRef.set(entries);
+                await database.ref(`${userPath}/lastUpdated`).set(Date.now());
+                document.getElementById(textareaId).value = "";
+                document.getElementById("searchName").value = personName;
                 autoLoadPerson();
-                loadAllUsersSorted();
-            } else { alert("Eintrag nicht gefunden."); }
-        } catch (e) { alert("Fehler: " + e.message); }
-    };
-
-    // ---------- LIVE-DATEN ----------
-    let currentPersonListenerRef = null;
-
-    function autoLoadPerson() {
-        const rawName = document.getElementById("searchName").value.trim();
-        if (!rawName) {
-            document.getElementById("resultTable").innerHTML = `<p>✏️ Namen eingeben oder aus Liste wählen.</p>`;
-            if (currentPersonListenerRef) currentPersonListenerRef.off();
-            return;
+                alert(`✅ ${currentTimeStr} für ${personName} (${boatKey}) gespeichert!`);
+            } catch (error) { alert("Fehler: " + error.message); }
         }
-        const nameLower = rawName.toLowerCase();
-        listenToPersonData(nameLower);
-    }
 
-    function listenToPersonData(personNameLower) {
-        if (currentPersonListenerRef) currentPersonListenerRef.off();
-        const personRef = database.ref(`Navy-boote/users/${personNameLower}`);
-        currentPersonListenerRef = personRef;
-        personRef.on('value', (snapshot) => {
-            const data = snapshot.val();
-            const container = document.getElementById("resultTable");
-            const displayName = personNameLower.charAt(0).toUpperCase() + personNameLower.slice(1);
-            if (!data || !data.boats) {
-                container.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:15px;">⚓ ${displayName} hat noch keine Zeiten.</div>`;
+        window.deleteSingleEntry = async function(personNameLower, boatInternal, timestampToDelete) {
+            if (!isAdmin) { alert("Nur Colin kann Einträge löschen."); return; }
+            if (!confirm("Diesen Zeit-Eintrag endgültig löschen?")) return;
+            try {
+                const boatRef = database.ref(`Navy-boote/users/${personNameLower}/boats/${boatInternal}`);
+                const snapshot = await boatRef.once('value');
+                let entries = snapshot.val();
+                if (entries && Array.isArray(entries)) {
+                    const newEntries = entries.filter(entry => entry.timestamp !== timestampToDelete);
+                    await boatRef.set(newEntries);
+                    await database.ref(`Navy-boote/users/${personNameLower}/lastUpdated`).set(Date.now());
+                    alert("Eintrag gelöscht.");
+                    autoLoadPerson();
+                    loadAllUsersSorted();
+                } else { alert("Eintrag nicht gefunden."); }
+            } catch (e) { alert("Fehler: " + e.message); }
+        };
+
+        let currentPersonListenerRef = null;
+
+        function autoLoadPerson() {
+            const rawName = document.getElementById("searchName").value.trim();
+            if (!rawName) {
+                document.getElementById("resultTable").innerHTML = `<p>✏️ Namen eingeben oder aus Liste wählen.</p>`;
+                if (currentPersonListenerRef) currentPersonListenerRef.off();
                 return;
             }
-            const boatLabels = {
-                "Predator": "⚡ U.S Navy Predator",
-                "Dinghy": "🛶 Dinghy",
-                "PatrolBoat": "🚢 Kurtz 31 Patrol Boat",
-                "WeaponizedDinghy": "💥 Weaponized Dinghy"
-            };
-            let html = `<div class="table-wrapper"><h4>👤 ${displayName} ${isAdmin ? '<span style="color:#ffaa33;">(Admin ✨)</span>' : ''}</h4>
-                        <table><thead><tr><th>Bootstyp</th><th>Zeit</th><th>Beschreibung</th>${isAdmin ? '<th>Aktion</th>' : ''}</tr></thead><tbody>`;
-            for (const [boatInternal, boatNice] of Object.entries(boatLabels)) {
-                const entries = data.boats[boatInternal];
-                if (entries && Array.isArray(entries) && entries.length > 0) {
-                    const sorted = [...entries].sort((a,b) => (b.timestamp||0) - (a.timestamp||0));
-                    sorted.forEach((entry, idx) => {
-                        const timeVal = entry.time || "??:??.??";
-                        const descVal = entry.desc || "Keine Beschreibung";
-                        const ts = entry.timestamp || Date.now();
-                        html += `<tr><td>${idx === 0 ? boatNice : "↳ " + boatNice}</td>
-                                 <td><span class="badge-time">⏱️ ${timeVal}</span></td>
-                                 <td><div class="entry-description">📝 ${escapeHtml(descVal)}</div></td>`;
-                        if (isAdmin) {
-                            html += `<td><button class="delete-btn" onclick="deleteSingleEntry('${personNameLower}', '${boatInternal}', ${ts})" title="Eintrag löschen">🗑️</button></td>`;
-                        }
-                        html += `</tr>`;
+            const nameLower = rawName.toLowerCase();
+            listenToPersonData(nameLower);
+        }
+
+        function listenToPersonData(personNameLower) {
+            if (currentPersonListenerRef) currentPersonListenerRef.off();
+            const personRef = database.ref(`Navy-boote/users/${personNameLower}`);
+            currentPersonListenerRef = personRef;
+            personRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                const container = document.getElementById("resultTable");
+                const displayName = personNameLower.charAt(0).toUpperCase() + personNameLower.slice(1);
+                if (!data || !data.boats) {
+                    container.innerHTML =
+                        `<div style="background:rgba(0,0,0,0.5); padding:15px;">⚓ ${displayName} hat noch keine Zeiten.</div>`;
+                    return;
+                }
+                const boatLabels = {
+                    "Predator": "⚡ U.S Navy Predator",
+                    "Dinghy": "🛶 Dinghy",
+                    "PatrolBoat": "🚢 Kurtz 31 Patrol Boat",
+                    "WeaponizedDinghy": "💥 Weaponized Dinghy"
+                };
+                let html =
+                    `<div class="table-wrapper"><h4>👤 ${displayName} ${isAdmin ? '<span style="color:#ffaa33;">(Admin ✨)</span>' : ''}</h4>
+                    <table><thead><tr><th>Bootstyp</th><th>Zeit</th><th>Beschreibung</th>${isAdmin ? '<th>Aktion</th>' : ''}</tr></thead><tbody>`;
+                for (const [boatInternal, boatNice] of Object.entries(boatLabels)) {
+                    const entries = data.boats[boatInternal];
+                    if (entries && Array.isArray(entries) && entries.length > 0) {
+                        const sorted = [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                        sorted.forEach((entry, idx) => {
+                            const timeVal = entry.time || "??:??.??";
+                            const descVal = entry.desc || "Keine Beschreibung";
+                            const ts = entry.timestamp || Date.now();
+                            html +=
+                                `<tr><td>${idx === 0 ? boatNice : "↳ " + boatNice}</td>
+                             <td><span class="badge-time">⏱️ ${timeVal}</span></td>
+                             <td><div class="entry-description">📝 ${escapeHtml(descVal)}</div></td>`;
+                            if (isAdmin) {
+                                html +=
+                                    `<td><button class="delete-btn" onclick="deleteSingleEntry('${personNameLower}', '${boatInternal}', ${ts})" title="Eintrag löschen">🗑️</button></td>`;
+                            }
+                            html += `</tr>`;
+                        });
+                    } else {
+                        const colspanVal = isAdmin ? 3 : 2;
+                        html +=
+                            `<tr><td>${boatNice}</td><td colspan="${colspanVal}">— keine Zeiten —</td>${isAdmin ? '<td></td>' : ''}</tr>`;
+                    }
+                }
+                html +=
+                    `</tbody></table>${isAdmin ? '<p style="margin-top:10px; font-size:12px; color:#ffaa66;">🔐 Admin: Klick auf 🗑️ löscht nur diesen Eintrag.</p>' : ''}</div>`;
+                container.innerHTML = html;
+            });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function loadAllUsersSorted() {
+            const usersRef = database.ref('Navy-boote/users');
+            usersRef.on('value', (snapshot) => {
+                const users = snapshot.val();
+                const listDiv = document.getElementById('allNamesList');
+                listDiv.innerHTML = '';
+                if (users) {
+                    const userArray = Object.keys(users).map(nameKey => ({
+                        name: nameKey,
+                        lastUpdated: users[nameKey].lastUpdated || 0
+                    }));
+                    userArray.sort((a, b) => b.lastUpdated - a.lastUpdated);
+                    userArray.forEach(user => {
+                        const displayName = user.name.charAt(0).toUpperCase() + user.name.slice(1);
+                        const btn = document.createElement('div');
+                        btn.className = 'name-tag';
+                        btn.textContent = displayName;
+                        btn.onclick = () => {
+                            document.getElementById('personName').value = displayName;
+                            document.getElementById('searchName').value = displayName;
+                            autoLoadPerson();
+                        };
+                        listDiv.appendChild(btn);
                     });
                 } else {
-                    html += `<tr><td>${boatNice}</td><td colspan="2">— keine Zeiten —</td>${isAdmin ? '<td></td>' : ''}</tr>`;
+                    listDiv.innerHTML = '<span>⚓ Keine Personen erfasst.</span>';
                 }
-            }
-            html += `</tbody></table>${isAdmin ? '<p style="margin-top:10px; font-size:12px; color:#ffaa66;">🔐 Admin: Klick auf 🗑️ löscht nur diesen Eintrag.</p>' : ''}</div>`;
-            container.innerHTML = html;
-        });
-    }
+            });
+        }
 
-    function escapeHtml(str) {
-        if (!str) return "";
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
-    }
+        // ==========================================
+        // === BESCHLAGNAHMUNGEN (TAB 3) ===
+        // ==========================================
+        const AGENCY_OPTIONS = ["SEAL", "USA", "PD", "DOJ", "FIB"];
+        let editingConfiscationId = null;
 
-    // ---------- PERSONENLISTE ----------
-    function loadAllUsersSorted() {
-        const usersRef = database.ref('Navy-boote/users');
-        usersRef.on('value', (snapshot) => {
-            const users = snapshot.val();
-            const listDiv = document.getElementById('allNamesList');
-            listDiv.innerHTML = '';
-            if (users) {
-                const userArray = Object.keys(users).map(nameKey => ({
-                    name: nameKey,
-                    lastUpdated: users[nameKey].lastUpdated || 0
-                }));
-                userArray.sort((a, b) => b.lastUpdated - a.lastUpdated);
-                userArray.forEach(user => {
-                    const displayName = user.name.charAt(0).toUpperCase() + user.name.slice(1);
-                    const btn = document.createElement('div');
-                    btn.className = 'name-tag';
-                    btn.textContent = displayName;
-                    btn.onclick = () => {
-                        document.getElementById('personName').value = displayName;
-                        document.getElementById('searchName').value = displayName;
-                        autoLoadPerson();
-                    };
-                    listDiv.appendChild(btn);
-                });
+        function openNewConfiscationModal(editData = null) {
+            const modal = document.getElementById('confiscationModalOverlay');
+            const now = new Date();
+            const dateStr = now.toISOString().split('T')[0];
+            const timeStr = now.toTimeString().slice(0, 5);
+
+            if (editData) {
+                editingConfiscationId = editData.id;
+                document.getElementById('modalType').value = editData.type || '';
+                document.getElementById('modalTime').value = editData.time || timeStr;
+                document.getElementById('modalTakenBy').value = editData.takenBy || '';
+                document.getElementById('modalGivenTo').value = editData.givenTo || '';
+                document.getElementById('modalDate').value = editData.date || dateStr;
+                document.getElementById('modalGreenMoney').value = editData.greenMoney || 0;
+                document.getElementById('modalBlackMoney').value = editData.blackMoney || 0;
+                document.getElementById('modalItems').value = editData.items || '';
+                document.getElementById('modalNotes').value = editData.notes || '';
+                document.querySelector('#confiscationModal h3').textContent = '✏️ Beschlagnahmung bearbeiten';
             } else {
-                listDiv.innerHTML = '<span>⚓ Keine Personen erfasst.</span>';
+                editingConfiscationId = null;
+                document.getElementById('modalType').value = '';
+                document.getElementById('modalTime').value = timeStr;
+                document.getElementById('modalTakenBy').value = '';
+                document.getElementById('modalGivenTo').value = '';
+                document.getElementById('modalDate').value = dateStr;
+                document.getElementById('modalGreenMoney').value = 0;
+                document.getElementById('modalBlackMoney').value = 0;
+                document.getElementById('modalItems').value = '';
+                document.getElementById('modalNotes').value = '';
+                document.querySelector('#confiscationModal h3').textContent = '📝 Neue Beschlagnahmung';
             }
-        });
-    }
+            modal.classList.add('show');
+        }
 
-    loadAllUsersSorted();
-    document.getElementById("searchName").addEventListener("input", autoLoadPerson);
-</script>
+        function closeConfiscationModal() {
+            document.getElementById('confiscationModalOverlay').classList.remove('show');
+            editingConfiscationId = null;
+        }
+
+        async function saveConfiscation() {
+            const type = document.getElementById('modalType').value;
+            const time = document.getElementById('modalTime').value;
+            const takenBy = document.getElementById('modalTakenBy').value;
+            const givenTo = document.getElementById('modalGivenTo').value;
+            const date = document.getElementById('modalDate').value;
+            const greenMoney = parseFloat(document.getElementById('modalGreenMoney').value) || 0;
+            const blackMoney = parseFloat(document.getElementById('modalBlackMoney').value) || 0;
+            const items = document.getElementById('modalItems').value.trim();
+            const notes = document.getElementById('modalNotes').value.trim();
+
+            if (!type) { alert("Bitte Typ (Zivil/Familie) auswählen!"); return; }
+            if (!takenBy) { alert("Bitte 'Abgenommen von' auswählen!"); return; }
+            if (!givenTo) { alert("Bitte 'Abgegeben an' auswählen!"); return; }
+
+            const data = {
+                type,
+                time: time || '',
+                takenBy,
+                givenTo,
+                date: date || new Date().toISOString().split('T')[0],
+                greenMoney,
+                blackMoney,
+                items,
+                notes,
+                timestamp: Date.now()
+            };
+
+            try {
+                const confiscationsRef = database.ref('Navy-boote/confiscations');
+                if (editingConfiscationId) {
+                    await confiscationsRef.child(editingConfiscationId).update(data);
+                    showToast('Beschlagnahmung aktualisiert!', '#2ecc40');
+                } else {
+                    await confiscationsRef.push(data);
+                    showToast('Beschlagnahmung gespeichert!', '#2ecc40');
+                }
+                closeConfiscationModal();
+                loadConfiscations();
+                loadHomepageStats();
+            } catch (err) {
+                alert("Fehler beim Speichern: " + err.message);
+            }
+        }
+
+        function loadConfiscations() {
+            database.ref('Navy-boote/confiscations').on('value', (snap) => {
+                const data = snap.val();
+                const tbody = document.getElementById('confiscationTableBody');
+                let totalGreen = 0,
+                    totalBlack = 0,
+                    totalItems = 0,
+                    weaponPartsCount = 0;
+                const entries = [];
+
+                if (data) {
+                    Object.entries(data).forEach(([id, entry]) => {
+                        entries.push({ id, ...entry });
+                        totalGreen += parseFloat(entry.greenMoney || 0);
+                        totalBlack += parseFloat(entry.blackMoney || 0);
+                    });
+                }
+
+                // Sortieren nach timestamp absteigend
+                entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                if (entries.length === 0) {
+                    tbody.innerHTML =
+                        '<tr><td colspan="11" style="text-align:center;">Keine Beschlagnahmungen vorhanden.</td></tr>';
+                } else {
+                    tbody.innerHTML = entries.map(entry => {
+                        totalItems += countItems(entry.items);
+                        weaponPartsCount += countWeaponParts(entry.items);
+                        return `
+                        <tr>
+                            <td>${escapeHtml(entry.type || '-')}</td>
+                            <td>${escapeHtml(entry.type || '')}</td>
+                            <td>${escapeHtml(entry.date || '-')}</td>
+                            <td>${escapeHtml(entry.time || '-')}</td>
+                            <td>${escapeHtml(entry.takenBy || '-')}</td>
+                            <td>${escapeHtml(entry.givenTo || '-')}</td>
+                            <td><span style="color:#2ecc40;">${(entry.greenMoney || 0).toFixed(0)}€</span></td>
+                            <td><span style="color:#ccc;">${(entry.blackMoney || 0).toFixed(0)}€</span></td>
+                            <td>${escapeHtml(entry.items || '-')}</td>
+                            <td>${escapeHtml(entry.notes || '-')}</td>
+                            <td>
+                                ${isAdmin ? `<button class="delete-btn" onclick="editConfiscation('${entry.id}')" title="Bearbeiten">✏️</button>
+                                <button class="delete-btn" onclick="deleteConfiscation('${entry.id}')" title="Löschen">🗑️</button>` : '-'}
+                            </td>
+                        </tr>`;
+                    }).join('');
+                }
+
+                // Summary & Stats updaten
+                document.getElementById('totalGreenDisplay').textContent = totalGreen.toFixed(0) + ' €';
+                document.getElementById('totalBlackDisplay').textContent = totalBlack.toFixed(0) + ' €';
+                document.getElementById('statTotalItems').textContent = totalItems;
+                document.getElementById('statWeaponParts').textContent = weaponPartsCount;
+                document.getElementById('statTotalConfiscations').textContent = entries.length;
+            });
+        }
+
+        function countItems(itemsStr) {
+            if (!itemsStr) return 0;
+            // Zählt Zahlen vor "x" (z.B. "5x Waffenteile" → 5)
+            const matches = itemsStr.match(/(\d+)\s*x/gi);
+            if (!matches) return 0;
+            return matches.reduce((sum, m) => sum + (parseInt(m.match(/\d+/)[0]) || 0), 0);
+        }
+
+        function countWeaponParts(itemsStr) {
+            if (!itemsStr) return 0;
+            // Zählt nur Zeilen mit "Waffenteil" (case-insensitive)
+            const lines = itemsStr.split(/[\n,;]+/);
+            return lines.reduce((sum, line) => {
+                if (/waffenteil/i.test(line)) {
+                    const numMatch = line.match(/(\d+)/);
+                    return sum + (numMatch ? parseInt(numMatch[1]) : 1);
+                }
+                return sum;
+            }, 0);
+        }
+
+        async function deleteConfiscation(id) {
+            if (!isAdmin) { alert("Nur Colin kann löschen."); return; }
+            if (!confirm("Diese Beschlagnahmung endgültig löschen?")) return;
+            try {
+                await database.ref(`Navy-boote/confiscations/${id}`).remove();
+                showToast('Beschlagnahmung gelöscht.', '#ff4444');
+                loadConfiscations();
+                loadHomepageStats();
+            } catch (err) { alert("Fehler: " + err.message); }
+        }
+
+        async function editConfiscation(id) {
+            if (!isAdmin) { alert("Nur Colin kann bearbeiten."); return; }
+            try {
+                const snap = await database.ref(`Navy-boote/confiscations/${id}`).once('value');
+                const data = snap.val();
+                if (data) {
+                    openNewConfiscationModal({ id, ...data });
+                }
+            } catch (err) { alert("Fehler: " + err.message); }
+        }
+
+        // Modal schließen bei Klick außerhalb
+        document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeConfiscationModal();
+        });
+
+        // ========== INIT ==========
+        loadAllUsersSorted();
+        loadHomepageStats();
+        document.getElementById("searchName").addEventListener("input", autoLoadPerson);
+
+        // Setze heutiges Datum & Uhrzeit als Default im Modal
+        const now = new Date();
+        document.getElementById('modalDate').value = now.toISOString().split('T')[0];
+        document.getElementById('modalTime').value = now.toTimeString().slice(0, 5);
+    </script>
 </body>
 </html>
