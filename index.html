@@ -544,78 +544,29 @@ async function deleteConfiscation(id) { if (!isAdmin) return alert('Nur Admin!')
 async function editConfiscation(id) { if (!isAdmin) return alert('Nur Admin!'); const snap = await database.ref('Navy-boote/confiscations/' + id).once('value'); const data = snap.val(); if (data) openNewConfiscationModal({ id, ...data }); }
 document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) { if (e.target === this) closeConfiscationModal(); });
 
-// ==================== AUSZAHLUNG (NUTZT ALLE LOGIN-USER AUS users_auth) ====================
+// ==================== AUSZAHLUNG ====================
 let currentPayoutWeek = '';
-
-function getMonday(date) {
-    const d = new Date(date);
-    const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-    d.setDate(diff);
-    d.setHours(0, 0, 0, 0);
-    return d;
-}
-
-function getSunday(monday) {
-    const d = new Date(monday);
-    d.setDate(d.getDate() + 6);
-    d.setHours(23, 59, 59, 999);
-    return d;
-}
-
-function getWeekKey(monday) {
-    const y = monday.getFullYear();
-    const m = String(monday.getMonth() + 1).padStart(2, '0');
-    const d = String(monday.getDate()).padStart(2, '0');
-    return y + '-' + m + '-' + d;
-}
-
-function getWeekString(monday) {
-    const sun = getSunday(monday);
-    const mo = monday.getDate() + '.' + (monday.getMonth() + 1);
-    const so = sun.getDate() + '.' + (sun.getMonth() + 1) + '.' + sun.getFullYear();
-    return mo + ' - ' + so;
-}
-
-function goToCurrentWeek() {
-    const monday = getMonday(new Date());
-    currentPayoutWeek = getWeekKey(monday);
-    document.getElementById('payoutWeekInput').value = currentPayoutWeek;
-}
-
-function previousWeek() {
-    const d = new Date(currentPayoutWeek + 'T00:00:00');
-    d.setDate(d.getDate() - 7);
-    currentPayoutWeek = getWeekKey(d);
-    document.getElementById('payoutWeekInput').value = currentPayoutWeek;
-    loadPayoutData();
-}
-
-function nextWeek() {
-    const d = new Date(currentPayoutWeek + 'T00:00:00');
-    d.setDate(d.getDate() + 7);
-    currentPayoutWeek = getWeekKey(d);
-    document.getElementById('payoutWeekInput').value = currentPayoutWeek;
-    loadPayoutData();
-}
+function getMonday(date) { const d = new Date(date); const day = d.getDay(); const diff = d.getDate() - day + (day === 0 ? -6 : 1); d.setDate(diff); d.setHours(0, 0, 0, 0); return d; }
+function getSunday(monday) { const d = new Date(monday); d.setDate(d.getDate() + 6); d.setHours(23, 59, 59, 999); return d; }
+function getWeekKey(monday) { const y = monday.getFullYear(); const m = String(monday.getMonth() + 1).padStart(2, '0'); const d = String(monday.getDate()).padStart(2, '0'); return y + '-' + m + '-' + d; }
+function getWeekString(monday) { const sun = getSunday(monday); const mo = monday.getDate() + '.' + (monday.getMonth() + 1); const so = sun.getDate() + '.' + (sun.getMonth() + 1) + '.' + sun.getFullYear(); return mo + ' - ' + so; }
+function goToCurrentWeek() { const monday = getMonday(new Date()); currentPayoutWeek = getWeekKey(monday); document.getElementById('payoutWeekInput').value = currentPayoutWeek; }
+function previousWeek() { const d = new Date(currentPayoutWeek + 'T00:00:00'); d.setDate(d.getDate() - 7); currentPayoutWeek = getWeekKey(d); document.getElementById('payoutWeekInput').value = currentPayoutWeek; loadPayoutData(); }
+function nextWeek() { const d = new Date(currentPayoutWeek + 'T00:00:00'); d.setDate(d.getDate() + 7); currentPayoutWeek = getWeekKey(d); document.getElementById('payoutWeekInput').value = currentPayoutWeek; loadPayoutData(); }
 
 async function loadPayoutData() {
     const weekInput = document.getElementById('payoutWeekInput').value;
     if (!weekInput) return;
     currentPayoutWeek = weekInput;
-
     const monday = new Date(weekInput + 'T00:00:00');
     const sunday = getSunday(monday);
     const weekKey = getWeekKey(monday);
-
     document.getElementById('payoutInfo').textContent = '📅 Woche: ' + getWeekString(monday) + ' | Mo ' + weekKey + ' bis So ' + getWeekKey(sunday);
 
-    // ALLE Login-User aus users_auth laden
     const usersSnap = await database.ref('Navy-boote/users_auth').once('value');
     const allUsers = usersSnap.val() || {};
     const userNames = Object.keys(allUsers);
 
-    // User-Liste anzeigen
     const listDiv = document.getElementById('payoutUserList');
     if (userNames.length === 0) {
         listDiv.innerHTML = '<span style="color:#aaa;font-size:12px;">Keine User im System.</span>';
@@ -627,7 +578,6 @@ async function loadPayoutData() {
         `).join('');
     }
 
-    // Bestehende Auszahlungsdaten
     const payoutSnap = await database.ref('Navy-boote/payouts/' + weekKey).once('value');
     const payoutData = payoutSnap.val() || {};
 
@@ -635,7 +585,7 @@ async function loadPayoutData() {
     let totalKontrollen = 0, totalSumme = 0, totalAusgezahlt = 0, totalOffen = 0;
 
     if (userNames.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Keine Benutzer im System. Admin kann welche im 🔑 Admin-Tab erstellen.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Keine Benutzer im System.</td></tr>';
     } else {
         tbody.innerHTML = '';
         for (const name of userNames) {
@@ -645,16 +595,12 @@ async function loadPayoutData() {
             totalSumme += summe;
             if (saved.paid) totalAusgezahlt += summe;
             else totalOffen += summe;
-
             const displayName = name.charAt(0).toUpperCase() + name.slice(1);
             const paidStatus = saved.paid ? '<span class="payout-status paid">✅ Ausgezahlt</span>' : '<span class="payout-status unpaid">⏳ Offen</span>';
-
             tbody.innerHTML += `
                 <tr>
                     <td><strong>${esc(displayName)}</strong> ${allUsers[name].isAdmin ? '<span style="color:#ff5555;font-size:10px;">Admin</span>' : ''}</td>
-                    <td>
-                        ${isAdmin ? `<input type="number" class="count-input" value="${saved.count}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : `<strong>${saved.count}</strong>`}
-                    </td>
+                    <td>${isAdmin ? `<input type="number" class="count-input" value="${saved.count}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : `<strong>${saved.count}</strong>`}</td>
                     <td>${PRICE_PER_CHECK.toLocaleString('de-DE')} $</td>
                     <td class="amount-cell">${summe.toLocaleString('de-DE')} $</td>
                     <td style="display:flex;align-items:center;gap:4px;">
@@ -676,23 +622,8 @@ async function loadPayoutData() {
     });
 }
 
-async function updatePayoutCount(name, newCount) {
-    if (!isAdmin) return;
-    const count = parseInt(newCount) || 0;
-    const weekKey = currentPayoutWeek;
-    await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ count });
-    loadPayoutData();
-}
-
-async function togglePayoutPaid(name, isPaid) {
-    if (!isAdmin) return;
-    const weekKey = currentPayoutWeek;
-    const updateData = { paid: isPaid };
-    if (isPaid) updateData.paidAt = Date.now();
-    else updateData.paidAt = null;
-    await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update(updateData);
-    loadPayoutData();
-}
+async function updatePayoutCount(name, newCount) { if (!isAdmin) return; const count = parseInt(newCount) || 0; const weekKey = currentPayoutWeek; await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ count }); loadPayoutData(); }
+async function togglePayoutPaid(name, isPaid) { if (!isAdmin) return; const weekKey = currentPayoutWeek; const updateData = { paid: isPaid }; if (isPaid) updateData.paidAt = Date.now(); else updateData.paidAt = null; await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update(updateData); loadPayoutData(); }
 
 let editingFamilyId = null;
 function openFamilyModal(editData = null) {
