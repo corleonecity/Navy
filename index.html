@@ -335,10 +335,6 @@
             font-size: 11px;
             padding: 4px 10px;
         }
-        .colin-only {
-            font-size: 10px;
-            color: #ffaa55;
-        }
         .boats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -569,7 +565,7 @@
             border-radius: 20px;
             padding: 24px;
             width: 90%;
-            max-width: 750px;
+            max-width: 800px;
             max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
@@ -611,7 +607,6 @@
             transform: none;
         }
 
-        /* MODAL ROWS */
         .modal-row {
             display: flex;
             gap: 15px;
@@ -627,8 +622,12 @@
             min-width: 160px;
         }
         .modal-field.small {
-            flex: 0.6;
-            min-width: 130px;
+            flex: 0.7;
+            min-width: 140px;
+        }
+        .modal-field.xsmall {
+            flex: 0.5;
+            min-width: 110px;
         }
         .modal-field label {
             font-size: 11px;
@@ -685,6 +684,22 @@
             background: #ffaa33;
             color: #000;
         }
+        .btn-family-name {
+            background: rgba(100, 180, 255, 0.2);
+            border: 1px solid #64b4ff;
+            color: #64b4ff;
+            font-size: 11px;
+            padding: 8px 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: 0.2s;
+            margin-left: 4px;
+        }
+        .btn-family-name:hover {
+            background: rgba(100, 180, 255, 0.4);
+            transform: none;
+        }
         .modal-actions {
             display: flex;
             gap: 12px;
@@ -705,7 +720,6 @@
             background: #388e3c;
             box-shadow: 0 0 15px rgba(76, 175, 80, 0.3);
         }
-
         .money-input {
             display: flex;
             align-items: center;
@@ -714,6 +728,131 @@
         .money-input span {
             color: #8ab4e0;
             font-weight: bold;
+        }
+
+        /* ========== FAMILIEN TAB ========== */
+        .families-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .btn-new-family {
+            background: linear-gradient(135deg, #2a3a6e, #1a2a4e);
+            border: 2px solid #64b4ff;
+            color: #64b4ff;
+            font-size: 15px;
+            padding: 12px 24px;
+            letter-spacing: 1px;
+        }
+        .btn-new-family:hover {
+            background: linear-gradient(135deg, #3a4a7e, #2a3a5e);
+            box-shadow: 0 0 20px rgba(100, 180, 255, 0.3);
+        }
+        .families-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+        }
+        .family-card {
+            background: rgba(10, 20, 40, 0.75);
+            border: 1px solid rgba(100, 150, 255, 0.4);
+            border-radius: 18px;
+            padding: 18px;
+            backdrop-filter: blur(4px);
+            transition: 0.2s;
+            position: relative;
+        }
+        .family-card:hover {
+            border-color: #64b4ff;
+            box-shadow: 0 4px 20px rgba(100, 150, 255, 0.2);
+        }
+        .family-card h4 {
+            color: #ffaa33;
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+            border-bottom: 1px dashed rgba(100, 150, 255, 0.3);
+            padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .family-section {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(100, 150, 255, 0.2);
+        }
+        .family-section h5 {
+            color: #9cc7ff;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+        .family-images {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .family-images img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid rgba(100, 150, 255, 0.4);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .family-images img:hover {
+            transform: scale(1.05);
+            border-color: #ffaa33;
+        }
+        .family-color-dot {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            vertical-align: middle;
+            margin-right: 6px;
+        }
+        .btn-small {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .btn-edit-family {
+            background: rgba(100, 150, 255, 0.3);
+            border-color: #64b4ff;
+            color: #64b4ff;
+        }
+        .btn-delete-family {
+            background: rgba(255, 80, 80, 0.3);
+            border-color: #ff5555;
+            color: #ff5555;
+        }
+        .image-upload-area {
+            border: 2px dashed rgba(100, 150, 255, 0.3);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 12px;
+            color: #8ab4e0;
+            margin-top: 5px;
+        }
+        .image-upload-area:hover {
+            border-color: #64b4ff;
+            background: rgba(100, 150, 255, 0.1);
+        }
+        .image-upload-area input {
+            display: none;
         }
     </style>
 </head>
@@ -728,6 +867,7 @@
             <button class="tab-btn active" onclick="switchTab('home')">🏠 Hauptseite</button>
             <button class="tab-btn" onclick="switchTab('stopwatch')">⏱️ Stoppuhr</button>
             <button class="tab-btn" onclick="switchTab('confiscations')">📋 Beschlagnahmungen</button>
+            <button class="tab-btn" onclick="switchTab('families')">👨‍👩‍👧‍👦 Familien</button>
         </div>
 
         <!-- TAB 1: HAUPTSEITE -->
@@ -738,6 +878,7 @@
                 <p class="subtitle">⚓ Verwaltungssystem ⚓</p>
                 <div class="quick-stats" id="homepageStats">
                     <div class="stat-card"><div class="stat-number" id="statPersons">0</div><div class="stat-label">Personen</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statFamilies">0</div><div class="stat-label">Familien</div></div>
                     <div class="stat-card"><div class="stat-number" id="statConfiscations">0</div><div class="stat-label">Beschlagnahmungen</div></div>
                     <div class="stat-card"><div class="stat-number" id="statTotalGreen">0€</div><div class="stat-label">Grüngeld</div></div>
                     <div class="stat-card"><div class="stat-number" id="statTotalBlack">0€</div><div class="stat-label">Schwarzgeld</div></div>
@@ -748,7 +889,7 @@
         <!-- TAB 2: STOPPUHR -->
         <div id="tab-stopwatch" class="tab-content">
             <div style="text-align:center; margin-bottom:10px;">
-                <img src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="US Navy Logo" style="width:45px; filter: drop-shadow(0 0 4px #3b82f6);">
+                <img src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="US Navy Logo" style="width:45px; filter:drop-shadow(0 0 4px #3b82f6);">
                 <h3 style="margin:4px 0;">⚓ U.S Navy Marine Stopuhr ⚓</h3>
             </div>
             <div class="admin-collapse">
@@ -760,7 +901,7 @@
                             <input type="password" id="adminPassword" placeholder="Passwort" style="width:120px;">
                             <button onclick="adminLogin()" class="btn-admin">🔓 Login</button>
                         </div>
-                        <div id="adminActions" style="display: none;" class="admin-actions">
+                        <div id="adminActions" style="display:none;" class="admin-actions">
                             <span class="admin-badge">✅ Admin</span>
                             <button onclick="deleteCurrentPersonCompletely()" class="btn-delete-user">🗑️ Person löschen</button>
                             <button onclick="adminLogout()" class="logout-btn btn-admin">🚪 Logout</button>
@@ -770,7 +911,7 @@
             </div>
             <div class="time" id="display">00:00.00</div>
             <div class="input-group">
-                <input type="text" id="personName" placeholder="Name der Person" autocomplete="off" />
+                <input type="text" id="personName" placeholder="Name der Person" autocomplete="off">
                 <button onclick="startStop()" id="startBtn" style="background:#0055aa;">▶ Start</button>
                 <button onclick="resetTimer()" style="background:#885500;">🔄 Reset</button>
             </div>
@@ -804,12 +945,12 @@
                 <table id="confiscationTable">
                     <thead>
                         <tr>
-                            <th>Typ</th><th>Datum</th><th>Uhrzeit</th><th>Abgenommen von</th><th>Abgegeben an</th>
+                            <th>Name</th><th>Typ</th><th>Datum</th><th>Uhrzeit</th><th>Abg. von</th><th>Abg. an</th>
                             <th>Grüngeld</th><th>Schwarzgeld</th><th>Gegenstände</th><th>Notizen</th><th>Aktion</th>
                         </tr>
                     </thead>
                     <tbody id="confiscationTableBody">
-                        <tr><td colspan="10" style="text-align:center;">Keine Beschlagnahmungen vorhanden.</td></tr>
+                        <tr><td colspan="11" style="text-align:center;">Keine Beschlagnahmungen vorhanden.</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -819,38 +960,56 @@
                 <div class="stat-item"><div class="stat-val" id="statTotalConfiscations">0</div><div class="stat-lbl">Beschlagnahmungen</div></div>
             </div>
         </div>
+
+        <!-- TAB 4: FAMILIEN -->
+        <div id="tab-families" class="tab-content">
+            <div class="families-header">
+                <h3 style="color:#ffaa33; margin:0;">👨‍👩‍👧‍👦 Familien</h3>
+                <button class="btn-new-family" onclick="openFamilyModal()">➕ Neue Familie</button>
+            </div>
+            <div id="familiesGrid" class="families-grid">
+                <p style="color:#aaa;">Keine Familien vorhanden.</p>
+            </div>
+        </div>
     </div>
 
-    <!-- ========== MODAL: Neue Beschlagnahmung ========== -->
+    <!-- ========== MODAL: Beschlagnahmung ========== -->
     <div class="modal-overlay" id="confiscationModalOverlay">
         <div class="modal" id="confiscationModal">
             <button class="close-modal-x" onclick="closeConfiscationModal()">✕</button>
             <h3>📝 Neue Beschlagnahmung</h3>
 
-            <!-- REIHE 1: Typ (links) | Uhrzeit + Datum (rechts) -->
+            <!-- REIHE 1: Name + Typ + Uhrzeit + Datum -->
             <div class="modal-row">
                 <div class="modal-field small">
-                    <label>👤 Typ (Zivil / Familie)</label>
+                    <label>👤 Name</label>
+                    <input type="text" id="modalPersonName" placeholder="Name der Person">
+                </div>
+                <div class="modal-field xsmall">
+                    <label>👤 Typ</label>
                     <div class="dropdown-with-text" id="typeContainer">
-                        <select id="modalType">
+                        <select id="modalType" onchange="onTypeChange()">
                             <option value="">Bitte wählen...</option>
                             <option value="Zivil">Zivil</option>
                             <option value="Familie">Familie</option>
                         </select>
                         <button class="btn-text-toggle" id="btnToggleType" onclick="toggleDropdownText('typeContainer','modalType','btnToggleType')" title="Freitext">✎</button>
                     </div>
+                    <div id="familyNameField" style="display:none; margin-top:4px;">
+                        <input type="text" id="modalFamilyName" placeholder="Familienname" style="width:100%; font-size:12px; padding:6px 8px;">
+                    </div>
                 </div>
-                <div class="modal-field" style="flex:0.8; min-width:140px;">
+                <div class="modal-field xsmall">
                     <label>🕐 Uhrzeit</label>
                     <input type="time" id="modalTime" value="">
                 </div>
-                <div class="modal-field" style="flex:0.8; min-width:140px;">
+                <div class="modal-field xsmall">
                     <label>📅 Datum</label>
                     <input type="date" id="modalDate" value="">
                 </div>
             </div>
 
-            <!-- REIHE 2: Abgenommen von (links) | (leer rechts oder nächste Zeile) -->
+            <!-- REIHE 2: Abgenommen von (links) -->
             <div class="modal-row">
                 <div class="modal-field small">
                     <label>👮 Abgenommen von</label>
@@ -866,15 +1025,13 @@
                         <button class="btn-text-toggle" id="btnToggleTakenBy" onclick="toggleDropdownText('takenByContainer','modalTakenBy','btnToggleTakenBy')" title="Freitext">✎</button>
                     </div>
                 </div>
-            </div>
-
-            <!-- REIHE 3: Abgegeben an (links) | (leer) -->
-            <div class="modal-row">
+                <!-- REIHE 2b: Abgegeben an (rechts) -->
                 <div class="modal-field small">
                     <label>📤 Abgegeben an</label>
                     <div class="dropdown-with-text" id="givenToContainer">
                         <select id="modalGivenTo">
                             <option value="">Bitte wählen...</option>
+                            <option value="Asservatenkammer">Asservatenkammer</option>
                             <option value="SEAL">SEAL</option>
                             <option value="USA">USA</option>
                             <option value="PD">PD</option>
@@ -886,7 +1043,7 @@
                 </div>
             </div>
 
-            <!-- REIHE 4: Grüngeld + Schwarzgeld (nebeneinander) -->
+            <!-- REIHE 3: Grüngeld + Schwarzgeld -->
             <div class="modal-row">
                 <div class="modal-field small">
                     <label>🟢 Grüngeld</label>
@@ -904,29 +1061,119 @@
                 </div>
             </div>
 
-            <!-- REIHE 5: Gegenstände (Anzahl) -->
+            <!-- REIHE 4: Abgenommene Gegenstände -->
             <div class="modal-row">
-                <div class="modal-field small">
-                    <label>📦 Gegenstände (Anzahl)</label>
-                    <input type="number" id="modalItemsCount" placeholder="0" min="0" value="0">
-                </div>
                 <div class="modal-field" style="flex:1;">
-                    <label>📝 Erhaltene Gegenstände (Details)</label>
-                    <input type="text" id="modalItemsDetails" placeholder="z.B.: 5x Waffenteile, 2x Munition, 1x Kokain...">
+                    <label>📦 Abgenommene Gegenstände</label>
+                    <textarea id="modalItems" rows="3" placeholder="z.B.:&#10;5x Waffenteile&#10;2x Munition&#10;1x Kokain&#10;1x Funkgerät"></textarea>
                 </div>
             </div>
 
-            <!-- REIHE 6: Notizen -->
+            <!-- REIHE 5: Notizen -->
             <div class="modal-row">
                 <div class="modal-field" style="flex:1;">
                     <label>📋 Notizen</label>
-                    <textarea id="modalNotes" rows="2" placeholder="Weitere Details zur Beschlagnahmung..."></textarea>
+                    <textarea id="modalNotes" rows="3" placeholder="Weitere Details zur Beschlagnahmung..."></textarea>
                 </div>
             </div>
 
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeConfiscationModal()">Abbrechen</button>
                 <button class="btn-submit" onclick="saveConfiscation()">✅ Beschlagnahmung speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== MODAL: Familie ========== -->
+    <div class="modal-overlay" id="familyModalOverlay">
+        <div class="modal" id="familyModal" style="max-width:700px;">
+            <button class="close-modal-x" onclick="closeFamilyModal()">✕</button>
+            <h3>👨‍👩‍👧‍👦 Familie</h3>
+
+            <div class="modal-row">
+                <div class="modal-field">
+                    <label>👨‍👩‍👧‍👦 Familienname</label>
+                    <input type="text" id="familyName" placeholder="z.B. Corleone">
+                </div>
+            </div>
+
+            <!-- FAHRZEUG -->
+            <div class="family-section" style="margin-bottom:12px;">
+                <h5>🚗 Fahrzeug</h5>
+                <div class="modal-row">
+                    <div class="modal-field small">
+                        <label>Farbe</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="color" id="vehicleColor" value="#3b82f6" style="width:50px; height:38px; padding:2px; border-radius:8px;">
+                            <input type="text" id="vehicleColorName" placeholder="Farbname" style="flex:1;">
+                        </div>
+                    </div>
+                    <div class="modal-field">
+                        <label>Fahrzeugtyp</label>
+                        <input type="text" id="vehicleType" placeholder="z.B. Sultan RS">
+                    </div>
+                </div>
+                <div class="modal-row">
+                    <div class="modal-field">
+                        <label>Kennzeichen</label>
+                        <input type="text" id="vehiclePlate" placeholder="z.B. NAVY-001">
+                    </div>
+                </div>
+                <label style="font-size:11px; color:#9cc7ff;">Fahrzeugbild</label>
+                <div class="image-upload-area" onclick="document.getElementById('vehicleImageInput').click()">
+                    📷 Klicken zum Hochladen (URL)
+                    <input type="file" id="vehicleImageInput" accept="image/*" onchange="previewImage(this,'vehicleImagePreview','vehicleImageUrl')">
+                </div>
+                <input type="hidden" id="vehicleImageUrl" value="">
+                <div id="vehicleImagePreview" style="margin-top:5px;"></div>
+            </div>
+
+            <!-- ANWESEN -->
+            <div class="family-section" style="margin-bottom:12px;">
+                <h5>🏠 Anwesen</h5>
+                <div class="modal-row">
+                    <div class="modal-field">
+                        <label>Adresse / Beschreibung</label>
+                        <input type="text" id="estateDescription" placeholder="z.B. Villa am Strand">
+                    </div>
+                </div>
+                <label style="font-size:11px; color:#9cc7ff;">Anwesen-Bild</label>
+                <div class="image-upload-area" onclick="document.getElementById('estateImageInput').click()">
+                    📷 Klicken zum Hochladen (URL)
+                    <input type="file" id="estateImageInput" accept="image/*" onchange="previewImage(this,'estateImagePreview','estateImageUrl')">
+                </div>
+                <input type="hidden" id="estateImageUrl" value="">
+                <div id="estateImagePreview" style="margin-top:5px;"></div>
+            </div>
+
+            <!-- KLEIDUNG -->
+            <div class="family-section" style="margin-bottom:12px;">
+                <h5>👔 Kleidung</h5>
+                <div class="modal-row">
+                    <div class="modal-field">
+                        <label>Beschreibung</label>
+                        <input type="text" id="clothingDescription" placeholder="z.B. Schwarzer Anzug mit roter Krawatte">
+                    </div>
+                </div>
+                <label style="font-size:11px; color:#9cc7ff;">Kleidungsbilder (mehrere möglich)</label>
+                <div id="clothingImagesContainer" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:5px;"></div>
+                <div class="image-upload-area" onclick="document.getElementById('clothingImageInput').click()" style="margin-top:5px;">
+                    📷 Weiteres Bild hinzufügen (URL)
+                    <input type="file" id="clothingImageInput" accept="image/*" onchange="addClothingImage(this)" multiple>
+                </div>
+            </div>
+
+            <!-- NOTIZEN -->
+            <div class="modal-row">
+                <div class="modal-field" style="flex:1;">
+                    <label>📋 Notizen</label>
+                    <textarea id="familyNotes" rows="3" placeholder="Weitere Informationen zur Familie..."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeFamilyModal()">Abbrechen</button>
+                <button class="btn-submit" onclick="saveFamily()">✅ Familie speichern</button>
             </div>
         </div>
     </div>
@@ -947,44 +1194,41 @@
 
         // ==================== TAB NAVIGATION ====================
         function switchTab(tabName) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach((b, i) => {
+                b.classList.remove('active');
+                if ((tabName === 'home' && i === 0) || (tabName === 'stopwatch' && i === 1) ||
+                    (tabName === 'confiscations' && i === 2) || (tabName === 'families' && i === 3)) {
+                    b.classList.add('active');
+                }
+            });
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            if (tabName === 'home') {
-                document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
-                document.getElementById('tab-home').classList.add('active');
-                loadHomepageStats();
-            } else if (tabName === 'stopwatch') {
-                document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
-                document.getElementById('tab-stopwatch').classList.add('active');
-                loadAllUsersSorted();
-            } else if (tabName === 'confiscations') {
-                document.querySelector('.tab-btn:nth-child(3)').classList.add('active');
-                document.getElementById('tab-confiscations').classList.add('active');
-                loadConfiscations();
-            }
+            document.getElementById('tab-' + tabName).classList.add('active');
+            if (tabName === 'home') loadHomepageStats();
+            else if (tabName === 'stopwatch') loadAllUsersSorted();
+            else if (tabName === 'confiscations') loadConfiscations();
+            else if (tabName === 'families') loadFamilies();
         }
 
         function loadHomepageStats() {
-            database.ref('Navy-boote/users').once('value', (snap) => {
+            database.ref('Navy-boote/users').once('value', snap => {
                 const users = snap.val();
                 document.getElementById('statPersons').textContent = users ? Object.keys(users).length : 0;
             });
-            database.ref('Navy-boote/confiscations').once('value', (snap) => {
+            database.ref('Navy-boote/confiscations').once('value', snap => {
                 const data = snap.val();
                 let count = 0,
-                    totalGreen = 0,
-                    totalBlack = 0;
-                if (data) {
-                    const keys = Object.keys(data);
-                    count = keys.length;
-                    keys.forEach(k => {
-                        totalGreen += parseFloat(data[k].greenMoney || 0);
-                        totalBlack += parseFloat(data[k].blackMoney || 0);
-                    });
-                }
+                    tg = 0,
+                    tb = 0;
+                if (data) { Object.keys(data).forEach(k => { count++;
+                        tg += parseFloat(data[k].greenMoney || 0);
+                        tb += parseFloat(data[k].blackMoney || 0); }); }
                 document.getElementById('statConfiscations').textContent = count;
-                document.getElementById('statTotalGreen').textContent = totalGreen.toFixed(0) + '€';
-                document.getElementById('statTotalBlack').textContent = totalBlack.toFixed(0) + '€';
+                document.getElementById('statTotalGreen').textContent = tg.toFixed(0) + '€';
+                document.getElementById('statTotalBlack').textContent = tb.toFixed(0) + '€';
+            });
+            database.ref('Navy-boote/families').once('value', snap => {
+                const data = snap.val();
+                document.getElementById('statFamilies').textContent = data ? Object.keys(data).length : 0;
             });
         }
 
@@ -994,49 +1238,42 @@
         function toggleAdminPanel() { document.getElementById("adminHiddenPanel").classList.toggle("show"); }
 
         function adminLogin() {
-            const username = document.getElementById("adminUsername").value.trim().toLowerCase();
-            const password = document.getElementById("adminPassword").value.trim();
-            if (username === "colin" && password === "22122009") {
+            if (document.getElementById("adminUsername").value.trim().toLowerCase() === "colin" &&
+                document.getElementById("adminPassword").value.trim() === "22122009") {
                 isAdmin = true;
                 document.getElementById("adminLoginArea").style.display = "none";
                 document.getElementById("adminActions").style.display = "flex";
                 showToast('Admin-Modus aktiv (Colin)', '#ffaa33');
                 autoLoadPerson();
-            } else { alert("Zugriff verweigert! Nur Colin."); }
+            } else { alert("Zugriff verweigert!"); }
         }
 
         function adminLogout() {
             isAdmin = false;
             document.getElementById("adminLoginArea").style.display = "flex";
             document.getElementById("adminActions").style.display = "none";
-            document.getElementById("adminUsername").value = "colin";
-            document.getElementById("adminPassword").value = "";
             autoLoadPerson();
             showToast('Admin-Modus beendet', '#555');
         }
-
         window.deleteCurrentPersonCompletely = async function() {
-            if (!isAdmin) { alert("Nur Colin kann Personen löschen."); return; }
-            const searchField = document.getElementById("searchName");
-            const personName = searchField.value.trim();
-            if (!personName) { alert("Keine Person ausgewählt."); return; }
-            if (!confirm(`⚠️ ADMIN: Person "${personName}" mit ALLEN Zeiten unwiderruflich LÖSCHEN?`)) return;
-            try {
-                await database.ref(`Navy-boote/users/${personName.toLowerCase()}`).remove();
-                alert(`✅ "${personName}" gelöscht.`);
-                document.getElementById("searchName").value = "";
-                document.getElementById("resultTable").innerHTML = `<p>Person gelöscht.</p>`;
-                loadAllUsersSorted();
-                autoLoadPerson();
-            } catch (err) { alert("Fehler: " + err.message); }
+            if (!isAdmin) return alert("Nur Colin!");
+            const n = document.getElementById("searchName").value.trim();
+            if (!n) return alert("Keine Person!");
+            if (!confirm(`Person "${n}" löschen?`)) return;
+            await database.ref(`Navy-boote/users/${n.toLowerCase()}`).remove();
+            document.getElementById("searchName").value = "";
+            document.getElementById("resultTable").innerHTML = "<p>Gelöscht.</p>";
+            loadAllUsersSorted();
+            autoLoadPerson();
         };
 
         function showToast(msg, color) {
-            const note = document.createElement('div');
-            note.style.cssText = `position:fixed;bottom:10px;right:10px;background:${color};color:#000;padding:6px 16px;border-radius:20px;font-size:12px;z-index:9999;font-weight:bold;`;
-            note.innerText = msg;
-            document.body.appendChild(note);
-            setTimeout(() => note.remove(), 2000);
+            const el = document.createElement('div');
+            el.style.cssText =
+                `position:fixed;bottom:10px;right:10px;background:${color};color:#000;padding:6px 16px;border-radius:20px;font-size:12px;z-index:9999;font-weight:bold;`;
+            el.innerText = msg;
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 2000);
         }
 
         // ==================== STOPPUHR ====================
@@ -1045,396 +1282,471 @@
             interval = null,
             running = false;
 
-        function formatTime(ms) {
-            let m = Math.floor(ms / 60000);
-            let s = Math.floor((ms % 60000) / 1000);
-            let c = Math.floor((ms % 1000) / 10);
-            return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(c).padStart(2,'0')}`;
-        }
+        function fmt(ms) { let m = Math.floor(ms / 60000),
+                s = Math.floor((ms % 60000) / 1000),
+                c = Math.floor((ms % 1000) / 10); return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${String(c).padStart(2,'0')}`; }
 
-        function updateDisplay() { document.getElementById("display").textContent = formatTime(Date.now() - startTime); }
+        function updateDisplay() { document.getElementById("display").textContent = fmt(Date.now() - startTime); }
 
         function startStop() {
-            if (!running) {
-                startTime = Date.now() - elapsed;
+            if (!running) { startTime = Date.now() - elapsed;
                 interval = setInterval(updateDisplay, 10);
                 running = true;
-                const btn = document.getElementById("startBtn");
-                btn.textContent = "⏸ Stop";
-                btn.style.background = "#aa3300";
-            } else {
-                clearInterval(interval);
+                document.getElementById("startBtn").textContent = "⏸ Stop";
+                document.getElementById("startBtn").style.background = "#aa3300"; } else { clearInterval(interval);
                 running = false;
-                const btn = document.getElementById("startBtn");
-                btn.textContent = "▶ Start";
-                btn.style.background = "#0055aa";
-            }
+                document.getElementById("startBtn").textContent = "▶ Start";
+                document.getElementById("startBtn").style.background = "#0055aa"; }
         }
 
-        function resetTimer() {
-            clearInterval(interval);
+        function resetTimer() { clearInterval(interval);
             running = false;
             elapsed = 0;
             document.getElementById("display").textContent = "00:00.00";
-            const btn = document.getElementById("startBtn");
-            btn.textContent = "▶ Start";
-            btn.style.background = "#0055aa";
-        }
+            document.getElementById("startBtn").textContent = "▶ Start";
+            document.getElementById("startBtn").style.background = "#0055aa"; }
 
         async function saveTimeWithDesc(boatKey, textareaId) {
-            const nameInput = document.getElementById("personName");
-            const personName = nameInput.value.trim();
-            if (!personName) { alert("Bitte Namen eingeben!"); return; }
-            if (elapsed === 0 && !running) { alert("Keine gestoppte Zeit!"); return; }
-            const currentTimeStr = formatTime(running ? Date.now() - startTime : elapsed);
-            const description = document.getElementById(textareaId).value.trim();
-            const userPath = `Navy-boote/users/${personName.toLowerCase()}`;
-            const boatRef = database.ref(`${userPath}/boats/${boatKey}`);
-            try {
-                const snapshot = await boatRef.once('value');
-                let entries = snapshot.val();
-                if (!entries || !Array.isArray(entries)) entries = [];
-                entries.push({ time: currentTimeStr, desc: description || "Keine Beschreibung", timestamp: Date.now() });
-                await boatRef.set(entries);
-                await database.ref(`${userPath}/lastUpdated`).set(Date.now());
-                document.getElementById(textareaId).value = "";
-                document.getElementById("searchName").value = personName;
-                autoLoadPerson();
-                alert(`✅ ${currentTimeStr} für ${personName} (${boatKey}) gespeichert!`);
-            } catch (error) { alert("Fehler: " + error.message); }
+            const name = document.getElementById("personName").value.trim();
+            if (!name) return alert("Name eingeben!");
+            if (elapsed === 0 && !running) return alert("Keine Zeit!");
+            const timeStr = fmt(running ? Date.now() - startTime : elapsed);
+            const desc = document.getElementById(textareaId).value.trim();
+            const ref = database.ref(`Navy-boote/users/${name.toLowerCase()}/boats/${boatKey}`);
+            const snap = await ref.once('value');
+            let arr = snap.val();
+            if (!arr || !Array.isArray(arr)) arr = [];
+            arr.push({ time: timeStr, desc: desc || "Keine Beschreibung", timestamp: Date.now() });
+            await ref.set(arr);
+            await database.ref(`Navy-boote/users/${name.toLowerCase()}/lastUpdated`).set(Date.now());
+            document.getElementById(textareaId).value = "";
+            document.getElementById("searchName").value = name;
+            autoLoadPerson();
+            alert(`✅ ${timeStr} gespeichert!`);
         }
-
-        window.deleteSingleEntry = async function(personNameLower, boatInternal, timestampToDelete) {
-            if (!isAdmin) { alert("Nur Colin kann Einträge löschen."); return; }
-            if (!confirm("Diesen Zeit-Eintrag endgültig löschen?")) return;
-            try {
-                const boatRef = database.ref(`Navy-boote/users/${personNameLower}/boats/${boatInternal}`);
-                const snapshot = await boatRef.once('value');
-                let entries = snapshot.val();
-                if (entries && Array.isArray(entries)) {
-                    const newEntries = entries.filter(entry => entry.timestamp !== timestampToDelete);
-                    await boatRef.set(newEntries);
-                    await database.ref(`Navy-boote/users/${personNameLower}/lastUpdated`).set(Date.now());
-                    alert("Eintrag gelöscht.");
-                    autoLoadPerson();
-                    loadAllUsersSorted();
-                } else { alert("Eintrag nicht gefunden."); }
-            } catch (e) { alert("Fehler: " + e.message); }
+        window.deleteSingleEntry = async function(nl, bi, ts) {
+            if (!isAdmin) return alert("Nur Colin!");
+            if (!confirm("Eintrag löschen?")) return;
+            const ref = database.ref(`Navy-boote/users/${nl}/boats/${bi}`);
+            const snap = await ref.once('value');
+            let arr = snap.val();
+            if (arr && Array.isArray(arr)) { await ref.set(arr.filter(e => e.timestamp !== ts));
+                await database.ref(`Navy-boote/users/${nl}/lastUpdated`).set(Date.now());
+                autoLoadPerson();
+                loadAllUsersSorted(); }
         };
-
         let currentPersonListenerRef = null;
 
         function autoLoadPerson() {
-            const rawName = document.getElementById("searchName").value.trim();
-            if (!rawName) {
-                document.getElementById("resultTable").innerHTML = `<p>✏️ Namen eingeben oder aus Liste wählen.</p>`;
-                if (currentPersonListenerRef) currentPersonListenerRef.off();
-                return;
-            }
-            listenToPersonData(rawName.toLowerCase());
+            const raw = document.getElementById("searchName").value.trim();
+            if (!raw) { document.getElementById("resultTable").innerHTML =
+                    "<p>✏️ Namen eingeben...</p>"; if (currentPersonListenerRef) currentPersonListenerRef.off(); return; }
+            listenToPersonData(raw.toLowerCase());
         }
 
-        function listenToPersonData(personNameLower) {
+        function listenToPersonData(nl) {
             if (currentPersonListenerRef) currentPersonListenerRef.off();
-            const personRef = database.ref(`Navy-boote/users/${personNameLower}`);
-            currentPersonListenerRef = personRef;
-            personRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                const container = document.getElementById("resultTable");
-                const displayName = personNameLower.charAt(0).toUpperCase() + personNameLower.slice(1);
-                if (!data || !data.boats) {
-                    container.innerHTML = `<div style="background:rgba(0,0,0,0.5); padding:15px;">⚓ ${displayName} hat noch keine Zeiten.</div>`;
-                    return;
-                }
-                const boatLabels = { "Predator": "⚡ U.S Navy Predator", "Dinghy": "🛶 Dinghy",
+            currentPersonListenerRef = database.ref(`Navy-boote/users/${nl}`);
+            currentPersonListenerRef.on('value', snap => {
+                const data = snap.val();
+                const c = document.getElementById("resultTable");
+                const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
+                if (!data || !data.boats) { c.innerHTML =
+                        `<div style="background:rgba(0,0,0,0.5);padding:15px;">⚓ ${dn} hat noch keine Zeiten.</div>`; return; }
+                const bl = { "Predator": "⚡ U.S Navy Predator", "Dinghy": "🛶 Dinghy",
                     "PatrolBoat": "🚢 Kurtz 31 Patrol Boat", "WeaponizedDinghy": "💥 Weaponized Dinghy" };
-                let html =
-                    `<div class="table-wrapper"><h4>👤 ${displayName} ${isAdmin ? '<span style="color:#ffaa33;">(Admin ✨)</span>' : ''}</h4>
-                <table><thead><tr><th>Bootstyp</th><th>Zeit</th><th>Beschreibung</th>${isAdmin ? '<th>Aktion</th>' : ''}</tr></thead><tbody>`;
-                for (const [boatInternal, boatNice] of Object.entries(boatLabels)) {
-                    const entries = data.boats[boatInternal];
-                    if (entries && Array.isArray(entries) && entries.length > 0) {
-                        const sorted = [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                        sorted.forEach((entry, idx) => {
-                            const ts = entry.timestamp || Date.now();
-                            html +=
-                                `<tr><td>${idx === 0 ? boatNice : "↳ " + boatNice}</td><td><span class="badge-time">⏱️ ${entry.time || "??:??.??"}</span></td><td><div class="entry-description">📝 ${escapeHtml(entry.desc || "Keine Beschreibung")}</div></td>`;
-                            if (isAdmin) html +=
-                                `<td><button class="delete-btn" onclick="deleteSingleEntry('${personNameLower}','${boatInternal}',${ts})" title="Eintrag löschen">🗑️</button></td>`;
-                            html += `</tr>`;
+                let h =
+                    `<div class="table-wrapper"><h4>👤 ${dn} ${isAdmin?'<span style="color:#ffaa33;">(Admin)</span>':''}</h4><table><thead><tr><th>Boot</th><th>Zeit</th><th>Beschreibung</th>${isAdmin?'<th>Aktion</th>':''}</tr></thead><tbody>`;
+                for (const [bi, bn] of Object.entries(bl)) {
+                    const entries = data.boats[bi];
+                    if (entries && Array.isArray(entries) && entries.length) {
+                        [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => {
+                            h +=
+                                `<tr><td>${i===0?bn:"↳ "+bn}</td><td><span class="badge-time">⏱️ ${e.time||"??:??.??"}</span></td><td>${esc(e.desc||"-")}</td>`;
+                            if (isAdmin) h +=
+                                `<td><button class="delete-btn" onclick="deleteSingleEntry('${nl}','${bi}',${e.timestamp||Date.now()})">🗑️</button></td>`;
+                            h += `</tr>`;
                         });
-                    } else {
-                        const colspanVal = isAdmin ? 3 : 2;
-                        html +=
-                            `<tr><td>${boatNice}</td><td colspan="${colspanVal}">— keine Zeiten —</td>${isAdmin ? '<td></td>' : ''}</tr>`;
-                    }
+                    } else h +=
+                        `<tr><td>${bn}</td><td colspan="${isAdmin?3:2}">— keine —</td>${isAdmin?'<td></td>':''}</tr>`;
                 }
-                html += `</tbody></table></div>`;
-                container.innerHTML = html;
+                h += `</tbody></table></div>`;
+                c.innerHTML = h;
             });
         }
 
-        function escapeHtml(str) {
-            if (!str) return "";
-            return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
-        }
+        function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ""; }
 
         function loadAllUsersSorted() {
-            database.ref('Navy-boote/users').on('value', (snapshot) => {
-                const users = snapshot.val();
-                const listDiv = document.getElementById('allNamesList');
-                listDiv.innerHTML = '';
+            database.ref('Navy-boote/users').on('value', snap => {
+                const users = snap.val();
+                const d = document.getElementById('allNamesList');
+                d.innerHTML = '';
                 if (users) {
-                    const userArray = Object.keys(users).map(nameKey => ({ name: nameKey, lastUpdated: users[nameKey]
-                            .lastUpdated || 0 }));
-                    userArray.sort((a, b) => b.lastUpdated - a.lastUpdated);
-                    userArray.forEach(user => {
-                        const displayName = user.name.charAt(0).toUpperCase() + user.name.slice(1);
+                    Object.keys(users).map(k => ({ name: k, lu: users[k].lastUpdated || 0 })).sort((a, b) => b.lu - a
+                        .lu).forEach(u => {
+                        const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1);
                         const btn = document.createElement('div');
                         btn.className = 'name-tag';
-                        btn.textContent = displayName;
-                        btn.onclick = () => { document.getElementById('personName').value = displayName;
-                            document.getElementById('searchName').value = displayName;
+                        btn.textContent = dn;
+                        btn.onclick = () => { document.getElementById('personName').value = dn;
+                            document.getElementById('searchName').value = dn;
                             autoLoadPerson(); };
-                        listDiv.appendChild(btn);
+                        d.appendChild(btn);
                     });
-                } else { listDiv.innerHTML = '<span>⚓ Keine Personen erfasst.</span>'; }
+                } else d.innerHTML = '<span>⚓ Keine Personen.</span>';
             });
         }
 
-        // ==================== DROPDOWN ↔ TEXT TOGGLE ====================
+        // ==================== DROPDOWN ↔ TEXT ====================
         function toggleDropdownText(containerId, selectId, btnId) {
             const container = document.getElementById(containerId);
             const select = document.getElementById(selectId);
             const btn = document.getElementById(btnId);
-            const existingInput = container.querySelector('input[type="text"]');
-
-            if (existingInput) {
-                // Zurück zu Dropdown
-                const currentValue = existingInput.value;
-                existingInput.remove();
+            const existing = container.querySelector('input[type="text"]');
+            if (existing) {
+                const val = existing.value;
+                existing.remove();
                 select.style.display = 'inline-block';
                 btn.classList.remove('active-toggle');
                 btn.textContent = '✎';
-                btn.title = 'Freitext';
-                if (currentValue && ![...select.options].some(o => o.value === currentValue)) {
+                if (val && ![...select.options].some(o => o.value === val)) {
                     const opt = document.createElement('option');
-                    opt.value = currentValue;
-                    opt.textContent = currentValue;
+                    opt.value = val;
+                    opt.textContent = val;
                     opt.selected = true;
                     select.appendChild(opt);
                 }
             } else {
-                // Wechsel zu Textfeld
-                const currentValue = select.value;
                 select.style.display = 'none';
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.id = selectId + 'Text';
-                input.value = currentValue;
-                input.placeholder = 'Freitext...';
-                input.style.cssText = 'flex:1; min-width:0; padding:8px 10px; font-size:13px;';
-                container.insertBefore(input, btn);
+                const inp = document.createElement('input');
+                inp.type = 'text';
+                inp.value = select.value;
+                inp.placeholder = 'Freitext...';
+                inp.style.cssText = 'flex:1;min-width:0;padding:8px 10px;font-size:13px;';
+                container.insertBefore(inp, btn);
                 btn.classList.add('active-toggle');
                 btn.textContent = '▼';
-                btn.title = 'Zurück zu Dropdown';
             }
         }
 
         function getDropdownOrTextValue(containerId, selectId) {
             const container = document.getElementById(containerId);
-            const textInput = container.querySelector('input[type="text"]');
-            if (textInput) return textInput.value.trim();
-            return document.getElementById(selectId).value;
+            const ti = container.querySelector('input[type="text"]');
+            return ti ? ti.value.trim() : document.getElementById(selectId).value;
+        }
+
+        // Familie-Name-Feld anzeigen wenn Typ=Familie
+        function onTypeChange() {
+            const type = document.getElementById('modalType').value;
+            document.getElementById('familyNameField').style.display = type === 'Familie' ? 'block' : 'none';
         }
 
         // ==================== BESCHLAGNAHMUNGEN ====================
         let editingConfiscationId = null;
 
         function openNewConfiscationModal(editData = null) {
-            const modal = document.getElementById('confiscationModalOverlay');
-            const now = new Date();
-            const dateStr = now.toISOString().split('T')[0];
-            const timeStr = now.toTimeString().slice(0, 5);
-
-            // Reset all toggle-containers to dropdown mode
+            document.getElementById('confiscationModalOverlay').classList.add('show');
             ['typeContainer', 'takenByContainer', 'givenToContainer'].forEach(cid => {
-                const container = document.getElementById(cid);
-                const textInput = container.querySelector('input[type="text"]');
-                if (textInput) textInput.remove();
-                const select = container.querySelector('select');
-                if (select) select.style.display = 'inline-block';
-                const btn = container.querySelector('.btn-text-toggle');
-                if (btn) { btn.classList.remove('active-toggle');
-                    btn.textContent = '✎'; }
+                const c = document.getElementById(cid);
+                const ti = c.querySelector('input[type="text"]');
+                if (ti) ti.remove();
+                const s = c.querySelector('select');
+                if (s) s.style.display = 'inline-block';
+                const b = c.querySelector('.btn-text-toggle');
+                if (b) { b.classList.remove('active-toggle');
+                    b.textContent = '✎'; }
             });
-
+            const now = new Date();
             if (editData) {
                 editingConfiscationId = editData.id;
+                document.getElementById('modalPersonName').value = editData.personName || '';
                 document.getElementById('modalType').value = editData.type || '';
-                document.getElementById('modalTime').value = editData.time || timeStr;
+                document.getElementById('modalTime').value = editData.time || '';
                 document.getElementById('modalTakenBy').value = editData.takenBy || '';
                 document.getElementById('modalGivenTo').value = editData.givenTo || '';
-                document.getElementById('modalDate').value = editData.date || dateStr;
+                document.getElementById('modalDate').value = editData.date || '';
                 document.getElementById('modalGreenMoney').value = editData.greenMoney || 0;
                 document.getElementById('modalBlackMoney').value = editData.blackMoney || 0;
-                document.getElementById('modalItemsCount').value = editData.itemsCount || 0;
-                document.getElementById('modalItemsDetails').value = editData.itemsDetails || '';
+                document.getElementById('modalItems').value = editData.items || '';
                 document.getElementById('modalNotes').value = editData.notes || '';
+                document.getElementById('modalFamilyName').value = editData.familyName || '';
                 document.querySelector('#confiscationModal h3').textContent = '✏️ Beschlagnahmung bearbeiten';
             } else {
                 editingConfiscationId = null;
+                document.getElementById('modalPersonName').value = '';
                 document.getElementById('modalType').value = '';
-                document.getElementById('modalTime').value = timeStr;
+                document.getElementById('modalTime').value = now.toTimeString().slice(0, 5);
                 document.getElementById('modalTakenBy').value = '';
                 document.getElementById('modalGivenTo').value = '';
-                document.getElementById('modalDate').value = dateStr;
+                document.getElementById('modalDate').value = now.toISOString().split('T')[0];
                 document.getElementById('modalGreenMoney').value = 0;
                 document.getElementById('modalBlackMoney').value = 0;
-                document.getElementById('modalItemsCount').value = 0;
-                document.getElementById('modalItemsDetails').value = '';
+                document.getElementById('modalItems').value = '';
                 document.getElementById('modalNotes').value = '';
+                document.getElementById('modalFamilyName').value = '';
                 document.querySelector('#confiscationModal h3').textContent = '📝 Neue Beschlagnahmung';
             }
-            modal.classList.add('show');
+            document.getElementById('familyNameField').style.display = document.getElementById('modalType').value ===
+                'Familie' ? 'block' : 'none';
         }
 
-        function closeConfiscationModal() {
-            document.getElementById('confiscationModalOverlay').classList.remove('show');
-            editingConfiscationId = null;
-        }
+        function closeConfiscationModal() { document.getElementById('confiscationModalOverlay').classList.remove('show');
+            editingConfiscationId = null; }
 
         async function saveConfiscation() {
-            const type = getDropdownOrTextValue('typeContainer', 'modalType');
-            const time = document.getElementById('modalTime').value;
-            const takenBy = getDropdownOrTextValue('takenByContainer', 'modalTakenBy');
-            const givenTo = getDropdownOrTextValue('givenToContainer', 'modalGivenTo');
-            const date = document.getElementById('modalDate').value;
-            const greenMoney = parseFloat(document.getElementById('modalGreenMoney').value) || 0;
-            const blackMoney = parseFloat(document.getElementById('modalBlackMoney').value) || 0;
-            const itemsCount = parseInt(document.getElementById('modalItemsCount').value) || 0;
-            const itemsDetails = document.getElementById('modalItemsDetails').value.trim();
-            const notes = document.getElementById('modalNotes').value.trim();
-
-            if (!type) { alert("Bitte Typ (Zivil/Familie) auswählen oder eingeben!"); return; }
-            if (!takenBy) { alert("Bitte 'Abgenommen von' auswählen oder eingeben!"); return; }
-            if (!givenTo) { alert("Bitte 'Abgegeben an' auswählen oder eingeben!"); return; }
-
             const data = {
-                type,
-                time: time || '',
-                takenBy,
-                givenTo,
-                date: date || new Date().toISOString().split('T')[0],
-                greenMoney,
-                blackMoney,
-                itemsCount,
-                itemsDetails,
-                notes,
+                personName: document.getElementById('modalPersonName').value.trim(),
+                type: getDropdownOrTextValue('typeContainer', 'modalType'),
+                familyName: document.getElementById('modalFamilyName').value.trim(),
+                time: document.getElementById('modalTime').value,
+                takenBy: getDropdownOrTextValue('takenByContainer', 'modalTakenBy'),
+                givenTo: getDropdownOrTextValue('givenToContainer', 'modalGivenTo'),
+                date: document.getElementById('modalDate').value,
+                greenMoney: parseFloat(document.getElementById('modalGreenMoney').value) || 0,
+                blackMoney: parseFloat(document.getElementById('modalBlackMoney').value) || 0,
+                items: document.getElementById('modalItems').value.trim(),
+                notes: document.getElementById('modalNotes').value.trim(),
                 timestamp: Date.now()
             };
+            if (!data.personName) return alert("Name eingeben!");
+            if (!data.type) return alert("Typ auswählen!");
+            if (!data.takenBy) return alert("Abgenommen von auswählen!");
+            if (!data.givenTo) return alert("Abgegeben an auswählen!");
 
             try {
-                const confiscationsRef = database.ref('Navy-boote/confiscations');
-                if (editingConfiscationId) {
-                    await confiscationsRef.child(editingConfiscationId).update(data);
-                    showToast('Beschlagnahmung aktualisiert!', '#2ecc40');
-                } else {
-                    await confiscationsRef.push(data);
-                    showToast('Beschlagnahmung gespeichert!', '#2ecc40');
-                }
+                const ref = database.ref('Navy-boote/confiscations');
+                if (editingConfiscationId) { await ref.child(editingConfiscationId).update(data);
+                    showToast('Aktualisiert!', '#2ecc40'); } else { await ref.push(data);
+                    showToast('Gespeichert!', '#2ecc40'); }
                 closeConfiscationModal();
                 loadConfiscations();
                 loadHomepageStats();
-            } catch (err) { alert("Fehler beim Speichern: " + err.message); }
+            } catch (e) { alert("Fehler: " + e.message); }
         }
 
         function loadConfiscations() {
-            database.ref('Navy-boote/confiscations').on('value', (snap) => {
+            database.ref('Navy-boote/confiscations').on('value', snap => {
                 const data = snap.val();
                 const tbody = document.getElementById('confiscationTableBody');
-                let totalGreen = 0,
-                    totalBlack = 0,
-                    totalItems = 0,
-                    weaponPartsCount = 0;
+                let tg = 0,
+                    tb = 0,
+                    ti = 0,
+                    wp = 0;
                 const entries = [];
-
-                if (data) {
-                    Object.entries(data).forEach(([id, entry]) => {
-                        entries.push({ id, ...entry });
-                        totalGreen += parseFloat(entry.greenMoney || 0);
-                        totalBlack += parseFloat(entry.blackMoney || 0);
-                        totalItems += parseInt(entry.itemsCount || 0);
-                    });
-                }
-
-                // Waffenteile aus itemsDetails zählen
-                entries.forEach(e => {
-                    if (e.itemsDetails && /waffenteil/i.test(e.itemsDetails)) {
-                        const m = e.itemsDetails.match(/(\d+)\s*x?\s*waffenteil/i);
-                        weaponPartsCount += m ? parseInt(m[1]) : 1;
-                    }
-                });
-
+                if (data) Object.entries(data).forEach(([id, e]) => { entries.push({ id, ...e });
+                    tg += parseFloat(e.greenMoney || 0);
+                    tb += parseFloat(e.blackMoney || 0);
+                    ti += countItems(e.items || ''); });
+                entries.forEach(e => { if (e.items && /waffenteil/i.test(e.items)) { const m = e.items.match(
+                        /(\d+)\s*x?\s*waffenteil/i);
+                        wp += m ? parseInt(m[1]) : 1; } });
                 entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-                if (entries.length === 0) {
-                    tbody.innerHTML =
-                        '<tr><td colspan="10" style="text-align:center;">Keine Beschlagnahmungen vorhanden.</td></tr>';
-                } else {
-                    tbody.innerHTML = entries.map(entry => `
+                tbody.innerHTML = entries.length === 0 ?
+                    '<tr><td colspan="11">Keine Beschlagnahmungen.</td></tr>' :
+                    entries.map(e => `
                     <tr>
-                        <td>${escapeHtml(entry.type || '-')}</td>
-                        <td>${escapeHtml(entry.date || '-')}</td>
-                        <td>${escapeHtml(entry.time || '-')}</td>
-                        <td>${escapeHtml(entry.takenBy || '-')}</td>
-                        <td>${escapeHtml(entry.givenTo || '-')}</td>
-                        <td><span style="color:#2ecc40;">${(entry.greenMoney || 0).toFixed(0)}€</span></td>
-                        <td><span style="color:#ccc;">${(entry.blackMoney || 0).toFixed(0)}€</span></td>
-                        <td>${entry.itemsCount || 0} ${entry.itemsDetails ? '<br><small>' + escapeHtml(entry.itemsDetails) + '</small>' : ''}</td>
-                        <td>${escapeHtml(entry.notes || '-')}</td>
-                        <td>${isAdmin ? `<button class="delete-btn" onclick="editConfiscation('${entry.id}')" title="Bearbeiten">✏️</button> <button class="delete-btn" onclick="deleteConfiscation('${entry.id}')" title="Löschen">🗑️</button>` : '-'}</td>
+                        <td><strong>${esc(e.personName||'-')}</strong></td>
+                        <td>${esc(e.type||'-')}${e.familyName?'<br><small style="color:#64b4ff;">👨‍👩‍👧‍👦 '+esc(e.familyName)+'</small>':''}</td>
+                        <td>${esc(e.date||'-')}</td><td>${esc(e.time||'-')}</td>
+                        <td>${esc(e.takenBy||'-')}</td><td>${esc(e.givenTo||'-')}</td>
+                        <td><span style="color:#2ecc40;">${(e.greenMoney||0).toFixed(0)}€</span></td>
+                        <td><span style="color:#ccc;">${(e.blackMoney||0).toFixed(0)}€</span></td>
+                        <td style="white-space:pre-wrap;">${esc(e.items||'-')}</td>
+                        <td style="white-space:pre-wrap;">${esc(e.notes||'-')}</td>
+                        <td>${isAdmin?`<button class="delete-btn" onclick="editConfiscation('${e.id}')">✏️</button> <button class="delete-btn" onclick="deleteConfiscation('${e.id}')">🗑️</button>`:'-'}</td>
                     </tr>`).join('');
-                }
-
-                document.getElementById('totalGreenDisplay').textContent = totalGreen.toFixed(0) + ' €';
-                document.getElementById('totalBlackDisplay').textContent = totalBlack.toFixed(0) + ' €';
-                document.getElementById('statTotalItems').textContent = totalItems;
-                document.getElementById('statWeaponParts').textContent = weaponPartsCount;
+                document.getElementById('totalGreenDisplay').textContent = tg.toFixed(0) + ' €';
+                document.getElementById('totalBlackDisplay').textContent = tb.toFixed(0) + ' €';
+                document.getElementById('statTotalItems').textContent = ti;
+                document.getElementById('statWeaponParts').textContent = wp;
                 document.getElementById('statTotalConfiscations').textContent = entries.length;
             });
         }
 
-        async function deleteConfiscation(id) {
-            if (!isAdmin) { alert("Nur Colin kann löschen."); return; }
-            if (!confirm("Diese Beschlagnahmung endgültig löschen?")) return;
+        function countItems(str) { const m = str.match(/(\d+)\s*x/gi); return m ? m.reduce((s, x) => s + (parseInt(x.match(
+                /\d+/)[0]) || 0), 0) : 0; }
+        async function deleteConfiscation(id) { if (!isAdmin) return alert("Nur Colin!"); if (!confirm("Löschen?")) return;
+            await database.ref(`Navy-boote/confiscations/${id}`).remove();
+            showToast('Gelöscht.', '#ff4444');
+            loadConfiscations();
+            loadHomepageStats(); }
+        async function editConfiscation(id) { if (!isAdmin) return alert("Nur Colin!"); const snap = await database.ref(
+                `Navy-boote/confiscations/${id}`).once('value');
+            const data = snap.val(); if (data) openNewConfiscationModal({ id, ...data }); }
+        document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) { if (e.target === this)
+                closeConfiscationModal(); });
+
+        // ==================== FAMILIEN ====================
+        let editingFamilyId = null;
+        let tempClothingImages = [];
+
+        function openFamilyModal(editData = null) {
+            document.getElementById('familyModalOverlay').classList.add('show');
+            tempClothingImages = [];
+            document.getElementById('clothingImagesContainer').innerHTML = '';
+            document.getElementById('vehicleImagePreview').innerHTML = '';
+            document.getElementById('estateImagePreview').innerHTML = '';
+            if (editData) {
+                editingFamilyId = editData.id;
+                document.getElementById('familyName').value = editData.name || '';
+                document.getElementById('vehicleColor').value = editData.vehicleColor || '#3b82f6';
+                document.getElementById('vehicleColorName').value = editData.vehicleColorName || '';
+                document.getElementById('vehicleType').value = editData.vehicleType || '';
+                document.getElementById('vehiclePlate').value = editData.vehiclePlate || '';
+                document.getElementById('vehicleImageUrl').value = editData.vehicleImage || '';
+                document.getElementById('estateDescription').value = editData.estateDescription || '';
+                document.getElementById('estateImageUrl').value = editData.estateImage || '';
+                document.getElementById('clothingDescription').value = editData.clothingDescription || '';
+                document.getElementById('familyNotes').value = editData.notes || '';
+                if (editData.vehicleImage) document.getElementById('vehicleImagePreview').innerHTML =
+                    `<img src="${editData.vehicleImage}" style="max-width:200px;border-radius:10px;">`;
+                if (editData.estateImage) document.getElementById('estateImagePreview').innerHTML =
+                    `<img src="${editData.estateImage}" style="max-width:200px;border-radius:10px;">`;
+                if (editData.clothingImages && Array.isArray(editData.clothingImages)) {
+                    tempClothingImages = [...editData.clothingImages];
+                    renderClothingImages();
+                }
+                document.querySelector('#familyModal h3').textContent = '✏️ Familie bearbeiten';
+            } else {
+                editingFamilyId = null;
+                document.getElementById('familyName').value = '';
+                document.getElementById('vehicleColor').value = '#3b82f6';
+                document.getElementById('vehicleColorName').value = '';
+                document.getElementById('vehicleType').value = '';
+                document.getElementById('vehiclePlate').value = '';
+                document.getElementById('vehicleImageUrl').value = '';
+                document.getElementById('estateDescription').value = '';
+                document.getElementById('estateImageUrl').value = '';
+                document.getElementById('clothingDescription').value = '';
+                document.getElementById('familyNotes').value = '';
+                document.querySelector('#familyModal h3').textContent = '👨‍👩‍👧‍👦 Neue Familie';
+            }
+        }
+
+        function closeFamilyModal() { document.getElementById('familyModalOverlay').classList.remove('show');
+            editingFamilyId = null;
+            tempClothingImages = []; }
+
+        function previewImage(input, previewId, hiddenId) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById(hiddenId).value = e.target.result;
+                document.getElementById(previewId).innerHTML =
+                    `<img src="${e.target.result}" style="max-width:200px;border-radius:10px;">`;
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        function addClothingImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                tempClothingImages.push(e.target.result);
+                renderClothingImages();
+            };
+            reader.readAsDataURL(file);
+            input.value = '';
+        }
+
+        function renderClothingImages() {
+            const container = document.getElementById('clothingImagesContainer');
+            container.innerHTML = tempClothingImages.map((url, i) => `
+                <div style="position:relative;display:inline-block;">
+                    <img src="${url}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;border:1px solid rgba(100,150,255,0.4);">
+                    <button onclick="removeClothingImage(${i})" style="position:absolute;top:-6px;right:-6px;background:red;color:#fff;border:none;border-radius:50%;width:20px;height:20px;font-size:10px;cursor:pointer;padding:0;line-height:18px;">✕</button>
+                </div>`).join('');
+        }
+
+        function removeClothingImage(index) { tempClothingImages.splice(index, 1);
+            renderClothingImages(); }
+
+        async function saveFamily() {
+            const name = document.getElementById('familyName').value.trim();
+            if (!name) return alert("Familienname eingeben!");
+            const data = {
+                name,
+                vehicleColor: document.getElementById('vehicleColor').value,
+                vehicleColorName: document.getElementById('vehicleColorName').value.trim(),
+                vehicleType: document.getElementById('vehicleType').value.trim(),
+                vehiclePlate: document.getElementById('vehiclePlate').value.trim(),
+                vehicleImage: document.getElementById('vehicleImageUrl').value,
+                estateDescription: document.getElementById('estateDescription').value.trim(),
+                estateImage: document.getElementById('estateImageUrl').value,
+                clothingDescription: document.getElementById('clothingDescription').value.trim(),
+                clothingImages: [...tempClothingImages],
+                notes: document.getElementById('familyNotes').value.trim(),
+                timestamp: Date.now()
+            };
             try {
-                await database.ref(`Navy-boote/confiscations/${id}`).remove();
-                showToast('Beschlagnahmung gelöscht.', '#ff4444');
-                loadConfiscations();
+                const ref = database.ref('Navy-boote/families');
+                if (editingFamilyId) { await ref.child(editingFamilyId).update(data);
+                    showToast('Familie aktualisiert!', '#64b4ff'); } else { await ref.push(data);
+                    showToast('Familie gespeichert!', '#64b4ff'); }
+                closeFamilyModal();
+                loadFamilies();
                 loadHomepageStats();
-            } catch (err) { alert("Fehler: " + err.message); }
+            } catch (e) { alert("Fehler: " + e.message); }
         }
 
-        async function editConfiscation(id) {
-            if (!isAdmin) { alert("Nur Colin kann bearbeiten."); return; }
-            try {
-                const snap = await database.ref(`Navy-boote/confiscations/${id}`).once('value');
+        function loadFamilies() {
+            database.ref('Navy-boote/families').on('value', snap => {
                 const data = snap.val();
-                if (data) openNewConfiscationModal({ id, ...data });
-            } catch (err) { alert("Fehler: " + err.message); }
+                const grid = document.getElementById('familiesGrid');
+                if (!data) { grid.innerHTML = '<p style="color:#aaa;">Keine Familien vorhanden.</p>'; return; }
+                const entries = Object.entries(data).map(([id, f]) => ({ id, ...f }));
+                entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                grid.innerHTML = entries.map(f => `
+                <div class="family-card">
+                    <h4>👨‍👩‍👧‍👦 ${esc(f.name||'Unbekannt')}
+                        <span>${isAdmin?`<button class="btn-small btn-edit-family" onclick="editFamily('${f.id}')">✏️</button> <button class="btn-small btn-delete-family" onclick="deleteFamily('${f.id}')">🗑️</button>`:''}</span>
+                    </h4>
+                    ${f.vehicleType||f.vehicleColorName?`
+                    <div class="family-section">
+                        <h5>🚗 Fahrzeug</h5>
+                        <p><span class="family-color-dot" style="background:${f.vehicleColor||'#888'};"></span>${esc(f.vehicleColorName||'')} ${esc(f.vehicleType||'')} ${f.vehiclePlate?'('+esc(f.vehiclePlate)+')':''}</p>
+                        ${f.vehicleImage?`<div class="family-images"><img src="${f.vehicleImage}" onclick="window.open('${f.vehicleImage}')"></div>`:''}
+                    </div>`:''}
+                    ${f.estateDescription||f.estateImage?`
+                    <div class="family-section">
+                        <h5>🏠 Anwesen</h5>
+                        <p>${esc(f.estateDescription||'')}</p>
+                        ${f.estateImage?`<div class="family-images"><img src="${f.estateImage}" onclick="window.open('${f.estateImage}')"></div>`:''}
+                    </div>`:''}
+                    ${f.clothingDescription||(f.clothingImages&&f.clothingImages.length)?`
+                    <div class="family-section">
+                        <h5>👔 Kleidung</h5>
+                        <p>${esc(f.clothingDescription||'')}</p>
+                        ${f.clothingImages&&f.clothingImages.length?`<div class="family-images">${f.clothingImages.map(u=>`<img src="${u}" onclick="window.open('${u}')">`).join('')}</div>`:''}
+                    </div>`:''}
+                    ${f.notes?`
+                    <div class="family-section">
+                        <h5>📋 Notizen</h5>
+                        <p style="white-space:pre-wrap;">${esc(f.notes)}</p>
+                    </div>`:''}
+                </div>`).join('');
+            });
         }
 
-        // Modal schließen bei Klick außerhalb
-        document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) {
-            if (e.target === this) closeConfiscationModal();
-        });
+        async function deleteFamily(id) { if (!isAdmin) return alert("Nur Colin!"); if (!confirm("Familie löschen?")) return;
+            await database.ref(`Navy-boote/families/${id}`).remove();
+            showToast('Familie gelöscht.', '#ff4444');
+            loadFamilies();
+            loadHomepageStats(); }
+        async function editFamily(id) { if (!isAdmin) return alert("Nur Colin!"); const snap = await database.ref(
+                `Navy-boote/families/${id}`).once('value');
+            const data = snap.val(); if (data) openFamilyModal({ id, ...data }); }
+        document.getElementById('familyModalOverlay').addEventListener('click', function(e) { if (e.target === this)
+                closeFamilyModal(); });
 
         // ==================== INIT ====================
         loadAllUsersSorted();
         loadHomepageStats();
         document.getElementById("searchName").addEventListener("input", autoLoadPerson);
-
         const now2 = new Date();
         document.getElementById('modalDate').value = now2.toISOString().split('T')[0];
         document.getElementById('modalTime').value = now2.toTimeString().slice(0, 5);
