@@ -332,7 +332,7 @@ const database = firebase.database();
 
 let currentUser = null;
 let isAdmin = false;
-const PRICE_PER_CHECK = 2500;
+const PRICE_PER_CHECK = 5000;
 
 async function ensureAdminExists() {
     const snap = await database.ref('Navy-boote/users_auth/colin').once('value');
