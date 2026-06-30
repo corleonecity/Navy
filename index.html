@@ -258,11 +258,6 @@
                 </div>
             </div>
             <div id="payoutInfo" style="margin-bottom:10px;color:#8ab4e0;font-size:13px;"></div>
-            <div style="margin-bottom:12px;">
-                <span style="color:#8ab4e0;font-size:13px;">💡 Pro Kontrolle: <strong>2.500 $</strong></span>
-                <span style="margin-left:20px;color:#8ab4e0;font-size:13px;">👥 User (aus Admin-Bereich):</span>
-                <div id="payoutUserList" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;"></div>
-            </div>
             <div class="payout-table-wrapper">
                 <table class="payout-table">
                     <thead><tr><th>Name</th><th>Bootskontrollen</th><th>Pro Kontrolle</th><th>Summe</th><th>Status</th></tr></thead>
@@ -457,70 +452,223 @@ function loadHomepageStats() {
     });
 }
 
-let startTime = 0, elapsed = 0, interval = null, running = false;
-function formatTime(ms) { let m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000), c = Math.floor((ms % 1000) / 10); return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0'); }
-function updateDisplay() { document.getElementById('display').textContent = formatTime(Date.now() - startTime); }
-function startStop() {
-    if (!running) { startTime = Date.now() - elapsed; interval = setInterval(updateDisplay, 10); running = true; document.getElementById('startBtn').textContent = '⏸ Stop'; document.getElementById('startBtn').style.background = '#aa3300'; }
-    else { clearInterval(interval); running = false; document.getElementById('startBtn').textContent = '▶ Start'; document.getElementById('startBtn').style.background = '#0055aa'; }
+// ==================== STOPPUHR (KORRIGIERT) ====================
+let startTime = 0;
+let elapsed = 0;
+let interval = null;
+let running = false;
+
+function formatTime(ms) {
+    let m = Math.floor(ms / 60000);
+    let s = Math.floor((ms % 60000) / 1000);
+    let c = Math.floor((ms % 1000) / 10);
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0');
 }
-function resetTimer() { clearInterval(interval); running = false; elapsed = 0; document.getElementById('display').textContent = '00:00.00'; document.getElementById('startBtn').textContent = '▶ Start'; document.getElementById('startBtn').style.background = '#0055aa'; }
+
+function updateDisplay() {
+    const now = Date.now();
+    elapsed = now - startTime;
+    document.getElementById('display').textContent = formatTime(elapsed);
+}
+
+function startStop() {
+    if (!running) {
+        // Starten oder Fortsetzen
+        startTime = Date.now() - elapsed;
+        interval = setInterval(updateDisplay, 10);
+        running = true;
+        const btn = document.getElementById('startBtn');
+        btn.textContent = '⏸ Stop';
+        btn.style.background = '#aa3300';
+    } else {
+        // Pausieren
+        clearInterval(interval);
+        running = false;
+        const btn = document.getElementById('startBtn');
+        btn.textContent = '▶ Start';
+        btn.style.background = '#0055aa';
+    }
+}
+
+function resetTimer() {
+    clearInterval(interval);
+    running = false;
+    elapsed = 0;
+    startTime = 0;
+    document.getElementById('display').textContent = '00:00.00';
+    const btn = document.getElementById('startBtn');
+    btn.textContent = '▶ Start';
+    btn.style.background = '#0055aa';
+}
+
 async function saveTimeWithDesc(boatKey, taId) {
-    const name = document.getElementById('personName').value.trim(); if (!name) return alert('Name!');
-    if (elapsed === 0 && !running) return alert('Keine Zeit!');
-    const timeStr = formatTime(running ? Date.now() - startTime : elapsed);
+    const name = document.getElementById('personName').value.trim();
+    if (!name) return alert('Name eingeben!');
+
+    // Aktuelle Zeit verwenden (auch wenn pausiert)
+    const currentElapsed = running ? (Date.now() - startTime) : elapsed;
+    if (currentElapsed === 0) return alert('Keine Zeit gestoppt!');
+
+    const timeStr = formatTime(currentElapsed);
     const desc = document.getElementById(taId).value.trim();
     const ref = database.ref('Navy-boote/users/' + name.toLowerCase() + '/boats/' + boatKey);
-    const snap = await ref.once('value'); let arr = snap.val(); if (!arr || !Array.isArray(arr)) arr = [];
-    arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now() }); await ref.set(arr);
+    const snap = await ref.once('value');
+    let arr = snap.val();
+    if (!arr || !Array.isArray(arr)) arr = [];
+    arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now() });
+    await ref.set(arr);
     await database.ref('Navy-boote/users/' + name.toLowerCase() + '/lastUpdated').set(Date.now());
-    document.getElementById(taId).value = ''; document.getElementById('searchName').value = name; autoLoadPerson(); alert('✅ ' + timeStr + ' gespeichert!');
+    document.getElementById(taId).value = '';
+    document.getElementById('searchName').value = name;
+    autoLoadPerson();
+    alert('✅ ' + timeStr + ' gespeichert!');
 }
-window.deleteSingleEntry = async function(nl, bi, ts) { if (!isAdmin) return alert('Nur Admin!'); if (!confirm('Löschen?')) return; const ref = database.ref('Navy-boote/users/' + nl + '/boats/' + bi); const snap = await ref.once('value'); let arr = snap.val(); if (arr && Array.isArray(arr)) { await ref.set(arr.filter(e => e.timestamp !== ts)); await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now()); autoLoadPerson(); loadAllUsersSorted(); } };
+
+window.deleteSingleEntry = async function(nl, bi, ts) {
+    if (!isAdmin) return alert('Nur Admin!');
+    if (!confirm('Löschen?')) return;
+    const ref = database.ref('Navy-boote/users/' + nl + '/boats/' + bi);
+    const snap = await ref.once('value');
+    let arr = snap.val();
+    if (arr && Array.isArray(arr)) {
+        await ref.set(arr.filter(e => e.timestamp !== ts));
+        await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now());
+        autoLoadPerson();
+        loadAllUsersSorted();
+    }
+};
+
 let currentListener = null;
-function autoLoadPerson() { const raw = document.getElementById('searchName').value.trim(); if (!raw) { document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>'; if (currentListener) currentListener.off(); return; } listenToPersonData(raw.toLowerCase()); }
+function autoLoadPerson() {
+    const raw = document.getElementById('searchName').value.trim();
+    if (!raw) { document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>'; if (currentListener) currentListener.off(); return; }
+    listenToPersonData(raw.toLowerCase());
+}
 function listenToPersonData(nl) {
-    if (currentListener) currentListener.off(); currentListener = database.ref('Navy-boote/users/' + nl);
+    if (currentListener) currentListener.off();
+    currentListener = database.ref('Navy-boote/users/' + nl);
     currentListener.on('value', snap => {
-        const data = snap.val(); const c = document.getElementById('resultTable'); const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
+        const data = snap.val();
+        const c = document.getElementById('resultTable');
+        const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
         if (!data || !data.boats) { c.innerHTML = '<div style="padding:15px;">⚓ ' + dn + ' hat noch keine Zeiten.</div>'; return; }
         const bl = { "Predator": "⚡ Predator", "Dinghy": "🛶 Dinghy", "PatrolBoat": "🚢 Kurtz 31", "WeaponizedDinghy": "💥 Weaponized" };
         let h = '<div class="table-wrapper"><h4>👤 ' + dn + '</h4><table><thead><tr><th>Boot</th><th>Zeit</th><th>Beschreibung</th>' + (isAdmin ? '<th>Aktion</th>' : '') + '</tr></thead><tbody>';
         for (const [bi, bn] of Object.entries(bl)) {
             const entries = data.boats[bi];
             if (entries && Array.isArray(entries) && entries.length) {
-                [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => { h += '<tr><td>' + (i === 0 ? bn : '↳ ' + bn) + '</td><td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td><td>' + esc(e.desc || '-') + '</td>'; if (isAdmin) h += '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' + nl + '\',\'' + bi + '\',' + (e.timestamp || Date.now()) + ')">🗑️</button></td>'; h += '</tr>'; });
-            } else h += '<tr><td>' + bn + '</td><td colspan="' + (isAdmin ? 3 : 2) + '">— keine —</td>' + (isAdmin ? '<td></td>' : '') + '</tr>';
+                [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => {
+                    h += '<tr><td>' + (i === 0 ? bn : '↳ ' + bn) + '</td><td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td><td>' + esc(e.desc || '-') + '</td>';
+                    if (isAdmin) h += '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' + nl + '\',\'' + bi + '\',' + (e.timestamp || Date.now()) + ')">🗑️</button></td>';
+                    h += '</tr>';
+                });
+            } else {
+                h += '<tr><td>' + bn + '</td><td colspan="' + (isAdmin ? 3 : 2) + '">— keine —</td>' + (isAdmin ? '<td></td>' : '') + '</tr>';
+            }
         }
-        h += '</tbody></table></div>'; c.innerHTML = h;
+        h += '</tbody></table></div>';
+        c.innerHTML = h;
     });
 }
 function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''; }
 function loadAllUsersSorted() {
     database.ref('Navy-boote/users').on('value', snap => {
-        const users = snap.val(); const d = document.getElementById('allNamesList'); d.innerHTML = '';
-        if (users) { Object.keys(users).map(k => ({ name: k, lu: users[k].lastUpdated || 0 })).sort((a, b) => b.lu - a.lu).forEach(u => { const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1); const btn = document.createElement('div'); btn.className = 'name-tag'; btn.textContent = dn; btn.onclick = () => { document.getElementById('personName').value = dn; document.getElementById('searchName').value = dn; autoLoadPerson(); }; d.appendChild(btn); }); }
-        else d.innerHTML = '<span>⚓ Keine Personen.</span>';
+        const users = snap.val();
+        const d = document.getElementById('allNamesList');
+        d.innerHTML = '';
+        if (users) {
+            Object.keys(users).map(k => ({ name: k, lu: users[k].lastUpdated || 0 })).sort((a, b) => b.lu - a.lu).forEach(u => {
+                const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1);
+                const btn = document.createElement('div');
+                btn.className = 'name-tag';
+                btn.textContent = dn;
+                btn.onclick = () => { document.getElementById('personName').value = dn; document.getElementById('searchName').value = dn; autoLoadPerson(); };
+                d.appendChild(btn);
+            });
+        } else { d.innerHTML = '<span>⚓ Keine Personen.</span>'; }
     });
 }
 
+// ==================== BESCHLAGNAHMUNGEN ====================
 let editingConfiscationId = null;
 function openNewConfiscationModal(editData = null) {
-    document.getElementById('confiscationModalOverlay').classList.add('show'); const now = new Date(); const dateStr = now.toISOString().split('T')[0]; const timeStr = now.toTimeString().slice(0, 5);
-    if (editData) { editingConfiscationId = editData.id; document.getElementById('modalAkteName').value = editData.akteName || ''; document.getElementById('modalType').value = editData.type || ''; document.getElementById('modalFamilyName').value = editData.familyName || ''; document.getElementById('modalTakenBy').value = editData.takenBy || ''; document.getElementById('modalTakenByName').value = editData.takenByName || ''; document.getElementById('modalDate').value = editData.date || dateStr; document.getElementById('modalTime').value = editData.time || timeStr; document.getElementById('modalGivenTo').value = editData.givenTo || ''; document.getElementById('modalGivenToName').value = editData.givenToName || ''; document.getElementById('modalGivenDate').value = editData.givenDate || ''; document.getElementById('modalGivenTime').value = editData.givenTime || ''; document.getElementById('modalGreenMoney').value = editData.greenMoney || 0; document.getElementById('modalBlackMoney').value = editData.blackMoney || 0; document.getElementById('modalItemsTotal').value = editData.itemsTotal || 0; document.getElementById('modalItems').value = editData.items || ''; document.getElementById('modalNotes').value = editData.notes || ''; document.getElementById('confiscationModalTitle').textContent = '✏️ Bearbeiten'; }
-    else { editingConfiscationId = null; document.getElementById('modalAkteName').value = ''; document.getElementById('modalType').value = ''; document.getElementById('modalFamilyName').value = ''; document.getElementById('modalTakenBy').value = ''; document.getElementById('modalTakenByName').value = ''; document.getElementById('modalDate').value = dateStr; document.getElementById('modalTime').value = timeStr; document.getElementById('modalGivenTo').value = ''; document.getElementById('modalGivenToName').value = ''; document.getElementById('modalGivenDate').value = ''; document.getElementById('modalGivenTime').value = ''; document.getElementById('modalGreenMoney').value = 0; document.getElementById('modalBlackMoney').value = 0; document.getElementById('modalItemsTotal').value = 0; document.getElementById('modalItems').value = ''; document.getElementById('modalNotes').value = ''; document.getElementById('confiscationModalTitle').textContent = '📝 Neue Beschlagnahmung'; }
+    document.getElementById('confiscationModalOverlay').classList.add('show');
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toTimeString().slice(0, 5);
+    if (editData) {
+        editingConfiscationId = editData.id;
+        document.getElementById('modalAkteName').value = editData.akteName || '';
+        document.getElementById('modalType').value = editData.type || '';
+        document.getElementById('modalFamilyName').value = editData.familyName || '';
+        document.getElementById('modalTakenBy').value = editData.takenBy || '';
+        document.getElementById('modalTakenByName').value = editData.takenByName || '';
+        document.getElementById('modalDate').value = editData.date || dateStr;
+        document.getElementById('modalTime').value = editData.time || timeStr;
+        document.getElementById('modalGivenTo').value = editData.givenTo || '';
+        document.getElementById('modalGivenToName').value = editData.givenToName || '';
+        document.getElementById('modalGivenDate').value = editData.givenDate || '';
+        document.getElementById('modalGivenTime').value = editData.givenTime || '';
+        document.getElementById('modalGreenMoney').value = editData.greenMoney || 0;
+        document.getElementById('modalBlackMoney').value = editData.blackMoney || 0;
+        document.getElementById('modalItemsTotal').value = editData.itemsTotal || 0;
+        document.getElementById('modalItems').value = editData.items || '';
+        document.getElementById('modalNotes').value = editData.notes || '';
+        document.getElementById('confiscationModalTitle').textContent = '✏️ Bearbeiten';
+    } else {
+        editingConfiscationId = null;
+        document.getElementById('modalAkteName').value = '';
+        document.getElementById('modalType').value = '';
+        document.getElementById('modalFamilyName').value = '';
+        document.getElementById('modalTakenBy').value = '';
+        document.getElementById('modalTakenByName').value = '';
+        document.getElementById('modalDate').value = dateStr;
+        document.getElementById('modalTime').value = timeStr;
+        document.getElementById('modalGivenTo').value = '';
+        document.getElementById('modalGivenToName').value = '';
+        document.getElementById('modalGivenDate').value = '';
+        document.getElementById('modalGivenTime').value = '';
+        document.getElementById('modalGreenMoney').value = 0;
+        document.getElementById('modalBlackMoney').value = 0;
+        document.getElementById('modalItemsTotal').value = 0;
+        document.getElementById('modalItems').value = '';
+        document.getElementById('modalNotes').value = '';
+        document.getElementById('confiscationModalTitle').textContent = '📝 Neue Beschlagnahmung';
+    }
 }
 function closeConfiscationModal() { document.getElementById('confiscationModalOverlay').classList.remove('show'); editingConfiscationId = null; }
 async function saveConfiscation() {
-    const data = { akteName: document.getElementById('modalAkteName').value.trim(), type: document.getElementById('modalType').value, familyName: document.getElementById('modalFamilyName').value.trim(), takenBy: document.getElementById('modalTakenBy').value, takenByName: document.getElementById('modalTakenByName').value.trim(), date: document.getElementById('modalDate').value, time: document.getElementById('modalTime').value, givenTo: document.getElementById('modalGivenTo').value, givenToName: document.getElementById('modalGivenToName').value.trim(), givenDate: document.getElementById('modalGivenDate').value, givenTime: document.getElementById('modalGivenTime').value, greenMoney: parseFloat(document.getElementById('modalGreenMoney').value) || 0, blackMoney: parseFloat(document.getElementById('modalBlackMoney').value) || 0, itemsTotal: parseInt(document.getElementById('modalItemsTotal').value) || 0, items: document.getElementById('modalItems').value.trim(), notes: document.getElementById('modalNotes').value.trim(), timestamp: Date.now() };
+    const data = {
+        akteName: document.getElementById('modalAkteName').value.trim(),
+        type: document.getElementById('modalType').value,
+        familyName: document.getElementById('modalFamilyName').value.trim(),
+        takenBy: document.getElementById('modalTakenBy').value,
+        takenByName: document.getElementById('modalTakenByName').value.trim(),
+        date: document.getElementById('modalDate').value,
+        time: document.getElementById('modalTime').value,
+        givenTo: document.getElementById('modalGivenTo').value,
+        givenToName: document.getElementById('modalGivenToName').value.trim(),
+        givenDate: document.getElementById('modalGivenDate').value,
+        givenTime: document.getElementById('modalGivenTime').value,
+        greenMoney: parseFloat(document.getElementById('modalGreenMoney').value) || 0,
+        blackMoney: parseFloat(document.getElementById('modalBlackMoney').value) || 0,
+        itemsTotal: parseInt(document.getElementById('modalItemsTotal').value) || 0,
+        items: document.getElementById('modalItems').value.trim(),
+        notes: document.getElementById('modalNotes').value.trim(),
+        timestamp: Date.now()
+    };
     if (!data.akteName || !data.type || !data.takenBy || !data.givenTo) return alert('Alle Pflichtfelder ausfüllen!');
     const ref = database.ref('Navy-boote/confiscations');
-    if (editingConfiscationId) { await ref.child(editingConfiscationId).update(data); showToast('✅ Aktualisiert!', '#2ecc40'); } else { await ref.push(data); showToast('✅ Gespeichert!', '#2ecc40'); }
+    if (editingConfiscationId) { await ref.child(editingConfiscationId).update(data); showToast('✅ Aktualisiert!', '#2ecc40'); }
+    else { await ref.push(data); showToast('✅ Gespeichert!', '#2ecc40'); }
     closeConfiscationModal(); loadConfiscations(); loadHomepageStats();
 }
 function loadConfiscations() {
     database.ref('Navy-boote/confiscations').on('value', snap => {
-        const data = snap.val(); const cardsDiv = document.getElementById('confiscationCards'); let tg = 0, tb = 0, tiTotal = 0; const entries = [];
+        const data = snap.val();
+        const cardsDiv = document.getElementById('confiscationCards');
+        let tg = 0, tb = 0, tiTotal = 0;
+        const entries = [];
         if (data) Object.entries(data).forEach(([id, e]) => { entries.push({ id, ...e }); tg += parseFloat(e.greenMoney || 0); tb += parseFloat(e.blackMoney || 0); tiTotal += parseInt(e.itemsTotal || 0); });
         entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         cardsDiv.innerHTML = entries.length === 0 ? '<p style="color:#aaa;grid-column:1/-1;">Keine Beschlagnahmungen.</p>' : entries.map(e => `
@@ -566,17 +714,6 @@ async function loadPayoutData() {
     const usersSnap = await database.ref('Navy-boote/users_auth').once('value');
     const allUsers = usersSnap.val() || {};
     const userNames = Object.keys(allUsers);
-
-    const listDiv = document.getElementById('payoutUserList');
-    if (userNames.length === 0) {
-        listDiv.innerHTML = '<span style="color:#aaa;font-size:12px;">Keine User im System.</span>';
-    } else {
-        listDiv.innerHTML = userNames.map(name => `
-            <span style="background:rgba(100,180,255,0.15);border:1px solid #64b4ff;padding:4px 10px;border-radius:20px;font-size:12px;color:#64b4ff;">
-                👤 ${esc(name)} ${allUsers[name].isAdmin ? '🔑' : ''}
-            </span>
-        `).join('');
-    }
 
     const payoutSnap = await database.ref('Navy-boote/payouts/' + weekKey).once('value');
     const payoutData = payoutSnap.val() || {};
@@ -625,11 +762,39 @@ async function loadPayoutData() {
 async function updatePayoutCount(name, newCount) { if (!isAdmin) return; const count = parseInt(newCount) || 0; const weekKey = currentPayoutWeek; await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ count }); loadPayoutData(); }
 async function togglePayoutPaid(name, isPaid) { if (!isAdmin) return; const weekKey = currentPayoutWeek; const updateData = { paid: isPaid }; if (isPaid) updateData.paidAt = Date.now(); else updateData.paidAt = null; await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update(updateData); loadPayoutData(); }
 
+// ==================== FAMILIEN ====================
 let editingFamilyId = null;
 function openFamilyModal(editData = null) {
     document.getElementById('familyModalOverlay').classList.add('show');
-    if (editData) { editingFamilyId = editData.id; document.getElementById('familyName').value = editData.name || ''; document.getElementById('vehicleColor').value = editData.vehicleColor || '#3b82f6'; document.getElementById('vehicleColorName').value = editData.vehicleColorName || ''; document.getElementById('vehicleType').value = editData.vehicleType || ''; document.getElementById('vehiclePlate').value = editData.vehiclePlate || ''; document.getElementById('vehicleImageUrl').value = editData.vehicleImage || ''; document.getElementById('estateDescription').value = editData.estateDescription || ''; document.getElementById('estateImageUrl').value = editData.estateImage || ''; document.getElementById('clothingDescription').value = editData.clothingDescription || ''; document.getElementById('clothingImagesInput').value = (editData.clothingImages || []).join(', '); document.getElementById('familyNotes').value = editData.notes || ''; document.getElementById('familyModalTitle').textContent = '✏️ Bearbeiten'; }
-    else { editingFamilyId = null; document.getElementById('familyName').value = ''; document.getElementById('vehicleColor').value = '#3b82f6'; document.getElementById('vehicleColorName').value = ''; document.getElementById('vehicleType').value = ''; document.getElementById('vehiclePlate').value = ''; document.getElementById('vehicleImageUrl').value = ''; document.getElementById('estateDescription').value = ''; document.getElementById('estateImageUrl').value = ''; document.getElementById('clothingDescription').value = ''; document.getElementById('clothingImagesInput').value = ''; document.getElementById('familyNotes').value = ''; document.getElementById('familyModalTitle').textContent = '👨‍👩‍👧‍👦 Neue Familie'; }
+    if (editData) {
+        editingFamilyId = editData.id;
+        document.getElementById('familyName').value = editData.name || '';
+        document.getElementById('vehicleColor').value = editData.vehicleColor || '#3b82f6';
+        document.getElementById('vehicleColorName').value = editData.vehicleColorName || '';
+        document.getElementById('vehicleType').value = editData.vehicleType || '';
+        document.getElementById('vehiclePlate').value = editData.vehiclePlate || '';
+        document.getElementById('vehicleImageUrl').value = editData.vehicleImage || '';
+        document.getElementById('estateDescription').value = editData.estateDescription || '';
+        document.getElementById('estateImageUrl').value = editData.estateImage || '';
+        document.getElementById('clothingDescription').value = editData.clothingDescription || '';
+        document.getElementById('clothingImagesInput').value = (editData.clothingImages || []).join(', ');
+        document.getElementById('familyNotes').value = editData.notes || '';
+        document.getElementById('familyModalTitle').textContent = '✏️ Bearbeiten';
+    } else {
+        editingFamilyId = null;
+        document.getElementById('familyName').value = '';
+        document.getElementById('vehicleColor').value = '#3b82f6';
+        document.getElementById('vehicleColorName').value = '';
+        document.getElementById('vehicleType').value = '';
+        document.getElementById('vehiclePlate').value = '';
+        document.getElementById('vehicleImageUrl').value = '';
+        document.getElementById('estateDescription').value = '';
+        document.getElementById('estateImageUrl').value = '';
+        document.getElementById('clothingDescription').value = '';
+        document.getElementById('clothingImagesInput').value = '';
+        document.getElementById('familyNotes').value = '';
+        document.getElementById('familyModalTitle').textContent = '👨‍👩‍👧‍👦 Neue Familie';
+    }
     updateFamilyPreviews();
 }
 function closeFamilyModal() { document.getElementById('familyModalOverlay').classList.remove('show'); editingFamilyId = null; }
@@ -640,15 +805,31 @@ function updateFamilyPreviews() {
     document.getElementById('clothingImagesPreview').innerHTML = cUrls.map(u => '<img src="' + u + '" style="width:80px;height:60px;object-fit:cover;border-radius:8px;">').join('');
 }
 async function saveFamily() {
-    const name = document.getElementById('familyName').value.trim(); if (!name) return alert('Name!');
-    const data = { name, vehicleColor: document.getElementById('vehicleColor').value, vehicleColorName: document.getElementById('vehicleColorName').value.trim(), vehicleType: document.getElementById('vehicleType').value.trim(), vehiclePlate: document.getElementById('vehiclePlate').value.trim(), vehicleImage: document.getElementById('vehicleImageUrl').value.trim(), estateDescription: document.getElementById('estateDescription').value.trim(), estateImage: document.getElementById('estateImageUrl').value.trim(), clothingDescription: document.getElementById('clothingDescription').value.trim(), clothingImages: document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim()).filter(s => s), notes: document.getElementById('familyNotes').value.trim(), timestamp: Date.now() };
+    const name = document.getElementById('familyName').value.trim();
+    if (!name) return alert('Name!');
+    const data = {
+        name,
+        vehicleColor: document.getElementById('vehicleColor').value,
+        vehicleColorName: document.getElementById('vehicleColorName').value.trim(),
+        vehicleType: document.getElementById('vehicleType').value.trim(),
+        vehiclePlate: document.getElementById('vehiclePlate').value.trim(),
+        vehicleImage: document.getElementById('vehicleImageUrl').value.trim(),
+        estateDescription: document.getElementById('estateDescription').value.trim(),
+        estateImage: document.getElementById('estateImageUrl').value.trim(),
+        clothingDescription: document.getElementById('clothingDescription').value.trim(),
+        clothingImages: document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim()).filter(s => s),
+        notes: document.getElementById('familyNotes').value.trim(),
+        timestamp: Date.now()
+    };
     const ref = database.ref('Navy-boote/families');
-    if (editingFamilyId) { await ref.child(editingFamilyId).update(data); showToast('✅ Aktualisiert!', '#64b4ff'); } else { await ref.push(data); showToast('✅ Gespeichert!', '#64b4ff'); }
+    if (editingFamilyId) { await ref.child(editingFamilyId).update(data); showToast('✅ Aktualisiert!', '#64b4ff'); }
+    else { await ref.push(data); showToast('✅ Gespeichert!', '#64b4ff'); }
     closeFamilyModal(); loadFamilies(); loadHomepageStats();
 }
 function loadFamilies() {
     database.ref('Navy-boote/families').on('value', snap => {
-        const data = snap.val(); const grid = document.getElementById('familiesGrid');
+        const data = snap.val();
+        const grid = document.getElementById('familiesGrid');
         if (!data) { grid.innerHTML = '<p style="color:#aaa;grid-column:1/-1;">Keine Familien.</p>'; return; }
         const entries = Object.entries(data).map(([id, f]) => ({ id, ...f })).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         grid.innerHTML = entries.map(f => `
