@@ -647,10 +647,14 @@ async function loadPayoutData() {
     const weekKey = getWeekKey(monday);
     document.getElementById('payoutInfo').textContent = '📅 Woche: ' + getWeekString(monday) + ' | Mo ' + weekKey + ' bis So ' + getWeekKey(sunday);
 
-    // Hole alle User (nicht users_auth, sondern die tatsächlichen User mit Bootsdaten)
+    // Hole nur die im Admin-Bereich registrierten Benutzer (users_auth)
+    const usersAuthSnap = await database.ref('Navy-boote/users_auth').once('value');
+    const usersAuth = usersAuthSnap.val() || {};
+    const authorizedUsers = Object.keys(usersAuth);
+
+    // Hole die Bootsdaten aller User für die Zählung der Kontrollen
     const usersSnap = await database.ref('Navy-boote/users').once('value');
     const allUsers = usersSnap.val() || {};
-    const userNames = Object.keys(allUsers);
 
     // Hole gespeicherte Auszahlungsdaten für die Woche
     const payoutSnap = await database.ref('Navy-boote/payouts/' + weekKey).once('value');
@@ -659,18 +663,20 @@ async function loadPayoutData() {
     const tbody = document.getElementById('payoutTableBody');
     let totalKontrollen = 0, totalSumme = 0, totalAusgezahlt = 0, totalOffen = 0;
 
-    if (userNames.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Keine Benutzer mit Bootsdaten.</td></tr>';
+    if (authorizedUsers.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Keine autorisierten Benutzer.</td></tr>';
     } else {
         tbody.innerHTML = '';
         
-        // Berechne für jeden User die Anzahl der Bootskontrollen in dieser Woche
-        for (const name of userNames) {
-            const userData = allUsers[name];
+        // Nur die autorisierten Benutzer aus users_auth anzeigen
+        for (const name of authorizedUsers) {
             let weekCheckCount = 0;
             
+            // Prüfe ob es Bootsdaten für diesen Benutzer gibt
+            const userData = allUsers[name];
+            
             // Zähle alle Bootseinträge in diesem Wochenzeitraum
-            if (userData.boats) {
+            if (userData && userData.boats) {
                 for (const boatKey in userData.boats) {
                     const boatEntries = userData.boats[boatKey];
                     if (Array.isArray(boatEntries)) {
@@ -703,13 +709,14 @@ async function loadPayoutData() {
             }
             
             const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+            const isUserAdmin = usersAuth[name] && usersAuth[name].isAdmin;
             const paidStatus = saved.paid ? 
                 '<span class="payout-status paid">✅ Ausgezahlt</span>' : 
                 '<span class="payout-status unpaid">⏳ Offen</span>';
             
             tbody.innerHTML += `
                 <tr>
-                    <td><strong>${esc(displayName)}</strong></td>
+                    <td><strong>${esc(displayName)}</strong> ${isUserAdmin ? '<span style="color:#ff5555;font-size:10px;">Admin</span>' : ''}</td>
                     <td>${isAdmin ? 
                         `<input type="number" class="count-input" value="${displayCount}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : 
                         `<strong>${displayCount}</strong>`}</td>
@@ -741,12 +748,12 @@ async function loadPayoutData() {
     });
     
     // Wenn Admin die Anzahl nicht manuell gesetzt hat, speichere berechnete Werte
-    for (const name of userNames) {
+    for (const name of authorizedUsers) {
         if (!payoutData[name] || payoutData[name].count === null) {
             // Berechne erneut für die Speicherung
             let weekCheckCount = 0;
             const userData = allUsers[name];
-            if (userData.boats) {
+            if (userData && userData.boats) {
                 for (const boatKey in userData.boats) {
                     const boatEntries = userData.boats[boatKey];
                     if (Array.isArray(boatEntries)) {
