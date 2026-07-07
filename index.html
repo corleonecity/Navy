@@ -159,6 +159,10 @@
         .user-table { width: 100%; border-collapse: collapse; }
         .user-table th { background: rgba(255,85,85,0.2); padding: 10px 8px; text-align: left; color: #ff9999; font-size: 13px; }
         .user-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,85,85,0.2); font-size: 13px; }
+        .permissions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+        .permission-item { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; }
+        .permission-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #2ecc40; }
+        .permission-item label { font-size: 12px; color: #d9ecff; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -189,11 +193,7 @@
         </div>
 
         <div class="tab-nav" id="tabNav">
-            <button class="tab-btn active" onclick="switchTab('home')">🏠 Hauptseite</button>
-            <button class="tab-btn" onclick="switchTab('stopwatch')">⏱️ Stoppuhr</button>
-            <button class="tab-btn" onclick="switchTab('confiscations')">📋 Beschlagnahmungen</button>
-            <button class="tab-btn" onclick="switchTab('payout')">💰 Auszahlung</button>
-            <button class="tab-btn" onclick="switchTab('families')">👨‍👩‍👧‍👦 Familien</button>
+            <!-- Tabs werden dynamisch geladen -->
         </div>
 
         <div id="tab-home" class="tab-content active">
@@ -335,6 +335,13 @@ const database = firebase.database();
 
 let currentUser = null;
 let isAdmin = false;
+let userPermissions = {
+    stopwatch: true,
+    confiscations: true,
+    payout: true,
+    families: true,
+    admin: false
+};
 const PRICE_PER_CHECK = 5000;
 
 // ==================== HILFSFUNKTIONEN ====================
@@ -366,7 +373,20 @@ function showToast(msg, color) {
 // ==================== AUTH ====================
 async function ensureAdminExists() {
     const snap = await database.ref('Navy-boote/users_auth/colin').once('value');
-    if (!snap.val()) await database.ref('Navy-boote/users_auth/colin').set({ password: '22122009', isAdmin: true, created: Date.now() });
+    if (!snap.val()) {
+        await database.ref('Navy-boote/users_auth/colin').set({ 
+            password: '22122009', 
+            isAdmin: true, 
+            created: Date.now(),
+            permissions: {
+                stopwatch: true,
+                confiscations: true,
+                payout: true,
+                families: true,
+                admin: true
+            }
+        });
+    }
 }
 
 async function doLogin() {
@@ -378,6 +398,26 @@ async function doLogin() {
     if (userData && userData.password === password) {
         currentUser = { username, isAdmin: userData.isAdmin === true };
         isAdmin = currentUser.isAdmin;
+        
+        // Lade Berechtigungen
+        if (isAdmin) {
+            userPermissions = {
+                stopwatch: true,
+                confiscations: true,
+                payout: true,
+                families: true,
+                admin: true
+            };
+        } else {
+            userPermissions = userData.permissions || {
+                stopwatch: true,
+                confiscations: true,
+                payout: true,
+                families: true,
+                admin: false
+            };
+        }
+        
         document.getElementById('loginScreen').classList.add('hidden');
         document.getElementById('mainApp').classList.add('show');
         document.getElementById('currentUserDisplay').textContent = '👤 ' + username;
@@ -385,84 +425,336 @@ async function doLogin() {
         if (isAdmin) { badge.textContent = '🔑 Admin'; badge.classList.add('admin'); }
         else { badge.textContent = '👤 User'; badge.classList.remove('admin'); }
         document.getElementById('loginError').style.display = 'none';
-        setupAdminTab();
-        switchTab('home');
+        
+        // Setup UI basierend auf Berechtigungen
+        setupTabsBasedOnPermissions();
+        if (isAdmin) setupAdminTab();
+        
+        // Default Tab: Erster verfügbarer Tab
+        const firstTab = getAvailableTabs()[0] || 'home';
+        switchTab(firstTab);
     } else { document.getElementById('loginError').style.display = 'block'; }
 }
 
 function doLogout() {
     currentUser = null; isAdmin = false;
+    userPermissions = {
+        stopwatch: true,
+        confiscations: true,
+        payout: true,
+        families: true,
+        admin: false
+    };
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('mainApp').classList.remove('show');
     document.getElementById('loginUsername').value = '';
     document.getElementById('loginPassword').value = '';
     removeAdminTab();
+    // Reset tabs
+    document.getElementById('tabNav').innerHTML = '';
+}
+
+function getAvailableTabs() {
+    const tabs = [];
+    if (userPermissions.stopwatch) tabs.push('stopwatch');
+    if (userPermissions.confiscations) tabs.push('confiscations');
+    if (userPermissions.payout) tabs.push('payout');
+    if (userPermissions.families) tabs.push('families');
+    if (isAdmin || userPermissions.admin) tabs.push('admin');
+    return tabs;
+}
+
+function setupTabsBasedOnPermissions() {
+    const tabNav = document.getElementById('tabNav');
+    tabNav.innerHTML = '';
+    
+    // Home ist immer sichtbar
+    const homeBtn = document.createElement('button');
+    homeBtn.className = 'tab-btn active';
+    homeBtn.textContent = '🏠 Hauptseite';
+    homeBtn.onclick = () => switchTab('home');
+    tabNav.appendChild(homeBtn);
+    
+    // Andere Tabs basierend auf Berechtigungen
+    const availableTabs = getAvailableTabs();
+    const tabConfig = {
+        'stopwatch': { icon: '⏱️', label: 'Stoppuhr' },
+        'confiscations': { icon: '📋', label: 'Beschlagnahmungen' },
+        'payout': { icon: '💰', label: 'Auszahlung' },
+        'families': { icon: '👨‍👩‍👧‍👦', label: 'Familien' },
+        'admin': { icon: '🔑', label: 'Admin', isAdmin: true }
+    };
+    
+    availableTabs.forEach(tabName => {
+        if (tabName === 'admin' && !isAdmin) return;
+        const config = tabConfig[tabName];
+        if (!config) return;
+        
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn';
+        if (config.isAdmin) btn.className += ' admin-tab';
+        btn.textContent = `${config.icon} ${config.label}`;
+        btn.onclick = () => switchTab(tabName);
+        tabNav.appendChild(btn);
+    });
 }
 
 function setupAdminTab() {
-    removeAdminTab();
-    if (isAdmin) {
-        const btn = document.createElement('button');
-        btn.className = 'tab-btn admin-tab'; btn.textContent = '🔑 Admin'; btn.onclick = () => switchTab('admin'); btn.id = 'adminTabBtn';
-        document.getElementById('tabNav').appendChild(btn);
-        if (!document.getElementById('tab-admin')) {
-            const div = document.createElement('div'); div.id = 'tab-admin'; div.className = 'tab-content';
-            div.innerHTML = `
-                <h3 style="color:#ff5555;margin-bottom:16px;">🔑 Admin</h3>
-                <div class="admin-section"><h4>👥 Benutzer</h4>
-                    <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
-                        <input type="text" id="newUsername" placeholder="Benutzername" style="width:180px;">
-                        <input type="password" id="newPassword" placeholder="Passwort" style="width:180px;">
-                        <button onclick="createUser()" style="background:#2e7d32;">➕ Erstellen</button>
-                    </div><div id="userList"></div></div>
-                <div class="admin-section"><h4>🗑️ Gefahrenzone</h4>
-                    <div class="input-group" style="justify-content:flex-start;">
-                        <input type="text" id="adminDeletePerson" placeholder="Name der Person" style="width:200px;">
-                        <button class="btn-danger" onclick="adminDeletePerson()">🗑️ Person löschen</button>
-                    </div></div>`;
-            document.querySelector('.container').appendChild(div);
-        }
-        loadUserList();
+    if (!isAdmin) return;
+    
+    // Admin Tab Inhalt erstellen falls noch nicht vorhanden
+    if (!document.getElementById('tab-admin')) {
+        const div = document.createElement('div');
+        div.id = 'tab-admin';
+        div.className = 'tab-content';
+        div.innerHTML = `
+            <h3 style="color:#ff5555;margin-bottom:16px;">🔑 Admin</h3>
+            
+            <div class="admin-section">
+                <h4>👥 Benutzerverwaltung</h4>
+                <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
+                    <input type="text" id="newUsername" placeholder="Benutzername" style="width:180px;">
+                    <input type="password" id="newPassword" placeholder="Passwort" style="width:180px;">
+                    <button onclick="createUser()" style="background:#2e7d32;">➕ Erstellen</button>
+                </div>
+                <div id="userList"></div>
+            </div>
+            
+            <div class="admin-section">
+                <h4>🔐 Berechtigungen</h4>
+                <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Berechtigungen zu bearbeiten:</p>
+                <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
+                    <select id="permissionUserSelect" onchange="loadUserPermissions()" style="width:200px;">
+                        <option value="">Benutzer wählen...</option>
+                    </select>
+                </div>
+                <div id="permissionsEditor" style="display:none;">
+                    <div class="permissions-grid">
+                        <div class="permission-item">
+                            <input type="checkbox" id="permStopwatch" onchange="savePermission('stopwatch', this.checked)">
+                            <label for="permStopwatch">⏱️ Stoppuhr</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="permConfiscations" onchange="savePermission('confiscations', this.checked)">
+                            <label for="permConfiscations">📋 Beschlagnahmungen</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="permPayout" onchange="savePermission('payout', this.checked)">
+                            <label for="permPayout">💰 Auszahlung</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="permFamilies" onchange="savePermission('families', this.checked)">
+                            <label for="permFamilies">👨‍👩‍👧‍👦 Familien</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="permAdmin" onchange="savePermission('admin', this.checked)" disabled style="opacity:0.5;">
+                            <label for="permAdmin" style="color:#888;">🔑 Admin (Nur für Admins)</label>
+                        </div>
+                    </div>
+                    <p id="permissionSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Berechtigungen gespeichert!</p>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h4>🗑️ Gefahrenzone</h4>
+                <div class="input-group" style="justify-content:flex-start;">
+                    <input type="text" id="adminDeletePerson" placeholder="Name der Person" style="width:200px;">
+                    <button class="btn-danger" onclick="adminDeletePerson()">🗑️ Person löschen</button>
+                </div>
+            </div>`;
+        document.querySelector('.container').appendChild(div);
+    }
+    
+    loadUserList();
+    populatePermissionUserSelect();
+}
+
+function removeAdminTab() {
+    const adminTab = document.getElementById('tab-admin');
+    if (adminTab) adminTab.remove();
+}
+
+async function populatePermissionUserSelect() {
+    const select = document.getElementById('permissionUserSelect');
+    if (!select) return;
+    
+    const snap = await database.ref('Navy-boote/users_auth').once('value');
+    const users = snap.val();
+    
+    select.innerHTML = '<option value="">Benutzer wählen...</option>';
+    if (users) {
+        Object.entries(users).forEach(([name, data]) => {
+            if (!data.isAdmin) { // Nur nicht-Admin Benutzer anzeigen
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                select.appendChild(option);
+            }
+        });
     }
 }
-function removeAdminTab() { const b = document.getElementById('adminTabBtn'); if (b) b.remove(); const t = document.getElementById('tab-admin'); if (t) t.remove(); }
+
+async function loadUserPermissions() {
+    const username = document.getElementById('permissionUserSelect').value;
+    const editor = document.getElementById('permissionsEditor');
+    
+    if (!username) {
+        editor.style.display = 'none';
+        return;
+    }
+    
+    const snap = await database.ref('Navy-boote/users_auth/' + username + '/permissions').once('value');
+    const permissions = snap.val() || {
+        stopwatch: true,
+        confiscations: true,
+        payout: true,
+        families: true,
+        admin: false
+    };
+    
+    document.getElementById('permStopwatch').checked = permissions.stopwatch !== false;
+    document.getElementById('permConfiscations').checked = permissions.confiscations !== false;
+    document.getElementById('permPayout').checked = permissions.payout !== false;
+    document.getElementById('permFamilies').checked = permissions.families !== false;
+    document.getElementById('permAdmin').checked = false; // Immer false für nicht-Admins
+    document.getElementById('permAdmin').disabled = true;
+    
+    // Speichere aktuellen Benutzer für die save-Funktion
+    editor.dataset.currentUser = username;
+    editor.style.display = 'block';
+}
+
+async function savePermission(permission, value) {
+    const username = document.getElementById('permissionsEditor').dataset.currentUser;
+    if (!username) return;
+    
+    const updates = {};
+    updates['Navy-boote/users_auth/' + username + '/permissions/' + permission] = value;
+    
+    await database.ref().update(updates);
+    
+    const statusEl = document.getElementById('permissionSaveStatus');
+    statusEl.style.display = 'block';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+}
+
 async function createUser() {
     const u = document.getElementById('newUsername').value.trim().toLowerCase();
     const p = document.getElementById('newPassword').value.trim();
-    if (!u || !p) return alert('Eingeben!'); if (u === 'colin') return alert('Reserviert!');
-    await database.ref('Navy-boote/users_auth/' + u).set({ password: p, isAdmin: false, created: Date.now() });
-    showToast('✅ Erstellt!', '#2ecc40'); document.getElementById('newUsername').value = ''; document.getElementById('newPassword').value = ''; loadUserList();
+    if (!u || !p) return alert('Eingeben!');
+    if (u === 'colin') return alert('Reserviert!');
+    
+    // Standard-Berechtigungen für neue Benutzer
+    const defaultPermissions = {
+        stopwatch: true,
+        confiscations: true,
+        payout: true,
+        families: true,
+        admin: false
+    };
+    
+    await database.ref('Navy-boote/users_auth/' + u).set({ 
+        password: p, 
+        isAdmin: false, 
+        created: Date.now(),
+        permissions: defaultPermissions
+    });
+    
+    showToast('✅ Erstellt!', '#2ecc40');
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newPassword').value = '';
+    loadUserList();
+    populatePermissionUserSelect();
 }
+
 async function loadUserList() {
-    const snap = await database.ref('Navy-boote/users_auth').once('value'); const users = snap.val();
-    const d = document.getElementById('userList'); if (!users) { d.innerHTML = '<p style="color:#aaa;">Keine.</p>'; return; }
-    d.innerHTML = '<table class="user-table"><thead><tr><th>Name</th><th>Rolle</th><th>Erstellt</th><th>Aktion</th></tr></thead><tbody>' +
-        Object.entries(users).map(([n, dd]) => `<tr><td><strong>${esc(n)}</strong></td><td>${dd.isAdmin?'<span style="color:#ff5555;">Admin</span>':'<span style="color:#64b4ff;">User</span>'}</td><td>${dd.created?new Date(dd.created).toLocaleDateString('de-DE'):'-'}</td><td>${n!=='colin'?'<button class="btn-small btn-danger" onclick="deleteUser(\''+n+'\')">🗑️</button>':'🔒'}</td></tr>`).join('') +
+    const snap = await database.ref('Navy-boote/users_auth').once('value');
+    const users = snap.val();
+    const d = document.getElementById('userList');
+    
+    if (!users) { 
+        d.innerHTML = '<p style="color:#aaa;">Keine Benutzer.</p>'; 
+        return; 
+    }
+    
+    d.innerHTML = '<table class="user-table"><thead><tr><th>Name</th><th>Rolle</th><th>Berechtigungen</th><th>Erstellt</th><th>Aktion</th></tr></thead><tbody>' +
+        Object.entries(users).map(([n, dd]) => {
+            const perms = dd.permissions || {};
+            const activePerms = Object.entries(perms)
+                .filter(([key, val]) => val === true)
+                .map(([key]) => {
+                    const permNames = {
+                        stopwatch: '⏱️',
+                        confiscations: '📋',
+                        payout: '💰',
+                        families: '👨‍👩‍👧‍👦',
+                        admin: '🔑'
+                    };
+                    return permNames[key] || key;
+                })
+                .join(' ');
+            
+            return `<tr>
+                <td><strong>${esc(n)}</strong></td>
+                <td>${dd.isAdmin?'<span style="color:#ff5555;">Admin</span>':'<span style="color:#64b4ff;">User</span>'}</td>
+                <td style="font-size:14px;">${activePerms || 'Keine'}</td>
+                <td>${dd.created?new Date(dd.created).toLocaleDateString('de-DE'):'-'}</td>
+                <td>${n!=='colin'?'<button class="btn-small btn-danger" onclick="deleteUser(\''+n+'\')">🗑️</button>':'🔒'}</td>
+            </tr>`;
+        }).join('') +
         '</tbody></table>';
 }
-async function deleteUser(u) { if (!confirm(u + ' löschen?')) return; await database.ref('Navy-boote/users_auth/' + u).remove(); showToast('Gelöscht.', '#ff4444'); loadUserList(); }
+
+async function deleteUser(u) { 
+    if (!confirm(u + ' löschen?')) return; 
+    await database.ref('Navy-boote/users_auth/' + u).remove(); 
+    showToast('Gelöscht.', '#ff4444'); 
+    loadUserList(); 
+    populatePermissionUserSelect();
+}
+
 async function adminDeletePerson() {
-    const n = document.getElementById('adminDeletePerson').value.trim(); if (!n) return alert('Name!');
+    const n = document.getElementById('adminDeletePerson').value.trim(); 
+    if (!n) return alert('Name!');
     if (!confirm('⚠️ ' + n + ' löschen?')) return;
-    await database.ref('Navy-boote/users/' + n.toLowerCase()).remove(); showToast('Gelöscht.', '#ff4444');
-    document.getElementById('adminDeletePerson').value = ''; loadAllUsersSorted(); autoLoadPerson();
+    await database.ref('Navy-boote/users/' + n.toLowerCase()).remove(); 
+    showToast('Gelöscht.', '#ff4444');
+    document.getElementById('adminDeletePerson').value = ''; 
+    loadAllUsersSorted(); 
+    autoLoadPerson();
 }
 
 function switchTab(name) {
+    // Prüfe Berechtigung
+    if (name === 'admin' && !isAdmin) {
+        showToast('Keine Berechtigung!', '#ff4444');
+        return;
+    }
+    
+    if (name !== 'home' && name !== 'admin' && !userPermissions[name]) {
+        showToast('Keine Berechtigung für diesen Bereich!', '#ff4444');
+        return;
+    }
+    
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    const tabs = ['home','stopwatch','confiscations','payout','families','admin'];
-    const idx = tabs.indexOf(name);
+    
     const allBtns = document.querySelectorAll('.tab-btn');
-    if (idx >= 0 && allBtns[idx]) allBtns[idx].classList.add('active');
+    const tabIndex = ['home', ...getAvailableTabs()].indexOf(name);
+    if (tabIndex >= 0 && allBtns[tabIndex]) allBtns[tabIndex].classList.add('active');
+    
     const tabEl = document.getElementById('tab-' + name);
     if (tabEl) tabEl.classList.add('active');
+    
     if (name === 'home') loadHomepageStats();
     else if (name === 'stopwatch') loadAllUsersSorted();
     else if (name === 'confiscations') loadConfiscations();
     else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); }
     else if (name === 'families') loadFamilies();
-    else if (name === 'admin') loadUserList();
+    else if (name === 'admin') {
+        loadUserList();
+        populatePermissionUserSelect();
+    }
 }
 
 function loadHomepageStats() {
@@ -647,16 +939,13 @@ async function loadPayoutData() {
     const weekKey = getWeekKey(monday);
     document.getElementById('payoutInfo').textContent = '📅 Woche: ' + getWeekString(monday) + ' | Mo ' + weekKey + ' bis So ' + getWeekKey(sunday);
 
-    // Hole nur die im Admin-Bereich registrierten Benutzer (users_auth)
     const usersAuthSnap = await database.ref('Navy-boote/users_auth').once('value');
     const usersAuth = usersAuthSnap.val() || {};
     const authorizedUsers = Object.keys(usersAuth);
 
-    // Hole die Bootsdaten aller User für die Zählung der Kontrollen
     const usersSnap = await database.ref('Navy-boote/users').once('value');
     const allUsers = usersSnap.val() || {};
 
-    // Hole gespeicherte Auszahlungsdaten für die Woche
     const payoutSnap = await database.ref('Navy-boote/payouts/' + weekKey).once('value');
     const payoutData = payoutSnap.val() || {};
 
@@ -668,14 +957,10 @@ async function loadPayoutData() {
     } else {
         tbody.innerHTML = '';
         
-        // Nur die autorisierten Benutzer aus users_auth anzeigen
         for (const name of authorizedUsers) {
             let weekCheckCount = 0;
-            
-            // Prüfe ob es Bootsdaten für diesen Benutzer gibt
             const userData = allUsers[name];
             
-            // Zähle alle Bootseinträge in diesem Wochenzeitraum
             if (userData && userData.boats) {
                 for (const boatKey in userData.boats) {
                     const boatEntries = userData.boats[boatKey];
@@ -692,13 +977,10 @@ async function loadPayoutData() {
                 }
             }
             
-            // Hole gespeicherte Daten (manuell überschrieben durch Admin)
             const saved = payoutData[name] || { count: null, paid: false };
-            
-            // Verwende gespeicherte Anzahl wenn vorhanden, sonst berechnete
             const displayCount = saved.count !== null ? saved.count : weekCheckCount;
-            
             const summe = displayCount * PRICE_PER_CHECK;
+            
             totalKontrollen += displayCount;
             totalSumme += summe;
             
@@ -735,7 +1017,6 @@ async function loadPayoutData() {
     document.getElementById('totalAusgezahlt').textContent = formatNumber(totalAusgezahlt) + ' $';
     document.getElementById('totalOffen').textContent = formatNumber(totalOffen) + ' $';
 
-    // Speichere Wocheninfo
     await database.ref('Navy-boote/payouts/' + weekKey + '/_weekInfo').update({
         monday: weekKey, 
         sunday: getWeekKey(sunday), 
@@ -747,10 +1028,8 @@ async function loadPayoutData() {
         lastUpdated: Date.now()
     });
     
-    // Wenn Admin die Anzahl nicht manuell gesetzt hat, speichere berechnete Werte
     for (const name of authorizedUsers) {
         if (!payoutData[name] || payoutData[name].count === null) {
-            // Berechne erneut für die Speicherung
             let weekCheckCount = 0;
             const userData = allUsers[name];
             if (userData && userData.boats) {
