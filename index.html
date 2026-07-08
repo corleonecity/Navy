@@ -1,4 +1,327 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>U.S Navy Marine - Verwaltungssystem</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', 'Roboto', Arial, sans-serif; height: 100vh; display: flex; justify-content: center; align-items: center; color: #e6f0ff; background: #050a19; overflow: hidden; }
+        .background { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('https://cdn.corleonecity.de/api/raw/4c9a9333-d321-4faa-ac7e-4f210465d911') no-repeat center center/cover; z-index: -2; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.3); z-index: -1; }
+        #loginScreen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; z-index: 999; backdrop-filter: blur(10px); background: rgba(5,10,25,0.85); }
+        #loginScreen.hidden { display: none; }
+        .login-box { background: rgba(10,20,40,0.9); border: 2px solid rgba(59,130,246,0.6); border-radius: 20px; padding: 40px; text-align: center; max-width: 420px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+        .login-box img { width: 120px; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(59,130,246,0.6)); }
+        .login-box h2 { color: #d9ecff; margin-bottom: 6px; font-family: 'Georgia',serif; letter-spacing: 2px; }
+        .login-box .sub { color: #8ab4e0; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 24px; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 10px; border: 1px solid rgba(100,150,255,0.5); background: rgba(0,0,0,0.65); color: white; font-size: 15px; outline: none; text-align: center; }
+        .login-box input:focus { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.4); }
+        .btn-login { width: 100%; padding: 14px; border-radius: 40px; cursor: pointer; font-weight: bold; background: linear-gradient(135deg,#1a3a6e,#0d1f3c); border: 2px solid #3b82f6; color: #fff; font-size: 16px; letter-spacing: 1px; transition: 0.3s; margin-top: 8px; }
+        .btn-login:hover { background: linear-gradient(135deg,#2a4a8e,#1d2f4c); box-shadow: 0 0 25px rgba(59,130,246,0.4); }
+        .login-error { color: #ff5555; font-size: 12px; margin-top: 8px; display: none; }
+        #mainApp { display: none; width: 100%; height: 100%; }
+        #mainApp.show { display: block; }
+        .container { width: 95%; max-width: 1400px; max-height: 92vh; overflow-y: auto; backdrop-filter: blur(6px); background: rgba(5,10,25,0.7); border-radius: 24px; border: 1px solid rgba(120,160,255,0.4); box-shadow: 0 15px 45px rgba(0,0,0,0.7); scrollbar-width: thin; display: flex; flex-direction: column; margin: 20px auto; }
+        .container::-webkit-scrollbar { width: 8px; }
+        .container::-webkit-scrollbar-track { background: #0a1220; border-radius: 10px; }
+        .container::-webkit-scrollbar-thumb { background: #2c5282; border-radius: 10px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px solid rgba(100,150,255,0.2); flex-shrink: 0; }
+        .top-bar .user-info { display: flex; align-items: center; gap: 10px; }
+        .top-bar .user-badge { background: rgba(100,180,255,0.2); border: 1px solid #64b4ff; color: #64b4ff; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .top-bar .user-badge.admin { background: rgba(255,50,50,0.2); border-color: #ff5555; color: #ff5555; }
+        .btn-logout { background: #444; font-size: 11px; padding: 6px 14px; border-radius: 20px; cursor: pointer; color: white; border: 1px solid rgba(100,150,255,0.3); }
+        .btn-logout:hover { background: #555; }
+        .tab-nav { display: flex; gap: 4px; padding: 12px 16px 0 16px; border-bottom: 2px solid rgba(59,130,246,0.3); flex-shrink: 0; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 22px; border-radius: 12px 12px 0 0; cursor: pointer; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; border: 1px solid transparent; border-bottom: none; transition: 0.25s; color: #a0b8d8; background: rgba(10,20,40,0.5); position: relative; top: 2px; }
+        .tab-btn:hover { color: #d0e0ff; background: rgba(30,60,120,0.5); }
+        .tab-btn.active { color: #fff; background: rgba(30,70,140,0.7); border-color: rgba(59,130,246,0.6); border-bottom: 2px solid #3b82f6; box-shadow: 0 -2px 15px rgba(59,130,246,0.2); }
+        .tab-btn.admin-tab { border-color: rgba(255,85,85,0.3); }
+        .tab-btn.admin-tab.active { border-bottom-color: #ff5555; }
+        .tab-content { display: none; padding: 20px; flex: 1; overflow-y: auto; }
+        .tab-content.active { display: block; }
+        .homepage { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 50vh; text-align: center; }
+        .homepage h1 { font-size: 2.8rem; letter-spacing: 4px; color: #d9ecff; text-shadow: 0 0 30px rgba(0,160,255,0.8); font-family: 'Georgia',serif; margin-bottom: 8px; }
+        .homepage .subtitle { font-size: 1.1rem; color: #8ab4e0; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 30px; }
+        .quick-stats { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+        .stat-card { background: rgba(15,25,50,0.7); border: 1px solid rgba(59,130,246,0.4); border-radius: 16px; padding: 18px 28px; min-width: 140px; backdrop-filter: blur(4px); text-align: center; }
+        .stat-card .stat-number { font-size: 2rem; font-weight: bold; color: #ffaa33; }
+        .stat-card .stat-label { font-size: 0.75rem; color: #8ab4e0; letter-spacing: 1px; text-transform: uppercase; }
+        .time { font-size: 68px; letter-spacing: 5px; margin: 8px 0; color: #d9ecff; text-shadow: 0 0 18px rgba(0,160,255,0.9); font-family: 'Courier New',monospace; text-align: center; font-weight: 700; background: rgba(0,0,0,0.3); border-radius: 30px; padding: 10px; }
+        .section-title { color: #9cc7ff; text-transform: uppercase; font-size: 14px; letter-spacing: 2px; margin: 25px 0 12px; border-left: 5px solid #3b82f6; padding-left: 12px; font-weight: 600; }
+        .input-group { margin: 15px 0; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; align-items: center; }
+        input, textarea, select { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(100,150,255,0.5); background: rgba(0,0,0,0.65); color: white; outline: none; font-size: 14px; transition: 0.2s; }
+        input:focus, textarea:focus, select:focus { border-color: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.4); }
+        select option { background: #0a1220; color: white; }
+        select { cursor: pointer; }
+        textarea { width: 100%; resize: vertical; font-size: 13px; border-radius: 10px; min-height: 60px; }
+        button { padding: 10px 20px; border-radius: 40px; cursor: pointer; font-weight: bold; background: #1e2a47; color: white; transition: 0.2s; border: 1px solid rgba(100,150,255,0.4); white-space: nowrap; }
+        button:hover { background: #2c3e66; transform: translateY(-2px); }
+        .btn-save { background: linear-gradient(135deg,#0f2b4d,#051a30); border: 1px solid #2c6e9e; width: 100%; padding: 10px; }
+        .btn-submit { background: #2e7d32; border-color: #4caf50; font-weight: bold; }
+        .btn-submit:hover { background: #388e3c; box-shadow: 0 0 15px rgba(76,175,80,0.3); }
+        .btn-cancel { background: #444; }
+        .btn-danger { background: #8b0000; border-color: #ff4444; color: #fff; }
+        .btn-danger:hover { background: #aa1111; }
+        .btn-new-confiscation { background: linear-gradient(135deg,#1a472a,#0d2818); border: 2px solid #2ecc40; color: #2ecc40; font-size: 15px; padding: 12px 24px; }
+        .btn-new-confiscation:hover { background: linear-gradient(135deg,#2a573a,#1a3a28); box-shadow: 0 0 20px rgba(46,204,64,0.3); }
+        .btn-new-family { background: linear-gradient(135deg,#2a3a6e,#1a2a4e); border: 2px solid #64b4ff; color: #64b4ff; font-size: 15px; padding: 12px 24px; }
+        .btn-new-family:hover { background: linear-gradient(135deg,#3a4a7e,#2a3a5e); box-shadow: 0 0 20px rgba(100,180,255,0.3); }
+        .btn-small { font-size: 11px; padding: 4px 10px; border-radius: 20px; }
+        .btn-card-action { font-size: 11px; padding: 5px 12px; border-radius: 20px; cursor: pointer; background: rgba(100,150,255,0.2); border: 1px solid #64b4ff; color: #64b4ff; font-weight: bold; }
+        .btn-card-action:hover { background: rgba(100,150,255,0.4); }
+        .btn-card-action.btn-danger { background: rgba(255,80,80,0.2); border-color: #ff5555; color: #ff5555; }
+        .btn-card-action.btn-danger:hover { background: rgba(255,80,80,0.4); }
+        .delete-btn { background: none; border: none; color: #ff9494; font-size: 18px; cursor: pointer; padding: 2px 8px; border-radius: 20px; }
+        .delete-btn:hover { background: rgba(255,80,80,0.3); transform: none; }
+        .boats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
+        .boat-panel { background: rgba(15,25,45,0.7); backdrop-filter: blur(3px); border-radius: 20px; border: 1px solid rgba(59,130,246,0.4); padding: 16px; }
+        .boat-panel h4 { margin: 0 0 10px; font-size: 1.2rem; border-bottom: 1px dashed #3b82f6; padding-bottom: 8px; }
+        .boat-panel textarea { margin-bottom: 10px; }
+        .name-list { display: flex; flex-wrap: wrap; gap: 12px; background: rgba(0,0,0,0.35); padding: 15px; border-radius: 20px; border: 1px solid rgba(100,150,255,0.25); max-height: 150px; overflow-y: auto; }
+        .name-tag { background: linear-gradient(145deg,#0a1a30,#031020); border: 1px solid #2c5282; padding: 8px 16px; border-radius: 40px; font-size: 14px; cursor: pointer; transition: 0.2s; }
+        .name-tag:hover { background: #1e3a6b; transform: scale(1.02); }
+        .search-results { margin-top: 20px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 24px; border: 1px solid rgba(59,130,246,0.4); }
+        .table-wrapper { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th { background: rgba(30,70,120,0.5); padding: 12px 8px; text-align: left; color: #b8dbff; }
+        td { padding: 10px 8px; border-bottom: 1px solid rgba(100,150,255,0.2); vertical-align: top; }
+        .badge-time { font-family: monospace; font-weight: bold; background: #0a1f2e; display: inline-block; padding: 4px 8px; border-radius: 20px; }
+        .entry-description { color: #bfd9ff; font-size: 12px; margin-top: 4px; word-break: break-word; }
+        .confiscation-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .confiscation-summary { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
+        .money-badge { padding: 10px 16px; border-radius: 12px; font-weight: bold; font-size: 14px; text-align: center; min-width: 120px; }
+        .money-badge.green { background: rgba(34,139,34,0.3); border: 1px solid #2ecc40; color: #2ecc40; }
+        .money-badge.black { background: rgba(40,40,40,0.4); border: 1px solid #999; color: #ccc; }
+        .money-badge.items { background: rgba(100,150,255,0.2); border: 1px solid #64b4ff; color: #64b4ff; }
+        .confiscation-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); gap: 18px; }
+        .confiscation-card { background: rgba(10,20,40,0.75); border: 1px solid rgba(100,150,255,0.3); border-radius: 16px; padding: 16px; backdrop-filter: blur(3px); transition: 0.2s; }
+        .confiscation-card:hover { border-color: #64b4ff; box-shadow: 0 4px 20px rgba(100,150,255,0.15); }
+        .confiscation-card .card-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px dashed rgba(100,150,255,0.25); padding-bottom: 10px; margin-bottom: 10px; }
+        .confiscation-card .card-header h4 { color: #ffaa33; font-size: 1.1rem; margin: 0; }
+        .confiscation-card .card-header .card-type { font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: bold; white-space: nowrap; }
+        .card-type.zivil { background: rgba(100,180,255,0.2); color: #64b4ff; border: 1px solid #64b4ff; }
+        .card-type.familie { background: rgba(255,170,51,0.2); color: #ffaa33; border: 1px solid #ffaa33; }
+        .confiscation-card .card-row { display: flex; gap: 10px; font-size: 13px; margin-bottom: 6px; flex-wrap: wrap; }
+        .confiscation-card .card-label { color: #8ab4e0; min-width: 90px; font-weight: 600; }
+        .confiscation-card .card-value { color: #d9ecff; }
+        .confiscation-card .money-values { display: flex; gap: 15px; margin: 10px 0; flex-wrap: wrap; }
+        .confiscation-card .money-green { color: #2ecc40; font-weight: bold; }
+        .confiscation-card .money-black { color: #ccc; font-weight: bold; }
+        .confiscation-card .card-items { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 8px 10px; margin: 8px 0; font-size: 12px; white-space: pre-wrap; color: #bfd9ff; max-height: 120px; overflow-y: auto; }
+        .confiscation-card .card-notes { font-size: 12px; color: #9bb7e0; font-style: italic; margin-top: 6px; }
+        .confiscation-card .card-actions { display: flex; gap: 6px; margin-top: 10px; justify-content: flex-end; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.75); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: rgba(8,18,38,0.95); backdrop-filter: blur(12px); border: 2px solid rgba(59,130,246,0.6); border-radius: 20px; padding: 24px; width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+        .modal h3 { color: #ffaa33; font-size: 1.2rem; margin-bottom: 18px; border-bottom: 1px solid rgba(255,170,51,0.3); padding-bottom: 10px; }
+        .close-modal-x { position: sticky; top: 0; float: right; background: none; border: none; color: #fff; font-size: 22px; cursor: pointer; padding: 0 6px; z-index: 10; }
+        .close-modal-x:hover { color: #ff4444; }
+        .modal-row { display: flex; gap: 12px; margin-bottom: 12px; align-items: flex-end; flex-wrap: wrap; }
+        .modal-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
+        .modal-field label { font-size: 11px; color: #9cc7ff; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+        .modal-field input, .modal-field select, .modal-field textarea { width: 100%; font-size: 13px; padding: 8px 10px; }
+        .modal-field textarea { min-height: 55px; }
+        .dropdown-with-text { display: flex; gap: 6px; align-items: center; }
+        .dropdown-with-text select { flex: 1; min-width: 100px; padding: 8px 10px; font-size: 13px; }
+        .dropdown-with-text input { flex: 1; min-width: 100px; padding: 8px 10px; font-size: 13px; }
+        .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(100,150,255,0.2); }
+        .families-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
+        .families-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px; }
+        .family-card { background: rgba(10,20,40,0.75); border: 1px solid rgba(100,150,255,0.4); border-radius: 18px; padding: 18px; }
+        .family-card h4 { color: #ffaa33; font-size: 1.3rem; margin-bottom: 12px; border-bottom: 1px dashed rgba(100,150,255,0.3); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .family-section { margin-bottom: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid rgba(100,150,255,0.2); }
+        .family-section h5 { color: #9cc7ff; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+        .family-images { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
+        .family-images img { width: 80px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(100,150,255,0.4); cursor: pointer; }
+        .family-color-dot { display: inline-block; width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); vertical-align: middle; margin-right: 6px; }
+        .payout-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
+        .payout-week-selector { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .payout-week-selector input { width: 160px; padding: 8px 12px; font-size: 13px; }
+        .payout-table-wrapper { overflow-x: auto; margin-top: 10px; }
+        .payout-table { width: 100%; border-collapse: collapse; }
+        .payout-table th { background: rgba(30,70,120,0.5); padding: 10px 8px; text-align: left; color: #b8dbff; font-size: 13px; }
+        .payout-table td { padding: 10px 8px; border-bottom: 1px solid rgba(100,150,255,0.2); font-size: 14px; }
+        .payout-table .count-input { width: 70px; text-align: center; padding: 6px; font-size: 14px; }
+        .payout-table .amount-cell { font-weight: bold; color: #2ecc40; }
+        .payout-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: #2ecc40; margin: 0; }
+        .payout-status { font-size: 12px; padding: 3px 8px; border-radius: 20px; font-weight: bold; display: inline-block; margin-left: 6px; }
+        .payout-status.paid { background: rgba(46,204,64,0.2); color: #2ecc40; border: 1px solid #2ecc40; }
+        .payout-status.unpaid { background: rgba(255,170,51,0.2); color: #ffaa33; border: 1px solid #ffaa33; }
+        .payout-total { margin-top: 15px; padding: 15px; background: rgba(0,0,0,0.4); border-radius: 12px; border: 1px solid rgba(46,204,64,0.3); display: flex; gap: 20px; flex-wrap: wrap; }
+        .payout-total-item { text-align: center; }
+        .payout-total-item .big { font-size: 1.8rem; font-weight: bold; color: #2ecc40; }
+        .payout-total-item .lbl { font-size: 0.8rem; color: #8ab4e0; }
+        .admin-section { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,85,85,0.3); border-radius: 14px; padding: 16px; margin-bottom: 18px; }
+        .admin-section h4 { color: #ff5555; margin-bottom: 12px; border-bottom: 1px solid rgba(255,85,85,0.3); padding-bottom: 8px; }
+        .user-table { width: 100%; border-collapse: collapse; }
+        .user-table th { background: rgba(255,85,85,0.2); padding: 10px 8px; text-align: left; color: #ff9999; font-size: 13px; }
+        .user-table td { padding: 10px 8px; border-bottom: 1px solid rgba(255,85,85,0.2); font-size: 13px; }
+        .permissions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+        .permission-item { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; }
+        .permission-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #2ecc40; }
+        .permission-item label { font-size: 12px; color: #d9ecff; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="background"></div>
+<div class="overlay"></div>
+
+<div id="loginScreen">
+    <div class="login-box">
+        <img src="https://cdn.corleonecity.de/api/raw/357c41cc-d271-4e20-9b6d-f29852fbea0c" alt="Navy Logo">
+        <h2>U.S NAVY MARINE</h2>
+        <p class="sub">⚓ Verwaltungssystem ⚓</p>
+        <input type="text" id="loginUsername" placeholder="Benutzername" autocomplete="off">
+        <input type="password" id="loginPassword" placeholder="Passwort">
+        <button class="btn-login" onclick="doLogin()">🔐 Anmelden</button>
+        <p class="login-error" id="loginError">❌ Falscher Benutzername oder Passwort!</p>
+    </div>
+</div>
+
+<div id="mainApp">
+    <div class="container">
+        <div class="top-bar">
+            <span style="color:#ffaa33;font-weight:bold;font-size:16px;">⚓ U.S NAVY MARINE</span>
+            <div class="user-info">
+                <span id="currentUserDisplay" style="color:#d9ecff;font-size:14px;"></span>
+                <span class="user-badge" id="userBadge">User</span>
+                <button class="btn-logout" onclick="doLogout()">🚪 Abmelden</button>
+            </div>
+        </div>
+
+        <div class="tab-nav" id="tabNav">
+            <button class="tab-btn active" onclick="switchTab('home')">🏠 Hauptseite</button>
+        </div>
+
+        <div id="tab-home" class="tab-content active">
+            <div class="homepage">
+                <h1>U.S NAVY MARINE</h1>
+                <p class="subtitle">⚓ Verwaltungssystem ⚓</p>
+                <div class="quick-stats" id="homepageStats">
+                    <div class="stat-card"><div class="stat-number" id="statPersons">0</div><div class="stat-label">Personen</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statFamilies">0</div><div class="stat-label">Familien</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statConfiscations">0</div><div class="stat-label">Beschlagnahmungen</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statTotalGreen">0 €</div><div class="stat-label">Grüngeld</div></div>
+                    <div class="stat-card"><div class="stat-number" id="statTotalBlack">0 €</div><div class="stat-label">Schwarzgeld</div></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-stopwatch" class="tab-content">
+            <div class="time" id="display">00:00.00</div>
+            <div class="input-group">
+                <input type="text" id="personName" placeholder="Name der Person" autocomplete="off">
+                <button onclick="startStop()" id="startBtn" style="background:#0055aa;">▶ Start</button>
+                <button onclick="resetTimer()" style="background:#885500;">🔄 Reset</button>
+            </div>
+            <div class="section-title">🚤 BOOTE & SPEICHERN</div>
+            <div class="boats-grid">
+                <div class="boat-panel"><h4>⚡ U.S Navy Predator</h4><textarea id="descPredator" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('Predator','descPredator')">📌 Speichern</button></div>
+                <div class="boat-panel"><h4>🛶 Dinghy</h4><textarea id="descDinghy" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('Dinghy','descDinghy')">📌 Speichern</button></div>
+                <div class="boat-panel"><h4>🚢 Kurtz 31 Patrol Boat</h4><textarea id="descPatrolBoat" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('PatrolBoat','descPatrolBoat')">📌 Speichern</button></div>
+                <div class="boat-panel"><h4>🔫 Weaponized Dinghy</h4><textarea id="descWeaponized" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('WeaponizedDinghy','descWeaponized')">📌 Speichern</button></div>
+            </div>
+            <div class="section-title">👥 REGISTRIERTE PERSONEN</div>
+            <div id="allNamesList" class="name-list"><span style="color:#aaa;">Laden...</span></div>
+            <div class="search-results">
+                <h3 style="margin:0 0 8px 0;">📋 Zeiten & Beschreibungen</h3>
+                <div class="input-group" style="justify-content:flex-start;"><input type="text" id="searchName" placeholder="Name eingeben..." oninput="autoLoadPerson()"></div>
+                <div id="resultTable"><p style="color:#bbd4ff;">🔍 Wähle eine Person aus.</p></div>
+            </div>
+        </div>
+
+        <div id="tab-confiscations" class="tab-content">
+            <div class="confiscation-header">
+                <h3 style="color:#ffaa33;margin:0;">📋 Beschlagnahmungen</h3>
+                <button class="btn-new-confiscation" onclick="openNewConfiscationModal()">➕ Neue Beschlagnahmung</button>
+            </div>
+            <div class="confiscation-summary" id="confiscationMoneySummary">
+                <div class="money-badge green">🟢 Grüngeld: <span id="totalGreenDisplay">0 €</span></div>
+                <div class="money-badge black">⚫ Schwarzgeld: <span id="totalBlackDisplay">0 €</span></div>
+                <div class="money-badge items">📦 Gegenstände: <span id="totalItemsDisplay">0</span></div>
+            </div>
+            <div id="confiscationCards" class="confiscation-cards"><p style="color:#aaa;grid-column:1/-1;">Keine Beschlagnahmungen.</p></div>
+        </div>
+
+        <div id="tab-payout" class="tab-content">
+            <div class="payout-header">
+                <h3 style="color:#2ecc40;margin:0;">💰 Auszahlung</h3>
+                <div class="payout-week-selector">
+                    <label style="color:#8ab4e0;font-size:13px;">📅 Woche:</label>
+                    <input type="date" id="payoutWeekInput" onchange="loadPayoutData()">
+                    <button onclick="previousWeek()" style="font-size:12px;padding:6px 12px;">◀ Vorherige</button>
+                    <button onclick="nextWeek()" style="font-size:12px;padding:6px 12px;">Nächste ▶</button>
+                    <button onclick="goToCurrentWeek()" style="font-size:12px;padding:6px 12px;background:#2e7d32;">📍 Aktuelle Woche</button>
+                </div>
+            </div>
+            <div id="payoutInfo" style="margin-bottom:10px;color:#8ab4e0;font-size:13px;"></div>
+            <div class="payout-table-wrapper">
+                <table class="payout-table">
+                    <thead><tr><th>Name</th><th>Bootskontrollen</th><th>Pro Kontrolle</th><th>Summe</th><th>Status</th></tr></thead>
+                    <tbody id="payoutTableBody"><tr><td colspan="5" style="text-align:center;color:#aaa;">Laden...</td></tr></tbody>
+                </table>
+            </div>
+            <div class="payout-total" id="payoutTotal">
+                <div class="payout-total-item"><div class="big" id="totalKontrollen">0</div><div class="lbl">Kontrollen</div></div>
+                <div class="payout-total-item"><div class="big" id="totalAusgezahlt">0 $</div><div class="lbl">Ausgezahlt</div></div>
+                <div class="payout-total-item"><div class="big" id="totalOffen">0 $</div><div class="lbl">Offen</div></div>
+                <div class="payout-total-item"><div class="big" id="totalSumme">0 $</div><div class="lbl">Gesamt</div></div>
+            </div>
+        </div>
+
+        <div id="tab-families" class="tab-content">
+            <div class="families-header">
+                <h3 style="color:#ffaa33;margin:0;">👨‍👩‍👧‍👦 Familien</h3>
+                <button class="btn-new-family" onclick="openFamilyModal()">➕ Neue Familie</button>
+            </div>
+            <div id="familiesGrid" class="families-grid"><p style="color:#aaa;grid-column:1/-1;">Keine Familien.</p></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="confiscationModalOverlay">
+    <div class="modal">
+        <button class="close-modal-x" onclick="closeConfiscationModal()">✕</button>
+        <h3 id="confiscationModalTitle">📝 Neue Beschlagnahmung</h3>
+        <div class="modal-row"><div class="modal-field"><label>📋 Name der Akte</label><input type="text" id="modalAkteName" placeholder="z.B. Bootskontrolle 001"></div></div>
+        <div class="modal-row"><div class="modal-field"><label>👤 Typ</label><div class="dropdown-with-text"><select id="modalType"><option value="">Bitte wählen...</option><option value="Zivil">Zivil</option><option value="Familie">Familie</option></select><input type="text" id="modalFamilyName" placeholder="Familienname"></div></div></div>
+        <div class="modal-row">
+            <div class="modal-field"><label>👮 Abgenommen von</label><div class="dropdown-with-text"><select id="modalTakenBy"><option value="">Bitte wählen...</option><option value="SEAL">SEAL</option><option value="USA">USA</option><option value="PD">PD</option><option value="DOJ">DOJ</option><option value="FIB">FIB</option></select><input type="text" id="modalTakenByName" placeholder="Name der Person"></div></div>
+            <div class="modal-field" style="flex:0.8;min-width:200px;"><label>📅 Datum & Uhrzeit</label><div style="display:flex;gap:6px;"><input type="date" id="modalDate"><input type="time" id="modalTime"></div></div>
+        </div>
+        <div class="modal-row">
+            <div class="modal-field"><label>📤 Abgegeben an</label><div class="dropdown-with-text"><select id="modalGivenTo"><option value="">Bitte wählen...</option><option value="Asservatenkammer">Asservatenkammer</option><option value="SEAL">SEAL</option><option value="USA">USA</option><option value="PD">PD</option><option value="DOJ">DOJ</option><option value="FIB">FIB</option></select><input type="text" id="modalGivenToName" placeholder="Name der Person"></div></div>
+            <div class="modal-field" style="flex:0.8;min-width:200px;"><label>📅 Abgabe Datum & Uhrzeit</label><div style="display:flex;gap:6px;"><input type="date" id="modalGivenDate"><input type="time" id="modalGivenTime"></div></div>
+        </div>
+        <div class="modal-row">
+            <div class="modal-field"><label>🟢 Grüngeld (€)</label><input type="text" id="modalGreenMoney" value="0" placeholder="0" oninput="formatMoneyInput(this)"></div>
+            <div class="modal-field"><label>⚫ Schwarzgeld (€)</label><input type="text" id="modalBlackMoney" value="0" placeholder="0" oninput="formatMoneyInput(this)"></div>
+        </div>
+        <div class="modal-row"><div class="modal-field" style="max-width:200px;"><label>🔢 Gesamtmenge</label><input type="number" id="modalItemsTotal" value="0" min="0"></div></div>
+        <div class="modal-row"><div class="modal-field"><label>📦 Abgenommene Gegenstände</label><textarea id="modalItems" rows="3" placeholder="z.B.: 5x Waffenteile"></textarea></div></div>
+        <div class="modal-row"><div class="modal-field"><label>📋 Notizen</label><textarea id="modalNotes" rows="2"></textarea></div></div>
+        <div class="modal-actions"><button class="btn-cancel" onclick="closeConfiscationModal()">Abbrechen</button><button class="btn-submit" onclick="saveConfiscation()">✅ Speichern</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="familyModalOverlay">
+    <div class="modal" style="max-width:700px;">
+        <button class="close-modal-x" onclick="closeFamilyModal()">✕</button>
+        <h3 id="familyModalTitle">👨‍👩‍👧‍👦 Neue Familie</h3>
+        <div class="modal-row"><div class="modal-field"><label>Familienname</label><input type="text" id="familyName" placeholder="z.B. Corleone"></div></div>
+        <div class="family-section"><h5>🚗 Fahrzeug</h5><div class="modal-row"><div class="modal-field"><label>Farbe</label><div style="display:flex;gap:8px;"><input type="color" id="vehicleColor" value="#3b82f6" style="width:50px;height:38px;"><input type="text" id="vehicleColorName" placeholder="Farbname" style="flex:1;"></div></div><div class="modal-field"><label>Typ</label><input type="text" id="vehicleType" placeholder="Sultan RS"></div></div><div class="modal-row"><div class="modal-field"><label>Kennzeichen</label><input type="text" id="vehiclePlate"></div></div><label style="font-size:11px;color:#9cc7ff;">Bild (URL)</label><input type="text" id="vehicleImageUrl" placeholder="https://..." style="width:100%;margin-top:4px;" oninput="updateFamilyPreviews()"><div id="vehicleImagePreview" style="margin-top:5px;"></div></div>
+        <div class="family-section"><h5>🏠 Anwesen</h5><div class="modal-row"><div class="modal-field"><label>Adresse</label><input type="text" id="estateDescription"></div></div><label style="font-size:11px;color:#9cc7ff;">Bild (URL)</label><input type="text" id="estateImageUrl" placeholder="https://..." style="width:100%;margin-top:4px;" oninput="updateFamilyPreviews()"><div id="estateImagePreview" style="margin-top:5px;"></div></div>
+        <div class="family-section"><h5>👔 Kleidung</h5><div class="modal-row"><div class="modal-field"><label>Beschreibung</label><input type="text" id="clothingDescription"></div></div><label style="font-size:11px;color:#9cc7ff;">Bilder (URLs, Komma)</label><input type="text" id="clothingImagesInput" placeholder="url1.jpg, url2.jpg" style="width:100%;margin-top:4px;" oninput="updateFamilyPreviews()"><div id="clothingImagesPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;"></div></div>
+        <div class="modal-row"><div class="modal-field"><label>📋 Notizen</label><textarea id="familyNotes" rows="2"></textarea></div></div>
+        <div class="modal-actions"><button class="btn-cancel" onclick="closeFamilyModal()">Abbrechen</button><button class="btn-submit" onclick="saveFamily()">✅ Speichern</button></div>
+    </div>
+</div>
+
 <script>
+// Firebase Konfiguration
 const firebaseConfig = {
     apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
     authDomain: "cc-shop-36c3b.firebaseapp.com",
@@ -8,9 +331,11 @@ const firebaseConfig = {
     messagingSenderId: "376170741825",
     appId: "1:376170741825:web:bc6102e277da5ad7cbc6c0"
 };
+
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 
+// Globale Variablen
 let currentUser = null;
 let isAdmin = false;
 let userPermissions = {
@@ -23,11 +348,18 @@ let userPermissions = {
 const PRICE_PER_CHECK = 5000;
 let currentPermissionUser = null;
 let sessionTimeout = null;
-const SESSION_DURATION = 30 * 60 * 1000; // 30 Minuten
-let userDataListener = null; // Listener für Echtzeit-Updates
+let userDataListener = null;
+let currentListener = null;
+let startTime = 0, elapsed = 0, stopwatchInterval = null, running = false;
+let editingConfiscationId = null;
+let editingFamilyId = null;
+let currentPayoutWeek = '';
 
 // ==================== HILFSFUNKTIONEN ====================
-function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''; }
+function esc(s) { 
+    if (!s) return '';
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); 
+}
 
 function formatNumber(n) {
     if (n === null || n === undefined || isNaN(n)) return '0';
@@ -36,7 +368,10 @@ function formatNumber(n) {
 
 function formatMoneyInput(input) {
     let val = input.value.replace(/\./g, '').replace(/,/g, '.');
-    if (val === '' || isNaN(val)) { input.dataset.raw = '0'; return; }
+    if (val === '' || isNaN(val)) { 
+        input.dataset.raw = '0'; 
+        return; 
+    }
     input.dataset.raw = val;
     const num = parseFloat(val);
     input.value = formatNumber(num);
@@ -48,17 +383,19 @@ function getRawMoneyValue(input) {
 
 function showToast(msg, color) {
     const el = document.createElement('div');
-    el.style.cssText = `position:fixed;bottom:15px;right:15px;background:${color};color:#000;padding:8px 18px;border-radius:20px;font-size:13px;z-index:9999;font-weight:bold;`;
-    el.innerText = msg; document.body.appendChild(el); setTimeout(() => el.remove(), 2500);
+    el.style.cssText = `position:fixed;bottom:20px;right:20px;background:${color};color:#000;padding:10px 20px;border-radius:25px;font-size:14px;z-index:9999;font-weight:bold;box-shadow:0 4px 12px rgba(0,0,0,0.3);`;
+    el.innerText = msg; 
+    document.body.appendChild(el); 
+    setTimeout(() => el.remove(), 3000);
 }
 
 // ==================== SESSION MANAGEMENT ====================
 function startSessionTimer() {
     if (sessionTimeout) clearTimeout(sessionTimeout);
     sessionTimeout = setTimeout(() => {
-        showToast('⚠️ Sitzung abgelaufen! Bitte neu anmelden.', '#ffaa33');
-        doLogout();
-    }, SESSION_DURATION);
+        showToast('⚠️ Sitzung abgelaufen (30 Min. Inaktivität)', '#ffaa33');
+        setTimeout(() => doLogout(), 1500);
+    }, 30 * 60 * 1000); // 30 Minuten
 }
 
 function resetSessionTimer() {
@@ -68,80 +405,72 @@ function resetSessionTimer() {
     }
 }
 
-// Event Listener für Benutzeraktivität
-document.addEventListener('click', resetSessionTimer);
-document.addEventListener('keypress', resetSessionTimer);
-document.addEventListener('scroll', resetSessionTimer);
+// Aktivitäts-Listener
+['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+    document.addEventListener(event, resetSessionTimer);
+});
 
 // ==================== AUTH ====================
 async function ensureAdminExists() {
-    const snap = await database.ref('Navy-boote/users_auth/colin').once('value');
-    if (!snap.val()) {
-        await database.ref('Navy-boote/users_auth/colin').set({ 
-            password: '22122009', 
-            isAdmin: true, 
-            created: Date.now(),
-            permissions: {
-                stopwatch: true,
-                confiscations: true,
-                payout: true,
-                families: true,
-                admin: true
-            }
-        });
+    try {
+        const snap = await database.ref('Navy-boote/users_auth/colin').once('value');
+        if (!snap.val()) {
+            await database.ref('Navy-boote/users_auth/colin').set({ 
+                password: '22122009', 
+                isAdmin: true, 
+                created: Date.now(),
+                permissions: {
+                    stopwatch: true,
+                    confiscations: true,
+                    payout: true,
+                    families: true,
+                    admin: true
+                }
+            });
+            console.log('Admin-Account erstellt');
+        }
+    } catch (error) {
+        console.error('Fehler beim Admin-Check:', error);
     }
 }
 
 function startUserDataListener(username) {
-    // Entferne alten Listener
     if (userDataListener) {
         userDataListener.off();
     }
     
-    // Echtzeit-Listener für Benutzerdaten
     userDataListener = database.ref('Navy-boote/users_auth/' + username);
     userDataListener.on('value', (snap) => {
         const userData = snap.val();
         
-        // Wenn Account gelöscht wurde
         if (!userData) {
             showToast('⚠️ Dein Account wurde gelöscht!', '#ff4444');
-            doLogout();
+            setTimeout(() => doLogout(), 1500);
             return;
         }
         
-        // Wenn Berechtigungen geändert wurden (und Benutzer kein Admin ist)
         if (!isAdmin && userData.permissions) {
-            const newPermissions = userData.permissions;
-            const permissionsChanged = 
-                userPermissions.stopwatch !== (newPermissions.stopwatch !== false) ||
-                userPermissions.confiscations !== (newPermissions.confiscations !== false) ||
-                userPermissions.payout !== (newPermissions.payout !== false) ||
-                userPermissions.families !== (newPermissions.families !== false);
+            const newPerms = userData.permissions;
+            const oldPerms = { ...userPermissions };
             
-            if (permissionsChanged) {
-                // Aktualisiere Berechtigungen
-                userPermissions = {
-                    stopwatch: newPermissions.stopwatch !== false,
-                    confiscations: newPermissions.confiscations !== false,
-                    payout: newPermissions.payout !== false,
-                    families: newPermissions.families !== false,
-                    admin: false
-                };
+            userPermissions.stopwatch = newPerms.stopwatch !== false;
+            userPermissions.confiscations = newPerms.confiscations !== false;
+            userPermissions.payout = newPerms.payout !== false;
+            userPermissions.families = newPerms.families !== false;
+            
+            if (JSON.stringify(oldPerms) !== JSON.stringify(userPermissions)) {
+                console.log('Berechtigungen geändert!');
+                updateTabs();
                 
-                // Aktualisiere Tabs sofort
-                setupTabsBasedOnPermissions();
-                
-                // Prüfe ob aktueller Tab noch erlaubt ist
                 const currentTab = document.querySelector('.tab-content.active');
                 if (currentTab) {
-                    const tabName = currentTab.id.replace('tab-', '');
-                    if (tabName !== 'home' && tabName !== 'admin' && !userPermissions[tabName]) {
+                    const tabId = currentTab.id.replace('tab-', '');
+                    if (tabId !== 'home' && !userPermissions[tabId]) {
                         switchTab('home');
                     }
                 }
                 
-                showToast('🔄 Berechtigungen aktualisiert!', '#64b4ff');
+                showToast('🔄 Berechtigungen aktualisiert', '#64b4ff');
             }
         }
     });
@@ -150,69 +479,89 @@ function startUserDataListener(username) {
 async function doLogin() {
     const username = document.getElementById('loginUsername').value.trim().toLowerCase();
     const password = document.getElementById('loginPassword').value.trim();
-    if (!username || !password) { document.getElementById('loginError').style.display = 'block'; return; }
-    const snap = await database.ref('Navy-boote/users_auth/' + username).once('value');
-    const userData = snap.val();
-    if (userData && userData.password === password) {
-        currentUser = { username, isAdmin: userData.isAdmin === true };
-        isAdmin = currentUser.isAdmin;
+    
+    if (!username || !password) {
+        document.getElementById('loginError').style.display = 'block';
+        return;
+    }
+    
+    try {
+        const snap = await database.ref('Navy-boote/users_auth/' + username).once('value');
+        const userData = snap.val();
         
-        if (isAdmin) {
-            userPermissions = {
-                stopwatch: true,
-                confiscations: true,
-                payout: true,
-                families: true,
-                admin: true
-            };
+        if (userData && userData.password === password) {
+            currentUser = { username, isAdmin: userData.isAdmin === true };
+            isAdmin = currentUser.isAdmin;
+            
+            if (isAdmin) {
+                userPermissions = {
+                    stopwatch: true,
+                    confiscations: true,
+                    payout: true,
+                    families: true,
+                    admin: true
+                };
+            } else {
+                const perms = userData.permissions || {};
+                userPermissions = {
+                    stopwatch: perms.stopwatch !== false,
+                    confiscations: perms.confiscations !== false,
+                    payout: perms.payout !== false,
+                    families: perms.families !== false,
+                    admin: false
+                };
+            }
+            
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.add('show');
+            document.getElementById('currentUserDisplay').textContent = '👤 ' + username;
+            
+            const badge = document.getElementById('userBadge');
+            if (isAdmin) {
+                badge.textContent = '🔑 Admin';
+                badge.classList.add('admin');
+            } else {
+                badge.textContent = '👤 User';
+                badge.classList.remove('admin');
+            }
+            
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('loginPassword').value = '';
+            
+            startUserDataListener(username);
+            startSessionTimer();
+            updateTabs();
+            
+            switchTab('home');
+            
+            console.log('Login erfolgreich:', username, 'Admin:', isAdmin);
+            console.log('Berechtigungen:', userPermissions);
         } else {
-            userPermissions = {
-                stopwatch: userData.permissions?.stopwatch !== false,
-                confiscations: userData.permissions?.confiscations !== false,
-                payout: userData.permissions?.payout !== false,
-                families: userData.permissions?.families !== false,
-                admin: false
-            };
+            document.getElementById('loginError').style.display = 'block';
         }
-        
-        document.getElementById('loginScreen').classList.add('hidden');
-        document.getElementById('mainApp').classList.add('show');
-        document.getElementById('currentUserDisplay').textContent = '👤 ' + username;
-        const badge = document.getElementById('userBadge');
-        if (isAdmin) { badge.textContent = '🔑 Admin'; badge.classList.add('admin'); }
-        else { badge.textContent = '👤 User'; badge.classList.remove('admin'); }
-        document.getElementById('loginError').style.display = 'none';
-        
-        // Starte Echtzeit-Listener für Benutzerdaten
-        startUserDataListener(username);
-        
-        // Starte Session-Timer
-        startSessionTimer();
-        
-        setupTabsBasedOnPermissions();
-        if (isAdmin) setupAdminTab();
-        
-        // Wechsle zum ersten verfügbaren Tab
-        const availableTabs = getAvailableTabs();
-        const firstTab = availableTabs.length > 0 ? availableTabs[0] : 'home';
-        switchTab(firstTab);
-    } else { document.getElementById('loginError').style.display = 'block'; }
+    } catch (error) {
+        console.error('Login-Fehler:', error);
+        alert('Fehler bei der Anmeldung!');
+    }
 }
 
 function doLogout() {
-    // Clear session timer
     if (sessionTimeout) {
         clearTimeout(sessionTimeout);
         sessionTimeout = null;
     }
     
-    // Remove user data listener
     if (userDataListener) {
         userDataListener.off();
         userDataListener = null;
     }
     
-    currentUser = null; 
+    if (currentListener) {
+        currentListener.off();
+        currentListener = null;
+    }
+    
+    currentUser = null;
     isAdmin = false;
     userPermissions = {
         stopwatch: true,
@@ -221,67 +570,111 @@ function doLogout() {
         families: true,
         admin: false
     };
+    
     document.getElementById('loginScreen').classList.remove('hidden');
     document.getElementById('mainApp').classList.remove('show');
     document.getElementById('loginUsername').value = '';
     document.getElementById('loginPassword').value = '';
-    removeAdminTab();
-    document.getElementById('tabNav').innerHTML = '';
+    
+    const adminTab = document.getElementById('tab-admin');
+    if (adminTab) adminTab.remove();
+    
+    document.getElementById('tabNav').innerHTML = '<button class="tab-btn active" onclick="switchTab(\'home\')">🏠 Hauptseite</button>';
 }
 
-function getAvailableTabs() {
-    const tabs = [];
-    if (userPermissions.stopwatch) tabs.push('stopwatch');
-    if (userPermissions.confiscations) tabs.push('confiscations');
-    if (userPermissions.payout) tabs.push('payout');
-    if (userPermissions.families) tabs.push('families');
-    if (isAdmin || userPermissions.admin) tabs.push('admin');
-    return tabs;
-}
-
-function setupTabsBasedOnPermissions() {
+function updateTabs() {
     const tabNav = document.getElementById('tabNav');
     tabNav.innerHTML = '';
     
+    // Home Tab
     const homeBtn = document.createElement('button');
     homeBtn.className = 'tab-btn active';
     homeBtn.textContent = '🏠 Hauptseite';
     homeBtn.onclick = () => switchTab('home');
     tabNav.appendChild(homeBtn);
     
-    const availableTabs = getAvailableTabs();
+    // Berechtigungsabhängige Tabs
     const tabConfig = {
         'stopwatch': { icon: '⏱️', label: 'Stoppuhr' },
         'confiscations': { icon: '📋', label: 'Beschlagnahmungen' },
         'payout': { icon: '💰', label: 'Auszahlung' },
-        'families': { icon: '👨‍👩‍👧‍👦', label: 'Familien' },
-        'admin': { icon: '🔑', label: 'Admin', isAdmin: true }
+        'families': { icon: '👨‍👩‍👧‍👦', label: 'Familien' }
     };
     
-    availableTabs.forEach(tabName => {
-        if (tabName === 'admin' && !isAdmin) return;
-        const config = tabConfig[tabName];
-        if (!config) return;
-        
-        const btn = document.createElement('button');
-        btn.className = 'tab-btn';
-        if (config.isAdmin) btn.className += ' admin-tab';
-        btn.textContent = `${config.icon} ${config.label}`;
-        btn.onclick = () => switchTab(tabName);
-        tabNav.appendChild(btn);
-    });
+    for (const [key, config] of Object.entries(tabConfig)) {
+        if (userPermissions[key]) {
+            const btn = document.createElement('button');
+            btn.className = 'tab-btn';
+            btn.textContent = `${config.icon} ${config.label}`;
+            btn.onclick = () => switchTab(key);
+            tabNav.appendChild(btn);
+        }
+    }
+    
+    // Admin Tab
+    if (isAdmin) {
+        const adminBtn = document.createElement('button');
+        adminBtn.className = 'tab-btn admin-tab';
+        adminBtn.textContent = '🔑 Admin';
+        adminBtn.onclick = () => switchTab('admin');
+        tabNav.appendChild(adminBtn);
+    }
 }
 
+function switchTab(name) {
+    // Berechtigungsprüfung
+    if (name === 'admin' && !isAdmin) {
+        showToast('Keine Berechtigung!', '#ff4444');
+        return;
+    }
+    
+    if (name !== 'home' && name !== 'admin' && !userPermissions[name]) {
+        showToast('Keine Berechtigung für diesen Bereich!', '#ff4444');
+        return;
+    }
+    
+    // Tab-Buttons aktualisieren
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    const buttons = document.querySelectorAll('.tab-btn');
+    const tabOrder = ['home', 'stopwatch', 'confiscations', 'payout', 'families', 'admin'];
+    const index = tabOrder.indexOf(name);
+    
+    // Finde den richtigen Button
+    let buttonIndex = 0;
+    for (let i = 0; i <= index; i++) {
+        if (i === 0 || userPermissions[tabOrder[i]] || (tabOrder[i] === 'admin' && isAdmin)) {
+            if (i === index) {
+                if (buttons[buttonIndex]) buttons[buttonIndex].classList.add('active');
+                break;
+            }
+            buttonIndex++;
+        }
+    }
+    
+    // Tab-Inhalte aktualisieren
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    const tabEl = document.getElementById('tab-' + name);
+    if (tabEl) tabEl.classList.add('active');
+    
+    // Daten laden
+    if (name === 'home') loadHomepageStats();
+    else if (name === 'stopwatch') loadAllUsersSorted();
+    else if (name === 'confiscations') loadConfiscations();
+    else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); }
+    else if (name === 'families') loadFamilies();
+    else if (name === 'admin') setupAdminTab();
+}
+
+// Admin Tab Setup
 function setupAdminTab() {
     if (!isAdmin) return;
     
-    removeAdminTab();
-    
-    if (!document.getElementById('tab-admin')) {
-        const div = document.createElement('div');
-        div.id = 'tab-admin';
-        div.className = 'tab-content';
-        div.innerHTML = `
+    let adminTab = document.getElementById('tab-admin');
+    if (!adminTab) {
+        adminTab = document.createElement('div');
+        adminTab.id = 'tab-admin';
+        adminTab.className = 'tab-content';
+        adminTab.innerHTML = `
             <h3 style="color:#ff5555;margin-bottom:16px;">🔑 Admin</h3>
             
             <div class="admin-section">
@@ -332,16 +725,11 @@ function setupAdminTab() {
                     <button class="btn-danger" onclick="adminDeletePerson()">🗑️ Person löschen</button>
                 </div>
             </div>`;
-        document.querySelector('.container').appendChild(div);
+        document.querySelector('.container').appendChild(adminTab);
     }
     
     loadUserList();
     populatePermissionUserSelect();
-}
-
-function removeAdminTab() {
-    const adminTab = document.getElementById('tab-admin');
-    if (adminTab) adminTab.remove();
 }
 
 async function populatePermissionUserSelect() {
@@ -353,18 +741,14 @@ async function populatePermissionUserSelect() {
     
     select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
     if (users) {
-        Object.entries(users).forEach(([name, data]) => {
+        for (const [name, data] of Object.entries(users)) {
             if (!data.isAdmin) {
                 const option = document.createElement('option');
                 option.value = name;
                 option.textContent = name.charAt(0).toUpperCase() + name.slice(1);
                 select.appendChild(option);
             }
-        });
-    }
-    
-    if (select.options.length === 1) {
-        select.innerHTML = '<option value="">-- Keine Benutzer verfügbar --</option>';
+        }
     }
 }
 
@@ -379,7 +763,6 @@ async function loadUserPermissions() {
     }
     
     currentPermissionUser = username;
-    
     const snap = await database.ref('Navy-boote/users_auth/' + username + '/permissions').once('value');
     const permissions = snap.val() || {};
     
@@ -394,118 +777,86 @@ async function loadUserPermissions() {
 async function savePermission(permission, value) {
     if (!currentPermissionUser) return;
     
-    const updates = {};
-    updates['Navy-boote/users_auth/' + currentPermissionUser + '/permissions/' + permission] = value;
+    await database.ref('Navy-boote/users_auth/' + currentPermissionUser + '/permissions/' + permission).set(value);
     
-    try {
-        await database.ref().update(updates);
-        
-        const statusEl = document.getElementById('permissionSaveStatus');
-        statusEl.style.display = 'block';
-        statusEl.textContent = '✅ Berechtigungen gespeichert!';
-        setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
-        
-        // Aktualisiere die Benutzerliste in der Tabelle
-        await loadUserList();
-    } catch (error) {
-        console.error('Fehler beim Speichern:', error);
-        showToast('❌ Fehler beim Speichern!', '#ff4444');
-    }
+    const statusEl = document.getElementById('permissionSaveStatus');
+    statusEl.style.display = 'block';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+    
+    loadUserList();
 }
 
 async function createUser() {
     const u = document.getElementById('newUsername').value.trim().toLowerCase();
     const p = document.getElementById('newPassword').value.trim();
+    
     if (!u || !p) return alert('Bitte Benutzername und Passwort eingeben!');
     if (u === 'colin') return alert('Dieser Benutzername ist reserviert!');
     
-    const defaultPermissions = {
-        stopwatch: true,
-        confiscations: true,
-        payout: true,
-        families: true
-    };
+    await database.ref('Navy-boote/users_auth/' + u).set({ 
+        password: p, 
+        isAdmin: false, 
+        created: Date.now(),
+        permissions: {
+            stopwatch: true,
+            confiscations: true,
+            payout: true,
+            families: true
+        }
+    });
     
-    try {
-        await database.ref('Navy-boote/users_auth/' + u).set({ 
-            password: p, 
-            isAdmin: false, 
-            created: Date.now(),
-            permissions: defaultPermissions
-        });
-        
-        showToast('✅ Benutzer erstellt!', '#2ecc40');
-        document.getElementById('newUsername').value = '';
-        document.getElementById('newPassword').value = '';
-        loadUserList();
-        populatePermissionUserSelect();
-    } catch (error) {
-        console.error('Fehler:', error);
-        showToast('❌ Fehler beim Erstellen!', '#ff4444');
-    }
+    showToast('✅ Benutzer erstellt!', '#2ecc40');
+    document.getElementById('newUsername').value = '';
+    document.getElementById('newPassword').value = '';
+    loadUserList();
+    populatePermissionUserSelect();
 }
 
 async function loadUserList() {
     const snap = await database.ref('Navy-boote/users_auth').once('value');
     const users = snap.val();
     const d = document.getElementById('userList');
-    
     if (!d) return;
     
-    if (!users) { 
-        d.innerHTML = '<p style="color:#aaa;">Keine Benutzer vorhanden.</p>'; 
-        return; 
+    if (!users) {
+        d.innerHTML = '<p style="color:#aaa;">Keine Benutzer vorhanden.</p>';
+        return;
     }
     
-    let tableHTML = '<table class="user-table"><thead><tr><th>Name</th><th>Rolle</th><th>Berechtigungen</th><th>Erstellt</th><th>Aktion</th></tr></thead><tbody>';
+    let html = '<table class="user-table"><thead><tr><th>Name</th><th>Rolle</th><th>Berechtigungen</th><th>Erstellt</th><th>Aktion</th></tr></thead><tbody>';
     
     for (const [username, userData] of Object.entries(users)) {
         const perms = userData.permissions || {};
         const activePerms = [];
         
-        if (perms.stopwatch === true || perms.stopwatch === undefined) {
-            activePerms.push('⏱️ Stoppuhr');
-        }
-        if (perms.confiscations === true || perms.confiscations === undefined) {
-            activePerms.push('📋 Beschlagn.');
-        }
-        if (perms.payout === true || perms.payout === undefined) {
-            activePerms.push('💰 Auszahlung');
-        }
-        if (perms.families === true || perms.families === undefined) {
-            activePerms.push('👨‍👩‍👧‍👦 Familien');
-        }
-        if (userData.isAdmin) {
-            activePerms.push('🔑 Admin');
-        }
+        if (perms.stopwatch !== false) activePerms.push('⏱️ Stoppuhr');
+        if (perms.confiscations !== false) activePerms.push('📋 Beschlagn.');
+        if (perms.payout !== false) activePerms.push('💰 Auszahlung');
+        if (perms.families !== false) activePerms.push('👨‍👩‍👧‍👦 Familien');
+        if (userData.isAdmin) activePerms.push('🔑 Admin');
         
         const permissionsDisplay = activePerms.length > 0 ? 
             activePerms.map(p => `<div style="margin:2px 0;">${p}</div>`).join('') : 
             '<span style="color:#ff5555;">Keine</span>';
         
-        tableHTML += `
-            <tr>
-                <td><strong>${esc(username)}</strong></td>
-                <td>${userData.isAdmin ? 
-                    '<span style="color:#ff5555;font-weight:bold;">Admin</span>' : 
-                    '<span style="color:#64b4ff;">User</span>'}</td>
-                <td style="font-size:12px;">${permissionsDisplay}</td>
-                <td>${userData.created ? new Date(userData.created).toLocaleDateString('de-DE') : '-'}</td>
-                <td>${username !== 'colin' ? 
-                    `<button class="btn-small btn-danger" onclick="deleteUser('${username}')">🗑️</button>` : 
-                    '🔒'}</td>
-            </tr>`;
+        html += `<tr>
+            <td><strong>${esc(username)}</strong></td>
+            <td>${userData.isAdmin ? '<span style="color:#ff5555;font-weight:bold;">Admin</span>' : '<span style="color:#64b4ff;">User</span>'}</td>
+            <td style="font-size:12px;">${permissionsDisplay}</td>
+            <td>${userData.created ? new Date(userData.created).toLocaleDateString('de-DE') : '-'}</td>
+            <td>${username !== 'colin' ? `<button class="btn-small btn-danger" onclick="deleteUser('${username}')">🗑️</button>` : '🔒'}</td>
+        </tr>`;
     }
     
-    tableHTML += '</tbody></table>';
-    d.innerHTML = tableHTML;
+    html += '</tbody></table>';
+    d.innerHTML = html;
 }
 
-async function deleteUser(u) { 
-    if (!confirm('Benutzer "' + u + '" wirklich löschen? Der Benutzer wird sofort abgemeldet!')) return; 
-    await database.ref('Navy-boote/users_auth/' + u).remove(); 
-    showToast('Benutzer gelöscht und abgemeldet.', '#ff4444'); 
-    loadUserList(); 
+async function deleteUser(u) {
+    if (!confirm('Benutzer "' + u + '" wirklich löschen? Der Benutzer wird sofort abgemeldet!')) return;
+    await database.ref('Navy-boote/users_auth/' + u).remove();
+    showToast('Benutzer gelöscht und abgemeldet.', '#ff4444');
+    loadUserList();
     populatePermissionUserSelect();
     
     const editor = document.getElementById('permissionsEditor');
@@ -514,58 +865,34 @@ async function deleteUser(u) {
 }
 
 async function adminDeletePerson() {
-    const n = document.getElementById('adminDeletePerson').value.trim(); 
+    const n = document.getElementById('adminDeletePerson').value.trim();
     if (!n) return alert('Name eingeben!');
     if (!confirm('⚠️ Alle Daten von "' + n + '" unwiderruflich löschen?')) return;
-    await database.ref('Navy-boote/users/' + n.toLowerCase()).remove(); 
+    await database.ref('Navy-boote/users/' + n.toLowerCase()).remove();
     showToast('Person gelöscht.', '#ff4444');
-    document.getElementById('adminDeletePerson').value = ''; 
-    loadAllUsersSorted(); 
+    document.getElementById('adminDeletePerson').value = '';
+    loadAllUsersSorted();
     autoLoadPerson();
 }
 
-function switchTab(name) {
-    if (name === 'admin' && !isAdmin) {
-        showToast('Keine Berechtigung!', '#ff4444');
-        return;
-    }
-    
-    if (name !== 'home' && name !== 'admin' && !userPermissions[name]) {
-        showToast('Keine Berechtigung für diesen Bereich!', '#ff4444');
-        return;
-    }
-    
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-    
-    const allBtns = document.querySelectorAll('.tab-btn');
-    const availableTabs = ['home', ...getAvailableTabs()];
-    const tabIndex = availableTabs.indexOf(name);
-    if (tabIndex >= 0 && allBtns[tabIndex]) allBtns[tabIndex].classList.add('active');
-    
-    const tabEl = document.getElementById('tab-' + name);
-    if (tabEl) tabEl.classList.add('active');
-    
-    if (name === 'home') loadHomepageStats();
-    else if (name === 'stopwatch') loadAllUsersSorted();
-    else if (name === 'confiscations') loadConfiscations();
-    else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); }
-    else if (name === 'families') loadFamilies();
-    else if (name === 'admin') {
-        if (!document.getElementById('tab-admin')) {
-            setupAdminTab();
-        }
-        loadUserList();
-        populatePermissionUserSelect();
-    }
-}
-
+// ==================== HAUPTSEITE ====================
 function loadHomepageStats() {
-    database.ref('Navy-boote/users').once('value', s => { document.getElementById('statPersons').textContent = s.val() ? Object.keys(s.val()).length : 0; });
-    database.ref('Navy-boote/families').once('value', s => { document.getElementById('statFamilies').textContent = s.val() ? Object.keys(s.val()).length : 0; });
+    database.ref('Navy-boote/users').once('value', s => {
+        document.getElementById('statPersons').textContent = s.val() ? Object.keys(s.val()).length : 0;
+    });
+    database.ref('Navy-boote/families').once('value', s => {
+        document.getElementById('statFamilies').textContent = s.val() ? Object.keys(s.val()).length : 0;
+    });
     database.ref('Navy-boote/confiscations').once('value', s => {
-        const d = s.val(); let c = 0, tg = 0, tb = 0;
-        if (d) { Object.keys(d).forEach(k => { c++; tg += parseFloat(d[k].greenMoney || 0); tb += parseFloat(d[k].blackMoney || 0); }); }
+        const d = s.val();
+        let c = 0, tg = 0, tb = 0;
+        if (d) {
+            Object.values(d).forEach(e => {
+                c++;
+                tg += parseFloat(e.greenMoney || 0);
+                tb += parseFloat(e.blackMoney || 0);
+            });
+        }
         document.getElementById('statConfiscations').textContent = c;
         document.getElementById('statTotalGreen').textContent = formatNumber(tg) + ' €';
         document.getElementById('statTotalBlack').textContent = formatNumber(tb) + ' €';
@@ -573,60 +900,180 @@ function loadHomepageStats() {
 }
 
 // ==================== STOPPUHR ====================
-let startTime = 0, elapsed = 0, interval = null, running = false;
-function formatTime(ms) { let m = Math.floor(ms / 60000), s = Math.floor((ms % 60000) / 1000), c = Math.floor((ms % 1000) / 10); return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0'); }
-function updateDisplay() { elapsed = Date.now() - startTime; document.getElementById('display').textContent = formatTime(elapsed); }
-function startStop() {
-    if (!running) { startTime = Date.now() - elapsed; interval = setInterval(updateDisplay, 10); running = true; document.getElementById('startBtn').textContent = '⏸ Stop'; document.getElementById('startBtn').style.background = '#aa3300'; }
-    else { clearInterval(interval); running = false; document.getElementById('startBtn').textContent = '▶ Start'; document.getElementById('startBtn').style.background = '#0055aa'; }
+function formatTime(ms) {
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    const c = Math.floor((ms % 1000) / 10);
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0');
 }
-function resetTimer() { clearInterval(interval); running = false; elapsed = 0; startTime = 0; document.getElementById('display').textContent = '00:00.00'; document.getElementById('startBtn').textContent = '▶ Start'; document.getElementById('startBtn').style.background = '#0055aa'; }
+
+function updateDisplay() {
+    elapsed = Date.now() - startTime;
+    document.getElementById('display').textContent = formatTime(elapsed);
+}
+
+function startStop() {
+    if (!running) {
+        startTime = Date.now() - elapsed;
+        stopwatchInterval = setInterval(updateDisplay, 10);
+        running = true;
+        document.getElementById('startBtn').textContent = '⏸ Stop';
+        document.getElementById('startBtn').style.background = '#aa3300';
+    } else {
+        clearInterval(stopwatchInterval);
+        running = false;
+        document.getElementById('startBtn').textContent = '▶ Start';
+        document.getElementById('startBtn').style.background = '#0055aa';
+    }
+}
+
+function resetTimer() {
+    clearInterval(stopwatchInterval);
+    running = false;
+    elapsed = 0;
+    startTime = 0;
+    document.getElementById('display').textContent = '00:00.00';
+    document.getElementById('startBtn').textContent = '▶ Start';
+    document.getElementById('startBtn').style.background = '#0055aa';
+}
+
 async function saveTimeWithDesc(boatKey, taId) {
-    const name = document.getElementById('personName').value.trim(); if (!name) return alert('Name eingeben!');
+    const name = document.getElementById('personName').value.trim();
+    if (!name) return alert('Name eingeben!');
+    
     const currentElapsed = running ? (Date.now() - startTime) : elapsed;
     if (currentElapsed === 0) return alert('Keine Zeit gestoppt!');
+    
     const timeStr = formatTime(currentElapsed);
     const desc = document.getElementById(taId).value.trim();
     const ref = database.ref('Navy-boote/users/' + name.toLowerCase() + '/boats/' + boatKey);
-    const snap = await ref.once('value'); let arr = snap.val(); if (!arr || !Array.isArray(arr)) arr = [];
-    arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now() }); await ref.set(arr);
+    const snap = await ref.once('value');
+    let arr = snap.val();
+    if (!arr || !Array.isArray(arr)) arr = [];
+    
+    arr.push({
+        time: timeStr,
+        desc: desc || 'Keine Beschreibung',
+        timestamp: Date.now()
+    });
+    
+    await ref.set(arr);
     await database.ref('Navy-boote/users/' + name.toLowerCase() + '/lastUpdated').set(Date.now());
-    document.getElementById(taId).value = ''; document.getElementById('searchName').value = name; autoLoadPerson(); alert('✅ ' + timeStr + ' gespeichert!');
+    
+    document.getElementById(taId).value = '';
+    document.getElementById('searchName').value = name;
+    autoLoadPerson();
+    alert('✅ ' + timeStr + ' gespeichert!');
 }
-window.deleteSingleEntry = async function(nl, bi, ts) { if (!isAdmin) return alert('Nur Admin!'); if (!confirm('Löschen?')) return; const ref = database.ref('Navy-boote/users/' + nl + '/boats/' + bi); const snap = await ref.once('value'); let arr = snap.val(); if (arr && Array.isArray(arr)) { await ref.set(arr.filter(e => e.timestamp !== ts)); await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now()); autoLoadPerson(); loadAllUsersSorted(); } };
-let currentListener = null;
-function autoLoadPerson() { const raw = document.getElementById('searchName').value.trim(); if (!raw) { document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>'; if (currentListener) currentListener.off(); return; } listenToPersonData(raw.toLowerCase()); }
+
+window.deleteSingleEntry = async function(nl, bi, ts) {
+    if (!isAdmin) return alert('Nur Admin!');
+    if (!confirm('Eintrag löschen?')) return;
+    
+    const ref = database.ref('Navy-boote/users/' + nl + '/boats/' + bi);
+    const snap = await ref.once('value');
+    let arr = snap.val();
+    if (arr && Array.isArray(arr)) {
+        arr = arr.filter(e => e.timestamp !== ts);
+        await ref.set(arr);
+        await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now());
+        autoLoadPerson();
+        loadAllUsersSorted();
+    }
+};
+
+function autoLoadPerson() {
+    const raw = document.getElementById('searchName').value.trim();
+    if (!raw) {
+        document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>';
+        if (currentListener) currentListener.off();
+        return;
+    }
+    listenToPersonData(raw.toLowerCase());
+}
+
 function listenToPersonData(nl) {
-    if (currentListener) currentListener.off(); currentListener = database.ref('Navy-boote/users/' + nl);
+    if (currentListener) currentListener.off();
+    currentListener = database.ref('Navy-boote/users/' + nl);
+    
     currentListener.on('value', snap => {
-        const data = snap.val(); const c = document.getElementById('resultTable'); const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
-        if (!data || !data.boats) { c.innerHTML = '<div style="padding:15px;">⚓ ' + dn + ' hat noch keine Zeiten.</div>'; return; }
-        const bl = { "Predator": "⚡ Predator", "Dinghy": "🛶 Dinghy", "PatrolBoat": "🚢 Kurtz 31", "WeaponizedDinghy": "💥 Weaponized" };
+        const data = snap.val();
+        const c = document.getElementById('resultTable');
+        const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
+        
+        if (!data || !data.boats) {
+            c.innerHTML = '<div style="padding:15px;">⚓ ' + dn + ' hat noch keine Zeiten.</div>';
+            return;
+        }
+        
+        const bl = {
+            "Predator": "⚡ Predator",
+            "Dinghy": "🛶 Dinghy",
+            "PatrolBoat": "🚢 Kurtz 31",
+            "WeaponizedDinghy": "💥 Weaponized"
+        };
+        
         let h = '<div class="table-wrapper"><h4>👤 ' + dn + '</h4><table><thead><tr><th>Boot</th><th>Zeit</th><th>Beschreibung</th>' + (isAdmin ? '<th>Aktion</th>' : '') + '</tr></thead><tbody>';
+        
         for (const [bi, bn] of Object.entries(bl)) {
             const entries = data.boats[bi];
             if (entries && Array.isArray(entries) && entries.length) {
-                [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => { h += '<tr><td>' + (i === 0 ? bn : '↳ ' + bn) + '</td><td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td><td>' + esc(e.desc || '-') + '</td>'; if (isAdmin) h += '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' + nl + '\',\'' + bi + '\',' + (e.timestamp || Date.now()) + ')">🗑️</button></td>'; h += '</tr>'; });
-            } else h += '<tr><td>' + bn + '</td><td colspan="' + (isAdmin ? 3 : 2) + '">— keine —</td>' + (isAdmin ? '<td></td>' : '') + '</tr>';
+                [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => {
+                    h += '<tr><td>' + (i === 0 ? bn : '↳ ' + bn) + '</td>';
+                    h += '<td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td>';
+                    h += '<td>' + esc(e.desc || '-') + '</td>';
+                    if (isAdmin) h += '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' + nl + '\',\'' + bi + '\',' + (e.timestamp || Date.now()) + ')">🗑️</button></td>';
+                    h += '</tr>';
+                });
+            } else {
+                h += '<tr><td>' + bn + '</td><td colspan="' + (isAdmin ? 3 : 2) + '">— keine —</td>' + (isAdmin ? '<td></td>' : '') + '</tr>';
+            }
         }
-        h += '</tbody></table></div>'; c.innerHTML = h;
+        
+        h += '</tbody></table></div>';
+        c.innerHTML = h;
     });
 }
+
 function loadAllUsersSorted() {
     database.ref('Navy-boote/users').on('value', snap => {
-        const users = snap.val(); const d = document.getElementById('allNamesList'); d.innerHTML = '';
-        if (users) { Object.keys(users).map(k => ({ name: k, lu: users[k].lastUpdated || 0 })).sort((a, b) => b.lu - a.lu).forEach(u => { const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1); const btn = document.createElement('div'); btn.className = 'name-tag'; btn.textContent = dn; btn.onclick = () => { document.getElementById('personName').value = dn; document.getElementById('searchName').value = dn; autoLoadPerson(); }; d.appendChild(btn); }); }
-        else d.innerHTML = '<span>⚓ Keine Personen.</span>';
+        const users = snap.val();
+        const d = document.getElementById('allNamesList');
+        d.innerHTML = '';
+        
+        if (users) {
+            const sorted = Object.keys(users)
+                .map(k => ({ name: k, lu: users[k].lastUpdated || 0 }))
+                .sort((a, b) => b.lu - a.lu);
+            
+            sorted.forEach(u => {
+                const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1);
+                const btn = document.createElement('div');
+                btn.className = 'name-tag';
+                btn.textContent = dn;
+                btn.onclick = () => {
+                    document.getElementById('personName').value = dn;
+                    document.getElementById('searchName').value = dn;
+                    autoLoadPerson();
+                };
+                d.appendChild(btn);
+            });
+        } else {
+            d.innerHTML = '<span>⚓ Keine Personen.</span>';
+        }
     });
 }
 
 // ==================== BESCHLAGNAHMUNGEN ====================
-let editingConfiscationId = null;
 function openNewConfiscationModal(editData = null) {
     document.getElementById('confiscationModalOverlay').classList.add('show');
-    const now = new Date(); const dateStr = now.toISOString().split('T')[0]; const timeStr = now.toTimeString().slice(0, 5);
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toTimeString().slice(0, 5);
+    
     if (editData) {
         editingConfiscationId = editData.id;
+        document.getElementById('confiscationModalTitle').textContent = '✏️ Bearbeiten';
         document.getElementById('modalAkteName').value = editData.akteName || '';
         document.getElementById('modalType').value = editData.type || '';
         document.getElementById('modalFamilyName').value = editData.familyName || '';
@@ -645,9 +1092,9 @@ function openNewConfiscationModal(editData = null) {
         document.getElementById('modalItemsTotal').value = editData.itemsTotal || 0;
         document.getElementById('modalItems').value = editData.items || '';
         document.getElementById('modalNotes').value = editData.notes || '';
-        document.getElementById('confiscationModalTitle').textContent = '✏️ Bearbeiten';
     } else {
         editingConfiscationId = null;
+        document.getElementById('confiscationModalTitle').textContent = '📝 Neue Beschlagnahmung';
         document.getElementById('modalAkteName').value = '';
         document.getElementById('modalType').value = '';
         document.getElementById('modalFamilyName').value = '';
@@ -666,10 +1113,14 @@ function openNewConfiscationModal(editData = null) {
         document.getElementById('modalItemsTotal').value = 0;
         document.getElementById('modalItems').value = '';
         document.getElementById('modalNotes').value = '';
-        document.getElementById('confiscationModalTitle').textContent = '📝 Neue Beschlagnahmung';
     }
 }
-function closeConfiscationModal() { document.getElementById('confiscationModalOverlay').classList.remove('show'); editingConfiscationId = null; }
+
+function closeConfiscationModal() {
+    document.getElementById('confiscationModalOverlay').classList.remove('show');
+    editingConfiscationId = null;
+}
+
 async function saveConfiscation() {
     const data = {
         akteName: document.getElementById('modalAkteName').value.trim(),
@@ -690,251 +1141,427 @@ async function saveConfiscation() {
         notes: document.getElementById('modalNotes').value.trim(),
         timestamp: Date.now()
     };
-    if (!data.akteName || !data.type || !data.takenBy || !data.givenTo) return alert('Alle Pflichtfelder ausfüllen!');
+    
+    if (!data.akteName || !data.type || !data.takenBy || !data.givenTo) {
+        return alert('Alle Pflichtfelder ausfüllen!');
+    }
+    
     const ref = database.ref('Navy-boote/confiscations');
-    if (editingConfiscationId) { await ref.child(editingConfiscationId).update(data); showToast('✅ Aktualisiert!', '#2ecc40'); }
-    else { await ref.push(data); showToast('✅ Gespeichert!', '#2ecc40'); }
-    closeConfiscationModal(); loadConfiscations(); loadHomepageStats();
+    if (editingConfiscationId) {
+        await ref.child(editingConfiscationId).update(data);
+        showToast('✅ Aktualisiert!', '#2ecc40');
+    } else {
+        await ref.push(data);
+        showToast('✅ Gespeichert!', '#2ecc40');
+    }
+    
+    closeConfiscationModal();
+    loadConfiscations();
+    loadHomepageStats();
 }
+
 function loadConfiscations() {
     database.ref('Navy-boote/confiscations').on('value', snap => {
-        const data = snap.val(); const cardsDiv = document.getElementById('confiscationCards');
-        let tg = 0, tb = 0, tiTotal = 0; const entries = [];
-        if (data) Object.entries(data).forEach(([id, e]) => { entries.push({ id, ...e }); tg += parseFloat(e.greenMoney || 0); tb += parseFloat(e.blackMoney || 0); tiTotal += parseInt(e.itemsTotal || 0); });
+        const data = snap.val();
+        const cardsDiv = document.getElementById('confiscationCards');
+        let tg = 0, tb = 0, tiTotal = 0;
+        const entries = [];
+        
+        if (data) {
+            Object.entries(data).forEach(([id, e]) => {
+                entries.push({ id, ...e });
+                tg += parseFloat(e.greenMoney || 0);
+                tb += parseFloat(e.blackMoney || 0);
+                tiTotal += parseInt(e.itemsTotal || 0);
+            });
+        }
+        
         entries.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        cardsDiv.innerHTML = entries.length === 0 ? '<p style="color:#aaa;grid-column:1/-1;">Keine Beschlagnahmungen.</p>' : entries.map(e => `
-            <div class="confiscation-card">
-                <div class="card-header"><h4>📋 ${esc(e.akteName||'?')}</h4><span class="card-type ${(e.type||'').toLowerCase()}">${esc(e.type||'-')}${e.familyName?' | '+esc(e.familyName):''}</span></div>
-                <div class="card-row"><span class="card-label">👮 Abg. von:</span><span class="card-value">${esc(e.takenBy||'-')}${e.takenByName?' ('+esc(e.takenByName)+')':''}</span></div>
-                <div class="card-row"><span class="card-label">📅 Datum:</span><span class="card-value">${esc(e.date||'-')} ${esc(e.time||'')}</span></div>
-                <div class="card-row"><span class="card-label">📤 Abg. an:</span><span class="card-value">${esc(e.givenTo||'-')}${e.givenToName?' ('+esc(e.givenToName)+')':''}</span></div>
-                ${e.givenDate?`<div class="card-row"><span class="card-label">📅 Abgabe:</span><span class="card-value">${esc(e.givenDate)} ${esc(e.givenTime||'')}</span></div>`:''}
-                <div class="money-values"><span class="money-green">🟢 ${formatNumber(e.greenMoney||0)} €</span><span class="money-black">⚫ ${formatNumber(e.blackMoney||0)} €</span><span style="color:#64b4ff;">📦 ${e.itemsTotal||0} Items</span></div>
-                ${e.items?`<div class="card-items">${esc(e.items)}</div>`:''}
-                ${e.notes?`<div class="card-notes">📝 ${esc(e.notes)}</div>`:''}
-                ${isAdmin?`<div class="card-actions"><button class="btn-card-action" onclick="editConfiscation('${e.id}')">✏️ Bearbeiten</button><button class="btn-card-action btn-danger" onclick="deleteConfiscation('${e.id}')">🗑️ Löschen</button></div>`:''}
-            </div>`).join('');
+        
+        cardsDiv.innerHTML = entries.length === 0 ? 
+            '<p style="color:#aaa;grid-column:1/-1;">Keine Beschlagnahmungen.</p>' : 
+            entries.map(e => `
+                <div class="confiscation-card">
+                    <div class="card-header">
+                        <h4>📋 ${esc(e.akteName||'?')}</h4>
+                        <span class="card-type ${(e.type||'').toLowerCase()}">${esc(e.type||'-')}${e.familyName?' | '+esc(e.familyName):''}</span>
+                    </div>
+                    <div class="card-row"><span class="card-label">👮 Abg. von:</span><span class="card-value">${esc(e.takenBy||'-')}${e.takenByName?' ('+esc(e.takenByName)+')':''}</span></div>
+                    <div class="card-row"><span class="card-label">📅 Datum:</span><span class="card-value">${esc(e.date||'-')} ${esc(e.time||'')}</span></div>
+                    <div class="card-row"><span class="card-label">📤 Abg. an:</span><span class="card-value">${esc(e.givenTo||'-')}${e.givenToName?' ('+esc(e.givenToName)+')':''}</span></div>
+                    ${e.givenDate?`<div class="card-row"><span class="card-label">📅 Abgabe:</span><span class="card-value">${esc(e.givenDate)} ${esc(e.givenTime||'')}</span></div>`:''}
+                    <div class="money-values">
+                        <span class="money-green">🟢 ${formatNumber(e.greenMoney||0)} €</span>
+                        <span class="money-black">⚫ ${formatNumber(e.blackMoney||0)} €</span>
+                        <span style="color:#64b4ff;">📦 ${e.itemsTotal||0} Items</span>
+                    </div>
+                    ${e.items?`<div class="card-items">${esc(e.items)}</div>`:''}
+                    ${e.notes?`<div class="card-notes">📝 ${esc(e.notes)}</div>`:''}
+                    ${isAdmin?`<div class="card-actions">
+                        <button class="btn-card-action" onclick="editConfiscation('${e.id}')">✏️ Bearbeiten</button>
+                        <button class="btn-card-action btn-danger" onclick="deleteConfiscation('${e.id}')">🗑️ Löschen</button>
+                    </div>`:''}
+                </div>`).join('');
+        
         document.getElementById('totalGreenDisplay').textContent = formatNumber(tg) + ' €';
         document.getElementById('totalBlackDisplay').textContent = formatNumber(tb) + ' €';
         document.getElementById('totalItemsDisplay').textContent = formatNumber(tiTotal);
     });
 }
-async function deleteConfiscation(id) { if (!isAdmin) return alert('Nur Admin!'); if (!confirm('Löschen?')) return; await database.ref('Navy-boote/confiscations/' + id).remove(); showToast('Gelöscht.', '#ff4444'); loadConfiscations(); loadHomepageStats(); }
-async function editConfiscation(id) { if (!isAdmin) return alert('Nur Admin!'); const snap = await database.ref('Navy-boote/confiscations/' + id).once('value'); const data = snap.val(); if (data) openNewConfiscationModal({ id, ...data }); }
-document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) { if (e.target === this) closeConfiscationModal(); });
+
+async function deleteConfiscation(id) {
+    if (!isAdmin) return alert('Nur Admin!');
+    if (!confirm('Beschlagnahmung löschen?')) return;
+    await database.ref('Navy-boote/confiscations/' + id).remove();
+    showToast('Gelöscht.', '#ff4444');
+    loadConfiscations();
+    loadHomepageStats();
+}
+
+async function editConfiscation(id) {
+    if (!isAdmin) return alert('Nur Admin!');
+    const snap = await database.ref('Navy-boote/confiscations/' + id).once('value');
+    const data = snap.val();
+    if (data) openNewConfiscationModal({ id, ...data });
+}
 
 // ==================== AUSZAHLUNG ====================
-let currentPayoutWeek = '';
-function getMonday(date) { const d = new Date(date); const day = d.getDay(); const diff = d.getDate() - day + (day === 0 ? -6 : 1); d.setDate(diff); d.setHours(0, 0, 0, 0); return d; }
-function getSunday(monday) { const d = new Date(monday); d.setDate(d.getDate() + 6); d.setHours(23, 59, 59, 999); return d; }
-function getWeekKey(monday) { const y = monday.getFullYear(); const m = String(monday.getMonth() + 1).padStart(2, '0'); const d = String(monday.getDate()).padStart(2, '0'); return y + '-' + m + '-' + d; }
-function getWeekString(monday) { const sun = getSunday(monday); const mo = monday.getDate() + '.' + (monday.getMonth() + 1); const so = sun.getDate() + '.' + (sun.getMonth() + 1) + '.' + sun.getFullYear(); return mo + ' - ' + so; }
-function goToCurrentWeek() { const monday = getMonday(new Date()); currentPayoutWeek = getWeekKey(monday); document.getElementById('payoutWeekInput').value = currentPayoutWeek; }
-function previousWeek() { const d = new Date(currentPayoutWeek + 'T00:00:00'); d.setDate(d.getDate() - 7); currentPayoutWeek = getWeekKey(d); document.getElementById('payoutWeekInput').value = currentPayoutWeek; loadPayoutData(); }
-function nextWeek() { const d = new Date(currentPayoutWeek + 'T00:00:00'); d.setDate(d.getDate() + 7); currentPayoutWeek = getWeekKey(d); document.getElementById('payoutWeekInput').value = currentPayoutWeek; loadPayoutData(); }
+function getMonday(date) {
+    const d = new Date(date);
+    const day = d.getDay();
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    d.setDate(diff);
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+function getSunday(monday) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + 6);
+    d.setHours(23, 59, 59, 999);
+    return d;
+}
+
+function getWeekKey(monday) {
+    const y = monday.getFullYear();
+    const m = String(monday.getMonth() + 1).padStart(2, '0');
+    const d = String(monday.getDate()).padStart(2, '0');
+    return y + '-' + m + '-' + d;
+}
+
+function getWeekString(monday) {
+    const sun = getSunday(monday);
+    const mo = monday.getDate() + '.' + (monday.getMonth() + 1);
+    const so = sun.getDate() + '.' + (sun.getMonth() + 1) + '.' + sun.getFullYear();
+    return mo + ' - ' + so;
+}
+
+function goToCurrentWeek() {
+    const monday = getMonday(new Date());
+    currentPayoutWeek = getWeekKey(monday);
+    document.getElementById('payoutWeekInput').value = currentPayoutWeek;
+}
+
+function previousWeek() {
+    const d = new Date(currentPayoutWeek + 'T00:00:00');
+    d.setDate(d.getDate() - 7);
+    currentPayoutWeek = getWeekKey(d);
+    document.getElementById('payoutWeekInput').value = currentPayoutWeek;
+    loadPayoutData();
+}
+
+function nextWeek() {
+    const d = new Date(currentPayoutWeek + 'T00:00:00');
+    d.setDate(d.getDate() + 7);
+    currentPayoutWeek = getWeekKey(d);
+    document.getElementById('payoutWeekInput').value = currentPayoutWeek;
+    loadPayoutData();
+}
 
 async function loadPayoutData() {
     const weekInput = document.getElementById('payoutWeekInput').value;
     if (!weekInput) return;
+    
     currentPayoutWeek = weekInput;
     const monday = new Date(weekInput + 'T00:00:00');
     const sunday = getSunday(monday);
     const weekKey = getWeekKey(monday);
-    document.getElementById('payoutInfo').textContent = '📅 Woche: ' + getWeekString(monday) + ' | Mo ' + weekKey + ' bis So ' + getWeekKey(sunday);
-
+    
+    document.getElementById('payoutInfo').textContent = '📅 Woche: ' + getWeekString(monday);
+    
     const usersAuthSnap = await database.ref('Navy-boote/users_auth').once('value');
     const usersAuth = usersAuthSnap.val() || {};
     const authorizedUsers = Object.keys(usersAuth);
-
+    
     const usersSnap = await database.ref('Navy-boote/users').once('value');
     const allUsers = usersSnap.val() || {};
-
+    
     const payoutSnap = await database.ref('Navy-boote/payouts/' + weekKey).once('value');
     const payoutData = payoutSnap.val() || {};
-
+    
     const tbody = document.getElementById('payoutTableBody');
     let totalKontrollen = 0, totalSumme = 0, totalAusgezahlt = 0, totalOffen = 0;
-
-    if (authorizedUsers.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Keine autorisierten Benutzer.</td></tr>';
-    } else {
-        tbody.innerHTML = '';
+    
+    tbody.innerHTML = '';
+    
+    for (const name of authorizedUsers) {
+        let weekCheckCount = 0;
+        const userData = allUsers[name];
         
-        for (const name of authorizedUsers) {
-            let weekCheckCount = 0;
-            const userData = allUsers[name];
-            
-            if (userData && userData.boats) {
-                for (const boatKey in userData.boats) {
-                    const boatEntries = userData.boats[boatKey];
-                    if (Array.isArray(boatEntries)) {
-                        boatEntries.forEach(entry => {
-                            if (entry.timestamp) {
-                                const entryDate = new Date(entry.timestamp);
-                                if (entryDate >= monday && entryDate <= sunday) {
-                                    weekCheckCount++;
-                                }
+        if (userData && userData.boats) {
+            for (const boatKey in userData.boats) {
+                const boatEntries = userData.boats[boatKey];
+                if (Array.isArray(boatEntries)) {
+                    boatEntries.forEach(entry => {
+                        if (entry.timestamp) {
+                            const entryDate = new Date(entry.timestamp);
+                            if (entryDate >= monday && entryDate <= sunday) {
+                                weekCheckCount++;
                             }
-                        });
-                    }
+                        }
+                    });
                 }
             }
-            
-            const saved = payoutData[name] || { count: null, paid: false };
-            const displayCount = saved.count !== null ? saved.count : weekCheckCount;
-            const summe = displayCount * PRICE_PER_CHECK;
-            
-            totalKontrollen += displayCount;
-            totalSumme += summe;
-            
-            if (saved.paid) {
-                totalAusgezahlt += summe;
-            } else {
-                totalOffen += summe;
-            }
-            
-            const displayName = name.charAt(0).toUpperCase() + name.slice(1);
-            const isUserAdmin = usersAuth[name] && usersAuth[name].isAdmin;
-            const paidStatus = saved.paid ? 
-                '<span class="payout-status paid">✅ Ausgezahlt</span>' : 
-                '<span class="payout-status unpaid">⏳ Offen</span>';
-            
-            tbody.innerHTML += `
-                <tr>
-                    <td><strong>${esc(displayName)}</strong> ${isUserAdmin ? '<span style="color:#ff5555;font-size:10px;">Admin</span>' : ''}</td>
-                    <td>${isAdmin ? 
-                        `<input type="number" class="count-input" value="${displayCount}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : 
-                        `<strong>${displayCount}</strong>`}</td>
-                    <td>${formatNumber(PRICE_PER_CHECK)} $</td>
-                    <td class="amount-cell">${formatNumber(summe)} $</td>
-                    <td style="display:flex;align-items:center;gap:4px;">
-                        ${isAdmin ? `<input type="checkbox" class="payout-checkbox" ${saved.paid ? 'checked' : ''} onchange="togglePayoutPaid('${esc(name)}', this.checked)" style="margin:0;">` : ''}
-                        ${paidStatus}
-                    </td>
-                </tr>`;
         }
+        
+        const saved = payoutData[name] || { count: null, paid: false };
+        const displayCount = saved.count !== null ? saved.count : weekCheckCount;
+        const summe = displayCount * PRICE_PER_CHECK;
+        
+        totalKontrollen += displayCount;
+        totalSumme += summe;
+        
+        if (saved.paid) {
+            totalAusgezahlt += summe;
+        } else {
+            totalOffen += summe;
+        }
+        
+        const displayName = name.charAt(0).toUpperCase() + name.slice(1);
+        const isUserAdmin = usersAuth[name] && usersAuth[name].isAdmin;
+        const paidStatus = saved.paid ? 
+            '<span class="payout-status paid">✅ Ausgezahlt</span>' : 
+            '<span class="payout-status unpaid">⏳ Offen</span>';
+        
+        tbody.innerHTML += `
+            <tr>
+                <td><strong>${esc(displayName)}</strong> ${isUserAdmin ? '<span style="color:#ff5555;font-size:10px;">Admin</span>' : ''}</td>
+                <td>${isAdmin ? `<input type="number" class="count-input" value="${displayCount}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : `<strong>${displayCount}</strong>`}</td>
+                <td>${formatNumber(PRICE_PER_CHECK)} $</td>
+                <td class="amount-cell">${formatNumber(summe)} $</td>
+                <td style="display:flex;align-items:center;gap:4px;">
+                    ${isAdmin ? `<input type="checkbox" class="payout-checkbox" ${saved.paid ? 'checked' : ''} onchange="togglePayoutPaid('${esc(name)}', this.checked)">` : ''}
+                    ${paidStatus}
+                </td>
+            </tr>`;
     }
-
+    
     document.getElementById('totalKontrollen').textContent = formatNumber(totalKontrollen);
     document.getElementById('totalSumme').textContent = formatNumber(totalSumme) + ' $';
     document.getElementById('totalAusgezahlt').textContent = formatNumber(totalAusgezahlt) + ' $';
     document.getElementById('totalOffen').textContent = formatNumber(totalOffen) + ' $';
-
-    await database.ref('Navy-boote/payouts/' + weekKey + '/_weekInfo').update({
-        monday: weekKey, 
-        sunday: getWeekKey(sunday), 
-        weekString: getWeekString(monday),
-        totalKontrollen, 
-        totalSumme, 
-        totalAusgezahlt, 
-        totalOffen, 
-        lastUpdated: Date.now()
-    });
-    
-    for (const name of authorizedUsers) {
-        if (!payoutData[name] || payoutData[name].count === null) {
-            let weekCheckCount = 0;
-            const userData = allUsers[name];
-            if (userData && userData.boats) {
-                for (const boatKey in userData.boats) {
-                    const boatEntries = userData.boats[boatKey];
-                    if (Array.isArray(boatEntries)) {
-                        boatEntries.forEach(entry => {
-                            if (entry.timestamp) {
-                                const entryDate = new Date(entry.timestamp);
-                                if (entryDate >= monday && entryDate <= sunday) {
-                                    weekCheckCount++;
-                                }
-                            }
-                        });
-                    }
-                }
-            }
-            await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ 
-                count: weekCheckCount,
-                autoCalculated: true 
-            });
-        }
-    }
 }
 
-async function updatePayoutCount(name, newCount) { 
-    if (!isAdmin) return; 
-    const count = parseInt(newCount) || 0; 
-    const weekKey = currentPayoutWeek; 
-    await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ 
-        count,
-        autoCalculated: false,
-        manuallySet: true,
-        manuallySetBy: currentUser.username,
-        manuallySetAt: Date.now()
-    }); 
-    loadPayoutData(); 
+async function updatePayoutCount(name, newCount) {
+    if (!isAdmin) return;
+    const count = parseInt(newCount) || 0;
+    const weekKey = currentPayoutWeek;
+    await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ count });
+    loadPayoutData();
 }
 
-async function togglePayoutPaid(name, isPaid) { 
-    if (!isAdmin) return; 
-    const weekKey = currentPayoutWeek; 
-    const updateData = { paid: isPaid }; 
-    if (isPaid) {
-        updateData.paidAt = Date.now();
-        updateData.paidBy = currentUser.username;
-    } else {
-        updateData.paidAt = null;
-        updateData.paidBy = null;
-    }
-    await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update(updateData); 
-    loadPayoutData(); 
+async function togglePayoutPaid(name, isPaid) {
+    if (!isAdmin) return;
+    const weekKey = currentPayoutWeek;
+    await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ paid: isPaid });
+    loadPayoutData();
 }
 
 // ==================== FAMILIEN ====================
-let editingFamilyId = null;
 function openFamilyModal(editData = null) {
     document.getElementById('familyModalOverlay').classList.add('show');
-    if (editData) { editingFamilyId = editData.id; document.getElementById('familyName').value = editData.name || ''; document.getElementById('vehicleColor').value = editData.vehicleColor || '#3b82f6'; document.getElementById('vehicleColorName').value = editData.vehicleColorName || ''; document.getElementById('vehicleType').value = editData.vehicleType || ''; document.getElementById('vehiclePlate').value = editData.vehiclePlate || ''; document.getElementById('vehicleImageUrl').value = editData.vehicleImage || ''; document.getElementById('estateDescription').value = editData.estateDescription || ''; document.getElementById('estateImageUrl').value = editData.estateImage || ''; document.getElementById('clothingDescription').value = editData.clothingDescription || ''; document.getElementById('clothingImagesInput').value = (editData.clothingImages || []).join(', '); document.getElementById('familyNotes').value = editData.notes || ''; document.getElementById('familyModalTitle').textContent = '✏️ Bearbeiten'; }
-    else { editingFamilyId = null; document.getElementById('familyName').value = ''; document.getElementById('vehicleColor').value = '#3b82f6'; document.getElementById('vehicleColorName').value = ''; document.getElementById('vehicleType').value = ''; document.getElementById('vehiclePlate').value = ''; document.getElementById('vehicleImageUrl').value = ''; document.getElementById('estateDescription').value = ''; document.getElementById('estateImageUrl').value = ''; document.getElementById('clothingDescription').value = ''; document.getElementById('clothingImagesInput').value = ''; document.getElementById('familyNotes').value = ''; document.getElementById('familyModalTitle').textContent = '👨‍👩‍👧‍👦 Neue Familie'; }
+    
+    if (editData) {
+        editingFamilyId = editData.id;
+        document.getElementById('familyModalTitle').textContent = '✏️ Bearbeiten';
+        document.getElementById('familyName').value = editData.name || '';
+        document.getElementById('vehicleColor').value = editData.vehicleColor || '#3b82f6';
+        document.getElementById('vehicleColorName').value = editData.vehicleColorName || '';
+        document.getElementById('vehicleType').value = editData.vehicleType || '';
+        document.getElementById('vehiclePlate').value = editData.vehiclePlate || '';
+        document.getElementById('vehicleImageUrl').value = editData.vehicleImage || '';
+        document.getElementById('estateDescription').value = editData.estateDescription || '';
+        document.getElementById('estateImageUrl').value = editData.estateImage || '';
+        document.getElementById('clothingDescription').value = editData.clothingDescription || '';
+        document.getElementById('clothingImagesInput').value = (editData.clothingImages || []).join(', ');
+        document.getElementById('familyNotes').value = editData.notes || '';
+    } else {
+        editingFamilyId = null;
+        document.getElementById('familyModalTitle').textContent = '👨‍👩‍👧‍👦 Neue Familie';
+        document.getElementById('familyName').value = '';
+        document.getElementById('vehicleColor').value = '#3b82f6';
+        document.getElementById('vehicleColorName').value = '';
+        document.getElementById('vehicleType').value = '';
+        document.getElementById('vehiclePlate').value = '';
+        document.getElementById('vehicleImageUrl').value = '';
+        document.getElementById('estateDescription').value = '';
+        document.getElementById('estateImageUrl').value = '';
+        document.getElementById('clothingDescription').value = '';
+        document.getElementById('clothingImagesInput').value = '';
+        document.getElementById('familyNotes').value = '';
+    }
+    
     updateFamilyPreviews();
 }
-function closeFamilyModal() { document.getElementById('familyModalOverlay').classList.remove('show'); editingFamilyId = null; }
+
+function closeFamilyModal() {
+    document.getElementById('familyModalOverlay').classList.remove('show');
+    editingFamilyId = null;
+}
+
 function updateFamilyPreviews() {
-    document.getElementById('vehicleImagePreview').innerHTML = document.getElementById('vehicleImageUrl').value.trim() ? '<img src="' + document.getElementById('vehicleImageUrl').value.trim() + '" style="max-width:200px;border-radius:10px;">' : '';
-    document.getElementById('estateImagePreview').innerHTML = document.getElementById('estateImageUrl').value.trim() ? '<img src="' + document.getElementById('estateImageUrl').value.trim() + '" style="max-width:200px;border-radius:10px;">' : '';
-    const cUrls = document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim()).filter(s => s);
-    document.getElementById('clothingImagesPreview').innerHTML = cUrls.map(u => '<img src="' + u + '" style="width:80px;height:60px;object-fit:cover;border-radius:8px;">').join('');
+    const vehicleUrl = document.getElementById('vehicleImageUrl').value.trim();
+    document.getElementById('vehicleImagePreview').innerHTML = vehicleUrl ? 
+        `<img src="${vehicleUrl}" style="max-width:200px;border-radius:10px;">` : '';
+    
+    const estateUrl = document.getElementById('estateImageUrl').value.trim();
+    document.getElementById('estateImagePreview').innerHTML = estateUrl ? 
+        `<img src="${estateUrl}" style="max-width:200px;border-radius:10px;">` : '';
+    
+    const clothingUrls = document.getElementById('clothingImagesInput').value.split(',')
+        .map(s => s.trim()).filter(s => s);
+    document.getElementById('clothingImagesPreview').innerHTML = clothingUrls
+        .map(u => `<img src="${u}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;">`)
+        .join('');
 }
+
 async function saveFamily() {
-    const name = document.getElementById('familyName').value.trim(); if (!name) return alert('Name!');
-    const data = { name, vehicleColor: document.getElementById('vehicleColor').value, vehicleColorName: document.getElementById('vehicleColorName').value.trim(), vehicleType: document.getElementById('vehicleType').value.trim(), vehiclePlate: document.getElementById('vehiclePlate').value.trim(), vehicleImage: document.getElementById('vehicleImageUrl').value.trim(), estateDescription: document.getElementById('estateDescription').value.trim(), estateImage: document.getElementById('estateImageUrl').value.trim(), clothingDescription: document.getElementById('clothingDescription').value.trim(), clothingImages: document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim()).filter(s => s), notes: document.getElementById('familyNotes').value.trim(), timestamp: Date.now() };
+    const name = document.getElementById('familyName').value.trim();
+    if (!name) return alert('Familienname eingeben!');
+    
+    const data = {
+        name,
+        vehicleColor: document.getElementById('vehicleColor').value,
+        vehicleColorName: document.getElementById('vehicleColorName').value.trim(),
+        vehicleType: document.getElementById('vehicleType').value.trim(),
+        vehiclePlate: document.getElementById('vehiclePlate').value.trim(),
+        vehicleImage: document.getElementById('vehicleImageUrl').value.trim(),
+        estateDescription: document.getElementById('estateDescription').value.trim(),
+        estateImage: document.getElementById('estateImageUrl').value.trim(),
+        clothingDescription: document.getElementById('clothingDescription').value.trim(),
+        clothingImages: document.getElementById('clothingImagesInput').value.split(',')
+            .map(s => s.trim()).filter(s => s),
+        notes: document.getElementById('familyNotes').value.trim(),
+        timestamp: Date.now()
+    };
+    
     const ref = database.ref('Navy-boote/families');
-    if (editingFamilyId) { await ref.child(editingFamilyId).update(data); showToast('✅ Aktualisiert!', '#64b4ff'); }
-    else { await ref.push(data); showToast('✅ Gespeichert!', '#64b4ff'); }
-    closeFamilyModal(); loadFamilies(); loadHomepageStats();
+    if (editingFamilyId) {
+        await ref.child(editingFamilyId).update(data);
+        showToast('✅ Aktualisiert!', '#64b4ff');
+    } else {
+        await ref.push(data);
+        showToast('✅ Gespeichert!', '#64b4ff');
+    }
+    
+    closeFamilyModal();
+    loadFamilies();
+    loadHomepageStats();
 }
+
 function loadFamilies() {
     database.ref('Navy-boote/families').on('value', snap => {
-        const data = snap.val(); const grid = document.getElementById('familiesGrid');
-        if (!data) { grid.innerHTML = '<p style="color:#aaa;grid-column:1/-1;">Keine Familien.</p>'; return; }
-        const entries = Object.entries(data).map(([id, f]) => ({ id, ...f })).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        const data = snap.val();
+        const grid = document.getElementById('familiesGrid');
+        
+        if (!data) {
+            grid.innerHTML = '<p style="color:#aaa;grid-column:1/-1;">Keine Familien.</p>';
+            return;
+        }
+        
+        const entries = Object.entries(data)
+            .map(([id, f]) => ({ id, ...f }))
+            .sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+        
         grid.innerHTML = entries.map(f => `
-        <div class="family-card"><h4>👨‍👩‍👧‍👦 ${esc(f.name||'?')}<span>${isAdmin?`<button class="btn-small" onclick="editFamily('${f.id}')" style="background:rgba(100,150,255,0.3);border-color:#64b4ff;color:#64b4ff;">✏️</button> <button class="btn-small btn-danger" onclick="deleteFamily('${f.id}')">🗑️</button>`:''}</span></h4>
-        ${f.vehicleType||f.vehicleColorName?`<div class="family-section"><h5>🚗 Fahrzeug</h5><p><span class="family-color-dot" style="background:${f.vehicleColor||'#888'};"></span>${esc(f.vehicleColorName||'')} ${esc(f.vehicleType||'')}${f.vehiclePlate?' ('+esc(f.vehiclePlate)+')':''}</p>${f.vehicleImage?`<div class="family-images"><img src="${f.vehicleImage}" onclick="window.open('${f.vehicleImage}')"></div>`:''}</div>`:''}
-        ${f.estateDescription||f.estateImage?`<div class="family-section"><h5>🏠 Anwesen</h5><p>${esc(f.estateDescription||'')}</p>${f.estateImage?`<div class="family-images"><img src="${f.estateImage}" onclick="window.open('${f.estateImage}')"></div>`:''}</div>`:''}
-        ${f.clothingDescription||(f.clothingImages&&f.clothingImages.length)?`<div class="family-section"><h5>👔 Kleidung</h5><p>${esc(f.clothingDescription||'')}</p>${f.clothingImages&&f.clothingImages.length?`<div class="family-images">${f.clothingImages.map(u=>`<img src="${u}" onclick="window.open('${u}')">`).join('')}</div>`:''}</div>`:''}
-        ${f.notes?`<div class="family-section"><h5>📋 Notizen</h5><p style="white-space:pre-wrap;">${esc(f.notes)}</p></div>`:''}
-        </div>`).join('');
+            <div class="family-card">
+                <h4>👨‍👩‍👧‍👦 ${esc(f.name||'?')}
+                    <span>${isAdmin ? `
+                        <button class="btn-small" onclick="editFamily('${f.id}')" style="background:rgba(100,150,255,0.3);border-color:#64b4ff;color:#64b4ff;">✏️</button>
+                        <button class="btn-small btn-danger" onclick="deleteFamily('${f.id}')">🗑️</button>
+                    ` : ''}</span>
+                </h4>
+                ${f.vehicleType||f.vehicleColorName ? `
+                    <div class="family-section">
+                        <h5>🚗 Fahrzeug</h5>
+                        <p><span class="family-color-dot" style="background:${f.vehicleColor||'#888'};"></span>${esc(f.vehicleColorName||'')} ${esc(f.vehicleType||'')}${f.vehiclePlate?' ('+esc(f.vehiclePlate)+')':''}</p>
+                        ${f.vehicleImage ? `<div class="family-images"><img src="${f.vehicleImage}" onclick="window.open('${f.vehicleImage}')"></div>` : ''}
+                    </div>` : ''}
+                ${f.estateDescription||f.estateImage ? `
+                    <div class="family-section">
+                        <h5>🏠 Anwesen</h5>
+                        <p>${esc(f.estateDescription||'')}</p>
+                        ${f.estateImage ? `<div class="family-images"><img src="${f.estateImage}" onclick="window.open('${f.estateImage}')"></div>` : ''}
+                    </div>` : ''}
+                ${f.clothingDescription||(f.clothingImages&&f.clothingImages.length) ? `
+                    <div class="family-section">
+                        <h5>👔 Kleidung</h5>
+                        <p>${esc(f.clothingDescription||'')}</p>
+                        ${f.clothingImages&&f.clothingImages.length ? `<div class="family-images">${f.clothingImages.map(u=>`<img src="${u}" onclick="window.open('${u}')">`).join('')}</div>` : ''}
+                    </div>` : ''}
+                ${f.notes ? `
+                    <div class="family-section">
+                        <h5>📋 Notizen</h5>
+                        <p style="white-space:pre-wrap;">${esc(f.notes)}</p>
+                    </div>` : ''}
+            </div>`).join('');
     });
 }
-async function deleteFamily(id) { if (!isAdmin) return alert('Nur Admin!'); if (!confirm('Löschen?')) return; await database.ref('Navy-boote/families/' + id).remove(); showToast('Gelöscht.', '#ff4444'); loadFamilies(); loadHomepageStats(); }
-async function editFamily(id) { if (!isAdmin) return alert('Nur Admin!'); const snap = await database.ref('Navy-boote/families/' + id).once('value'); const data = snap.val(); if (data) openFamilyModal({ id, ...data }); }
-document.getElementById('familyModalOverlay').addEventListener('click', function(e) { if (e.target === this) closeFamilyModal(); });
 
-async function init() {
-    await ensureAdminExists();
-    loadAllUsersSorted();
-    document.getElementById('searchName').addEventListener('input', autoLoadPerson);
-    const now = new Date();
-    document.getElementById('modalDate').value = now.toISOString().split('T')[0];
-    document.getElementById('modalTime').value = now.toTimeString().slice(0, 5);
+async function deleteFamily(id) {
+    if (!isAdmin) return alert('Nur Admin!');
+    if (!confirm('Familie löschen?')) return;
+    await database.ref('Navy-boote/families/' + id).remove();
+    showToast('Gelöscht.', '#ff4444');
+    loadFamilies();
+    loadHomepageStats();
 }
+
+async function editFamily(id) {
+    if (!isAdmin) return alert('Nur Admin!');
+    const snap = await database.ref('Navy-boote/families/' + id).once('value');
+    const data = snap.val();
+    if (data) openFamilyModal({ id, ...data });
+}
+
+// Modal Overlay Click Handler
+document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeConfiscationModal();
+});
+
+document.getElementById('familyModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeFamilyModal();
+});
+
+// ==================== INITIALISIERUNG ====================
+async function init() {
+    try {
+        await ensureAdminExists();
+        
+        // Stoppuhr
+        document.getElementById('searchName').addEventListener('input', autoLoadPerson);
+        const now = new Date();
+        document.getElementById('modalDate').value = now.toISOString().split('T')[0];
+        document.getElementById('modalTime').value = now.toTimeString().slice(0, 5);
+        
+        console.log('System initialisiert');
+    } catch (error) {
+        console.error('Init-Fehler:', error);
+    }
+}
+
+// Start
 init();
 </script>
+</body>
+</html>
