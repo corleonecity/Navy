@@ -163,6 +163,10 @@
         .permission-item { display: flex; align-items: center; gap: 6px; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 8px; }
         .permission-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #2ecc40; }
         .permission-item label { font-size: 12px; color: #d9ecff; cursor: pointer; }
+        .log-entry { background: rgba(0,0,0,0.3); border: 1px solid rgba(100,150,255,0.2); border-radius: 10px; padding: 12px; margin-bottom: 8px; }
+        .log-entry .log-time { color: #8ab4e0; font-size: 12px; }
+        .log-entry .log-action { color: #ffaa33; font-weight: bold; margin: 4px 0; }
+        .log-entry .log-details { color: #bfd9ff; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -279,6 +283,22 @@
             </div>
             <div id="familiesGrid" class="families-grid"><p style="color:#aaa;grid-column:1/-1;">Keine Familien.</p></div>
         </div>
+
+        <div id="tab-logs" class="tab-content">
+            <h3 style="color:#ffaa33;margin-bottom:16px;">📊 Aktivitätslogs</h3>
+            <div class="admin-section">
+                <h4>🔍 Benutzer auswählen</h4>
+                <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
+                    <select id="logUserSelect" onchange="loadUserLogs()" style="width:250px;">
+                        <option value="">-- Benutzer wählen --</option>
+                    </select>
+                    <button onclick="loadAllLogs()" style="background:#2e7d32;">📋 Alle Logs anzeigen</button>
+                </div>
+            </div>
+            <div id="logContainer">
+                <p style="color:#aaa;">Wähle einen Benutzer aus oder klicke auf "Alle Logs anzeigen".</p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -343,6 +363,7 @@ let userPermissions = {
     confiscations: true,
     payout: true,
     families: true,
+    logs: true,
     admin: false
 };
 const PRICE_PER_CHECK = 5000;
@@ -355,10 +376,92 @@ let editingConfiscationId = null;
 let editingFamilyId = null;
 let currentPayoutWeek = '';
 
+// ==================== LOGGING SYSTEM ====================
+async function addLog(username, action, details = '') {
+    try {
+        const logEntry = {
+            username: username,
+            action: action,
+            details: details,
+            timestamp: Date.now(),
+            date: new Date().toISOString()
+        };
+        await database.ref('Navy-boote/logs').push(logEntry);
+    } catch (error) {
+        console.error('Fehler beim Logging:', error);
+    }
+}
+
+async function loadUserLogs() {
+    const username = document.getElementById('logUserSelect').value;
+    const container = document.getElementById('logContainer');
+    
+    if (!username) {
+        container.innerHTML = '<p style="color:#aaa;">Bitte wähle einen Benutzer aus.</p>';
+        return;
+    }
+    
+    const snap = await database.ref('Navy-boote/logs').orderByChild('username').equalTo(username).once('value');
+    const logs = snap.val();
+    
+    displayLogs(logs, container, `Logs für: ${username}`);
+}
+
+async function loadAllLogs() {
+    const container = document.getElementById('logContainer');
+    const snap = await database.ref('Navy-boote/logs').limitToLast(100).once('value');
+    const logs = snap.val();
+    
+    displayLogs(logs, container, 'Alle Logs (letzte 100)');
+}
+
+function displayLogs(logs, container, title) {
+    if (!logs) {
+        container.innerHTML = `<p style="color:#aaa;">Keine Logs gefunden.</p>`;
+        return;
+    }
+    
+    const logEntries = Object.values(logs).sort((a, b) => b.timestamp - a.timestamp);
+    
+    let html = `<h4 style="color:#64b4ff;margin-bottom:12px;">${title}</h4>`;
+    html += `<div style="max-height:600px;overflow-y:auto;">`;
+    
+    logEntries.forEach(log => {
+        const time = new Date(log.timestamp).toLocaleString('de-DE');
+        html += `
+            <div class="log-entry">
+                <div class="log-time">🕐 ${time}</div>
+                <div class="log-action">👤 ${esc(log.username)} - ${esc(log.action)}</div>
+                ${log.details ? `<div class="log-details">📝 ${esc(log.details)}</div>` : ''}
+            </div>`;
+    });
+    
+    html += `</div>`;
+    container.innerHTML = html;
+}
+
+async function populateLogUserSelect() {
+    const select = document.getElementById('logUserSelect');
+    if (!select) return;
+    
+    const snap = await database.ref('Navy-boote/users_auth').once('value');
+    const users = snap.val();
+    
+    select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
+    if (users) {
+        for (const [name] of Object.entries(users)) {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+            select.appendChild(option);
+        }
+    }
+}
+
 // ==================== HILFSFUNKTIONEN ====================
 function esc(s) { 
     if (!s) return '';
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); 
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); 
 }
 
 function formatNumber(n) {
@@ -395,7 +498,7 @@ function startSessionTimer() {
     sessionTimeout = setTimeout(() => {
         showToast('⚠️ Sitzung abgelaufen (30 Min. Inaktivität)', '#ffaa33');
         setTimeout(() => doLogout(), 1500);
-    }, 30 * 60 * 1000); // 30 Minuten
+    }, 30 * 60 * 1000);
 }
 
 function resetSessionTimer() {
@@ -405,7 +508,6 @@ function resetSessionTimer() {
     }
 }
 
-// Aktivitäts-Listener
 ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
     document.addEventListener(event, resetSessionTimer);
 });
@@ -424,10 +526,10 @@ async function ensureAdminExists() {
                     confiscations: true,
                     payout: true,
                     families: true,
+                    logs: true,
                     admin: true
                 }
             });
-            console.log('Admin-Account erstellt');
         }
     } catch (error) {
         console.error('Fehler beim Admin-Check:', error);
@@ -435,9 +537,7 @@ async function ensureAdminExists() {
 }
 
 function startUserDataListener(username) {
-    if (userDataListener) {
-        userDataListener.off();
-    }
+    if (userDataListener) userDataListener.off();
     
     userDataListener = database.ref('Navy-boote/users_auth/' + username);
     userDataListener.on('value', (snap) => {
@@ -451,27 +551,23 @@ function startUserDataListener(username) {
         
         if (!isAdmin && userData.permissions) {
             const newPerms = userData.permissions;
-            const oldPerms = { ...userPermissions };
-            
             userPermissions.stopwatch = newPerms.stopwatch !== false;
             userPermissions.confiscations = newPerms.confiscations !== false;
             userPermissions.payout = newPerms.payout !== false;
             userPermissions.families = newPerms.families !== false;
+            userPermissions.logs = newPerms.logs !== false;
             
-            if (JSON.stringify(oldPerms) !== JSON.stringify(userPermissions)) {
-                console.log('Berechtigungen geändert!');
-                updateTabs();
-                
-                const currentTab = document.querySelector('.tab-content.active');
-                if (currentTab) {
-                    const tabId = currentTab.id.replace('tab-', '');
-                    if (tabId !== 'home' && !userPermissions[tabId]) {
-                        switchTab('home');
-                    }
+            updateTabs();
+            
+            const currentTab = document.querySelector('.tab-content.active');
+            if (currentTab) {
+                const tabId = currentTab.id.replace('tab-', '');
+                if (tabId !== 'home' && !userPermissions[tabId]) {
+                    switchTab('home');
                 }
-                
-                showToast('🔄 Berechtigungen aktualisiert', '#64b4ff');
             }
+            
+            showToast('🔄 Berechtigungen aktualisiert', '#64b4ff');
         }
     });
 }
@@ -499,6 +595,7 @@ async function doLogin() {
                     confiscations: true,
                     payout: true,
                     families: true,
+                    logs: true,
                     admin: true
                 };
             } else {
@@ -508,6 +605,7 @@ async function doLogin() {
                     confiscations: perms.confiscations !== false,
                     payout: perms.payout !== false,
                     families: perms.families !== false,
+                    logs: perms.logs !== false,
                     admin: false
                 };
             }
@@ -532,10 +630,9 @@ async function doLogin() {
             startSessionTimer();
             updateTabs();
             
-            switchTab('home');
+            await addLog(username, 'Login', 'Benutzer hat sich angemeldet');
             
-            console.log('Login erfolgreich:', username, 'Admin:', isAdmin);
-            console.log('Berechtigungen:', userPermissions);
+            switchTab('home');
         } else {
             document.getElementById('loginError').style.display = 'block';
         }
@@ -546,6 +643,10 @@ async function doLogin() {
 }
 
 function doLogout() {
+    if (currentUser) {
+        addLog(currentUser.username, 'Logout', 'Benutzer hat sich abgemeldet');
+    }
+    
     if (sessionTimeout) {
         clearTimeout(sessionTimeout);
         sessionTimeout = null;
@@ -568,6 +669,7 @@ function doLogout() {
         confiscations: true,
         payout: true,
         families: true,
+        logs: true,
         admin: false
     };
     
@@ -586,19 +688,18 @@ function updateTabs() {
     const tabNav = document.getElementById('tabNav');
     tabNav.innerHTML = '';
     
-    // Home Tab
     const homeBtn = document.createElement('button');
     homeBtn.className = 'tab-btn active';
     homeBtn.textContent = '🏠 Hauptseite';
     homeBtn.onclick = () => switchTab('home');
     tabNav.appendChild(homeBtn);
     
-    // Berechtigungsabhängige Tabs
     const tabConfig = {
         'stopwatch': { icon: '⏱️', label: 'Stoppuhr' },
         'confiscations': { icon: '📋', label: 'Beschlagnahmungen' },
         'payout': { icon: '💰', label: 'Auszahlung' },
-        'families': { icon: '👨‍👩‍👧‍👦', label: 'Familien' }
+        'families': { icon: '👨‍👩‍👧‍👦', label: 'Familien' },
+        'logs': { icon: '📊', label: 'Logs' }
     };
     
     for (const [key, config] of Object.entries(tabConfig)) {
@@ -611,7 +712,6 @@ function updateTabs() {
         }
     }
     
-    // Admin Tab
     if (isAdmin) {
         const adminBtn = document.createElement('button');
         adminBtn.className = 'tab-btn admin-tab';
@@ -622,7 +722,6 @@ function updateTabs() {
 }
 
 function switchTab(name) {
-    // Berechtigungsprüfung
     if (name === 'admin' && !isAdmin) {
         showToast('Keine Berechtigung!', '#ff4444');
         return;
@@ -633,13 +732,11 @@ function switchTab(name) {
         return;
     }
     
-    // Tab-Buttons aktualisieren
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     const buttons = document.querySelectorAll('.tab-btn');
-    const tabOrder = ['home', 'stopwatch', 'confiscations', 'payout', 'families', 'admin'];
+    const tabOrder = ['home', 'stopwatch', 'confiscations', 'payout', 'families', 'logs', 'admin'];
     const index = tabOrder.indexOf(name);
     
-    // Finde den richtigen Button
     let buttonIndex = 0;
     for (let i = 0; i <= index; i++) {
         if (i === 0 || userPermissions[tabOrder[i]] || (tabOrder[i] === 'admin' && isAdmin)) {
@@ -651,17 +748,16 @@ function switchTab(name) {
         }
     }
     
-    // Tab-Inhalte aktualisieren
     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
     const tabEl = document.getElementById('tab-' + name);
     if (tabEl) tabEl.classList.add('active');
     
-    // Daten laden
     if (name === 'home') loadHomepageStats();
     else if (name === 'stopwatch') loadAllUsersSorted();
     else if (name === 'confiscations') loadConfiscations();
     else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); }
     else if (name === 'families') loadFamilies();
+    else if (name === 'logs') populateLogUserSelect();
     else if (name === 'admin') setupAdminTab();
 }
 
@@ -712,6 +808,10 @@ function setupAdminTab() {
                         <div class="permission-item">
                             <input type="checkbox" id="permFamilies" onchange="savePermission('families', this.checked)">
                             <label for="permFamilies">👨‍👩‍👧‍👦 Familien</label>
+                        </div>
+                        <div class="permission-item">
+                            <input type="checkbox" id="permLogs" onchange="savePermission('logs', this.checked)">
+                            <label for="permLogs">📊 Logs</label>
                         </div>
                     </div>
                     <p id="permissionSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Berechtigungen gespeichert!</p>
@@ -770,6 +870,7 @@ async function loadUserPermissions() {
     document.getElementById('permConfiscations').checked = permissions.confiscations !== false;
     document.getElementById('permPayout').checked = permissions.payout !== false;
     document.getElementById('permFamilies').checked = permissions.families !== false;
+    document.getElementById('permLogs').checked = permissions.logs !== false;
     
     editor.style.display = 'block';
 }
@@ -778,6 +879,11 @@ async function savePermission(permission, value) {
     if (!currentPermissionUser) return;
     
     await database.ref('Navy-boote/users_auth/' + currentPermissionUser + '/permissions/' + permission).set(value);
+    
+    if (currentUser) {
+        await addLog(currentUser.username, 'Berechtigung geändert', 
+            `Benutzer "${currentPermissionUser}": ${permission} = ${value ? 'Ein' : 'Aus'}`);
+    }
     
     const statusEl = document.getElementById('permissionSaveStatus');
     statusEl.style.display = 'block';
@@ -801,9 +907,14 @@ async function createUser() {
             stopwatch: true,
             confiscations: true,
             payout: true,
-            families: true
+            families: true,
+            logs: true
         }
     });
+    
+    if (currentUser) {
+        await addLog(currentUser.username, 'Benutzer erstellt', `Neuer Benutzer: ${u}`);
+    }
     
     showToast('✅ Benutzer erstellt!', '#2ecc40');
     document.getElementById('newUsername').value = '';
@@ -833,6 +944,7 @@ async function loadUserList() {
         if (perms.confiscations !== false) activePerms.push('📋 Beschlagn.');
         if (perms.payout !== false) activePerms.push('💰 Auszahlung');
         if (perms.families !== false) activePerms.push('👨‍👩‍👧‍👦 Familien');
+        if (perms.logs !== false) activePerms.push('📊 Logs');
         if (userData.isAdmin) activePerms.push('🔑 Admin');
         
         const permissionsDisplay = activePerms.length > 0 ? 
@@ -855,6 +967,11 @@ async function loadUserList() {
 async function deleteUser(u) {
     if (!confirm('Benutzer "' + u + '" wirklich löschen? Der Benutzer wird sofort abgemeldet!')) return;
     await database.ref('Navy-boote/users_auth/' + u).remove();
+    
+    if (currentUser) {
+        await addLog(currentUser.username, 'Benutzer gelöscht', `Benutzer "${u}" wurde gelöscht`);
+    }
+    
     showToast('Benutzer gelöscht und abgemeldet.', '#ff4444');
     loadUserList();
     populatePermissionUserSelect();
@@ -869,6 +986,11 @@ async function adminDeletePerson() {
     if (!n) return alert('Name eingeben!');
     if (!confirm('⚠️ Alle Daten von "' + n + '" unwiderruflich löschen?')) return;
     await database.ref('Navy-boote/users/' + n.toLowerCase()).remove();
+    
+    if (currentUser) {
+        await addLog(currentUser.username, 'Person gelöscht', `Alle Daten von "${n}" wurden gelöscht`);
+    }
+    
     showToast('Person gelöscht.', '#ff4444');
     document.getElementById('adminDeletePerson').value = '';
     loadAllUsersSorted();
@@ -960,6 +1082,11 @@ async function saveTimeWithDesc(boatKey, taId) {
     await ref.set(arr);
     await database.ref('Navy-boote/users/' + name.toLowerCase() + '/lastUpdated').set(Date.now());
     
+    if (currentUser) {
+        await addLog(currentUser.username, 'Stoppuhr gespeichert', 
+            `Person: ${name}, Boot: ${boatKey}, Zeit: ${timeStr}`);
+    }
+    
     document.getElementById(taId).value = '';
     document.getElementById('searchName').value = name;
     autoLoadPerson();
@@ -977,6 +1104,12 @@ window.deleteSingleEntry = async function(nl, bi, ts) {
         arr = arr.filter(e => e.timestamp !== ts);
         await ref.set(arr);
         await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now());
+        
+        if (currentUser) {
+            await addLog(currentUser.username, 'Zeiteintrag gelöscht', 
+                `Person: ${nl}, Boot: ${bi}`);
+        }
+        
         autoLoadPerson();
         loadAllUsersSorted();
     }
@@ -1149,9 +1282,17 @@ async function saveConfiscation() {
     const ref = database.ref('Navy-boote/confiscations');
     if (editingConfiscationId) {
         await ref.child(editingConfiscationId).update(data);
+        if (currentUser) {
+            await addLog(currentUser.username, 'Beschlagnahmung aktualisiert', 
+                `Akte: ${data.akteName}, Grün: ${formatNumber(data.greenMoney)}€, Schwarz: ${formatNumber(data.blackMoney)}€`);
+        }
         showToast('✅ Aktualisiert!', '#2ecc40');
     } else {
         await ref.push(data);
+        if (currentUser) {
+            await addLog(currentUser.username, 'Beschlagnahmung erstellt', 
+                `Akte: ${data.akteName}, Grün: ${formatNumber(data.greenMoney)}€, Schwarz: ${formatNumber(data.blackMoney)}€`);
+        }
         showToast('✅ Gespeichert!', '#2ecc40');
     }
     
@@ -1212,7 +1353,17 @@ function loadConfiscations() {
 async function deleteConfiscation(id) {
     if (!isAdmin) return alert('Nur Admin!');
     if (!confirm('Beschlagnahmung löschen?')) return;
+    
+    const snap = await database.ref('Navy-boote/confiscations/' + id).once('value');
+    const data = snap.val();
+    
     await database.ref('Navy-boote/confiscations/' + id).remove();
+    
+    if (currentUser && data) {
+        await addLog(currentUser.username, 'Beschlagnahmung gelöscht', 
+            `Akte: ${data.akteName || 'Unbekannt'}`);
+    }
+    
     showToast('Gelöscht.', '#ff4444');
     loadConfiscations();
     loadHomepageStats();
@@ -1367,6 +1518,12 @@ async function updatePayoutCount(name, newCount) {
     const count = parseInt(newCount) || 0;
     const weekKey = currentPayoutWeek;
     await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ count });
+    
+    if (currentUser) {
+        await addLog(currentUser.username, 'Auszahlung aktualisiert', 
+            `Benutzer: ${name}, Woche: ${weekKey}, Kontrollen: ${count}`);
+    }
+    
     loadPayoutData();
 }
 
@@ -1374,6 +1531,12 @@ async function togglePayoutPaid(name, isPaid) {
     if (!isAdmin) return;
     const weekKey = currentPayoutWeek;
     await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ paid: isPaid });
+    
+    if (currentUser) {
+        await addLog(currentUser.username, 'Auszahlungsstatus geändert', 
+            `Benutzer: ${name}, Woche: ${weekKey}, Status: ${isPaid ? 'Ausgezahlt' : 'Offen'}`);
+    }
+    
     loadPayoutData();
 }
 
@@ -1458,9 +1621,15 @@ async function saveFamily() {
     const ref = database.ref('Navy-boote/families');
     if (editingFamilyId) {
         await ref.child(editingFamilyId).update(data);
+        if (currentUser) {
+            await addLog(currentUser.username, 'Familie aktualisiert', `Familie: ${name}`);
+        }
         showToast('✅ Aktualisiert!', '#64b4ff');
     } else {
         await ref.push(data);
+        if (currentUser) {
+            await addLog(currentUser.username, 'Familie erstellt', `Familie: ${name}`);
+        }
         showToast('✅ Gespeichert!', '#64b4ff');
     }
     
@@ -1521,7 +1690,16 @@ function loadFamilies() {
 async function deleteFamily(id) {
     if (!isAdmin) return alert('Nur Admin!');
     if (!confirm('Familie löschen?')) return;
+    
+    const snap = await database.ref('Navy-boote/families/' + id).once('value');
+    const data = snap.val();
+    
     await database.ref('Navy-boote/families/' + id).remove();
+    
+    if (currentUser && data) {
+        await addLog(currentUser.username, 'Familie gelöscht', `Familie: ${data.name || 'Unbekannt'}`);
+    }
+    
     showToast('Gelöscht.', '#ff4444');
     loadFamilies();
     loadHomepageStats();
@@ -1548,7 +1726,6 @@ async function init() {
     try {
         await ensureAdminExists();
         
-        // Stoppuhr
         document.getElementById('searchName').addEventListener('input', autoLoadPerson);
         const now = new Date();
         document.getElementById('modalDate').value = now.toISOString().split('T')[0];
@@ -1560,7 +1737,6 @@ async function init() {
     }
 }
 
-// Start
 init();
 </script>
 </body>
