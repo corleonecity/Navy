@@ -83,6 +83,21 @@
         .name-list { display: flex; flex-wrap: wrap; gap: 12px; background: rgba(0,0,0,0.35); padding: 15px; border-radius: 20px; border: 1px solid rgba(100,150,255,0.25); max-height: 150px; overflow-y: auto; }
         .name-tag { background: linear-gradient(145deg,#0a1a30,#031020); border: 1px solid #2c5282; padding: 8px 16px; border-radius: 40px; font-size: 14px; cursor: pointer; transition: 0.2s; }
         .name-tag:hover { background: #1e3a6b; transform: scale(1.02); }
+        
+        /* Neue Styles für Durchschnitts-Tabelle */
+        .avg-stats-table { width: 100%; border-collapse: collapse; background: rgba(0,0,0,0.35); border-radius: 16px; overflow: hidden; border: 1px solid rgba(100,150,255,0.3); }
+        .avg-stats-table th { background: rgba(30,70,120,0.5); padding: 10px 12px; text-align: center; color: #b8dbff; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .avg-stats-table td { padding: 8px 12px; text-align: center; border-bottom: 1px solid rgba(100,150,255,0.15); font-family: 'Courier New', monospace; font-size: 14px; font-weight: bold; color: #ffaa33; }
+        .avg-stats-table tr:last-child td { border-bottom: none; }
+        .avg-stats-table .boat-icon { text-align: left; color: #9cc7ff; font-weight: normal; font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; }
+        
+        .personal-avg-box { background: rgba(0,0,0,0.4); border: 2px solid #ffaa33; border-radius: 16px; padding: 16px; margin-bottom: 16px; }
+        .personal-avg-box h4 { color: #ffaa33; margin-bottom: 10px; font-size: 1rem; }
+        .personal-avg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .personal-avg-item { background: rgba(15,25,45,0.7); border-radius: 10px; padding: 10px; text-align: center; border: 1px solid rgba(100,150,255,0.3); }
+        .personal-avg-item .boat-label { font-size: 11px; color: #9cc7ff; margin-bottom: 4px; }
+        .personal-avg-item .boat-time { font-family: 'Courier New', monospace; font-size: 16px; font-weight: bold; color: #ffaa33; }
+
         .search-results { margin-top: 20px; background: rgba(0,0,0,0.5); padding: 20px; border-radius: 24px; border: 1px solid rgba(59,130,246,0.4); }
         .table-wrapper { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -227,15 +242,60 @@
                 <div class="boat-panel"><h4>🚢 Kurtz 31 Patrol Boat</h4><textarea id="descPatrolBoat" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('PatrolBoat','descPatrolBoat')">📌 Speichern</button></div>
                 <div class="boat-panel"><h4>🔫 Weaponized Dinghy</h4><textarea id="descWeaponized" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('WeaponizedDinghy','descWeaponized')">📌 Speichern</button></div>
             </div>
-            <div class="section-title">👥 REGISTRIERTE PERSONEN</div>
-            <div id="allNamesList" class="name-list"><span style="color:#aaa;">Laden...</span></div>
+            
+            <!-- ⭐ NEU: Durchschnittszeiten ALLER Soldaten (ohne Namen) -->
+            <div class="section-title">📊 DURCHSCHNITTSZEITEN ALLER SOLDATEN</div>
+            <div id="allSoldiersAvgContainer">
+                <table class="avg-stats-table">
+                    <thead>
+                        <tr>
+                            <th class="boat-icon">Boot</th>
+                            <th>⌀ Durchschnitt</th>
+                            <th>📋 Einträge</th>
+                            <th>🏆 Bestzeit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td class="boat-icon">⚡ Predator</td><td id="avgPredator">--</td><td id="countPredator">0</td><td id="bestPredator">--</td></tr>
+                        <tr><td class="boat-icon">🛶 Dinghy</td><td id="avgDinghy">--</td><td id="countDinghy">0</td><td id="bestDinghy">--</td></tr>
+                        <tr><td class="boat-icon">🚢 Kurtz 31</td><td id="avgPatrolBoat">--</td><td id="countPatrolBoat">0</td><td id="bestPatrolBoat">--</td></tr>
+                        <tr><td class="boat-icon">💥 Weaponized</td><td id="avgWeaponizedDinghy">--</td><td id="countWeaponizedDinghy">0</td><td id="bestWeaponizedDinghy">--</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
             <div class="search-results">
-                <h3 style="margin:0 0 8px 0;">📋 Zeiten & Beschreibungen</h3>
+                <h3 style="margin:0 0 8px 0;">🔍 PERSONENSUCHE</h3>
                 <div class="input-group" style="justify-content:flex-start;"><input type="text" id="searchName" placeholder="Name eingeben..." oninput="autoLoadPerson()"></div>
+                <!-- ⭐ NEU: Persönliche Durchschnittsanzeige -->
+                <div id="personalAvgContainer" style="display:none;">
+                    <div class="personal-avg-box">
+                        <h4>📊 Persönliche Durchschnittszeiten: <span id="personalAvgName" style="color:#64b4ff;"></span></h4>
+                        <div class="personal-avg-grid">
+                            <div class="personal-avg-item">
+                                <div class="boat-label">⚡ Predator</div>
+                                <div class="boat-time" id="pAvgPredator">--</div>
+                            </div>
+                            <div class="personal-avg-item">
+                                <div class="boat-label">🛶 Dinghy</div>
+                                <div class="boat-time" id="pAvgDinghy">--</div>
+                            </div>
+                            <div class="personal-avg-item">
+                                <div class="boat-label">🚢 Kurtz 31</div>
+                                <div class="boat-time" id="pAvgPatrolBoat">--</div>
+                            </div>
+                            <div class="personal-avg-item">
+                                <div class="boat-label">💥 Weaponized</div>
+                                <div class="boat-time" id="pAvgWeaponizedDinghy">--</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 <div id="resultTable"><p style="color:#bbd4ff;">🔍 Wähle eine Person aus.</p></div>
             </div>
         </div>
 
+        <!-- Restliche Tabs unverändert -->
         <div id="tab-confiscations" class="tab-content">
             <div class="confiscation-header">
                 <h3 style="color:#ffaa33;margin:0;">📋 Beschlagnahmungen</h3>
@@ -301,6 +361,7 @@
     </div>
 </div>
 
+<!-- Modals unverändert -->
 <div class="modal-overlay" id="confiscationModalOverlay">
     <div class="modal">
         <button class="close-modal-x" onclick="closeConfiscationModal()">✕</button>
@@ -366,7 +427,7 @@ let userPermissions = {
     admin: false
 };
 const PRICE_PER_CHECK = 5000;
-const SESSION_DURATION = 30 * 60 * 1000; // 30 Minuten
+const SESSION_DURATION = 30 * 60 * 1000;
 let currentPermissionUser = null;
 let sessionTimeout = null;
 let userDataListener = null;
@@ -375,6 +436,135 @@ let startTime = 0, elapsed = 0, stopwatchInterval = null, running = false;
 let editingConfiscationId = null;
 let editingFamilyId = null;
 let currentPayoutWeek = '';
+
+// ⭐ NEUE FUNKTION: Zeit-String in Millisekunden umwandeln
+function timeStringToMs(timeStr) {
+    if (!timeStr || typeof timeStr !== 'string') return 0;
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return 0;
+    const minutes = parseInt(parts[0]) || 0;
+    const secMs = parts[1].split('.');
+    const seconds = parseInt(secMs[0]) || 0;
+    const centiseconds = parseInt(secMs[1]) || 0;
+    return (minutes * 60 * 1000) + (seconds * 1000) + (centiseconds * 10);
+}
+
+// ⭐ NEUE FUNKTION: Millisekunden in Zeit-String umwandeln
+function msToTimeString(ms) {
+    if (ms === 0) return '--';
+    const minutes = Math.floor(ms / 60000);
+    const seconds = Math.floor((ms % 60000) / 1000);
+    const centiseconds = Math.floor((ms % 1000) / 10);
+    return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0') + '.' + String(centiseconds).padStart(2, '0');
+}
+
+// ⭐ NEUE FUNKTION: Durchschnitt aller Soldaten für alle 4 Boote berechnen
+function loadAllSoldiersAverage() {
+    database.ref('Navy-boote/users').on('value', snap => {
+        const users = snap.val();
+        
+        // Boot-Keys für die 4 Boote
+        const boatKeys = ['Predator', 'Dinghy', 'PatrolBoat', 'WeaponizedDinghy'];
+        
+        // Für jedes Boot: alle Zeiten sammeln
+        const boatStats = {};
+        boatKeys.forEach(key => {
+            boatStats[key] = { times: [], allTimes: [] };
+        });
+        
+        if (users) {
+            Object.values(users).forEach(userData => {
+                if (userData && userData.boats) {
+                    boatKeys.forEach(boatKey => {
+                        const entries = userData.boats[boatKey];
+                        if (entries && Array.isArray(entries)) {
+                            entries.forEach(entry => {
+                                const ms = timeStringToMs(entry.time);
+                                if (ms > 0) {
+                                    boatStats[boatKey].times.push(ms);
+                                    boatStats[boatKey].allTimes.push(ms);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Durchschnitt und Bestzeit für jedes Boot berechnen
+        boatKeys.forEach(boatKey => {
+            const stats = boatStats[boatKey];
+            const count = stats.times.length;
+            let avgMs = 0;
+            let bestMs = Infinity;
+            
+            if (count > 0) {
+                const sum = stats.times.reduce((a, b) => a + b, 0);
+                avgMs = Math.round(sum / count);
+                bestMs = Math.min(...stats.times);
+            }
+            
+            // ID-Mapping für die HTML-Elemente
+            const idMap = {
+                'Predator': 'Predator',
+                'Dinghy': 'Dinghy',
+                'PatrolBoat': 'PatrolBoat',
+                'WeaponizedDinghy': 'WeaponizedDinghy'
+            };
+            
+            const elId = idMap[boatKey];
+            const avgEl = document.getElementById('avg' + elId);
+            const countEl = document.getElementById('count' + elId);
+            const bestEl = document.getElementById('best' + elId);
+            
+            if (avgEl) avgEl.textContent = count > 0 ? msToTimeString(avgMs) : '--';
+            if (countEl) countEl.textContent = count;
+            if (bestEl) bestEl.textContent = count > 0 ? msToTimeString(bestMs) : '--';
+        });
+    });
+}
+
+// ⭐ NEUE FUNKTION: Persönliche Durchschnittszeiten anzeigen
+function showPersonalAverage(userName, userData) {
+    const container = document.getElementById('personalAvgContainer');
+    const nameEl = document.getElementById('personalAvgName');
+    
+    if (!userData || !userData.boats) {
+        container.style.display = 'none';
+        return;
+    }
+    
+    container.style.display = 'block';
+    nameEl.textContent = userName.charAt(0).toUpperCase() + userName.slice(1);
+    
+    const boatKeys = ['Predator', 'Dinghy', 'PatrolBoat', 'WeaponizedDinghy'];
+    const prefixMap = {
+        'Predator': 'Predator',
+        'Dinghy': 'Dinghy',
+        'PatrolBoat': 'PatrolBoat',
+        'WeaponizedDinghy': 'WeaponizedDinghy'
+    };
+    
+    boatKeys.forEach(boatKey => {
+        const entries = userData.boats[boatKey];
+        let avgMs = 0;
+        
+        if (entries && Array.isArray(entries) && entries.length > 0) {
+            const validTimes = entries
+                .map(e => timeStringToMs(e.time))
+                .filter(ms => ms > 0);
+            
+            if (validTimes.length > 0) {
+                avgMs = Math.round(validTimes.reduce((a, b) => a + b, 0) / validTimes.length);
+            }
+        }
+        
+        const el = document.getElementById('pAvg' + prefixMap[boatKey]);
+        if (el) {
+            el.textContent = avgMs > 0 ? msToTimeString(avgMs) : '--';
+        }
+    });
+}
 
 // ==================== SESSION MANAGEMENT ====================
 function saveSession(username, isAdminUser, permissions) {
@@ -836,7 +1026,10 @@ function switchTab(name) {
     if (tabEl) tabEl.classList.add('active');
     
     if (name === 'home') loadHomepageStats();
-    else if (name === 'stopwatch') loadAllUsersSorted();
+    else if (name === 'stopwatch') { 
+        loadAllSoldiersAverage();  // ⭐ Durchschnitt laden
+        autoLoadPerson(); 
+    }
     else if (name === 'confiscations') loadConfiscations();
     else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); }
     else if (name === 'families') loadFamilies();
@@ -844,6 +1037,7 @@ function switchTab(name) {
     else if (name === 'admin') setupAdminTab();
 }
 
+// Admin-Tab Setup (unverändert)
 function setupAdminTab() {
     if (!isAdmin) return;
     
@@ -1075,7 +1269,7 @@ async function adminDeletePerson() {
     
     showToast('Person gelöscht.', '#ff4444');
     document.getElementById('adminDeletePerson').value = '';
-    loadAllUsersSorted();
+    loadAllSoldiersAverage();
     autoLoadPerson();
 }
 
@@ -1192,7 +1386,7 @@ window.deleteSingleEntry = async function(nl, bi, ts) {
         }
         
         autoLoadPerson();
-        loadAllUsersSorted();
+        loadAllSoldiersAverage();
     }
 };
 
@@ -1200,6 +1394,7 @@ function autoLoadPerson() {
     const raw = document.getElementById('searchName').value.trim();
     if (!raw) {
         document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>';
+        document.getElementById('personalAvgContainer').style.display = 'none';
         if (currentListener) currentListener.off();
         return;
     }
@@ -1214,6 +1409,9 @@ function listenToPersonData(nl) {
         const data = snap.val();
         const c = document.getElementById('resultTable');
         const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
+        
+        // ⭐ Persönliche Durchschnittszeiten anzeigen
+        showPersonalAverage(nl, data);
         
         if (!data || !data.boats) {
             c.innerHTML = '<div style="padding:15px;">⚓ ' + dn + ' hat noch keine Zeiten.</div>';
@@ -1249,34 +1447,7 @@ function listenToPersonData(nl) {
     });
 }
 
-function loadAllUsersSorted() {
-    database.ref('Navy-boote/users').on('value', snap => {
-        const users = snap.val();
-        const d = document.getElementById('allNamesList');
-        d.innerHTML = '';
-        
-        if (users) {
-            const sorted = Object.keys(users)
-                .map(k => ({ name: k, lu: users[k].lastUpdated || 0 }))
-                .sort((a, b) => b.lu - a.lu);
-            
-            sorted.forEach(u => {
-                const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1);
-                const btn = document.createElement('div');
-                btn.className = 'name-tag';
-                btn.textContent = dn;
-                btn.onclick = () => {
-                    document.getElementById('personName').value = dn;
-                    document.getElementById('searchName').value = dn;
-                    autoLoadPerson();
-                };
-                d.appendChild(btn);
-            });
-        } else {
-            d.innerHTML = '<span>⚓ Keine Personen.</span>';
-        }
-    });
-}
+// ⭐ Entfernt: loadAllUsersSorted() - nicht mehr benötigt, da durch loadAllSoldiersAverage() ersetzt
 
 // ==================== BESCHLAGNAHMUNGEN ====================
 function openNewConfiscationModal(editData = null) {
@@ -1817,6 +1988,9 @@ async function init() {
         const now = new Date();
         document.getElementById('modalDate').value = now.toISOString().split('T')[0];
         document.getElementById('modalTime').value = now.toTimeString().slice(0, 5);
+        
+        // ⭐ Durchschnittsanzeige initial laden
+        loadAllSoldiersAverage();
         
         console.log('System initialisiert');
     } catch (error) {
