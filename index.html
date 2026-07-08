@@ -193,7 +193,7 @@
         </div>
 
         <div class="tab-nav" id="tabNav">
-            <!-- Tabs werden dynamisch geladen -->
+            <!-- Dynamisch geladen -->
         </div>
 
         <div id="tab-home" class="tab-content active">
@@ -343,6 +343,7 @@ let userPermissions = {
     admin: false
 };
 const PRICE_PER_CHECK = 5000;
+let currentPermissionUser = null;
 
 // ==================== HILFSFUNKTIONEN ====================
 function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : ''; }
@@ -450,7 +451,6 @@ function doLogout() {
     document.getElementById('loginUsername').value = '';
     document.getElementById('loginPassword').value = '';
     removeAdminTab();
-    // Reset tabs
     document.getElementById('tabNav').innerHTML = '';
 }
 
@@ -502,7 +502,10 @@ function setupTabsBasedOnPermissions() {
 function setupAdminTab() {
     if (!isAdmin) return;
     
-    // Admin Tab Inhalt erstellen falls noch nicht vorhanden
+    // Entferne existierenden Admin-Tab falls vorhanden
+    removeAdminTab();
+    
+    // Admin Tab Inhalt erstellen
     if (!document.getElementById('tab-admin')) {
         const div = document.createElement('div');
         div.id = 'tab-admin';
@@ -524,8 +527,8 @@ function setupAdminTab() {
                 <h4>🔐 Berechtigungen</h4>
                 <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Berechtigungen zu bearbeiten:</p>
                 <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
-                    <select id="permissionUserSelect" onchange="loadUserPermissions()" style="width:200px;">
-                        <option value="">Benutzer wählen...</option>
+                    <select id="permissionUserSelect" onchange="loadUserPermissions()" style="width:250px;">
+                        <option value="">-- Benutzer wählen --</option>
                     </select>
                 </div>
                 <div id="permissionsEditor" style="display:none;">
@@ -545,10 +548,6 @@ function setupAdminTab() {
                         <div class="permission-item">
                             <input type="checkbox" id="permFamilies" onchange="savePermission('families', this.checked)">
                             <label for="permFamilies">👨‍👩‍👧‍👦 Familien</label>
-                        </div>
-                        <div class="permission-item">
-                            <input type="checkbox" id="permAdmin" onchange="savePermission('admin', this.checked)" disabled style="opacity:0.5;">
-                            <label for="permAdmin" style="color:#888;">🔑 Admin (Nur für Admins)</label>
                         </div>
                     </div>
                     <p id="permissionSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Berechtigungen gespeichert!</p>
@@ -581,16 +580,21 @@ async function populatePermissionUserSelect() {
     const snap = await database.ref('Navy-boote/users_auth').once('value');
     const users = snap.val();
     
-    select.innerHTML = '<option value="">Benutzer wählen...</option>';
+    select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
     if (users) {
         Object.entries(users).forEach(([name, data]) => {
             if (!data.isAdmin) { // Nur nicht-Admin Benutzer anzeigen
                 const option = document.createElement('option');
                 option.value = name;
-                option.textContent = name;
+                option.textContent = name.charAt(0).toUpperCase() + name.slice(1);
                 select.appendChild(option);
             }
         });
+    }
+    
+    // Wenn keine nicht-Admin Benutzer existieren
+    if (select.options.length === 1) {
+        select.innerHTML = '<option value="">-- Keine Benutzer verfügbar --</option>';
     }
 }
 
@@ -600,8 +604,11 @@ async function loadUserPermissions() {
     
     if (!username) {
         editor.style.display = 'none';
+        currentPermissionUser = null;
         return;
     }
+    
+    currentPermissionUser = username;
     
     const snap = await database.ref('Navy-boote/users_auth/' + username + '/permissions').once('value');
     const permissions = snap.val() || {
@@ -616,33 +623,37 @@ async function loadUserPermissions() {
     document.getElementById('permConfiscations').checked = permissions.confiscations !== false;
     document.getElementById('permPayout').checked = permissions.payout !== false;
     document.getElementById('permFamilies').checked = permissions.families !== false;
-    document.getElementById('permAdmin').checked = false; // Immer false für nicht-Admins
-    document.getElementById('permAdmin').disabled = true;
     
-    // Speichere aktuellen Benutzer für die save-Funktion
-    editor.dataset.currentUser = username;
     editor.style.display = 'block';
 }
 
 async function savePermission(permission, value) {
-    const username = document.getElementById('permissionsEditor').dataset.currentUser;
-    if (!username) return;
+    if (!currentPermissionUser) return;
     
     const updates = {};
-    updates['Navy-boote/users_auth/' + username + '/permissions/' + permission] = value;
+    updates['Navy-boote/users_auth/' + currentPermissionUser + '/permissions/' + permission] = value;
     
-    await database.ref().update(updates);
-    
-    const statusEl = document.getElementById('permissionSaveStatus');
-    statusEl.style.display = 'block';
-    setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+    try {
+        await database.ref().update(updates);
+        
+        const statusEl = document.getElementById('permissionSaveStatus');
+        statusEl.style.display = 'block';
+        statusEl.textContent = '✅ Berechtigungen gespeichert!';
+        setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+        
+        // Aktualisiere Benutzerliste
+        loadUserList();
+    } catch (error) {
+        console.error('Fehler beim Speichern:', error);
+        showToast('❌ Fehler beim Speichern!', '#ff4444');
+    }
 }
 
 async function createUser() {
     const u = document.getElementById('newUsername').value.trim().toLowerCase();
     const p = document.getElementById('newPassword').value.trim();
-    if (!u || !p) return alert('Eingeben!');
-    if (u === 'colin') return alert('Reserviert!');
+    if (!u || !p) return alert('Bitte Benutzername und Passwort eingeben!');
+    if (u === 'colin') return alert('Dieser Benutzername ist reserviert!');
     
     // Standard-Berechtigungen für neue Benutzer
     const defaultPermissions = {
@@ -653,18 +664,23 @@ async function createUser() {
         admin: false
     };
     
-    await database.ref('Navy-boote/users_auth/' + u).set({ 
-        password: p, 
-        isAdmin: false, 
-        created: Date.now(),
-        permissions: defaultPermissions
-    });
-    
-    showToast('✅ Erstellt!', '#2ecc40');
-    document.getElementById('newUsername').value = '';
-    document.getElementById('newPassword').value = '';
-    loadUserList();
-    populatePermissionUserSelect();
+    try {
+        await database.ref('Navy-boote/users_auth/' + u).set({ 
+            password: p, 
+            isAdmin: false, 
+            created: Date.now(),
+            permissions: defaultPermissions
+        });
+        
+        showToast('✅ Benutzer erstellt!', '#2ecc40');
+        document.getElementById('newUsername').value = '';
+        document.getElementById('newPassword').value = '';
+        loadUserList();
+        populatePermissionUserSelect();
+    } catch (error) {
+        console.error('Fehler:', error);
+        showToast('❌ Fehler beim Erstellen!', '#ff4444');
+    }
 }
 
 async function loadUserList() {
@@ -672,32 +688,27 @@ async function loadUserList() {
     const users = snap.val();
     const d = document.getElementById('userList');
     
+    if (!d) return;
+    
     if (!users) { 
-        d.innerHTML = '<p style="color:#aaa;">Keine Benutzer.</p>'; 
+        d.innerHTML = '<p style="color:#aaa;">Keine Benutzer vorhanden.</p>'; 
         return; 
     }
     
     d.innerHTML = '<table class="user-table"><thead><tr><th>Name</th><th>Rolle</th><th>Berechtigungen</th><th>Erstellt</th><th>Aktion</th></tr></thead><tbody>' +
         Object.entries(users).map(([n, dd]) => {
             const perms = dd.permissions || {};
-            const activePerms = Object.entries(perms)
-                .filter(([key, val]) => val === true)
-                .map(([key]) => {
-                    const permNames = {
-                        stopwatch: '⏱️',
-                        confiscations: '📋',
-                        payout: '💰',
-                        families: '👨‍👩‍👧‍👦',
-                        admin: '🔑'
-                    };
-                    return permNames[key] || key;
-                })
-                .join(' ');
+            const activePerms = [];
+            if (perms.stopwatch) activePerms.push('⏱️');
+            if (perms.confiscations) activePerms.push('📋');
+            if (perms.payout) activePerms.push('💰');
+            if (perms.families) activePerms.push('👨‍👩‍👧‍👦');
+            if (dd.isAdmin) activePerms.push('🔑');
             
             return `<tr>
                 <td><strong>${esc(n)}</strong></td>
                 <td>${dd.isAdmin?'<span style="color:#ff5555;">Admin</span>':'<span style="color:#64b4ff;">User</span>'}</td>
-                <td style="font-size:14px;">${activePerms || 'Keine'}</td>
+                <td style="font-size:16px;">${activePerms.join(' ') || 'Keine'}</td>
                 <td>${dd.created?new Date(dd.created).toLocaleDateString('de-DE'):'-'}</td>
                 <td>${n!=='colin'?'<button class="btn-small btn-danger" onclick="deleteUser(\''+n+'\')">🗑️</button>':'🔒'}</td>
             </tr>`;
@@ -706,19 +717,24 @@ async function loadUserList() {
 }
 
 async function deleteUser(u) { 
-    if (!confirm(u + ' löschen?')) return; 
+    if (!confirm('Benutzer "' + u + '" wirklich löschen?')) return; 
     await database.ref('Navy-boote/users_auth/' + u).remove(); 
-    showToast('Gelöscht.', '#ff4444'); 
+    showToast('Benutzer gelöscht.', '#ff4444'); 
     loadUserList(); 
     populatePermissionUserSelect();
+    
+    // Reset Permission Editor
+    const editor = document.getElementById('permissionsEditor');
+    if (editor) editor.style.display = 'none';
+    currentPermissionUser = null;
 }
 
 async function adminDeletePerson() {
     const n = document.getElementById('adminDeletePerson').value.trim(); 
-    if (!n) return alert('Name!');
-    if (!confirm('⚠️ ' + n + ' löschen?')) return;
+    if (!n) return alert('Name eingeben!');
+    if (!confirm('⚠️ Alle Daten von "' + n + '" unwiderruflich löschen?')) return;
     await database.ref('Navy-boote/users/' + n.toLowerCase()).remove(); 
-    showToast('Gelöscht.', '#ff4444');
+    showToast('Person gelöscht.', '#ff4444');
     document.getElementById('adminDeletePerson').value = ''; 
     loadAllUsersSorted(); 
     autoLoadPerson();
@@ -752,6 +768,10 @@ function switchTab(name) {
     else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); }
     else if (name === 'families') loadFamilies();
     else if (name === 'admin') {
+        // Stelle sicher, dass der Admin-Tab existiert
+        if (!document.getElementById('tab-admin')) {
+            setupAdminTab();
+        }
         loadUserList();
         populatePermissionUserSelect();
     }
