@@ -400,7 +400,6 @@ async function doLogin() {
         currentUser = { username, isAdmin: userData.isAdmin === true };
         isAdmin = currentUser.isAdmin;
         
-        // Lade Berechtigungen
         if (isAdmin) {
             userPermissions = {
                 stopwatch: true,
@@ -427,11 +426,9 @@ async function doLogin() {
         else { badge.textContent = '👤 User'; badge.classList.remove('admin'); }
         document.getElementById('loginError').style.display = 'none';
         
-        // Setup UI basierend auf Berechtigungen
         setupTabsBasedOnPermissions();
         if (isAdmin) setupAdminTab();
         
-        // Default Tab: Erster verfügbarer Tab
         const firstTab = getAvailableTabs()[0] || 'home';
         switchTab(firstTab);
     } else { document.getElementById('loginError').style.display = 'block'; }
@@ -468,14 +465,12 @@ function setupTabsBasedOnPermissions() {
     const tabNav = document.getElementById('tabNav');
     tabNav.innerHTML = '';
     
-    // Home ist immer sichtbar
     const homeBtn = document.createElement('button');
     homeBtn.className = 'tab-btn active';
     homeBtn.textContent = '🏠 Hauptseite';
     homeBtn.onclick = () => switchTab('home');
     tabNav.appendChild(homeBtn);
     
-    // Andere Tabs basierend auf Berechtigungen
     const availableTabs = getAvailableTabs();
     const tabConfig = {
         'stopwatch': { icon: '⏱️', label: 'Stoppuhr' },
@@ -502,10 +497,8 @@ function setupTabsBasedOnPermissions() {
 function setupAdminTab() {
     if (!isAdmin) return;
     
-    // Entferne existierenden Admin-Tab falls vorhanden
     removeAdminTab();
     
-    // Admin Tab Inhalt erstellen
     if (!document.getElementById('tab-admin')) {
         const div = document.createElement('div');
         div.id = 'tab-admin';
@@ -583,7 +576,7 @@ async function populatePermissionUserSelect() {
     select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
     if (users) {
         Object.entries(users).forEach(([name, data]) => {
-            if (!data.isAdmin) { // Nur nicht-Admin Benutzer anzeigen
+            if (!data.isAdmin) {
                 const option = document.createElement('option');
                 option.value = name;
                 option.textContent = name.charAt(0).toUpperCase() + name.slice(1);
@@ -592,7 +585,6 @@ async function populatePermissionUserSelect() {
         });
     }
     
-    // Wenn keine nicht-Admin Benutzer existieren
     if (select.options.length === 1) {
         select.innerHTML = '<option value="">-- Keine Benutzer verfügbar --</option>';
     }
@@ -611,13 +603,7 @@ async function loadUserPermissions() {
     currentPermissionUser = username;
     
     const snap = await database.ref('Navy-boote/users_auth/' + username + '/permissions').once('value');
-    const permissions = snap.val() || {
-        stopwatch: true,
-        confiscations: true,
-        payout: true,
-        families: true,
-        admin: false
-    };
+    const permissions = snap.val() || {};
     
     document.getElementById('permStopwatch').checked = permissions.stopwatch !== false;
     document.getElementById('permConfiscations').checked = permissions.confiscations !== false;
@@ -641,8 +627,8 @@ async function savePermission(permission, value) {
         statusEl.textContent = '✅ Berechtigungen gespeichert!';
         setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
         
-        // Aktualisiere Benutzerliste
-        loadUserList();
+        // Aktualisiere die Benutzerliste in der Tabelle
+        await loadUserList();
     } catch (error) {
         console.error('Fehler beim Speichern:', error);
         showToast('❌ Fehler beim Speichern!', '#ff4444');
@@ -655,13 +641,11 @@ async function createUser() {
     if (!u || !p) return alert('Bitte Benutzername und Passwort eingeben!');
     if (u === 'colin') return alert('Dieser Benutzername ist reserviert!');
     
-    // Standard-Berechtigungen für neue Benutzer
     const defaultPermissions = {
         stopwatch: true,
         confiscations: true,
         payout: true,
-        families: true,
-        admin: false
+        families: true
     };
     
     try {
@@ -695,25 +679,48 @@ async function loadUserList() {
         return; 
     }
     
-    d.innerHTML = '<table class="user-table"><thead><tr><th>Name</th><th>Rolle</th><th>Berechtigungen</th><th>Erstellt</th><th>Aktion</th></tr></thead><tbody>' +
-        Object.entries(users).map(([n, dd]) => {
-            const perms = dd.permissions || {};
-            const activePerms = [];
-            if (perms.stopwatch) activePerms.push('⏱️');
-            if (perms.confiscations) activePerms.push('📋');
-            if (perms.payout) activePerms.push('💰');
-            if (perms.families) activePerms.push('👨‍👩‍👧‍👦');
-            if (dd.isAdmin) activePerms.push('🔑');
-            
-            return `<tr>
-                <td><strong>${esc(n)}</strong></td>
-                <td>${dd.isAdmin?'<span style="color:#ff5555;">Admin</span>':'<span style="color:#64b4ff;">User</span>'}</td>
-                <td style="font-size:16px;">${activePerms.join(' ') || 'Keine'}</td>
-                <td>${dd.created?new Date(dd.created).toLocaleDateString('de-DE'):'-'}</td>
-                <td>${n!=='colin'?'<button class="btn-small btn-danger" onclick="deleteUser(\''+n+'\')">🗑️</button>':'🔒'}</td>
+    let tableHTML = '<table class="user-table"><thead><tr><th>Name</th><th>Rolle</th><th>Berechtigungen</th><th>Erstellt</th><th>Aktion</th></tr></thead><tbody>';
+    
+    for (const [username, userData] of Object.entries(users)) {
+        const perms = userData.permissions || {};
+        const activePerms = [];
+        
+        if (perms.stopwatch === true || perms.stopwatch === undefined) {
+            activePerms.push('⏱️ Stoppuhr');
+        }
+        if (perms.confiscations === true || perms.confiscations === undefined) {
+            activePerms.push('📋 Beschlagn.');
+        }
+        if (perms.payout === true || perms.payout === undefined) {
+            activePerms.push('💰 Auszahlung');
+        }
+        if (perms.families === true || perms.families === undefined) {
+            activePerms.push('👨‍👩‍👧‍👦 Familien');
+        }
+        if (userData.isAdmin) {
+            activePerms.push('🔑 Admin');
+        }
+        
+        const permissionsDisplay = activePerms.length > 0 ? 
+            activePerms.map(p => `<div style="margin:2px 0;">${p}</div>`).join('') : 
+            '<span style="color:#ff5555;">Keine</span>';
+        
+        tableHTML += `
+            <tr>
+                <td><strong>${esc(username)}</strong></td>
+                <td>${userData.isAdmin ? 
+                    '<span style="color:#ff5555;font-weight:bold;">Admin</span>' : 
+                    '<span style="color:#64b4ff;">User</span>'}</td>
+                <td style="font-size:12px;">${permissionsDisplay}</td>
+                <td>${userData.created ? new Date(userData.created).toLocaleDateString('de-DE') : '-'}</td>
+                <td>${username !== 'colin' ? 
+                    `<button class="btn-small btn-danger" onclick="deleteUser('${username}')">🗑️</button>` : 
+                    '🔒'}</td>
             </tr>`;
-        }).join('') +
-        '</tbody></table>';
+    }
+    
+    tableHTML += '</tbody></table>';
+    d.innerHTML = tableHTML;
 }
 
 async function deleteUser(u) { 
@@ -723,7 +730,6 @@ async function deleteUser(u) {
     loadUserList(); 
     populatePermissionUserSelect();
     
-    // Reset Permission Editor
     const editor = document.getElementById('permissionsEditor');
     if (editor) editor.style.display = 'none';
     currentPermissionUser = null;
@@ -741,7 +747,6 @@ async function adminDeletePerson() {
 }
 
 function switchTab(name) {
-    // Prüfe Berechtigung
     if (name === 'admin' && !isAdmin) {
         showToast('Keine Berechtigung!', '#ff4444');
         return;
@@ -768,7 +773,6 @@ function switchTab(name) {
     else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); }
     else if (name === 'families') loadFamilies();
     else if (name === 'admin') {
-        // Stelle sicher, dass der Admin-Tab existiert
         if (!document.getElementById('tab-admin')) {
             setupAdminTab();
         }
