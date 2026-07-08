@@ -89,7 +89,6 @@
         th { background: rgba(30,70,120,0.5); padding: 12px 8px; text-align: left; color: #b8dbff; }
         td { padding: 10px 8px; border-bottom: 1px solid rgba(100,150,255,0.2); vertical-align: top; }
         .badge-time { font-family: monospace; font-weight: bold; background: #0a1f2e; display: inline-block; padding: 4px 8px; border-radius: 20px; }
-        .entry-description { color: #bfd9ff; font-size: 12px; margin-top: 4px; word-break: break-word; }
         .confiscation-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
         .confiscation-summary { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 20px; }
         .money-badge { padding: 10px 16px; border-radius: 12px; font-weight: bold; font-size: 14px; text-align: center; min-width: 120px; }
@@ -367,6 +366,7 @@ let userPermissions = {
     admin: false
 };
 const PRICE_PER_CHECK = 5000;
+const SESSION_DURATION = 30 * 60 * 1000; // 30 Minuten
 let currentPermissionUser = null;
 let sessionTimeout = null;
 let userDataListener = null;
@@ -375,6 +375,67 @@ let startTime = 0, elapsed = 0, stopwatchInterval = null, running = false;
 let editingConfiscationId = null;
 let editingFamilyId = null;
 let currentPayoutWeek = '';
+
+// ==================== SESSION MANAGEMENT ====================
+function saveSession(username, isAdminUser, permissions) {
+    const sessionData = {
+        username: username,
+        isAdmin: isAdminUser,
+        permissions: permissions,
+        expiry: Date.now() + SESSION_DURATION
+    };
+    localStorage.setItem('navySession', JSON.stringify(sessionData));
+}
+
+function loadSession() {
+    const sessionStr = localStorage.getItem('navySession');
+    if (!sessionStr) return null;
+    
+    try {
+        const sessionData = JSON.parse(sessionStr);
+        if (Date.now() > sessionData.expiry) {
+            localStorage.removeItem('navySession');
+            return null;
+        }
+        sessionData.expiry = Date.now() + SESSION_DURATION;
+        localStorage.setItem('navySession', JSON.stringify(sessionData));
+        return sessionData;
+    } catch (error) {
+        localStorage.removeItem('navySession');
+        return null;
+    }
+}
+
+function clearSession() {
+    localStorage.removeItem('navySession');
+}
+
+function startSessionTimer() {
+    if (sessionTimeout) clearTimeout(sessionTimeout);
+    sessionTimeout = setTimeout(() => {
+        showToast('⚠️ Sitzung abgelaufen (30 Min. Inaktivität)', '#ffaa33');
+        setTimeout(() => doLogout(), 1500);
+    }, SESSION_DURATION);
+}
+
+function resetSessionTimer() {
+    if (sessionTimeout) {
+        clearTimeout(sessionTimeout);
+        startSessionTimer();
+    }
+    const sessionStr = localStorage.getItem('navySession');
+    if (sessionStr) {
+        try {
+            const sessionData = JSON.parse(sessionStr);
+            sessionData.expiry = Date.now() + SESSION_DURATION;
+            localStorage.setItem('navySession', JSON.stringify(sessionData));
+        } catch (error) {}
+    }
+}
+
+['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+    document.addEventListener(event, resetSessionTimer);
+});
 
 // ==================== LOGGING SYSTEM ====================
 async function addLog(username, action, details = '') {
@@ -403,7 +464,6 @@ async function loadUserLogs() {
     
     const snap = await database.ref('Navy-boote/logs').orderByChild('username').equalTo(username).once('value');
     const logs = snap.val();
-    
     displayLogs(logs, container, `Logs für: ${username}`);
 }
 
@@ -411,7 +471,6 @@ async function loadAllLogs() {
     const container = document.getElementById('logContainer');
     const snap = await database.ref('Navy-boote/logs').limitToLast(100).once('value');
     const logs = snap.val();
-    
     displayLogs(logs, container, 'Alle Logs (letzte 100)');
 }
 
@@ -492,26 +551,6 @@ function showToast(msg, color) {
     setTimeout(() => el.remove(), 3000);
 }
 
-// ==================== SESSION MANAGEMENT ====================
-function startSessionTimer() {
-    if (sessionTimeout) clearTimeout(sessionTimeout);
-    sessionTimeout = setTimeout(() => {
-        showToast('⚠️ Sitzung abgelaufen (30 Min. Inaktivität)', '#ffaa33');
-        setTimeout(() => doLogout(), 1500);
-    }, 30 * 60 * 1000);
-}
-
-function resetSessionTimer() {
-    if (sessionTimeout) {
-        clearTimeout(sessionTimeout);
-        startSessionTimer();
-    }
-}
-
-['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
-    document.addEventListener(event, resetSessionTimer);
-});
-
 // ==================== AUTH ====================
 async function ensureAdminExists() {
     try {
@@ -557,6 +596,10 @@ function startUserDataListener(username) {
             userPermissions.families = newPerms.families !== false;
             userPermissions.logs = newPerms.logs !== false;
             
+            if (currentUser) {
+                saveSession(currentUser.username, isAdmin, userPermissions);
+            }
+            
             updateTabs();
             
             const currentTab = document.querySelector('.tab-content.active');
@@ -586,53 +629,7 @@ async function doLogin() {
         const userData = snap.val();
         
         if (userData && userData.password === password) {
-            currentUser = { username, isAdmin: userData.isAdmin === true };
-            isAdmin = currentUser.isAdmin;
-            
-            if (isAdmin) {
-                userPermissions = {
-                    stopwatch: true,
-                    confiscations: true,
-                    payout: true,
-                    families: true,
-                    logs: true,
-                    admin: true
-                };
-            } else {
-                const perms = userData.permissions || {};
-                userPermissions = {
-                    stopwatch: perms.stopwatch !== false,
-                    confiscations: perms.confiscations !== false,
-                    payout: perms.payout !== false,
-                    families: perms.families !== false,
-                    logs: perms.logs !== false,
-                    admin: false
-                };
-            }
-            
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('mainApp').classList.add('show');
-            document.getElementById('currentUserDisplay').textContent = '👤 ' + username;
-            
-            const badge = document.getElementById('userBadge');
-            if (isAdmin) {
-                badge.textContent = '🔑 Admin';
-                badge.classList.add('admin');
-            } else {
-                badge.textContent = '👤 User';
-                badge.classList.remove('admin');
-            }
-            
-            document.getElementById('loginError').style.display = 'none';
-            document.getElementById('loginPassword').value = '';
-            
-            startUserDataListener(username);
-            startSessionTimer();
-            updateTabs();
-            
-            await addLog(username, 'Login', 'Benutzer hat sich angemeldet');
-            
-            switchTab('home');
+            await completeLogin(username, userData);
         } else {
             document.getElementById('loginError').style.display = 'block';
         }
@@ -642,10 +639,96 @@ async function doLogin() {
     }
 }
 
+async function completeLogin(username, userData) {
+    currentUser = { username, isAdmin: userData.isAdmin === true };
+    isAdmin = currentUser.isAdmin;
+    
+    if (isAdmin) {
+        userPermissions = {
+            stopwatch: true,
+            confiscations: true,
+            payout: true,
+            families: true,
+            logs: true,
+            admin: true
+        };
+    } else {
+        const perms = userData.permissions || {};
+        userPermissions = {
+            stopwatch: perms.stopwatch !== false,
+            confiscations: perms.confiscations !== false,
+            payout: perms.payout !== false,
+            families: perms.families !== false,
+            logs: perms.logs !== false,
+            admin: false
+        };
+    }
+    
+    saveSession(username, isAdmin, userPermissions);
+    showMainApp(username);
+    startUserDataListener(username);
+    startSessionTimer();
+    updateTabs();
+    
+    await addLog(username, 'Login', 'Benutzer hat sich angemeldet');
+    
+    switchTab('home');
+}
+
+async function tryAutoLogin() {
+    const sessionData = loadSession();
+    if (!sessionData) return false;
+    
+    try {
+        const snap = await database.ref('Navy-boote/users_auth/' + sessionData.username).once('value');
+        const userData = snap.val();
+        
+        if (!userData || (sessionData.isAdmin && !userData.isAdmin)) {
+            clearSession();
+            return false;
+        }
+        
+        currentUser = { username: sessionData.username, isAdmin: sessionData.isAdmin };
+        isAdmin = sessionData.isAdmin;
+        userPermissions = sessionData.permissions;
+        
+        showMainApp(sessionData.username);
+        startUserDataListener(sessionData.username);
+        startSessionTimer();
+        updateTabs();
+        
+        switchTab('home');
+        return true;
+    } catch (error) {
+        clearSession();
+        return false;
+    }
+}
+
+function showMainApp(username) {
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('mainApp').classList.add('show');
+    document.getElementById('currentUserDisplay').textContent = '👤 ' + username;
+    
+    const badge = document.getElementById('userBadge');
+    if (isAdmin) {
+        badge.textContent = '🔑 Admin';
+        badge.classList.add('admin');
+    } else {
+        badge.textContent = '👤 User';
+        badge.classList.remove('admin');
+    }
+    
+    document.getElementById('loginError').style.display = 'none';
+    document.getElementById('loginPassword').value = '';
+}
+
 function doLogout() {
     if (currentUser) {
         addLog(currentUser.username, 'Logout', 'Benutzer hat sich abgemeldet');
     }
+    
+    clearSession();
     
     if (sessionTimeout) {
         clearTimeout(sessionTimeout);
@@ -761,7 +844,6 @@ function switchTab(name) {
     else if (name === 'admin') setupAdminTab();
 }
 
-// Admin Tab Setup
 function setupAdminTab() {
     if (!isAdmin) return;
     
@@ -997,7 +1079,6 @@ async function adminDeletePerson() {
     autoLoadPerson();
 }
 
-// ==================== HAUPTSEITE ====================
 function loadHomepageStats() {
     database.ref('Navy-boote/users').once('value', s => {
         document.getElementById('statPersons').textContent = s.val() ? Object.keys(s.val()).length : 0;
@@ -1712,7 +1793,6 @@ async function editFamily(id) {
     if (data) openFamilyModal({ id, ...data });
 }
 
-// Modal Overlay Click Handler
 document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) {
     if (e.target === this) closeConfiscationModal();
 });
@@ -1725,6 +1805,13 @@ document.getElementById('familyModalOverlay').addEventListener('click', function
 async function init() {
     try {
         await ensureAdminExists();
+        
+        const autoLoggedIn = await tryAutoLogin();
+        
+        if (!autoLoggedIn) {
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('mainApp').classList.remove('show');
+        }
         
         document.getElementById('searchName').addEventListener('input', autoLoadPerson);
         const now = new Date();
