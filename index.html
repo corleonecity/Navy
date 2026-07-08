@@ -87,7 +87,6 @@
         .avg-table th { background: rgba(30,70,120,0.5); padding: 10px 8px; text-align: left; color: #b8dbff; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
         .avg-table td { padding: 8px 8px; border-bottom: 1px solid rgba(100,150,255,0.15); color: #d9ecff; font-family: 'Courier New', monospace; font-size: 13px; }
         .avg-table .boat-name { color: #9cc7ff; font-family: 'Segoe UI', Arial, sans-serif; font-weight: 600; }
-        .avg-table .best-time { color: #2ecc40; font-weight: bold; }
         .avg-table .avg-time { color: #ffaa33; font-weight: bold; }
 
         .name-list { display: flex; flex-wrap: wrap; gap: 10px; background: rgba(0,0,0,0.35); padding: 12px; border-radius: 16px; border: 1px solid rgba(100,150,255,0.25); max-height: 200px; overflow-y: auto; margin-top: 15px; }
@@ -102,8 +101,7 @@
         .personal-avg-item .boat-label { color: #9cc7ff; font-size: 13px; }
         .personal-avg-item .boat-stats { text-align: right; }
         .personal-avg-item .boat-stats .avg { color: #ffaa33; font-family: 'Courier New', monospace; font-weight: bold; font-size: 15px; }
-        .personal-avg-item .boat-stats .best { color: #2ecc40; font-family: 'Courier New', monospace; font-size: 11px; }
-        .personal-avg-item .boat-stats .count { color: #8ab4e0; font-size: 10px; }
+        .personal-avg-item .boat-stats .count { color: #8ab4e0; font-size: 11px; }
 
         .boats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 20px; }
         .boat-panel { background: rgba(15,25,45,0.7); backdrop-filter: blur(3px); border-radius: 20px; border: 1px solid rgba(59,130,246,0.4); padding: 16px; }
@@ -262,12 +260,12 @@
                     <div class="avg-panel">
                         <h4>📊 DURCHSCHNITT ALLER SOLDATEN</h4>
                         <table class="avg-table">
-                            <thead><tr><th>Boot</th><th>⌀ Durchschnitt</th><th>📋 Einträge</th><th>🏆 Bestzeit</th></tr></thead>
+                            <thead><tr><th>Boot</th><th>⌀ Durchschnitt</th><th>📋 Einträge</th></tr></thead>
                             <tbody>
-                                <tr><td class="boat-name">⚡ Predator</td><td class="avg-time" id="avgPredator">--</td><td id="countPredator">0</td><td class="best-time" id="bestPredator">--</td></tr>
-                                <tr><td class="boat-name">🛶 Dinghy</td><td class="avg-time" id="avgDinghy">--</td><td id="countDinghy">0</td><td class="best-time" id="bestDinghy">--</td></tr>
-                                <tr><td class="boat-name">🚢 Kurtz 31</td><td class="avg-time" id="avgPatrolBoat">--</td><td id="countPatrolBoat">0</td><td class="best-time" id="bestPatrolBoat">--</td></tr>
-                                <tr><td class="boat-name">💥 Weaponized</td><td class="avg-time" id="avgWeaponizedDinghy">--</td><td id="countWeaponizedDinghy">0</td><td class="best-time" id="bestWeaponizedDinghy">--</td></tr>
+                                <tr><td class="boat-name">⚡ Predator</td><td class="avg-time" id="avgPredator">--</td><td id="countPredator">0</td></tr>
+                                <tr><td class="boat-name">🛶 Dinghy</td><td class="avg-time" id="avgDinghy">--</td><td id="countDinghy">0</td></tr>
+                                <tr><td class="boat-name">🚢 Kurtz 31</td><td class="avg-time" id="avgPatrolBoat">--</td><td id="countPatrolBoat">0</td></tr>
+                                <tr><td class="boat-name">💥 Weaponized</td><td class="avg-time" id="avgWeaponizedDinghy">--</td><td id="countWeaponizedDinghy">0</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -278,10 +276,10 @@
                 <div class="stopwatch-right">
                     <div class="personal-panel" id="personalPanel">
                         <h4>👤 Persönliche Stats: <span id="personalPanelName" style="color:#64b4ff;"></span></h4>
-                        <div class="personal-avg-item"><span class="boat-label">⚡ Predator</span><span class="boat-stats"><span class="avg" id="pAvgPredator">--</span><span class="best" id="pBestPredator"></span><span class="count" id="pCountPredator"></span></span></div>
-                        <div class="personal-avg-item"><span class="boat-label">🛶 Dinghy</span><span class="boat-stats"><span class="avg" id="pAvgDinghy">--</span><span class="best" id="pBestDinghy"></span><span class="count" id="pCountDinghy"></span></span></div>
-                        <div class="personal-avg-item"><span class="boat-label">🚢 Kurtz 31</span><span class="boat-stats"><span class="avg" id="pAvgPatrolBoat">--</span><span class="best" id="pBestPatrolBoat"></span><span class="count" id="pCountPatrolBoat"></span></span></div>
-                        <div class="personal-avg-item"><span class="boat-label">💥 Weaponized</span><span class="boat-stats"><span class="avg" id="pAvgWeaponizedDinghy">--</span><span class="best" id="pBestWeaponizedDinghy"></span><span class="count" id="pCountWeaponizedDinghy"></span></span></div>
+                        <div class="personal-avg-item"><span class="boat-label">⚡ Predator</span><span class="boat-stats"><span class="avg" id="pAvgPredator">--</span><span class="count" id="pCountPredator"></span></span></div>
+                        <div class="personal-avg-item"><span class="boat-label">🛶 Dinghy</span><span class="boat-stats"><span class="avg" id="pAvgDinghy">--</span><span class="count" id="pCountDinghy"></span></span></div>
+                        <div class="personal-avg-item"><span class="boat-label">🚢 Kurtz 31</span><span class="boat-stats"><span class="avg" id="pAvgPatrolBoat">--</span><span class="count" id="pCountPatrolBoat"></span></span></div>
+                        <div class="personal-avg-item"><span class="boat-label">💥 Weaponized</span><span class="boat-stats"><span class="avg" id="pAvgWeaponizedDinghy">--</span><span class="count" id="pCountWeaponizedDinghy"></span></span></div>
                     </div>
                     <div class="search-results">
                         <h3 style="margin:0 0 8px 0;">🔍 SUCHE</h3>
@@ -451,14 +449,13 @@ function msToTimeString(ms) {
 
 function calcStats(entries) {
     if (!entries || !Array.isArray(entries) || entries.length === 0) {
-        return { avgMs: 0, bestMs: 0, count: 0 };
+        return { avgMs: 0, count: 0 };
     }
     const validTimes = entries.map(e => timeStringToMs(e.time)).filter(ms => ms > 0);
-    if (validTimes.length === 0) return { avgMs: 0, bestMs: 0, count: 0 };
+    if (validTimes.length === 0) return { avgMs: 0, count: 0 };
     const sum = validTimes.reduce((a, b) => a + b, 0);
     return {
         avgMs: Math.round(sum / validTimes.length),
-        bestMs: Math.min(...validTimes),
         count: validTimes.length
     };
 }
@@ -488,7 +485,6 @@ function loadAllSoldiersAverage() {
             const stats = calcStats(allEntries[boatKey]);
             document.getElementById('avg' + boatKey).textContent = stats.avgMs > 0 ? msToTimeString(stats.avgMs) : '--';
             document.getElementById('count' + boatKey).textContent = stats.count;
-            document.getElementById('best' + boatKey).textContent = stats.bestMs > 0 ? msToTimeString(stats.bestMs) : '--';
         });
     });
 }
@@ -545,7 +541,6 @@ function loadPersonalStats(nameLower) {
             const entries = data.boats[boatKey];
             const stats = calcStats(entries);
             document.getElementById('pAvg' + boatKey).textContent = stats.avgMs > 0 ? msToTimeString(stats.avgMs) : '--';
-            document.getElementById('pBest' + boatKey).textContent = stats.bestMs > 0 ? '🏆 ' + msToTimeString(stats.bestMs) : '';
             document.getElementById('pCount' + boatKey).textContent = stats.count > 0 ? '(' + stats.count + ' Einträge)' : '';
         });
     });
