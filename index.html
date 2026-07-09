@@ -234,8 +234,6 @@
                     <div class="stat-card"><div class="stat-number" id="statPersons">0</div><div class="stat-label">Personen</div></div>
                     <div class="stat-card"><div class="stat-number" id="statFamilies">0</div><div class="stat-label">Familien</div></div>
                     <div class="stat-card"><div class="stat-number" id="statConfiscations">0</div><div class="stat-label">Beschlagnahmungen</div></div>
-                    <div class="stat-card"><div class="stat-number" id="statTotalGreen">0 €</div><div class="stat-label">Grüngeld</div></div>
-                    <div class="stat-card"><div class="stat-number" id="statTotalBlack">0 €</div><div class="stat-label">Schwarzgeld</div></div>
                 </div>
             </div>
         </div>
@@ -248,11 +246,8 @@
                 <button onclick="resetTimer()" style="background:#885500;">🔄 Reset</button>
             </div>
             <div class="section-title">🚤 BOOTE & SPEICHERN</div>
-            <div class="boats-grid">
-                <div class="boat-panel"><h4>⚡ U.S Navy Predator</h4><textarea id="descPredator" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('Predator','descPredator')">📌 Speichern</button></div>
-                <div class="boat-panel"><h4>🛶 Dinghy</h4><textarea id="descDinghy" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('Dinghy','descDinghy')">📌 Speichern</button></div>
-                <div class="boat-panel"><h4>🚢 Kurtz 31 Patrol Boat</h4><textarea id="descPatrolBoat" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('PatrolBoat','descPatrolBoat')">📌 Speichern</button></div>
-                <div class="boat-panel"><h4>🔫 Weaponized Dinghy</h4><textarea id="descWeaponized" rows="2" placeholder="Beschreibung"></textarea><button class="btn-save" onclick="saveTimeWithDesc('WeaponizedDinghy','descWeaponized')">📌 Speichern</button></div>
+            <div class="boats-grid" id="dynamicBoatsContainer">
+                <!-- Boote werden dynamisch geladen -->
             </div>
             
             <div class="stopwatch-layout">
@@ -261,11 +256,8 @@
                         <h4>📊 DURCHSCHNITT ALLER SOLDATEN</h4>
                         <table class="avg-table">
                             <thead><tr><th>Boot</th><th>⌀ Durchschnitt</th><th>📋 Einträge</th></tr></thead>
-                            <tbody>
-                                <tr><td class="boat-name">⚡ Predator</td><td class="avg-time" id="avgPredator">--</td><td id="countPredator">0</td></tr>
-                                <tr><td class="boat-name">🛶 Dinghy</td><td class="avg-time" id="avgDinghy">--</td><td id="countDinghy">0</td></tr>
-                                <tr><td class="boat-name">🚢 Kurtz 31</td><td class="avg-time" id="avgPatrolBoat">--</td><td id="countPatrolBoat">0</td></tr>
-                                <tr><td class="boat-name">💥 Weaponized</td><td class="avg-time" id="avgWeaponizedDinghy">--</td><td id="countWeaponizedDinghy">0</td></tr>
+                            <tbody id="avgTableBody">
+                                <!-- Dynamisch befüllt -->
                             </tbody>
                         </table>
                     </div>
@@ -276,10 +268,9 @@
                 <div class="stopwatch-right">
                     <div class="personal-panel" id="personalPanel">
                         <h4>👤 Persönliche Stats: <span id="personalPanelName" style="color:#64b4ff;"></span></h4>
-                        <div class="personal-avg-item"><span class="boat-label">⚡ Predator</span><span class="boat-stats"><span class="avg" id="pAvgPredator">--</span><span class="count" id="pCountPredator"></span></span></div>
-                        <div class="personal-avg-item"><span class="boat-label">🛶 Dinghy</span><span class="boat-stats"><span class="avg" id="pAvgDinghy">--</span><span class="count" id="pCountDinghy"></span></span></div>
-                        <div class="personal-avg-item"><span class="boat-label">🚢 Kurtz 31</span><span class="boat-stats"><span class="avg" id="pAvgPatrolBoat">--</span><span class="count" id="pCountPatrolBoat"></span></span></div>
-                        <div class="personal-avg-item"><span class="boat-label">💥 Weaponized</span><span class="boat-stats"><span class="avg" id="pAvgWeaponizedDinghy">--</span><span class="count" id="pCountWeaponizedDinghy"></span></span></div>
+                        <div id="personalStatsContainer">
+                            <!-- Dynamisch befüllt -->
+                        </div>
                     </div>
                     <div class="search-results">
                         <h3 style="margin:0 0 8px 0;">🔍 SUCHE</h3>
@@ -389,6 +380,21 @@
     </div>
 </div>
 
+<!-- Modal für Bootverwaltung (Admin) -->
+<div class="modal-overlay" id="boatModalOverlay">
+    <div class="modal" style="max-width:500px;">
+        <button class="close-modal-x" onclick="closeBoatModal()">✕</button>
+        <h3 id="boatModalTitle">🚤 Boot verwalten</h3>
+        <div class="modal-row"><div class="modal-field"><label>Bootsname</label><input type="text" id="boatNameInput" placeholder="z.B. Predator"></div></div>
+        <div class="modal-row"><div class="modal-field"><label>Emoji / Icon</label><input type="text" id="boatEmojiInput" placeholder="z.B. ⚡" value="🚤"></div></div>
+        <div class="modal-row"><div class="modal-field"><label>Beschreibung (optional)</label><input type="text" id="boatDescInput" placeholder="z.B. U.S Navy Predator"></div></div>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeBoatModal()">Abbrechen</button>
+            <button class="btn-submit" onclick="saveBoat()">💾 Speichern</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // ==================== FIREBASE KONFIGURATION ====================
 const firebaseConfig = {
@@ -427,6 +433,15 @@ let editingFamilyId = null;
 let currentPayoutWeek = '';
 let selectedPersonName = null;
 
+// Bootverwaltung
+let editingBoatKey = null;
+const DEFAULT_BOATS = {
+    'Predator': { emoji: '⚡', label: 'Predator' },
+    'Dinghy': { emoji: '🛶', label: 'Dinghy' },
+    'PatrolBoat': { emoji: '🚢', label: 'Kurtz 31 Patrol Boat' },
+    'WeaponizedDinghy': { emoji: '💥', label: 'Weaponized Dinghy' }
+};
+
 // ==================== ZEIT-HILFSFUNKTIONEN ====================
 function timeStringToMs(timeStr) {
     if (!timeStr || typeof timeStr !== 'string') return 0;
@@ -460,89 +475,278 @@ function calcStats(entries) {
     };
 }
 
-// ==================== DURCHSCHNITTS-ANZEIGE ====================
-function loadAllSoldiersAverage() {
-    database.ref('Navy-boote/users').on('value', snap => {
-        const users = snap.val();
-        const boatKeys = ['Predator', 'Dinghy', 'PatrolBoat', 'WeaponizedDinghy'];
-        const allEntries = {};
-        boatKeys.forEach(k => allEntries[k] = []);
-        
-        if (users) {
-            Object.values(users).forEach(userData => {
-                if (userData && userData.boats) {
-                    boatKeys.forEach(boatKey => {
-                        const entries = userData.boats[boatKey];
-                        if (entries && Array.isArray(entries)) {
-                            allEntries[boatKey].push(...entries);
-                        }
-                    });
-                }
-            });
+// ==================== BOOTVERWALTUNG ====================
+async function loadBoats() {
+    const snap = await database.ref('Navy-boote/boats').once('value');
+    const boats = snap.val() || {};
+    // Standard-Boote mit default Werten füllen
+    let updated = false;
+    for (const [key, def] of Object.entries(DEFAULT_BOATS)) {
+        if (!boats[key]) {
+            boats[key] = def;
+            updated = true;
         }
+    }
+    if (updated) {
+        await database.ref('Navy-boote/boats').set(boats);
+    }
+    return boats;
+}
+
+async function renderBoats() {
+    const boats = await loadBoats();
+    const container = document.getElementById('dynamicBoatsContainer');
+    const avgBody = document.getElementById('avgTableBody');
+    container.innerHTML = '';
+    avgBody.innerHTML = '';
+    
+    const boatKeys = Object.keys(boats).sort();
+    
+    // Boot-Panels
+    for (const key of boatKeys) {
+        const boat = boats[key];
+        const emoji = boat.emoji || '🚤';
+        const label = boat.label || key;
+        const descId = 'desc_' + key;
         
-        boatKeys.forEach(boatKey => {
-            const stats = calcStats(allEntries[boatKey]);
-            document.getElementById('avg' + boatKey).textContent = stats.avgMs > 0 ? msToTimeString(stats.avgMs) : '--';
-            document.getElementById('count' + boatKey).textContent = stats.count;
+        const panel = document.createElement('div');
+        panel.className = 'boat-panel';
+        panel.innerHTML = `
+            <h4>${emoji} ${label}</h4>
+            <textarea id="${descId}" rows="2" placeholder="Beschreibung"></textarea>
+            <button class="btn-save" onclick="saveTimeWithDesc('${key}','${descId}')">📌 Speichern</button>
+        `;
+        container.appendChild(panel);
+        
+        // Tabelle Zeile für Durchschnitt
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="boat-name">${emoji} ${label}</td>
+            <td class="avg-time" id="avg${key}">--</td>
+            <td id="count${key}">0</td>
+        `;
+        avgBody.appendChild(tr);
+    }
+    
+    // Wenn Admin, Button zum Hinzufügen anzeigen
+    if (isAdmin) {
+        const addBtn = document.createElement('div');
+        addBtn.className = 'boat-panel';
+        addBtn.style.cssText = 'border: 2px dashed rgba(255,170,51,0.5); display: flex; align-items: center; justify-content: center; min-height: 120px;';
+        addBtn.innerHTML = `
+            <button onclick="openBoatModal()" style="background:rgba(255,170,51,0.2);border:2px solid #ffaa33;color:#ffaa33;padding:15px 30px;font-size:18px;">
+                ➕ Boot hinzufügen
+            </button>
+        `;
+        container.appendChild(addBtn);
+    }
+    
+    // Personal Stats Container leeren (wird bei Auswahl neu befüllt)
+    document.getElementById('personalStatsContainer').innerHTML = '';
+}
+
+function openBoatModal(editKey = null) {
+    document.getElementById('boatModalOverlay').classList.add('show');
+    if (editKey) {
+        editingBoatKey = editKey;
+        document.getElementById('boatModalTitle').textContent = '✏️ Boot bearbeiten';
+        database.ref('Navy-boote/boats/' + editKey).once('value').then(snap => {
+            const data = snap.val();
+            if (data) {
+                document.getElementById('boatNameInput').value = data.label || editKey;
+                document.getElementById('boatEmojiInput').value = data.emoji || '🚤';
+                document.getElementById('boatDescInput').value = data.description || '';
+            }
         });
-    });
+    } else {
+        editingBoatKey = null;
+        document.getElementById('boatModalTitle').textContent = '🚤 Neues Boot';
+        document.getElementById('boatNameInput').value = '';
+        document.getElementById('boatEmojiInput').value = '🚤';
+        document.getElementById('boatDescInput').value = '';
+    }
 }
 
-function loadAllUsersList() {
-    database.ref('Navy-boote/users').on('value', snap => {
-        const users = snap.val();
-        const d = document.getElementById('allNamesList');
-        d.innerHTML = '';
-        
-        if (users) {
-            const sorted = Object.keys(users)
-                .map(k => ({ name: k, lu: users[k].lastUpdated || 0 }))
-                .sort((a, b) => b.lu - a.lu);
-            
-            sorted.forEach(u => {
-                const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1);
-                const btn = document.createElement('div');
-                btn.className = 'name-tag';
-                btn.textContent = dn;
-                btn.onclick = () => {
-                    d.querySelectorAll('.name-tag').forEach(t => t.classList.remove('active'));
-                    btn.classList.add('active');
-                    document.getElementById('personName').value = dn;
-                    document.getElementById('searchName').value = dn;
-                    selectedPersonName = u.name;
-                    loadPersonalStats(u.name);
-                    autoLoadPerson();
-                };
-                d.appendChild(btn);
-            });
+function closeBoatModal() {
+    document.getElementById('boatModalOverlay').classList.remove('show');
+    editingBoatKey = null;
+}
+
+async function saveBoat() {
+    const name = document.getElementById('boatNameInput').value.trim();
+    const emoji = document.getElementById('boatEmojiInput').value.trim() || '🚤';
+    const description = document.getElementById('boatDescInput').value.trim();
+    
+    if (!name) {
+        alert('Bitte einen Bootsnamen eingeben!');
+        return;
+    }
+    
+    const key = name.replace(/\s+/g, '');
+    const boatData = { label: name, emoji: emoji };
+    if (description) boatData.description = description;
+    
+    if (editingBoatKey) {
+        // Bestehendes Boot bearbeiten
+        if (editingBoatKey !== key) {
+            // Boot umbenennen -> alte Referenz löschen, neue erstellen
+            await database.ref('Navy-boote/boats/' + editingBoatKey).remove();
+            await database.ref('Navy-boote/boats/' + key).set(boatData);
+            if (currentUser) await addLog(currentUser.username, 'Boot umbenannt', `Von "${editingBoatKey}" zu "${key}"`);
         } else {
-            d.innerHTML = '<span style="color:#aaa;">⚓ Keine Personen.</span>';
+            await database.ref('Navy-boote/boats/' + key).update(boatData);
+            if (currentUser) await addLog(currentUser.username, 'Boot aktualisiert', `Boot: ${key}`);
         }
-    });
-}
-
-function loadPersonalStats(nameLower) {
-    database.ref('Navy-boote/users/' + nameLower).once('value', snap => {
-        const data = snap.val();
-        const panel = document.getElementById('personalPanel');
-        const nameEl = document.getElementById('personalPanelName');
-        
-        if (!data || !data.boats) {
-            panel.classList.remove('show');
+    } else {
+        // Neues Boot
+        if (await database.ref('Navy-boote/boats/' + key).once('value').then(s => s.exists())) {
+            alert('Ein Boot mit diesem Namen existiert bereits!');
             return;
         }
-        
-        panel.classList.add('show');
-        nameEl.textContent = nameLower.charAt(0).toUpperCase() + nameLower.slice(1);
-        
-        const boatKeys = ['Predator', 'Dinghy', 'PatrolBoat', 'WeaponizedDinghy'];
-        boatKeys.forEach(boatKey => {
-            const entries = data.boats[boatKey];
-            const stats = calcStats(entries);
-            document.getElementById('pAvg' + boatKey).textContent = stats.avgMs > 0 ? msToTimeString(stats.avgMs) : '--';
-            document.getElementById('pCount' + boatKey).textContent = stats.count > 0 ? '(' + stats.count + ' Einträge)' : '';
+        await database.ref('Navy-boote/boats/' + key).set(boatData);
+        if (currentUser) await addLog(currentUser.username, 'Boot erstellt', `Neues Boot: ${key}`);
+    }
+    
+    closeBoatModal();
+    showToast('✅ Boot gespeichert!', '#64b4ff');
+    renderBoats();
+    loadAllSoldiersAverage();
+}
+
+// Überschreiben der loadAllSoldiersAverage für dynamische Boote
+async function loadAllSoldiersAverage() {
+    const boats = await loadBoats();
+    const snap = await database.ref('Navy-boote/users').once('value');
+    const users = snap.val();
+    const allEntries = {};
+    const boatKeys = Object.keys(boats);
+    boatKeys.forEach(k => allEntries[k] = []);
+    
+    if (users) {
+        Object.values(users).forEach(userData => {
+            if (userData && userData.boats) {
+                boatKeys.forEach(boatKey => {
+                    const entries = userData.boats[boatKey];
+                    if (entries && Array.isArray(entries)) {
+                        allEntries[boatKey].push(...entries);
+                    }
+                });
+            }
         });
+    }
+    
+    boatKeys.forEach(boatKey => {
+        const stats = calcStats(allEntries[boatKey]);
+        const avgEl = document.getElementById('avg' + boatKey);
+        const countEl = document.getElementById('count' + boatKey);
+        if (avgEl) avgEl.textContent = stats.avgMs > 0 ? msToTimeString(stats.avgMs) : '--';
+        if (countEl) countEl.textContent = stats.count;
+    });
+}
+
+// Überschreiben der loadPersonalStats für dynamische Boote
+async function loadPersonalStats(nameLower) {
+    const boats = await loadBoats();
+    const snap = await database.ref('Navy-boote/users/' + nameLower).once('value');
+    const data = snap.val();
+    const panel = document.getElementById('personalPanel');
+    const nameEl = document.getElementById('personalPanelName');
+    const container = document.getElementById('personalStatsContainer');
+    
+    if (!data || !data.boats) {
+        panel.classList.remove('show');
+        return;
+    }
+    
+    panel.classList.add('show');
+    nameEl.textContent = nameLower.charAt(0).toUpperCase() + nameLower.slice(1);
+    container.innerHTML = '';
+    
+    const boatKeys = Object.keys(boats);
+    for (const boatKey of boatKeys) {
+        const boat = boats[boatKey];
+        const entries = data.boats[boatKey];
+        const stats = calcStats(entries);
+        const div = document.createElement('div');
+        div.className = 'personal-avg-item';
+        div.innerHTML = `
+            <span class="boat-label">${boat.emoji || '🚤'} ${boat.label || boatKey}</span>
+            <span class="boat-stats">
+                <span class="avg" id="pAvg${boatKey}">${stats.avgMs > 0 ? msToTimeString(stats.avgMs) : '--'}</span>
+                <span class="count" id="pCount${boatKey}">${stats.count > 0 ? '(' + stats.count + ' Einträge)' : ''}</span>
+            </span>
+        `;
+        container.appendChild(div);
+    }
+}
+
+// Überschreiben der saveTimeWithDesc für dynamische Boote
+async function saveTimeWithDesc(boatKey, taId) {
+    const name = document.getElementById('personName').value.trim();
+    if (!name) return alert('Name eingeben!');
+    const currentElapsed = running ? (Date.now() - startTime) : elapsed;
+    if (currentElapsed === 0) return alert('Keine Zeit gestoppt!');
+    const timeStr = formatTime(currentElapsed);
+    const desc = document.getElementById(taId).value.trim();
+    const ref = database.ref('Navy-boote/users/' + name.toLowerCase() + '/boats/' + boatKey);
+    const snap = await ref.once('value');
+    let arr = snap.val();
+    if (!arr || !Array.isArray(arr)) arr = [];
+    arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now() });
+    await ref.set(arr);
+    await database.ref('Navy-boote/users/' + name.toLowerCase() + '/lastUpdated').set(Date.now());
+    if (currentUser) await addLog(currentUser.username, 'Stoppuhr gespeichert', `Person: ${name}, Boot: ${boatKey}, Zeit: ${timeStr}`);
+    document.getElementById(taId).value = '';
+    document.getElementById('searchName').value = name;
+    selectedPersonName = name.toLowerCase();
+    loadPersonalStats(name.toLowerCase());
+    autoLoadPerson();
+    alert('✅ ' + timeStr + ' gespeichert!');
+}
+
+// Überschreiben der autoLoadPerson für dynamische Boote
+async function autoLoadPerson() {
+    const raw = document.getElementById('searchName').value.trim();
+    if (!raw) {
+        document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>';
+        if (currentListener) currentListener.off();
+        return;
+    }
+    selectedPersonName = raw.toLowerCase();
+    loadPersonalStats(raw.toLowerCase());
+    listenToPersonData(raw.toLowerCase());
+}
+
+async function listenToPersonData(nl) {
+    if (currentListener) currentListener.off();
+    currentListener = database.ref('Navy-boote/users/' + nl);
+    currentListener.on('value', async snap => {
+        const data = snap.val();
+        const c = document.getElementById('resultTable');
+        const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
+        if (!data || !data.boats) {
+            c.innerHTML = '<div style="padding:15px;">⚓ ' + dn + ' hat noch keine Zeiten.</div>';
+            return;
+        }
+        const boats = await loadBoats();
+        let h = '<div class="table-wrapper"><table><thead><tr><th>Boot</th><th>Zeit</th><th>Beschreibung</th>' + (isAdmin ? '<th>Aktion</th>' : '') + '</tr></thead><tbody>';
+        for (const [bi, boat] of Object.entries(boats)) {
+            const entries = data.boats[bi];
+            const displayName = (boat.emoji || '🚤') + ' ' + (boat.label || bi);
+            if (entries && Array.isArray(entries) && entries.length) {
+                [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => {
+                    h += '<tr><td>' + (i === 0 ? displayName : '↳ ' + displayName) + '</td>';
+                    h += '<td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td>';
+                    h += '<td>' + esc(e.desc || '-') + '</td>';
+                    if (isAdmin) h += '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' + nl + '\',\'' + bi + '\',' + (e.timestamp || Date.now()) + ')">🗑️</button></td>';
+                    h += '</tr>';
+                });
+            } else {
+                h += '<tr><td>' + displayName + '</td><td colspan="' + (isAdmin ? 3 : 2) + '">— keine —</td>' + (isAdmin ? '<td></td>' : '') + '</tr>';
+            }
+        }
+        h += '</tbody></table></div>';
+        c.innerHTML = h;
     });
 }
 
@@ -954,7 +1158,7 @@ function switchTab(name) {
     const tabEl = document.getElementById('tab-' + name);
     if (tabEl) tabEl.classList.add('active');
     if (name === 'home') loadHomepageStats();
-    else if (name === 'stopwatch') { loadAllSoldiersAverage(); loadAllUsersList(); }
+    else if (name === 'stopwatch') { renderBoats(); loadAllSoldiersAverage(); loadAllUsersList(); }
     else if (name === 'confiscations') loadConfiscations();
     else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); }
     else if (name === 'families') loadFamilies();
@@ -1001,6 +1205,12 @@ function setupAdminTab() {
                 </div>
             </div>
             <div class="admin-section">
+                <h4>🚤 Bootverwaltung</h4>
+                <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Hier können Boote für die Stoppuhr hinzugefügt, bearbeitet oder gelöscht werden.</p>
+                <div id="boatAdminList" style="margin-bottom:12px;"></div>
+                <button onclick="openBoatModal()" style="background:rgba(255,170,51,0.2);border:2px solid #ffaa33;color:#ffaa33;">➕ Neues Boot</button>
+            </div>
+            <div class="admin-section">
                 <h4>🗑️ Gefahrenzone</h4>
                 <div class="input-group" style="justify-content:flex-start;">
                     <input type="text" id="adminDeletePerson" placeholder="Name der Person" style="width:200px;">
@@ -1011,6 +1221,40 @@ function setupAdminTab() {
     }
     loadUserList();
     populatePermissionUserSelect();
+    loadBoatAdminList();
+}
+
+async function loadBoatAdminList() {
+    const boats = await loadBoats();
+    const container = document.getElementById('boatAdminList');
+    if (!container) return;
+    if (Object.keys(boats).length === 0) {
+        container.innerHTML = '<p style="color:#aaa;">Keine Boote vorhanden.</p>';
+        return;
+    }
+    let html = '<div style="display:flex;flex-wrap:wrap;gap:8px;">';
+    for (const [key, boat] of Object.entries(boats)) {
+        html += `
+            <div style="background:rgba(10,20,40,0.6);border:1px solid rgba(100,150,255,0.3);border-radius:10px;padding:8px 14px;display:flex;align-items:center;gap:8px;">
+                <span>${boat.emoji || '🚤'} ${boat.label || key}</span>
+                <button onclick="openBoatModal('${key}')" class="btn-small" style="background:rgba(100,150,255,0.2);border-color:#64b4ff;color:#64b4ff;padding:2px 8px;">✏️</button>
+                <button onclick="deleteBoat('${key}')" class="btn-small btn-danger" style="padding:2px 8px;">🗑️</button>
+            </div>
+        `;
+    }
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+async function deleteBoat(key) {
+    if (!isAdmin) return alert('Nur Admin!');
+    if (!confirm('Boot "' + key + '" wirklich löschen?')) return;
+    await database.ref('Navy-boote/boats/' + key).remove();
+    if (currentUser) await addLog(currentUser.username, 'Boot gelöscht', `Boot: ${key}`);
+    showToast('Boot gelöscht.', '#ff4444');
+    loadBoatAdminList();
+    renderBoats();
+    loadAllSoldiersAverage();
 }
 
 async function populatePermissionUserSelect() {
@@ -1148,17 +1392,11 @@ function loadHomepageStats() {
     });
     database.ref('Navy-boote/confiscations').once('value', s => {
         const d = s.val();
-        let c = 0, tg = 0, tb = 0;
+        let c = 0;
         if (d) {
-            Object.values(d).forEach(e => {
-                c++;
-                tg += parseFloat(e.greenMoney || 0);
-                tb += parseFloat(e.blackMoney || 0);
-            });
+            c = Object.keys(d).length;
         }
         document.getElementById('statConfiscations').textContent = c;
-        document.getElementById('statTotalGreen').textContent = formatNumber(tg) + ' €';
-        document.getElementById('statTotalBlack').textContent = formatNumber(tb) + ' €';
     });
 }
 
@@ -1200,29 +1438,6 @@ function resetTimer() {
     document.getElementById('startBtn').style.background = '#0055aa';
 }
 
-async function saveTimeWithDesc(boatKey, taId) {
-    const name = document.getElementById('personName').value.trim();
-    if (!name) return alert('Name eingeben!');
-    const currentElapsed = running ? (Date.now() - startTime) : elapsed;
-    if (currentElapsed === 0) return alert('Keine Zeit gestoppt!');
-    const timeStr = formatTime(currentElapsed);
-    const desc = document.getElementById(taId).value.trim();
-    const ref = database.ref('Navy-boote/users/' + name.toLowerCase() + '/boats/' + boatKey);
-    const snap = await ref.once('value');
-    let arr = snap.val();
-    if (!arr || !Array.isArray(arr)) arr = [];
-    arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now() });
-    await ref.set(arr);
-    await database.ref('Navy-boote/users/' + name.toLowerCase() + '/lastUpdated').set(Date.now());
-    if (currentUser) await addLog(currentUser.username, 'Stoppuhr gespeichert', `Person: ${name}, Boot: ${boatKey}, Zeit: ${timeStr}`);
-    document.getElementById(taId).value = '';
-    document.getElementById('searchName').value = name;
-    selectedPersonName = name.toLowerCase();
-    loadPersonalStats(name.toLowerCase());
-    autoLoadPerson();
-    alert('✅ ' + timeStr + ' gespeichert!');
-}
-
 window.deleteSingleEntry = async function(nl, bi, ts) {
     if (!isAdmin) return alert('Nur Admin!');
     if (!confirm('Eintrag löschen?')) return;
@@ -1239,55 +1454,6 @@ window.deleteSingleEntry = async function(nl, bi, ts) {
         loadPersonalStats(nl);
     }
 };
-
-function autoLoadPerson() {
-    const raw = document.getElementById('searchName').value.trim();
-    if (!raw) {
-        document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>';
-        if (currentListener) currentListener.off();
-        return;
-    }
-    selectedPersonName = raw.toLowerCase();
-    loadPersonalStats(raw.toLowerCase());
-    listenToPersonData(raw.toLowerCase());
-}
-
-function listenToPersonData(nl) {
-    if (currentListener) currentListener.off();
-    currentListener = database.ref('Navy-boote/users/' + nl);
-    currentListener.on('value', snap => {
-        const data = snap.val();
-        const c = document.getElementById('resultTable');
-        const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
-        if (!data || !data.boats) {
-            c.innerHTML = '<div style="padding:15px;">⚓ ' + dn + ' hat noch keine Zeiten.</div>';
-            return;
-        }
-        const bl = {
-            "Predator": "⚡ Predator",
-            "Dinghy": "🛶 Dinghy",
-            "PatrolBoat": "🚢 Kurtz 31",
-            "WeaponizedDinghy": "💥 Weaponized"
-        };
-        let h = '<div class="table-wrapper"><table><thead><tr><th>Boot</th><th>Zeit</th><th>Beschreibung</th>' + (isAdmin ? '<th>Aktion</th>' : '') + '</tr></thead><tbody>';
-        for (const [bi, bn] of Object.entries(bl)) {
-            const entries = data.boats[bi];
-            if (entries && Array.isArray(entries) && entries.length) {
-                [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => {
-                    h += '<tr><td>' + (i === 0 ? bn : '↳ ' + bn) + '</td>';
-                    h += '<td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td>';
-                    h += '<td>' + esc(e.desc || '-') + '</td>';
-                    if (isAdmin) h += '<td><button class="delete-btn" onclick="deleteSingleEntry(\'' + nl + '\',\'' + bi + '\',' + (e.timestamp || Date.now()) + ')">🗑️</button></td>';
-                    h += '</tr>';
-                });
-            } else {
-                h += '<tr><td>' + bn + '</td><td colspan="' + (isAdmin ? 3 : 2) + '">— keine —</td>' + (isAdmin ? '<td></td>' : '') + '</tr>';
-            }
-        }
-        h += '</tbody></table></div>';
-        c.innerHTML = h;
-    });
-}
 
 // ==================== BESCHLAGNAHMUNGEN ====================
 function openNewConfiscationModal(editData = null) {
@@ -1523,11 +1689,15 @@ async function loadPayoutData() {
     let totalKontrollen = 0, totalSumme = 0, totalAusgezahlt = 0, totalOffen = 0;
     tbody.innerHTML = '';
     
+    // Boote laden für Kontrollen-Zählung
+    const boats = await loadBoats();
+    const boatKeys = Object.keys(boats);
+    
     for (const name of authorizedUsers) {
         let weekCheckCount = 0;
         const userData = allUsers[name];
         if (userData && userData.boats) {
-            for (const boatKey in userData.boats) {
+            for (const boatKey of boatKeys) {
                 const boatEntries = userData.boats[boatKey];
                 if (Array.isArray(boatEntries)) {
                     boatEntries.forEach(entry => {
@@ -1715,6 +1885,40 @@ async function editFamily(id) {
     if (data) openFamilyModal({ id, ...data });
 }
 
+// ==================== ALLE USER LISTE ====================
+function loadAllUsersList() {
+    database.ref('Navy-boote/users').on('value', snap => {
+        const users = snap.val();
+        const d = document.getElementById('allNamesList');
+        d.innerHTML = '';
+        
+        if (users) {
+            const sorted = Object.keys(users)
+                .map(k => ({ name: k, lu: users[k].lastUpdated || 0 }))
+                .sort((a, b) => b.lu - a.lu);
+            
+            sorted.forEach(u => {
+                const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1);
+                const btn = document.createElement('div');
+                btn.className = 'name-tag';
+                btn.textContent = dn;
+                btn.onclick = () => {
+                    d.querySelectorAll('.name-tag').forEach(t => t.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.getElementById('personName').value = dn;
+                    document.getElementById('searchName').value = dn;
+                    selectedPersonName = u.name;
+                    loadPersonalStats(u.name);
+                    autoLoadPerson();
+                };
+                d.appendChild(btn);
+            });
+        } else {
+            d.innerHTML = '<span style="color:#aaa;">⚓ Keine Personen.</span>';
+        }
+    });
+}
+
 // ==================== EVENT LISTENER ====================
 document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) {
     if (e.target === this) closeConfiscationModal();
@@ -1722,6 +1926,10 @@ document.getElementById('confiscationModalOverlay').addEventListener('click', fu
 
 document.getElementById('familyModalOverlay').addEventListener('click', function(e) {
     if (e.target === this) closeFamilyModal();
+});
+
+document.getElementById('boatModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeBoatModal();
 });
 
 // ==================== INITIALISIERUNG ====================
@@ -1737,6 +1945,7 @@ async function init() {
         const now = new Date();
         document.getElementById('modalDate').value = now.toISOString().split('T')[0];
         document.getElementById('modalTime').value = now.toTimeString().slice(0, 5);
+        await renderBoats();
         loadAllSoldiersAverage();
         loadAllUsersList();
         console.log('System initialisiert');
