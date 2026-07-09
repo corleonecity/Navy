@@ -177,6 +177,18 @@
         .log-entry .log-action { color: #ffaa33; font-weight: bold; margin: 4px 0; }
         .log-entry .log-details { color: #bfd9ff; font-size: 13px; }
 
+        /* Bootskontrolle Reiter */
+        .boatcheck-user-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: rgba(0,0,0,0.3); border-radius: 8px; margin-bottom: 6px; border: 1px solid rgba(100,150,255,0.2); }
+        .boatcheck-user-item .user-name { font-weight: bold; color: #d9ecff; }
+        .boatcheck-user-item .user-status { font-size: 12px; padding: 2px 10px; border-radius: 20px; }
+        .boatcheck-user-item .user-status.enabled { background: rgba(46,204,64,0.2); color: #2ecc40; border: 1px solid #2ecc40; }
+        .boatcheck-user-item .user-status.disabled { background: rgba(255,85,85,0.2); color: #ff5555; border: 1px solid #ff5555; }
+        .boatcheck-toggle { cursor: pointer; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; border: none; transition: 0.2s; }
+        .boatcheck-toggle.enable { background: #2e7d32; color: white; }
+        .boatcheck-toggle.enable:hover { background: #388e3c; }
+        .boatcheck-toggle.disable { background: #8b0000; color: white; }
+        .boatcheck-toggle.disable:hover { background: #aa1111; }
+
         @media (max-width: 768px) {
             .time { font-size: 36px; padding: 6px; }
             .homepage h1 { font-size: 1.8rem; }
@@ -439,6 +451,53 @@ function calcStats(entries) {
     };
 }
 
+// ==================== BOOTKONTROLLEN-BERECHTIGUNG (showInPayout) ====================
+async function loadBoatcheckSettings() {
+    const snap = await database.ref('Navy-boote/boatcheck_users').once('value');
+    return snap.val() || {};
+}
+
+async function saveBoatcheckSettings(settings) {
+    await database.ref('Navy-boote/boatcheck_users').set(settings);
+}
+
+async function toggleBoatcheckUser(username) {
+    const settings = await loadBoatcheckSettings();
+    const current = settings[username] || false;
+    settings[username] = !current;
+    await saveBoatcheckSettings(settings);
+    if (currentUser) await addLog(currentUser.username, 'Bootskontrolle-Berechtigung geändert', 
+        `Benutzer "${username}": ${settings[username] ? 'aktiviert' : 'deaktiviert'}`);
+    renderBoatcheckList();
+}
+
+async function renderBoatcheckList() {
+    const container = document.getElementById('boatcheckList');
+    if (!container) return;
+    const settings = await loadBoatcheckSettings();
+    const usersSnap = await database.ref('Navy-boote/users_auth').once('value');
+    const users = usersSnap.val() || {};
+    let html = '';
+    for (const [username, userData] of Object.entries(users)) {
+        if (userData.isAdmin) continue; // Admins immer anzeigen
+        const enabled = settings[username] === true;
+        const statusClass = enabled ? 'enabled' : 'disabled';
+        const statusText = enabled ? '✅ Sichtbar' : '❌ Ausgeblendet';
+        const toggleText = enabled ? 'Ausblenden' : 'Einblenden';
+        const toggleClass = enabled ? 'disable' : 'enable';
+        html += `
+            <div class="boatcheck-user-item">
+                <span class="user-name">${esc(username)}</span>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span class="user-status ${statusClass}">${statusText}</span>
+                    <button class="boatcheck-toggle ${toggleClass}" onclick="toggleBoatcheckUser('${esc(username)}')">${toggleText}</button>
+                </div>
+            </div>
+        `;
+    }
+    container.innerHTML = html || '<p style="color:#aaa;">Keine Benutzer vorhanden.</p>';
+}
+
 // ==================== LOG CLEANUP (automatisch nach 32 Tagen) ====================
 async function cleanupOldLogs() {
     try {
@@ -689,7 +748,6 @@ async function addLog(username, action, details = '') {
             date: new Date().toISOString()
         };
         await database.ref('Navy-boote/logs').push(logEntry);
-        // Nach jedem Log-Eintrag cleanup prüfen
         cleanupOldLogs();
     } catch (error) {
         console.error('Fehler beim Logging:', error);
@@ -1039,6 +1097,7 @@ function setupAdminTab() {
         adminTab.className = 'tab-content';
         adminTab.innerHTML = `
             <h3 style="color:#ff5555;margin-bottom:16px;">🔑 Admin</h3>
+            
             <div class="admin-section">
                 <h4>👥 Benutzerverwaltung</h4>
                 <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;flex-wrap:wrap;">
@@ -1048,6 +1107,7 @@ function setupAdminTab() {
                 </div>
                 <div id="userList"></div>
             </div>
+            
             <div class="admin-section">
                 <h4>🔐 Berechtigungen</h4>
                 <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Berechtigungen zu bearbeiten:</p>
@@ -1067,6 +1127,7 @@ function setupAdminTab() {
                     <p id="permissionSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Berechtigungen gespeichert!</p>
                 </div>
             </div>
+            
             <div class="admin-section">
                 <h4>🚤 Bootverwaltung</h4>
                 <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Hier können Boote für die Stoppuhr hinzugefügt, bearbeitet oder gelöscht werden.</p>
@@ -1075,6 +1136,16 @@ function setupAdminTab() {
                 </div>
                 <div id="boatAdminList" style="margin-top:10px;"></div>
             </div>
+            
+            <div class="admin-section">
+                <h4>📋 Bootskontrolle-Sichtbarkeit</h4>
+                <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">
+                    Hier kannst du einstellen, welche Benutzer in der Auszahlungsübersicht angezeigt werden.
+                    Benutzer die <strong>deaktiviert</strong> sind, werden in der Auszahlung nicht aufgelistet.
+                </p>
+                <div id="boatcheckList"></div>
+            </div>
+            
             <div class="admin-section">
                 <h4>🗑️ Gefahrenzone</h4>
                 <div class="input-group" style="justify-content:flex-start;flex-wrap:wrap;">
@@ -1090,6 +1161,7 @@ function setupAdminTab() {
     loadUserList();
     populatePermissionUserSelect();
     loadBoatAdminList();
+    renderBoatcheckList();
 }
 
 async function manualCleanupLogs() {
@@ -1195,6 +1267,7 @@ async function createUser() {
     document.getElementById('newPassword').value = '';
     loadUserList();
     populatePermissionUserSelect();
+    renderBoatcheckList();
 }
 
 async function loadUserList() {
@@ -1234,6 +1307,7 @@ async function deleteUser(u) {
     showToast('Benutzer gelöscht und abgemeldet.', '#ff4444');
     loadUserList();
     populatePermissionUserSelect();
+    renderBoatcheckList();
     const editor = document.getElementById('permissionsEditor');
     if (editor) editor.style.display = 'none';
     currentPermissionUser = null;
@@ -1699,7 +1773,9 @@ async function loadPayoutData() {
     
     const usersAuthSnap = await database.ref('Navy-boote/users_auth').once('value');
     const usersAuth = usersAuthSnap.val() || {};
-    const authorizedUsers = Object.keys(usersAuth);
+    
+    // Boatcheck-Einstellungen laden
+    const boatcheckSettings = await loadBoatcheckSettings();
     
     const usersSnap = await database.ref('Navy-boote/users').once('value');
     const allUsers = usersSnap.val() || {};
@@ -1713,6 +1789,12 @@ async function loadPayoutData() {
     
     const boats = await loadBoats();
     const boatKeys = Object.keys(boats);
+    
+    // Nur Benutzer anzeigen, die in boatcheckSettings aktiviert sind ODER Admins
+    const authorizedUsers = Object.keys(usersAuth).filter(name => {
+        if (usersAuth[name] && usersAuth[name].isAdmin) return true;
+        return boatcheckSettings[name] === true;
+    });
     
     for (const name of authorizedUsers) {
         let weekCheckCount = 0;
@@ -1793,7 +1875,6 @@ document.getElementById('boatModalOverlay').addEventListener('click', function(e
 async function init() {
     try {
         await ensureAdminExists();
-        // Log-Cleanup beim Start
         await cleanupOldLogs();
         const autoLoggedIn = await tryAutoLogin();
         if (!autoLoggedIn) {
