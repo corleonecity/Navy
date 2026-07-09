@@ -63,8 +63,6 @@
         .btn-danger:hover { background: #aa1111; }
         .btn-new-confiscation { background: linear-gradient(135deg,#1a472a,#0d2818); border: 2px solid #2ecc40; color: #2ecc40; font-size: 15px; padding: 12px 24px; }
         .btn-new-confiscation:hover { background: linear-gradient(135deg,#2a573a,#1a3a28); box-shadow: 0 0 20px rgba(46,204,64,0.3); }
-        .btn-new-family { background: linear-gradient(135deg,#2a3a6e,#1a2a4e); border: 2px solid #64b4ff; color: #64b4ff; font-size: 15px; padding: 12px 24px; }
-        .btn-new-family:hover { background: linear-gradient(135deg,#3a4a7e,#2a3a5e); box-shadow: 0 0 20px rgba(100,180,255,0.3); }
         .btn-small { font-size: 11px; padding: 4px 10px; border-radius: 20px; }
         .btn-card-action { font-size: 11px; padding: 5px 12px; border-radius: 20px; cursor: pointer; background: rgba(100,150,255,0.2); border: 1px solid #64b4ff; color: #64b4ff; font-weight: bold; }
         .btn-card-action:hover { background: rgba(100,150,255,0.4); }
@@ -148,15 +146,6 @@
         .dropdown-with-text select { flex: 1; min-width: 100px; padding: 8px 10px; font-size: 13px; }
         .dropdown-with-text input { flex: 1; min-width: 100px; padding: 8px 10px; font-size: 13px; }
         .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 18px; padding-top: 12px; border-top: 1px solid rgba(100,150,255,0.2); flex-wrap: wrap; }
-        .families-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
-        .families-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 20px; }
-        .family-card { background: rgba(10,20,40,0.75); border: 1px solid rgba(100,150,255,0.4); border-radius: 18px; padding: 18px; }
-        .family-card h4 { color: #ffaa33; font-size: 1.3rem; margin-bottom: 12px; border-bottom: 1px dashed rgba(100,150,255,0.3); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .family-section { margin-bottom: 10px; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 10px; border: 1px solid rgba(100,150,255,0.2); }
-        .family-section h5 { color: #9cc7ff; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-        .family-images { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px; }
-        .family-images img { width: 80px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid rgba(100,150,255,0.4); cursor: pointer; }
-        .family-color-dot { display: inline-block; width: 20px; height: 20px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.5); vertical-align: middle; margin-right: 6px; }
         .payout-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px; }
         .payout-week-selector { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
         .payout-week-selector input { width: 160px; padding: 8px 12px; font-size: 13px; }
@@ -192,7 +181,6 @@
             .time { font-size: 36px; padding: 6px; }
             .homepage h1 { font-size: 1.8rem; }
             .confiscation-cards { grid-template-columns: 1fr; }
-            .families-grid { grid-template-columns: 1fr; }
             .top-bar { flex-direction: column; align-items: stretch; }
             .top-bar .user-info { justify-content: center; }
             .tab-btn { padding: 8px 14px; font-size: 12px; }
@@ -320,14 +308,6 @@
             </div>
         </div>
 
-        <div id="tab-families" class="tab-content">
-            <div class="families-header">
-                <h3 style="color:#ffaa33;margin:0;">👨‍👩‍👧‍👦 Familien</h3>
-                <button class="btn-new-family" onclick="openFamilyModal()">➕ Neue Familie</button>
-            </div>
-            <div id="familiesGrid" class="families-grid"><p style="color:#aaa;grid-column:1/-1;">Keine Familien.</p></div>
-        </div>
-
         <div id="tab-logs" class="tab-content">
             <h3 style="color:#ffaa33;margin-bottom:16px;">📊 Aktivitätslogs</h3>
             <div class="admin-section">
@@ -364,19 +344,6 @@
         <div class="modal-row"><div class="modal-field"><label>📦 Abgenommene Gegenstände</label><textarea id="modalItems" rows="3" placeholder="z.B.: 5x Waffenteile"></textarea></div></div>
         <div class="modal-row"><div class="modal-field"><label>📋 Notizen</label><textarea id="modalNotes" rows="2"></textarea></div></div>
         <div class="modal-actions"><button class="btn-cancel" onclick="closeConfiscationModal()">Abbrechen</button><button class="btn-submit" onclick="saveConfiscation()">✅ Speichern</button></div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="familyModalOverlay">
-    <div class="modal" style="max-width:700px;">
-        <button class="close-modal-x" onclick="closeFamilyModal()">✕</button>
-        <h3 id="familyModalTitle">👨‍👩‍👧‍👦 Neue Familie</h3>
-        <div class="modal-row"><div class="modal-field"><label>Familienname</label><input type="text" id="familyName" placeholder="z.B. Corleone"></div></div>
-        <div class="family-section"><h5>🚗 Fahrzeug</h5><div class="modal-row"><div class="modal-field"><label>Farbe</label><div style="display:flex;gap:8px;flex-wrap:wrap;"><input type="color" id="vehicleColor" value="#3b82f6" style="width:50px;height:38px;"><input type="text" id="vehicleColorName" placeholder="Farbname" style="flex:1;min-width:80px;"></div></div><div class="modal-field"><label>Typ</label><input type="text" id="vehicleType" placeholder="Sultan RS"></div></div><div class="modal-row"><div class="modal-field"><label>Kennzeichen</label><input type="text" id="vehiclePlate"></div></div><label style="font-size:11px;color:#9cc7ff;">Bild (URL)</label><input type="text" id="vehicleImageUrl" placeholder="https://..." style="width:100%;margin-top:4px;" oninput="updateFamilyPreviews()"><div id="vehicleImagePreview" style="margin-top:5px;"></div></div>
-        <div class="family-section"><h5>🏠 Anwesen</h5><div class="modal-row"><div class="modal-field"><label>Adresse</label><input type="text" id="estateDescription"></div></div><label style="font-size:11px;color:#9cc7ff;">Bild (URL)</label><input type="text" id="estateImageUrl" placeholder="https://..." style="width:100%;margin-top:4px;" oninput="updateFamilyPreviews()"><div id="estateImagePreview" style="margin-top:5px;"></div></div>
-        <div class="family-section"><h5>👔 Kleidung</h5><div class="modal-row"><div class="modal-field"><label>Beschreibung</label><input type="text" id="clothingDescription"></div></div><label style="font-size:11px;color:#9cc7ff;">Bilder (URLs, Komma)</label><input type="text" id="clothingImagesInput" placeholder="url1.jpg, url2.jpg" style="width:100%;margin-top:4px;" oninput="updateFamilyPreviews()"><div id="clothingImagesPreview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:5px;"></div></div>
-        <div class="modal-row"><div class="modal-field"><label>📋 Notizen</label><textarea id="familyNotes" rows="2"></textarea></div></div>
-        <div class="modal-actions"><button class="btn-cancel" onclick="closeFamilyModal()">Abbrechen</button><button class="btn-submit" onclick="saveFamily()">✅ Speichern</button></div>
     </div>
 </div>
 
@@ -417,7 +384,6 @@ let userPermissions = {
     stopwatch: true,
     confiscations: true,
     payout: true,
-    families: true,
     logs: true,
     admin: false
 };
@@ -429,9 +395,7 @@ let userDataListener = null;
 let currentListener = null;
 let startTime = 0, elapsed = 0, stopwatchInterval = null, running = false;
 let editingConfiscationId = null;
-let editingFamilyId = null;
 let currentPayoutWeek = '';
-let selectedPersonName = null;
 
 // Bootverwaltung
 let editingBoatKey = null;
@@ -473,6 +437,30 @@ function calcStats(entries) {
         avgMs: Math.round(sum / validTimes.length),
         count: validTimes.length
     };
+}
+
+// ==================== LOG CLEANUP (automatisch nach 32 Tagen) ====================
+async function cleanupOldLogs() {
+    try {
+        const thirtyTwoDaysAgo = Date.now() - (32 * 24 * 60 * 60 * 1000);
+        const snap = await database.ref('Navy-boote/logs').once('value');
+        const logs = snap.val();
+        if (!logs) return;
+        let deletedCount = 0;
+        const updates = {};
+        for (const [key, log] of Object.entries(logs)) {
+            if (log.timestamp && log.timestamp < thirtyTwoDaysAgo) {
+                updates[key] = null;
+                deletedCount++;
+            }
+        }
+        if (deletedCount > 0) {
+            await database.ref('Navy-boote/logs').update(updates);
+            console.log(`🧹 ${deletedCount} alte Logs gelöscht (älter als 32 Tage)`);
+        }
+    } catch (error) {
+        console.error('Fehler beim Log-Cleanup:', error);
+    }
 }
 
 // ==================== BOOTVERWALTUNG ====================
@@ -524,9 +512,6 @@ async function renderBoats() {
         `;
         avgBody.appendChild(tr);
     }
-    
-    // Admin: Boot hinzufügen Button NUR im Admin-Bereich, nicht auf Stoppuhr-Seite
-    // Wird im Admin-Tab gerendert
     
     document.getElementById('personalStatsContainer').innerHTML = '';
 }
@@ -617,7 +602,6 @@ async function saveBoat() {
     
     closeBoatModal();
     showToast('✅ Boot gespeichert!', '#64b4ff');
-    // Bootlisten in beiden Tabs aktualisieren
     await renderBoats();
     await loadBoatAdminList();
     loadAllSoldiersAverage();
@@ -705,6 +689,8 @@ async function addLog(username, action, details = '') {
             date: new Date().toISOString()
         };
         await database.ref('Navy-boote/logs').push(logEntry);
+        // Nach jedem Log-Eintrag cleanup prüfen
+        cleanupOldLogs();
     } catch (error) {
         console.error('Fehler beim Logging:', error);
     }
@@ -808,7 +794,6 @@ async function ensureAdminExists() {
                     stopwatch: true,
                     confiscations: true,
                     payout: true,
-                    families: true,
                     logs: true,
                     admin: true
                 }
@@ -834,7 +819,6 @@ function startUserDataListener(username) {
             userPermissions.stopwatch = newPerms.stopwatch !== false;
             userPermissions.confiscations = newPerms.confiscations !== false;
             userPermissions.payout = newPerms.payout !== false;
-            userPermissions.families = newPerms.families !== false;
             userPermissions.logs = newPerms.logs !== false;
             if (currentUser) {
                 saveSession(currentUser.username, isAdmin, userPermissions);
@@ -881,7 +865,6 @@ async function completeLogin(username, userData) {
             stopwatch: true,
             confiscations: true,
             payout: true,
-            families: true,
             logs: true,
             admin: true
         };
@@ -891,7 +874,6 @@ async function completeLogin(username, userData) {
             stopwatch: perms.stopwatch !== false,
             confiscations: perms.confiscations !== false,
             payout: perms.payout !== false,
-            families: perms.families !== false,
             logs: perms.logs !== false,
             admin: false
         };
@@ -969,7 +951,6 @@ function doLogout() {
         stopwatch: true,
         confiscations: true,
         payout: true,
-        families: true,
         logs: true,
         admin: false
     };
@@ -994,7 +975,6 @@ function updateTabs() {
         'stopwatch': { icon: '⏱️', label: 'Stoppuhr' },
         'confiscations': { icon: '📋', label: 'Beschlagnahmungen' },
         'payout': { icon: '💰', label: 'Auszahlung' },
-        'families': { icon: '👨‍👩‍👧‍👦', label: 'Familien' },
         'logs': { icon: '📊', label: 'Logs' }
     };
     for (const [key, config] of Object.entries(tabConfig)) {
@@ -1026,7 +1006,7 @@ function switchTab(name) {
     }
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     const buttons = document.querySelectorAll('.tab-btn');
-    const tabOrder = ['home', 'stopwatch', 'confiscations', 'payout', 'families', 'logs', 'admin'];
+    const tabOrder = ['home', 'stopwatch', 'confiscations', 'payout', 'logs', 'admin'];
     const index = tabOrder.indexOf(name);
     let buttonIndex = 0;
     for (let i = 0; i <= index; i++) {
@@ -1045,7 +1025,6 @@ function switchTab(name) {
     else if (name === 'stopwatch') { renderBoats(); loadAllSoldiersAverage(); loadAllUsersList(); }
     else if (name === 'confiscations') loadConfiscations();
     else if (name === 'payout') { goToCurrentWeek(); loadPayoutData(); }
-    else if (name === 'families') loadFamilies();
     else if (name === 'logs') populateLogUserSelect();
     else if (name === 'admin') setupAdminTab();
 }
@@ -1082,7 +1061,6 @@ function setupAdminTab() {
                         <div class="permission-item"><input type="checkbox" id="permStopwatch" onchange="savePermission('stopwatch', this.checked)"><label for="permStopwatch">⏱️ Stoppuhr</label></div>
                         <div class="permission-item"><input type="checkbox" id="permConfiscations" onchange="savePermission('confiscations', this.checked)"><label for="permConfiscations">📋 Beschlagnahmungen</label></div>
                         <div class="permission-item"><input type="checkbox" id="permPayout" onchange="savePermission('payout', this.checked)"><label for="permPayout">💰 Auszahlung</label></div>
-                        <div class="permission-item"><input type="checkbox" id="permFamilies" onchange="savePermission('families', this.checked)"><label for="permFamilies">👨‍👩‍👧‍👦 Familien</label></div>
                         <div class="permission-item"><input type="checkbox" id="permLogs" onchange="savePermission('logs', this.checked)"><label for="permLogs">📊 Logs</label></div>
                         <div class="permission-item"><input type="checkbox" id="permAdmin" onchange="savePermission('admin', this.checked)"><label for="permAdmin">🔑 Admin</label></div>
                     </div>
@@ -1103,12 +1081,25 @@ function setupAdminTab() {
                     <input type="text" id="adminDeletePerson" placeholder="Name der Person" style="width:200px;">
                     <button class="btn-danger" onclick="adminDeletePerson()">🗑️ Person löschen</button>
                 </div>
+                <div style="margin-top:10px;">
+                    <button class="btn-danger" onclick="manualCleanupLogs()">🧹 Logs manuell bereinigen (>32 Tage)</button>
+                </div>
             </div>`;
         document.querySelector('.container').appendChild(adminTab);
     }
     loadUserList();
     populatePermissionUserSelect();
     loadBoatAdminList();
+}
+
+async function manualCleanupLogs() {
+    if (!isAdmin) return;
+    if (!confirm('Alle Logs die älter als 32 Tage sind löschen?')) return;
+    await cleanupOldLogs();
+    showToast('✅ Logs bereinigt!', '#2ecc40');
+    if (document.getElementById('tab-logs').classList.contains('active')) {
+        loadAllLogs();
+    }
 }
 
 async function populatePermissionUserSelect() {
@@ -1141,7 +1132,6 @@ async function loadUserPermissions() {
     document.getElementById('permStopwatch').checked = permissions.stopwatch !== false;
     document.getElementById('permConfiscations').checked = permissions.confiscations !== false;
     document.getElementById('permPayout').checked = permissions.payout !== false;
-    document.getElementById('permFamilies').checked = permissions.families !== false;
     document.getElementById('permLogs').checked = permissions.logs !== false;
     document.getElementById('permAdmin').checked = permissions.admin === true;
     editor.style.display = 'block';
@@ -1150,11 +1140,9 @@ async function loadUserPermissions() {
 async function savePermission(permission, value) {
     if (!currentPermissionUser) return;
     await database.ref('Navy-boote/users_auth/' + currentPermissionUser + '/permissions/' + permission).set(value);
-    // Wenn admin auf true gesetzt wird, isAdmin auf true setzen
     if (permission === 'admin' && value === true) {
         await database.ref('Navy-boote/users_auth/' + currentPermissionUser + '/isAdmin').set(true);
     } else if (permission === 'admin' && value === false) {
-        // Admin-Rechte entziehen - aber nur wenn nicht colin
         if (currentPermissionUser !== 'colin') {
             await database.ref('Navy-boote/users_auth/' + currentPermissionUser + '/isAdmin').set(false);
         } else {
@@ -1171,7 +1159,6 @@ async function savePermission(permission, value) {
     statusEl.style.display = 'block';
     setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
     loadUserList();
-    // Wenn der aktuelle User seine eigenen Rechte ändert, aktualisieren
     if (currentUser && currentUser.username === currentPermissionUser) {
         if (permission === 'admin') {
             isAdmin = value;
@@ -1200,7 +1187,7 @@ async function createUser() {
         password: p,
         isAdmin: false,
         created: Date.now(),
-        permissions: { stopwatch: true, confiscations: true, payout: true, families: true, logs: true, admin: false }
+        permissions: { stopwatch: true, confiscations: true, payout: true, logs: true, admin: false }
     });
     if (currentUser) await addLog(currentUser.username, 'Benutzer erstellt', `Neuer Benutzer: ${u}`);
     showToast('✅ Benutzer erstellt!', '#2ecc40');
@@ -1223,7 +1210,6 @@ async function loadUserList() {
         if (perms.stopwatch !== false) activePerms.push('⏱️ Stoppuhr');
         if (perms.confiscations !== false) activePerms.push('📋 Beschlagn.');
         if (perms.payout !== false) activePerms.push('💰 Auszahlung');
-        if (perms.families !== false) activePerms.push('👨‍👩‍👧‍👦 Familien');
         if (perms.logs !== false) activePerms.push('📊 Logs');
         if (userData.isAdmin || perms.admin === true) activePerms.push('🔑 Admin');
         const permissionsDisplay = activePerms.length > 0 ?
@@ -1794,137 +1780,9 @@ async function togglePayoutPaid(name, isPaid) {
     loadPayoutData();
 }
 
-// ==================== FAMILIEN ====================
-function openFamilyModal(editData = null) {
-    document.getElementById('familyModalOverlay').classList.add('show');
-    if (editData) {
-        editingFamilyId = editData.id;
-        document.getElementById('familyModalTitle').textContent = '✏️ Bearbeiten';
-        document.getElementById('familyName').value = editData.name || '';
-        document.getElementById('vehicleColor').value = editData.vehicleColor || '#3b82f6';
-        document.getElementById('vehicleColorName').value = editData.vehicleColorName || '';
-        document.getElementById('vehicleType').value = editData.vehicleType || '';
-        document.getElementById('vehiclePlate').value = editData.vehiclePlate || '';
-        document.getElementById('vehicleImageUrl').value = editData.vehicleImage || '';
-        document.getElementById('estateDescription').value = editData.estateDescription || '';
-        document.getElementById('estateImageUrl').value = editData.estateImage || '';
-        document.getElementById('clothingDescription').value = editData.clothingDescription || '';
-        document.getElementById('clothingImagesInput').value = (editData.clothingImages || []).join(', ');
-        document.getElementById('familyNotes').value = editData.notes || '';
-    } else {
-        editingFamilyId = null;
-        document.getElementById('familyModalTitle').textContent = '👨‍👩‍👧‍👦 Neue Familie';
-        document.getElementById('familyName').value = '';
-        document.getElementById('vehicleColor').value = '#3b82f6';
-        document.getElementById('vehicleColorName').value = '';
-        document.getElementById('vehicleType').value = '';
-        document.getElementById('vehiclePlate').value = '';
-        document.getElementById('vehicleImageUrl').value = '';
-        document.getElementById('estateDescription').value = '';
-        document.getElementById('estateImageUrl').value = '';
-        document.getElementById('clothingDescription').value = '';
-        document.getElementById('clothingImagesInput').value = '';
-        document.getElementById('familyNotes').value = '';
-    }
-    updateFamilyPreviews();
-}
-
-function closeFamilyModal() {
-    document.getElementById('familyModalOverlay').classList.remove('show');
-    editingFamilyId = null;
-}
-
-function updateFamilyPreviews() {
-    const vehicleUrl = document.getElementById('vehicleImageUrl').value.trim();
-    document.getElementById('vehicleImagePreview').innerHTML = vehicleUrl ?
-        `<img src="${vehicleUrl}" style="max-width:200px;border-radius:10px;">` : '';
-    
-    const estateUrl = document.getElementById('estateImageUrl').value.trim();
-    document.getElementById('estateImagePreview').innerHTML = estateUrl ?
-        `<img src="${estateUrl}" style="max-width:200px;border-radius:10px;">` : '';
-    
-    const clothingUrls = document.getElementById('clothingImagesInput').value.split(',')
-        .map(s => s.trim()).filter(s => s);
-    document.getElementById('clothingImagesPreview').innerHTML = clothingUrls
-        .map(u => `<img src="${u}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;">`)
-        .join('');
-}
-
-async function saveFamily() {
-    const name = document.getElementById('familyName').value.trim();
-    if (!name) return alert('Familienname eingeben!');
-    const data = {
-        name,
-        vehicleColor: document.getElementById('vehicleColor').value,
-        vehicleColorName: document.getElementById('vehicleColorName').value.trim(),
-        vehicleType: document.getElementById('vehicleType').value.trim(),
-        vehiclePlate: document.getElementById('vehiclePlate').value.trim(),
-        vehicleImage: document.getElementById('vehicleImageUrl').value.trim(),
-        estateDescription: document.getElementById('estateDescription').value.trim(),
-        estateImage: document.getElementById('estateImageUrl').value.trim(),
-        clothingDescription: document.getElementById('clothingDescription').value.trim(),
-        clothingImages: document.getElementById('clothingImagesInput').value.split(',').map(s => s.trim()).filter(s => s),
-        notes: document.getElementById('familyNotes').value.trim(),
-        timestamp: Date.now()
-    };
-    const ref = database.ref('Navy-boote/families');
-    if (editingFamilyId) {
-        await ref.child(editingFamilyId).update(data);
-        if (currentUser) await addLog(currentUser.username, 'Familie aktualisiert', `Familie: ${name}`);
-        showToast('✅ Aktualisiert!', '#64b4ff');
-    } else {
-        await ref.push(data);
-        if (currentUser) await addLog(currentUser.username, 'Familie erstellt', `Familie: ${name}`);
-        showToast('✅ Gespeichert!', '#64b4ff');
-    }
-    closeFamilyModal();
-    loadFamilies();
-}
-
-function loadFamilies() {
-    database.ref('Navy-boote/families').on('value', snap => {
-        const data = snap.val();
-        const grid = document.getElementById('familiesGrid');
-        if (!data) { grid.innerHTML = '<p style="color:#aaa;grid-column:1/-1;">Keine Familien.</p>'; return; }
-        const entries = Object.entries(data).map(([id, f]) => ({ id, ...f })).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        grid.innerHTML = entries.map(f => `
-            <div class="family-card">
-                <h4>👨‍👩‍👧‍👦 ${esc(f.name||'?')}
-                    <span>${isAdmin ? `<button class="btn-small" onclick="editFamily('${f.id}')" style="background:rgba(100,150,255,0.3);border-color:#64b4ff;color:#64b4ff;">✏️</button><button class="btn-small btn-danger" onclick="deleteFamily('${f.id}')">🗑️</button>` : ''}</span>
-                </h4>
-                ${f.vehicleType||f.vehicleColorName ? `<div class="family-section"><h5>🚗 Fahrzeug</h5><p><span class="family-color-dot" style="background:${f.vehicleColor||'#888'};"></span>${esc(f.vehicleColorName||'')} ${esc(f.vehicleType||'')}${f.vehiclePlate?' ('+esc(f.vehiclePlate)+')':''}</p>${f.vehicleImage ? `<div class="family-images"><img src="${f.vehicleImage}" onclick="window.open('${f.vehicleImage}')"></div>` : ''}</div>` : ''}
-                ${f.estateDescription||f.estateImage ? `<div class="family-section"><h5>🏠 Anwesen</h5><p>${esc(f.estateDescription||'')}</p>${f.estateImage ? `<div class="family-images"><img src="${f.estateImage}" onclick="window.open('${f.estateImage}')"></div>` : ''}</div>` : ''}
-                ${f.clothingDescription||(f.clothingImages&&f.clothingImages.length) ? `<div class="family-section"><h5>👔 Kleidung</h5><p>${esc(f.clothingDescription||'')}</p>${f.clothingImages&&f.clothingImages.length ? `<div class="family-images">${f.clothingImages.map(u=>`<img src="${u}" onclick="window.open('${u}')">`).join('')}</div>` : ''}</div>` : ''}
-                ${f.notes ? `<div class="family-section"><h5>📋 Notizen</h5><p style="white-space:pre-wrap;">${esc(f.notes)}</p></div>` : ''}
-            </div>`).join('');
-    });
-}
-
-async function deleteFamily(id) {
-    if (!isAdmin) return alert('Nur Admin!');
-    if (!confirm('Familie löschen?')) return;
-    const snap = await database.ref('Navy-boote/families/' + id).once('value');
-    const data = snap.val();
-    await database.ref('Navy-boote/families/' + id).remove();
-    if (currentUser && data) await addLog(currentUser.username, 'Familie gelöscht', `Familie: ${data.name || 'Unbekannt'}`);
-    showToast('Gelöscht.', '#ff4444');
-    loadFamilies();
-}
-
-async function editFamily(id) {
-    if (!isAdmin) return alert('Nur Admin!');
-    const snap = await database.ref('Navy-boote/families/' + id).once('value');
-    const data = snap.val();
-    if (data) openFamilyModal({ id, ...data });
-}
-
 // ==================== EVENT LISTENER ====================
 document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) {
     if (e.target === this) closeConfiscationModal();
-});
-
-document.getElementById('familyModalOverlay').addEventListener('click', function(e) {
-    if (e.target === this) closeFamilyModal();
 });
 
 document.getElementById('boatModalOverlay').addEventListener('click', function(e) {
@@ -1935,6 +1793,8 @@ document.getElementById('boatModalOverlay').addEventListener('click', function(e
 async function init() {
     try {
         await ensureAdminExists();
+        // Log-Cleanup beim Start
+        await cleanupOldLogs();
         const autoLoggedIn = await tryAutoLogin();
         if (!autoLoggedIn) {
             document.getElementById('loginScreen').classList.remove('hidden');
