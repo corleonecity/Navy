@@ -423,6 +423,7 @@ let startTime = 0, elapsed = 0, stopwatchInterval = null, running = false;
 let editingConfiscationId = null;
 let currentPayoutWeek = '';
 let allUsernames = [];
+let userDisplayNames = {};
 
 // Bootverwaltung
 let editingBoatKey = null;
@@ -432,6 +433,19 @@ const DEFAULT_BOATS = {
     'PatrolBoat': { emoji: '🚢', label: 'Kurtz 31 Patrol Boat' },
     'WeaponizedDinghy': { emoji: '💥', label: 'Weaponized Dinghy' }
 };
+
+// ==================== DISPLAY NAME HELFER ====================
+function getDisplayName(username) {
+    if (!username) return 'Unbekannt';
+    if (username === 'colin') return 'Colin Ehrlich';
+    return username.charAt(0).toUpperCase() + username.slice(1);
+}
+
+function getDisplayNameLower(username) {
+    if (!username) return 'unbekannt';
+    if (username === 'colin') return 'Colin Ehrlich';
+    return username;
+}
 
 // ==================== ZEIT-HILFSFUNKTIONEN ====================
 function timeStringToMs(timeStr) {
@@ -482,7 +496,7 @@ async function toggleBoatcheckUser(username) {
     settings[username] = !current;
     await saveBoatcheckSettings(settings);
     if (currentUser) await addLog(currentUser.username, 'Bootskontrolle-Sichtbarkeit geändert', 
-        `Benutzer "${username}": ${settings[username] ? 'sichtbar' : 'ausgeblendet'}`);
+        `Benutzer "${getDisplayName(username)}": ${settings[username] ? 'sichtbar' : 'ausgeblendet'}`);
     renderBoatcheckList();
 }
 
@@ -499,10 +513,9 @@ async function renderBoatcheckList() {
         const statusText = enabled ? '✅ Sichtbar' : '❌ Ausgeblendet';
         const toggleText = enabled ? 'Ausblenden' : 'Einblenden';
         const toggleClass = enabled ? 'disable' : 'enable';
-        const displayName = username === 'colin' ? 'Colin Ehrlich' : username;
         html += `
             <div class="boatcheck-user-item">
-                <span class="user-name">${esc(displayName)}</span>
+                <span class="user-name">${esc(getDisplayName(username))}</span>
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <span class="user-status ${statusClass}">${statusText}</span>
                     <button class="boatcheck-toggle ${toggleClass}" onclick="toggleBoatcheckUser('${esc(username)}')">${toggleText}</button>
@@ -517,10 +530,12 @@ async function renderBoatcheckList() {
 async function loadUsernames() {
     const snap = await database.ref('Navy-boote/users_auth').once('value');
     const users = snap.val() || {};
-    allUsernames = Object.keys(users);
-    if (allUsernames.includes('colin')) {
-        const idx = allUsernames.indexOf('colin');
-        allUsernames[idx] = 'Colin Ehrlich';
+    allUsernames = [];
+    userDisplayNames = {};
+    for (const [key, value] of Object.entries(users)) {
+        const displayName = getDisplayName(key);
+        allUsernames.push(displayName);
+        userDisplayNames[displayName] = key;
     }
 }
 
@@ -812,7 +827,7 @@ async function loadUserLogs() {
     }
     const snap = await database.ref('Navy-boote/logs').orderByChild('username').equalTo(username).once('value');
     const logs = snap.val();
-    displayLogs(logs, container, `Logs für: ${username}`);
+    displayLogs(logs, container, `Logs für: ${getDisplayName(username)}`);
 }
 
 async function loadAllLogs() {
@@ -832,7 +847,7 @@ function displayLogs(logs, container, title) {
     html += `<div style="max-height:600px;overflow-y:auto;">`;
     logEntries.forEach(log => {
         const time = new Date(log.timestamp).toLocaleString('de-DE');
-        html += `<div class="log-entry"><div class="log-time">🕐 ${time}</div><div class="log-action">👤 ${esc(log.username)} - ${esc(log.action)}</div>${log.details ? `<div class="log-details">📝 ${esc(log.details)}</div>` : ''}</div>`;
+        html += `<div class="log-entry"><div class="log-time">🕐 ${time}</div><div class="log-action">👤 ${esc(getDisplayName(log.username))} - ${esc(log.action)}</div>${log.details ? `<div class="log-details">📝 ${esc(log.details)}</div>` : ''}</div>`;
     });
     html += `</div>`;
     container.innerHTML = html;
@@ -847,9 +862,8 @@ async function populateLogUserSelect() {
     if (users) {
         for (const [name] of Object.entries(users)) {
             const option = document.createElement('option');
-            const displayName = name === 'colin' ? 'Colin Ehrlich' : name;
             option.value = name;
-            option.textContent = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+            option.textContent = getDisplayName(name);
             select.appendChild(option);
         }
     }
@@ -945,10 +959,15 @@ function startUserDataListener(username) {
 }
 
 async function doLogin() {
-    let username = document.getElementById('loginUsername').value.trim();
+    let usernameInput = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
     
-    if (username.toLowerCase() === 'colin ehrlich') {
+    // Prüfen ob der eingegebene Name ein DisplayName ist (z.B. "Colin Ehrlich")
+    let username = usernameInput.toLowerCase();
+    // Wenn der Name in userDisplayNames existiert, den echten Key verwenden
+    if (userDisplayNames[usernameInput]) {
+        username = userDisplayNames[usernameInput];
+    } else if (usernameInput.toLowerCase() === 'colin ehrlich') {
         username = 'colin';
     }
     username = username.toLowerCase();
@@ -1029,9 +1048,7 @@ async function tryAutoLogin() {
 function showMainApp(username) {
     document.getElementById('loginScreen').classList.add('hidden');
     document.getElementById('mainApp').classList.add('show');
-    let displayName = username;
-    if (username === 'colin') displayName = 'Colin Ehrlich';
-    document.getElementById('currentUserDisplay').textContent = '👤 ' + displayName;
+    document.getElementById('currentUserDisplay').textContent = '👤 ' + getDisplayName(username);
     const badge = document.getElementById('userBadge');
     if (isAdmin) {
         badge.textContent = '🔑 Admin';
@@ -1244,9 +1261,8 @@ async function populatePermissionUserSelect() {
     if (users) {
         for (const [name] of Object.entries(users)) {
             const option = document.createElement('option');
-            const displayName = name === 'colin' ? 'Colin Ehrlich' : name;
             option.value = name;
-            option.textContent = displayName.charAt(0).toUpperCase() + displayName.slice(1);
+            option.textContent = getDisplayName(name);
             select.appendChild(option);
         }
     }
@@ -1287,7 +1303,7 @@ async function savePermission(permission, value) {
     }
     if (currentUser) {
         await addLog(currentUser.username, 'Berechtigung geändert',
-            `Benutzer "${currentPermissionUser}": ${permission} = ${value ? 'Ein' : 'Aus'}`);
+            `Benutzer "${getDisplayName(currentPermissionUser)}": ${permission} = ${value ? 'Ein' : 'Aus'}`);
     }
     const statusEl = document.getElementById('permissionSaveStatus');
     statusEl.style.display = 'block';
@@ -1323,7 +1339,7 @@ async function createUser() {
         created: Date.now(),
         permissions: { stopwatch: true, confiscations: true, payout: true, logs: true, admin: false }
     });
-    if (currentUser) await addLog(currentUser.username, 'Benutzer erstellt', `Neuer Benutzer: ${u}`);
+    if (currentUser) await addLog(currentUser.username, 'Benutzer erstellt', `Neuer Benutzer: ${getDisplayName(u)}`);
     showToast('✅ Benutzer erstellt!', '#2ecc40');
     document.getElementById('newUsername').value = '';
     document.getElementById('newPassword').value = '';
@@ -1351,9 +1367,8 @@ async function loadUserList() {
         const permissionsDisplay = activePerms.length > 0 ?
             activePerms.map(p => `<div style="margin:2px 0;">${p}</div>`).join('') :
             '<span style="color:#ff5555;">Keine</span>';
-        const displayName = username === 'colin' ? 'Colin Ehrlich' : username;
         html += `<tr>
-            <td><strong>${esc(displayName)}</strong></td>
+            <td><strong>${esc(getDisplayName(username))}</strong></td>
             <td>${(userData.isAdmin || perms.admin === true) ? '<span style="color:#ff5555;font-weight:bold;">Admin</span>' : '<span style="color:#64b4ff;">User</span>'}</td>
             <td style="font-size:12px;">${permissionsDisplay}</td>
             <td>${userData.created ? new Date(userData.created).toLocaleDateString('de-DE') : '-'}</td>
@@ -1365,9 +1380,9 @@ async function loadUserList() {
 }
 
 async function deleteUser(u) {
-    if (!confirm('Benutzer "' + u + '" wirklich löschen? Der Benutzer wird sofort abgemeldet!')) return;
+    if (!confirm('Benutzer "' + getDisplayName(u) + '" wirklich löschen? Der Benutzer wird sofort abgemeldet!')) return;
     await database.ref('Navy-boote/users_auth/' + u).remove();
-    if (currentUser) await addLog(currentUser.username, 'Benutzer gelöscht', `Benutzer "${u}" wurde gelöscht`);
+    if (currentUser) await addLog(currentUser.username, 'Benutzer gelöscht', `Benutzer "${getDisplayName(u)}" wurde gelöscht`);
     showToast('Benutzer gelöscht und abgemeldet.', '#ff4444');
     loadUserList();
     populatePermissionUserSelect();
@@ -1443,15 +1458,14 @@ function loadAllUsersList() {
                 .sort((a, b) => b.lu - a.lu);
             
             sorted.forEach(u => {
-                const dn = u.name.charAt(0).toUpperCase() + u.name.slice(1);
                 const btn = document.createElement('div');
                 btn.className = 'name-tag';
-                btn.textContent = dn;
+                btn.textContent = getDisplayName(u.name);
                 btn.onclick = () => {
                     d.querySelectorAll('.name-tag').forEach(t => t.classList.remove('active'));
                     btn.classList.add('active');
-                    document.getElementById('personName').value = dn;
-                    document.getElementById('searchName').value = dn;
+                    document.getElementById('personName').value = getDisplayName(u.name);
+                    document.getElementById('searchName').value = getDisplayName(u.name);
                     selectedPersonName = u.name;
                     loadPersonalStats(u.name);
                     autoLoadPerson();
@@ -1510,7 +1524,7 @@ async function loadPersonalStats(nameLower) {
     }
     
     panel.classList.add('show');
-    nameEl.textContent = nameLower.charAt(0).toUpperCase() + nameLower.slice(1);
+    nameEl.textContent = getDisplayName(nameLower);
     tbody.innerHTML = '';
     
     const boatKeys = Object.keys(boats);
@@ -1530,41 +1544,54 @@ async function loadPersonalStats(nameLower) {
 
 // ==================== SPEICHERN MIT BESCHREIBUNG ====================
 async function saveTimeWithDesc(boatKey, taId) {
-    const name = document.getElementById('personName').value.trim();
-    if (!name) return alert('Name eingeben!');
+    let nameInput = document.getElementById('personName').value.trim();
+    if (!nameInput) return alert('Name eingeben!');
+    
+    // Prüfen ob DisplayName eingegeben wurde
+    let name = nameInput.toLowerCase();
+    if (userDisplayNames[nameInput]) {
+        name = userDisplayNames[nameInput];
+    }
+    name = name.toLowerCase();
+    
     const currentElapsed = running ? (Date.now() - startTime) : elapsed;
     if (currentElapsed === 0) return alert('Keine Zeit gestoppt!');
     const timeStr = formatTime(currentElapsed);
     const desc = document.getElementById(taId).value.trim();
-    const ref = database.ref('Navy-boote/users/' + name.toLowerCase() + '/boats/' + boatKey);
+    const ref = database.ref('Navy-boote/users/' + name + '/boats/' + boatKey);
     const snap = await ref.once('value');
     let arr = snap.val();
     if (!arr || !Array.isArray(arr)) arr = [];
-    // Eintrag mit Ersteller speichern
     const creator = currentUser ? currentUser.username : 'Unbekannt';
     arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now(), creator: creator });
     await ref.set(arr);
-    await database.ref('Navy-boote/users/' + name.toLowerCase() + '/lastUpdated').set(Date.now());
-    if (currentUser) await addLog(currentUser.username, 'Stoppuhr gespeichert', `Person: ${name}, Boot: ${boatKey}, Zeit: ${timeStr}`);
+    await database.ref('Navy-boote/users/' + name + '/lastUpdated').set(Date.now());
+    if (currentUser) await addLog(currentUser.username, 'Stoppuhr gespeichert', `Person: ${getDisplayName(name)}, Boot: ${boatKey}, Zeit: ${timeStr}`);
     document.getElementById(taId).value = '';
-    document.getElementById('searchName').value = name;
-    selectedPersonName = name.toLowerCase();
-    loadPersonalStats(name.toLowerCase());
+    document.getElementById('searchName').value = getDisplayName(name);
+    selectedPersonName = name;
+    loadPersonalStats(name);
     autoLoadPerson();
     alert('✅ ' + timeStr + ' gespeichert!');
 }
 
 // ==================== AUTO LOAD PERSON ====================
 async function autoLoadPerson() {
-    const raw = document.getElementById('searchName').value.trim();
+    let raw = document.getElementById('searchName').value.trim();
     if (!raw) {
         document.getElementById('resultTable').innerHTML = '<p>✏️ Namen eingeben...</p>';
         if (currentListener) currentListener.off();
         return;
     }
-    selectedPersonName = raw.toLowerCase();
-    loadPersonalStats(raw.toLowerCase());
-    listenToPersonData(raw.toLowerCase());
+    // Prüfen ob DisplayName eingegeben wurde
+    let name = raw.toLowerCase();
+    if (userDisplayNames[raw]) {
+        name = userDisplayNames[raw];
+    }
+    name = name.toLowerCase();
+    selectedPersonName = name;
+    loadPersonalStats(name);
+    listenToPersonData(name);
 }
 
 async function listenToPersonData(nl) {
@@ -1573,7 +1600,7 @@ async function listenToPersonData(nl) {
     currentListener.on('value', async snap => {
         const data = snap.val();
         const c = document.getElementById('resultTable');
-        const dn = nl.charAt(0).toUpperCase() + nl.slice(1);
+        const dn = getDisplayName(nl);
         if (!data || !data.boats) {
             c.innerHTML = '<div style="padding:15px;">⚓ ' + dn + ' hat noch keine Zeiten.</div>';
             return;
@@ -1585,7 +1612,7 @@ async function listenToPersonData(nl) {
             const displayName = (boat.emoji || '🚤') + ' ' + (boat.label || bi);
             if (entries && Array.isArray(entries) && entries.length) {
                 [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => {
-                    const creatorDisplay = e.creator ? e.creator.charAt(0).toUpperCase() + e.creator.slice(1) : 'Unbekannt';
+                    const creatorDisplay = e.creator ? getDisplayName(e.creator) : 'Unbekannt';
                     h += '<tr><td>' + (i === 0 ? displayName : '↳ ' + displayName) + '</td>';
                     h += '<td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td>';
                     h += '<td>' + esc(e.desc || '-') + '</td>';
@@ -1612,7 +1639,7 @@ window.deleteSingleEntry = async function(nl, bi, ts) {
         arr = arr.filter(e => e.timestamp !== ts);
         await ref.set(arr);
         await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now());
-        if (currentUser) await addLog(currentUser.username, 'Zeiteintrag gelöscht', `Person: ${nl}, Boot: ${bi}`);
+        if (currentUser) await addLog(currentUser.username, 'Zeiteintrag gelöscht', `Person: ${getDisplayName(nl)}, Boot: ${bi}`);
         autoLoadPerson();
         loadAllSoldiersAverage();
         loadPersonalStats(nl);
@@ -1855,7 +1882,6 @@ async function loadPayoutData() {
     const boats = await loadBoats();
     const boatKeys = Object.keys(boats);
     
-    // Alle Benutzer - nur anzeigen wenn enabled (default: true)
     const authorizedUsers = Object.keys(usersAuth).filter(name => {
         return boatcheckSettings[name] !== false;
     });
@@ -1884,14 +1910,13 @@ async function loadPayoutData() {
         if (saved.paid) totalAusgezahlt += summe;
         else totalOffen += summe;
         
-        const displayName = name.charAt(0).toUpperCase() + name.slice(1);
         const paidStatus = saved.paid ?
             '<span class="payout-status paid">✅ Ausgezahlt</span>' :
             '<span class="payout-status unpaid">⏳ Offen</span>';
         
         tbody.innerHTML += `
             <tr>
-                <td><strong>${esc(displayName)}</strong></td>
+                <td><strong>${esc(getDisplayName(name))}</strong></td>
                 <td>${isAdmin ? `<input type="number" class="count-input" value="${displayCount}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : `<strong>${displayCount}</strong>`}</td>
                 <td>${formatNumber(PRICE_PER_CHECK)} $</td>
                 <td class="amount-cell">${formatNumber(summe)} $</td>
@@ -1913,7 +1938,7 @@ async function updatePayoutCount(name, newCount) {
     const count = parseInt(newCount) || 0;
     const weekKey = currentPayoutWeek;
     await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ count });
-    if (currentUser) await addLog(currentUser.username, 'Auszahlung aktualisiert', `Benutzer: ${name}, Woche: ${weekKey}, Kontrollen: ${count}`);
+    if (currentUser) await addLog(currentUser.username, 'Auszahlung aktualisiert', `Benutzer: ${getDisplayName(name)}, Woche: ${weekKey}, Kontrollen: ${count}`);
     loadPayoutData();
 }
 
@@ -1921,7 +1946,7 @@ async function togglePayoutPaid(name, isPaid) {
     if (!isAdmin) return;
     const weekKey = currentPayoutWeek;
     await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ paid: isPaid });
-    if (currentUser) await addLog(currentUser.username, 'Auszahlungsstatus geändert', `Benutzer: ${name}, Woche: ${weekKey}, Status: ${isPaid ? 'Ausgezahlt' : 'Offen'}`);
+    if (currentUser) await addLog(currentUser.username, 'Auszahlungsstatus geändert', `Benutzer: ${getDisplayName(name)}, Woche: ${weekKey}, Status: ${isPaid ? 'Ausgezahlt' : 'Offen'}`);
     loadPayoutData();
 }
 
