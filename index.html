@@ -416,6 +416,7 @@ let userPermissions = {
 const PRICE_PER_CHECK = 5000;
 const SESSION_DURATION = 30 * 60 * 1000;
 let currentPermissionUser = null;
+let currentBoatcheckUser = null;
 let sessionTimeout = null;
 let userDataListener = null;
 let currentListener = null;
@@ -490,40 +491,49 @@ async function saveBoatcheckSettings(settings) {
     await database.ref('Navy-boote/boatcheck_users').set(settings);
 }
 
-async function toggleBoatcheckUser(username) {
-    const settings = await loadBoatcheckSettings();
-    const current = settings[username] || false;
-    settings[username] = !current;
-    await saveBoatcheckSettings(settings);
-    if (currentUser) await addLog(currentUser.username, 'Bootskontrolle-Sichtbarkeit geändert', 
-        `Benutzer "${getDisplayName(username)}": ${settings[username] ? 'sichtbar' : 'ausgeblendet'}`);
-    renderBoatcheckList();
+// ==================== BOATCHECK MIT DROPDOWN (wie Berechtigungen) ====================
+async function renderBoatcheckDropdown() {
+    const select = document.getElementById('boatcheckUserSelect');
+    if (!select) return;
+    const snap = await database.ref('Navy-boote/users_auth').once('value');
+    const users = snap.val();
+    select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
+    if (users) {
+        for (const [name] of Object.entries(users)) {
+            const option = document.createElement('option');
+            option.value = name;
+            option.textContent = getDisplayName(name);
+            select.appendChild(option);
+        }
+    }
 }
 
-async function renderBoatcheckList() {
-    const container = document.getElementById('boatcheckList');
-    if (!container) return;
-    const settings = await loadBoatcheckSettings();
-    const usersSnap = await database.ref('Navy-boote/users_auth').once('value');
-    const users = usersSnap.val() || {};
-    let html = '';
-    for (const [username, userData] of Object.entries(users)) {
-        const enabled = settings[username] !== false;
-        const statusClass = enabled ? 'enabled' : 'disabled';
-        const statusText = enabled ? '✅ Sichtbar' : '❌ Ausgeblendet';
-        const toggleText = enabled ? 'Ausblenden' : 'Einblenden';
-        const toggleClass = enabled ? 'disable' : 'enable';
-        html += `
-            <div class="boatcheck-user-item">
-                <span class="user-name">${esc(getDisplayName(username))}</span>
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                    <span class="user-status ${statusClass}">${statusText}</span>
-                    <button class="boatcheck-toggle ${toggleClass}" onclick="toggleBoatcheckUser('${esc(username)}')">${toggleText}</button>
-                </div>
-            </div>
-        `;
+async function loadUserBoatcheck() {
+    const username = document.getElementById('boatcheckUserSelect').value;
+    const editor = document.getElementById('boatcheckEditor');
+    if (!username) {
+        editor.style.display = 'none';
+        currentBoatcheckUser = null;
+        return;
     }
-    container.innerHTML = html || '<p style="color:#aaa;">Keine Benutzer vorhanden.</p>';
+    currentBoatcheckUser = username;
+    const settings = await loadBoatcheckSettings();
+    const enabled = settings[username] !== false;
+    document.getElementById('boatcheckEnabled').checked = enabled;
+    editor.style.display = 'block';
+}
+
+async function saveBoatcheck() {
+    if (!currentBoatcheckUser) return;
+    const enabled = document.getElementById('boatcheckEnabled').checked;
+    const settings = await loadBoatcheckSettings();
+    settings[currentBoatcheckUser] = enabled;
+    await saveBoatcheckSettings(settings);
+    if (currentUser) await addLog(currentUser.username, 'Bootskontrolle-Sichtbarkeit geändert', 
+        `Benutzer "${getDisplayName(currentBoatcheckUser)}": ${enabled ? 'sichtbar' : 'ausgeblendet'}`);
+    const statusEl = document.getElementById('boatcheckSaveStatus');
+    statusEl.style.display = 'block';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
 }
 
 // ==================== LOGIN SUGGESTIONS ====================
@@ -962,9 +972,7 @@ async function doLogin() {
     let usernameInput = document.getElementById('loginUsername').value.trim();
     const password = document.getElementById('loginPassword').value.trim();
     
-    // Prüfen ob der eingegebene Name ein DisplayName ist (z.B. "Colin Ehrlich")
     let username = usernameInput.toLowerCase();
-    // Wenn der Name in userDisplayNames existiert, den echten Key verwenden
     if (userDisplayNames[usernameInput]) {
         username = userDisplayNames[usernameInput];
     } else if (usernameInput.toLowerCase() === 'colin ehrlich') {
@@ -1217,11 +1225,21 @@ function setupAdminTab() {
             
             <div class="admin-section">
                 <h4>📋 Bootskontrolle-Sichtbarkeit</h4>
-                <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">
-                    Hier kannst du einstellen, welche Benutzer in der Auszahlungsübersicht angezeigt werden.
-                    <strong>Ausgeblendete</strong> Benutzer erscheinen nicht in der Auszahlung.
-                </p>
-                <div id="boatcheckList"></div>
+                <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Sichtbarkeit in der Auszahlung zu bearbeiten:</p>
+                <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
+                    <select id="boatcheckUserSelect" onchange="loadUserBoatcheck()" style="width:250px;">
+                        <option value="">-- Benutzer wählen --</option>
+                    </select>
+                </div>
+                <div id="boatcheckEditor" style="display:none;">
+                    <div class="permissions-grid">
+                        <div class="permission-item">
+                            <input type="checkbox" id="boatcheckEnabled" onchange="saveBoatcheck()">
+                            <label for="boatcheckEnabled">✅ In Auszahlung anzeigen</label>
+                        </div>
+                    </div>
+                    <p id="boatcheckSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Einstellung gespeichert!</p>
+                </div>
             </div>
             
             <div class="admin-section">
@@ -1239,7 +1257,10 @@ function setupAdminTab() {
     loadUserList();
     populatePermissionUserSelect();
     loadBoatAdminList();
-    renderBoatcheckList();
+    renderBoatcheckDropdown();
+    // Editor zurücksetzen
+    document.getElementById('boatcheckEditor').style.display = 'none';
+    currentBoatcheckUser = null;
 }
 
 async function manualCleanupLogs() {
@@ -1346,7 +1367,7 @@ async function createUser() {
     loadUserList();
     populatePermissionUserSelect();
     loadUsernames();
-    renderBoatcheckList();
+    renderBoatcheckDropdown();
 }
 
 async function loadUserList() {
@@ -1387,10 +1408,12 @@ async function deleteUser(u) {
     loadUserList();
     populatePermissionUserSelect();
     loadUsernames();
-    renderBoatcheckList();
+    renderBoatcheckDropdown();
     const editor = document.getElementById('permissionsEditor');
     if (editor) editor.style.display = 'none';
     currentPermissionUser = null;
+    document.getElementById('boatcheckEditor').style.display = 'none';
+    currentBoatcheckUser = null;
 }
 
 async function adminDeletePerson() {
@@ -1547,7 +1570,6 @@ async function saveTimeWithDesc(boatKey, taId) {
     let nameInput = document.getElementById('personName').value.trim();
     if (!nameInput) return alert('Name eingeben!');
     
-    // Prüfen ob DisplayName eingegeben wurde
     let name = nameInput.toLowerCase();
     if (userDisplayNames[nameInput]) {
         name = userDisplayNames[nameInput];
@@ -1583,7 +1605,6 @@ async function autoLoadPerson() {
         if (currentListener) currentListener.off();
         return;
     }
-    // Prüfen ob DisplayName eingegeben wurde
     let name = raw.toLowerCase();
     if (userDisplayNames[raw]) {
         name = userDisplayNames[raw];
