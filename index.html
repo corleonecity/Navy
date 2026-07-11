@@ -205,6 +205,692 @@
             .tab-btn { padding: 8px 14px; font-size: 12px; }
             .modal { padding: 16px; }
         }
+    
+        /* =========================================================
+           NEUES U.S. NAVY MARINE DESIGN
+           Schwarz + Marine-Blau, U.S. NAVY MARINE in Rot
+           Nur Darstellung geändert – Funktionen bleiben erhalten.
+        ========================================================== */
+        :root {
+            --navy-black: #000000;
+            --navy-panel: #030303;
+            --navy-panel-2: #080808;
+            --navy-line: #272727;
+            --navy-blue: #1f6feb;
+            --navy-blue-bright: #3b82f6;
+            --navy-blue-dark: #0b3d66;
+            --navy-red: #d3212d;
+            --navy-red-bright: #ef3340;
+            --navy-text: #f2f5f8;
+            --navy-muted: #90979e;
+        }
+
+        html,
+        body {
+            background: var(--navy-black) !important;
+            color: var(--navy-text) !important;
+            font-family: Arial, Helvetica, sans-serif !important;
+        }
+
+        body {
+            position: relative;
+        }
+
+        /* Hintergrund wirklich vollständig schwarz */
+        .background,
+        .overlay {
+            display: none !important;
+            background: var(--navy-black) !important;
+        }
+
+        /* Login */
+        #loginScreen {
+            background: #000000 !important;
+            backdrop-filter: none !important;
+        }
+
+        .login-box {
+            position: relative;
+            overflow: hidden;
+            max-width: 430px;
+            padding: 38px 36px;
+            background: #000000 !important;
+            border: 1px solid var(--navy-line) !important;
+            border-top: 3px solid var(--navy-blue) !important;
+            border-radius: 14px !important;
+            box-shadow:
+                0 24px 70px rgba(0, 0, 0, 0.95),
+                0 0 24px rgba(31, 111, 235, 0.10) !important;
+        }
+
+        .login-box::after {
+            content: "";
+            position: absolute;
+            left: -38%;
+            bottom: 0;
+            width: 38%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--navy-blue-bright), transparent);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.75);
+            animation: navyLineMove 6s linear infinite;
+        }
+
+        .login-box img {
+            width: 132px !important;
+            margin-bottom: 18px !important;
+            filter:
+                drop-shadow(0 10px 12px rgba(0, 0, 0, 0.95))
+                drop-shadow(0 0 12px rgba(59, 130, 246, 0.40)) !important;
+            animation: navyLogoFloat 5s ease-in-out infinite;
+        }
+
+        .login-box h2 {
+            color: var(--navy-red) !important;
+            font-family: Impact, "Arial Narrow", Arial, sans-serif !important;
+            font-size: 31px !important;
+            font-weight: 400 !important;
+            letter-spacing: 1.5px !important;
+            text-transform: uppercase;
+            text-shadow: 0 0 16px rgba(211, 33, 45, 0.30);
+        }
+
+        .login-box .sub {
+            color: #a9b0b7 !important;
+            letter-spacing: 2.2px !important;
+            text-transform: uppercase;
+        }
+
+        .login-box .input-with-suggest input,
+        .login-box input[type="password"],
+        input,
+        textarea,
+        select {
+            color: #ffffff !important;
+            background: #050505 !important;
+            border: 1px solid #303030 !important;
+            border-left-color: rgba(31, 111, 235, 0.85) !important;
+            border-radius: 8px !important;
+        }
+
+        .login-box .input-with-suggest input:focus,
+        .login-box input[type="password"]:focus,
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color: var(--navy-blue-bright) !important;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.12), 0 0 12px rgba(59, 130, 246, 0.22) !important;
+        }
+
+        .login-box .suggest-dropdown {
+            background: #050505 !important;
+            border-color: #303030 !important;
+            border-top-color: var(--navy-blue) !important;
+        }
+
+        .login-box .suggest-dropdown div {
+            color: #e5e7eb !important;
+            border-bottom: 1px solid #171717;
+        }
+
+        .login-box .suggest-dropdown div:hover {
+            background: #0a1628 !important;
+            color: #ffffff !important;
+        }
+
+        .btn-login {
+            color: #ffffff !important;
+            background: #050505 !important;
+            border: 2px solid var(--navy-blue) !important;
+            border-radius: 8px !important;
+            text-transform: uppercase;
+            letter-spacing: 1.3px !important;
+            box-shadow: inset 0 0 18px rgba(31, 111, 235, 0.10);
+        }
+
+        .btn-login:hover {
+            background: #0a1628 !important;
+            border-color: var(--navy-blue-bright) !important;
+            box-shadow: 0 0 22px rgba(59, 130, 246, 0.30) !important;
+        }
+
+        .login-error {
+            color: #ff4b55 !important;
+        }
+
+        /* Hauptcontainer */
+        #mainApp {
+            background: #000000 !important;
+        }
+
+        .container {
+            position: relative;
+            width: min(96%, 1450px) !important;
+            max-height: 94vh !important;
+            margin: 3vh auto !important;
+            overflow: hidden auto !important;
+            background: #000000 !important;
+            backdrop-filter: none !important;
+            border: 1px solid var(--navy-line) !important;
+            border-top: 3px solid var(--navy-blue) !important;
+            border-radius: 12px !important;
+            box-shadow:
+                0 22px 65px rgba(0, 0, 0, 0.95),
+                0 0 24px rgba(31, 111, 235, 0.08) !important;
+        }
+
+        .container::before {
+            content: "";
+            position: absolute;
+            z-index: 20;
+            top: 0;
+            left: -32%;
+            width: 32%;
+            height: 2px;
+            pointer-events: none;
+            background: linear-gradient(90deg, transparent, var(--navy-blue-bright), transparent);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.70);
+            animation: navyLineMove 8s linear infinite;
+        }
+
+        .container::-webkit-scrollbar,
+        .tab-content::-webkit-scrollbar,
+        .name-list::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        .container::-webkit-scrollbar-track,
+        .tab-content::-webkit-scrollbar-track,
+        .name-list::-webkit-scrollbar-track {
+            background: #050505 !important;
+        }
+
+        .container::-webkit-scrollbar-thumb,
+        .tab-content::-webkit-scrollbar-thumb,
+        .name-list::-webkit-scrollbar-thumb {
+            background: var(--navy-blue-dark) !important;
+            border: 1px solid var(--navy-blue) !important;
+            border-radius: 10px;
+        }
+
+        /* Kopfzeile */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 30;
+            min-height: 60px;
+            padding: 13px 20px !important;
+            background: #000000 !important;
+            border-bottom: 1px solid #272727 !important;
+        }
+
+        .top-bar > span:first-child {
+            color: var(--navy-red) !important;
+            font-family: Impact, "Arial Narrow", Arial, sans-serif !important;
+            font-size: 20px !important;
+            font-weight: 400 !important;
+            letter-spacing: 1px;
+            text-shadow: 0 0 13px rgba(211, 33, 45, 0.28);
+        }
+
+        #currentUserDisplay {
+            color: #e2e8f0 !important;
+        }
+
+        .top-bar .user-badge {
+            color: #8dbbff !important;
+            background: rgba(31, 111, 235, 0.10) !important;
+            border-color: var(--navy-blue) !important;
+            border-radius: 6px !important;
+        }
+
+        .top-bar .user-badge.admin {
+            color: #ff6972 !important;
+            background: rgba(211, 33, 45, 0.10) !important;
+            border-color: var(--navy-red) !important;
+        }
+
+        .btn-logout {
+            color: #d7dce2 !important;
+            background: #070707 !important;
+            border: 1px solid #333333 !important;
+            border-radius: 7px !important;
+        }
+
+        .btn-logout:hover {
+            color: #ffffff !important;
+            border-color: var(--navy-red) !important;
+            background: #140305 !important;
+        }
+
+        /* Tabs */
+        .tab-nav {
+            position: sticky;
+            top: 60px;
+            z-index: 29;
+            gap: 5px !important;
+            padding: 12px 16px 0 !important;
+            background: #000000 !important;
+            border-bottom: 1px solid #262626 !important;
+        }
+
+        .tab-btn {
+            top: 1px !important;
+            padding: 10px 19px !important;
+            color: #969da5 !important;
+            background: #050505 !important;
+            border: 1px solid #242424 !important;
+            border-bottom: none !important;
+            border-radius: 8px 8px 0 0 !important;
+        }
+
+        .tab-btn:hover {
+            color: #ffffff !important;
+            background: #0a101a !important;
+            border-color: #31425e !important;
+        }
+
+        .tab-btn.active {
+            color: #ffffff !important;
+            background: #07111f !important;
+            border-color: var(--navy-blue) !important;
+            border-bottom: 3px solid var(--navy-blue-bright) !important;
+            box-shadow: 0 -3px 15px rgba(59, 130, 246, 0.12) !important;
+        }
+
+        .tab-btn.admin-tab.active {
+            border-color: var(--navy-red) !important;
+            border-bottom-color: var(--navy-red-bright) !important;
+            background: #140305 !important;
+        }
+
+        .tab-content {
+            padding: 22px !important;
+            background: #000000 !important;
+        }
+
+        /* Hauptseite */
+        .homepage {
+            position: relative;
+            min-height: 58vh !important;
+            margin: 0;
+            padding: 40px 20px;
+            overflow: hidden;
+            background: #000000 !important;
+            border: 1px solid #272727;
+            border-top: 3px solid var(--navy-blue);
+            border-radius: 10px;
+        }
+
+        .homepage::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: -35%;
+            width: 35%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--navy-blue-bright), transparent);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.70);
+            animation: navyLineMove 7s linear infinite;
+        }
+
+        .homepage img {
+            width: 175px !important;
+            filter:
+                drop-shadow(0 10px 12px rgba(0, 0, 0, 0.95))
+                drop-shadow(0 0 16px rgba(59, 130, 246, 0.42)) !important;
+            animation: navyLogoFloat 5s ease-in-out infinite;
+        }
+
+        .homepage h1 {
+            color: var(--navy-red) !important;
+            font-family: Impact, "Arial Narrow", Arial, sans-serif !important;
+            font-size: clamp(38px, 5vw, 64px) !important;
+            font-weight: 400 !important;
+            letter-spacing: 2px !important;
+            text-shadow: 0 0 18px rgba(211, 33, 45, 0.30) !important;
+        }
+
+        .homepage .subtitle {
+            color: #a9b0b7 !important;
+            letter-spacing: 3px !important;
+        }
+
+        /* Zeit, Überschriften und Formulare */
+        .time {
+            color: #dbeafe !important;
+            background: #030303 !important;
+            border: 1px solid #292929;
+            border-top: 3px solid var(--navy-blue);
+            border-radius: 10px !important;
+            text-shadow: 0 0 18px rgba(59, 130, 246, 0.55) !important;
+        }
+
+        .section-title {
+            color: #9ec5ff !important;
+            border-left-color: var(--navy-blue) !important;
+            letter-spacing: 1.8px !important;
+        }
+
+        button {
+            color: #ffffff !important;
+            background: #070707 !important;
+            border: 1px solid #343434 !important;
+            border-radius: 7px !important;
+        }
+
+        button:hover {
+            background: #0a1628 !important;
+            border-color: var(--navy-blue-bright) !important;
+            box-shadow: 0 0 13px rgba(59, 130, 246, 0.15);
+        }
+
+        #startBtn,
+        .btn-save,
+        .btn-card-action {
+            color: #cfe2ff !important;
+            background: #07111f !important;
+            border-color: var(--navy-blue) !important;
+        }
+
+        button[onclick="resetTimer()"] {
+            color: #dce3ea !important;
+            background: #080808 !important;
+            border-color: #4b5563 !important;
+        }
+
+        .btn-submit,
+        .btn-new-confiscation,
+        .boatcheck-toggle.enable {
+            color: #b8ffc5 !important;
+            background: #07180b !important;
+            border-color: #2ecc40 !important;
+        }
+
+        .btn-cancel {
+            color: #d7dce2 !important;
+            background: #080808 !important;
+            border-color: #444444 !important;
+        }
+
+        .btn-danger,
+        .btn-card-action.btn-danger,
+        .boatcheck-toggle.disable {
+            color: #ff9ca3 !important;
+            background: #180306 !important;
+            border-color: var(--navy-red) !important;
+        }
+
+        /* Karten und Panels */
+        .avg-panel,
+        .personal-panel,
+        .boat-panel,
+        .search-results,
+        .confiscation-card,
+        .admin-section,
+        .log-entry,
+        .boatcheck-user-item,
+        .payout-total,
+        .name-list {
+            background: #030303 !important;
+            backdrop-filter: none !important;
+            border: 1px solid #292929 !important;
+            border-left: 3px solid var(--navy-blue) !important;
+            border-radius: 9px !important;
+            box-shadow: none !important;
+        }
+
+        .boat-panel,
+        .confiscation-card {
+            transition: transform 0.22s ease, border-color 0.22s ease, box-shadow 0.22s ease;
+        }
+
+        .boat-panel:hover,
+        .confiscation-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--navy-blue) !important;
+            box-shadow: 0 9px 25px rgba(0, 0, 0, 0.85), 0 0 15px rgba(31, 111, 235, 0.10) !important;
+        }
+
+        .avg-panel h4,
+        .personal-panel h4,
+        .boat-panel h4 {
+            color: #edf4ff !important;
+            border-bottom-color: rgba(59, 130, 246, 0.45) !important;
+        }
+
+        .avg-table .avg-time,
+        .personal-table .avg-time,
+        .confiscation-card .card-header h4,
+        .log-entry .log-action {
+            color: var(--navy-blue-bright) !important;
+        }
+
+        .name-tag {
+            color: #dbeafe !important;
+            background: #050505 !important;
+            border-color: #303c50 !important;
+            border-radius: 7px !important;
+        }
+
+        .name-tag:hover,
+        .name-tag.active {
+            color: #ffffff !important;
+            background: #0a1628 !important;
+            border-color: var(--navy-blue-bright) !important;
+        }
+
+        /* Tabellen */
+        table {
+            background: #000000 !important;
+        }
+
+        th,
+        .avg-table th,
+        .personal-table th,
+        .payout-table th {
+            color: #bcd7ff !important;
+            background: #07111f !important;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.42) !important;
+        }
+
+        td,
+        .avg-table td,
+        .personal-table td,
+        .payout-table td {
+            color: #dbe2ea !important;
+            border-bottom-color: #202020 !important;
+        }
+
+        tr:hover td {
+            background: #050a11 !important;
+        }
+
+        .badge-time {
+            color: #cfe2ff !important;
+            background: #07111f !important;
+            border: 1px solid #263a58;
+            border-radius: 6px !important;
+        }
+
+        /* Beschlagnahmungen, Modal, Auszahlungen */
+        #tab-confiscations .confiscation-header h3,
+        #tab-logs > h3 {
+            color: var(--navy-blue-bright) !important;
+        }
+
+        .money-badge {
+            border-radius: 7px !important;
+        }
+
+        .money-badge.items,
+        .card-type.zivil {
+            color: #8dbbff !important;
+            background: rgba(31, 111, 235, 0.10) !important;
+            border-color: var(--navy-blue) !important;
+        }
+
+        .confiscation-card .card-header {
+            border-bottom-color: #282828 !important;
+        }
+
+        .confiscation-card .card-label,
+        .modal-field label,
+        .payout-total-item .lbl {
+            color: #91b8ea !important;
+        }
+
+        .confiscation-card .card-value,
+        .confiscation-card .card-items {
+            color: #dbeafe !important;
+        }
+
+        .confiscation-card .card-items {
+            background: #000000 !important;
+            border: 1px solid #222222;
+        }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.90) !important;
+        }
+
+        .modal {
+            background: #030303 !important;
+            backdrop-filter: none !important;
+            border: 1px solid #303030 !important;
+            border-top: 3px solid var(--navy-blue) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.95) !important;
+        }
+
+        .modal h3 {
+            color: var(--navy-blue-bright) !important;
+            border-bottom-color: rgba(59, 130, 246, 0.35) !important;
+        }
+
+        .modal-actions {
+            border-top-color: #262626 !important;
+        }
+
+        .close-modal-x {
+            color: #e5e7eb !important;
+        }
+
+        .close-modal-x:hover {
+            color: #ff5963 !important;
+            border-color: transparent !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+
+        /* Admin bleibt als Warn-/Leitungsbereich rot */
+        .admin-section {
+            border-left-color: var(--navy-red) !important;
+        }
+
+        .admin-section h4,
+        .user-table th {
+            color: #ff7b83 !important;
+        }
+
+        .admin-section h4 {
+            border-bottom-color: rgba(211, 33, 45, 0.35) !important;
+        }
+
+        .user-table th {
+            background: #160407 !important;
+        }
+
+        .permission-item {
+            background: #050505 !important;
+            border: 1px solid #282828;
+            border-radius: 7px !important;
+        }
+
+        /* Dynamische Inline-Farben überschreiben */
+        button[onclick="openBoatModal()"] {
+            color: #cfe2ff !important;
+            background: #07111f !important;
+            border-color: var(--navy-blue) !important;
+        }
+
+        #personalPanelName,
+        #payoutInfo,
+        .card-label,
+        .log-time {
+            color: #91b8ea !important;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start !important;
+            }
+
+            .container {
+                width: 100% !important;
+                min-height: 100vh;
+                max-height: 100vh !important;
+                margin: 0 !important;
+                border-left: none !important;
+                border-right: none !important;
+                border-bottom: none !important;
+                border-radius: 0 !important;
+            }
+
+            .top-bar {
+                position: relative;
+                top: auto;
+            }
+
+            .tab-nav {
+                position: relative;
+                top: auto;
+            }
+
+            .tab-content {
+                padding: 13px !important;
+            }
+
+            .homepage {
+                min-height: 67vh !important;
+                padding: 30px 14px;
+            }
+
+            .homepage img {
+                width: 135px !important;
+            }
+
+            .homepage h1 {
+                font-size: 36px !important;
+            }
+
+            .login-box {
+                width: calc(100% - 24px) !important;
+                padding: 30px 20px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .login-box::after,
+            .container::before,
+            .homepage::after,
+            .login-box img,
+            .homepage img {
+                animation: none !important;
+            }
+        }
+
+        @keyframes navyLineMove {
+            from { left: -38%; }
+            to { left: 110%; }
+        }
+
+        @keyframes navyLogoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
     </style>
 </head>
 <body>
@@ -425,7 +1111,7 @@ let editingConfiscationId = null;
 let currentPayoutWeek = '';
 let allUsernames = [];
 let userDisplayNames = {};
-let selectedPersonName = null;
+let selectedPersonName = '';
 
 // Bootverwaltung
 let editingBoatKey = null;
@@ -538,16 +1224,25 @@ async function saveBoatcheck() {
 }
 
 // ==================== LOGIN SUGGESTIONS ====================
-async function loadUsernames() {
-    const snap = await database.ref('Navy-boote/users_auth').once('value');
-    const users = snap.val() || {};
-    allUsernames = [];
-    userDisplayNames = {};
-    for (const [key, value] of Object.entries(users)) {
-        const displayName = getDisplayName(key);
-        allUsernames.push(displayName);
-        userDisplayNames[displayName] = key;
+async function updateAllUsernameLists() {
+    try {
+        const snap = await database.ref('Navy-boote/users_auth').once('value');
+        const users = snap.val() || {};
+        allUsernames = [];
+        userDisplayNames = {};
+        
+        for (const [key, value] of Object.entries(users)) {
+            const displayName = getDisplayName(key);
+            allUsernames.push(displayName);
+            userDisplayNames[displayName] = key;
+        }
+    } catch (error) {
+        console.error('Fehler beim Aktualisieren der Benutzernamen:', error);
     }
+}
+
+async function loadUsernames() {
+    await updateAllUsernameLists();
 }
 
 function showSuggestions(value) {
@@ -931,7 +1626,6 @@ async function ensureAdminExists() {
                     admin: true
                 }
             });
-            console.log('✅ Admin-Benutzer "colin" wurde erstellt');
         }
     } catch (error) {
         console.error('Fehler beim Admin-Check:', error);
@@ -1260,6 +1954,7 @@ function setupAdminTab() {
     populatePermissionUserSelect();
     loadBoatAdminList();
     renderBoatcheckDropdown();
+    // Editor zurücksetzen
     document.getElementById('boatcheckEditor').style.display = 'none';
     currentBoatcheckUser = null;
 }
@@ -1350,34 +2045,38 @@ async function savePermission(permission, value) {
     }
 }
 
+// ==================== USER VERWALTUNG ====================
 async function createUser() {
-    console.log('createUser() wurde aufgerufen');
+    const usernameInput = document.getElementById('newUsername');
+    const passwordInput = document.getElementById('newPassword');
     
-    const u = document.getElementById('newUsername').value.trim().toLowerCase();
-    const p = document.getElementById('newPassword').value.trim();
+    if (!usernameInput || !passwordInput) {
+        alert('Bitte Benutzername und Passwort eingeben!');
+        return;
+    }
     
-    console.log('Benutzername:', u);
-    console.log('Passwort:', p ? '***' : 'leer');
+    const u = usernameInput.value.trim().toLowerCase();
+    const p = passwordInput.value.trim();
     
     if (!u || !p) {
-        alert('❌ Bitte Benutzername und Passwort eingeben!');
+        alert('Bitte Benutzername und Passwort eingeben!');
         return;
     }
     
     if (u === 'colin') {
-        alert('❌ Dieser Benutzername ist reserviert!');
+        alert('Dieser Benutzername ist reserviert!');
         return;
     }
     
     try {
         // Prüfen ob Benutzer bereits existiert
-        const checkSnap = await database.ref('Navy-boote/users_auth/' + u).once('value');
-        if (checkSnap.exists()) {
-            alert('❌ Dieser Benutzername existiert bereits!');
+        const existing = await database.ref('Navy-boote/users_auth/' + u).once('value');
+        if (existing.exists()) {
+            alert('Benutzer existiert bereits!');
             return;
         }
         
-        // Benutzer in Firebase speichern
+        // Neuen Benutzer anlegen
         await database.ref('Navy-boote/users_auth/' + u).set({
             password: p,
             isAdmin: false,
@@ -1391,27 +2090,25 @@ async function createUser() {
             }
         });
         
-        console.log('✅ Benutzer erfolgreich in Firebase gespeichert');
-        
+        // Log-Eintrag
         if (currentUser) {
             await addLog(currentUser.username, 'Benutzer erstellt', `Neuer Benutzer: ${getDisplayName(u)}`);
         }
         
+        // UI aktualisieren
         showToast('✅ Benutzer erstellt!', '#2ecc40');
+        usernameInput.value = '';
+        passwordInput.value = '';
         
-        // Eingabefelder leeren
-        document.getElementById('newUsername').value = '';
-        document.getElementById('newPassword').value = '';
-        
-        // Alle Listen aktualisieren
+        // Listen aktualisieren
         await loadUserList();
         await populatePermissionUserSelect();
-        await loadUsernames();
+        await updateAllUsernameLists();
         await renderBoatcheckDropdown();
         
     } catch (error) {
-        console.error('❌ Fehler beim Erstellen des Benutzers:', error);
-        alert('❌ Fehler beim Erstellen des Benutzers: ' + error.message);
+        console.error('Fehler beim Erstellen des Benutzers:', error);
+        alert('Fehler beim Erstellen des Benutzers: ' + error.message);
     }
 }
 
@@ -1452,7 +2149,7 @@ async function deleteUser(u) {
     showToast('Benutzer gelöscht und abgemeldet.', '#ff4444');
     loadUserList();
     populatePermissionUserSelect();
-    loadUsernames();
+    updateAllUsernameLists();
     renderBoatcheckDropdown();
     const editor = document.getElementById('permissionsEditor');
     if (editor) editor.style.display = 'none';
@@ -2051,9 +2748,9 @@ async function init() {
         await renderBoats();
         loadAllSoldiersAverage();
         loadAllUsersList();
-        console.log('✅ System initialisiert');
+        console.log('System initialisiert');
     } catch (error) {
-        console.error('❌ Init-Fehler:', error);
+        console.error('Init-Fehler:', error);
     }
 }
 
