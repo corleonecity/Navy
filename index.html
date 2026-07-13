@@ -196,6 +196,42 @@
         .boatcheck-toggle.disable { background: #8b0000; color: white; }
         .boatcheck-toggle.disable:hover { background: #aa1111; }
 
+        /* Manuelles Bootskontrollen-Feld */
+        .manual-control-section {
+            background: rgba(15,25,45,0.7);
+            border: 1px solid rgba(59,130,246,0.4);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+        .manual-control-section h4 {
+            margin: 0 0 10px;
+            color: #ffaa33;
+            font-size: 1.1rem;
+            border-bottom: 1px dashed rgba(255,170,51,0.3);
+            padding-bottom: 8px;
+        }
+        .manual-control-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .manual-control-input input {
+            width: 120px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border: 2px solid rgba(59,130,246,0.6);
+            color: #ffaa33;
+        }
+        .manual-control-input label {
+            color: #8ab4e0;
+            font-size: 14px;
+        }
+
         @media (max-width: 768px) {
             .time { font-size: 36px; padding: 6px; }
             .homepage h1 { font-size: 1.8rem; }
@@ -622,7 +658,8 @@
         .log-entry,
         .boatcheck-user-item,
         .payout-total,
-        .name-list {
+        .name-list,
+        .manual-control-section {
             background: #030303 !important;
             backdrop-filter: none !important;
             border: 1px solid #292929 !important;
@@ -645,7 +682,8 @@
 
         .avg-panel h4,
         .personal-panel h4,
-        .boat-panel h4 {
+        .boat-panel h4,
+        .manual-control-section h4 {
             color: #edf4ff !important;
             border-bottom-color: rgba(59, 130, 246, 0.45) !important;
         }
@@ -725,7 +763,8 @@
 
         .confiscation-card .card-label,
         .modal-field label,
-        .payout-total-item .lbl {
+        .payout-total-item .lbl,
+        .manual-control-input label {
             color: #91b8ea !important;
         }
 
@@ -981,6 +1020,22 @@
         </div>
 
         <div id="tab-payout" class="tab-content">
+            <!-- ========== MANUELLES BOOTSKONTROLLEN-FELD (OBEN) ========== -->
+            <div class="manual-control-section">
+                <h4>📝 Bootskontrollen (manuell eingeben)</h4>
+                <p style="color:#8ab4e0;font-size:12px;margin-bottom:10px;">
+                    Trage hier die <strong>tatsächliche</strong> Anzahl der Bootskontrollen ein.<br>
+                    <em>Dieser Wert überschreibt die automatische Zählung!</em>
+                </p>
+                <div class="manual-control-input">
+                    <label for="manualBootkontrollen">Anzahl:</label>
+                    <input type="number" id="manualBootkontrollen" value="0" min="0" 
+                           onchange="applyManualBootkontrollen()" oninput="applyManualBootkontrollen()">
+                    <button onclick="applyManualBootkontrollen()" style="background:#2e7d32;border-color:#4caf50;">✅ Übernehmen</button>
+                </div>
+                <p style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;" id="manualBootStatus">✅ Manuelle Kontrollen übernommen!</p>
+            </div>
+
             <div class="payout-header">
                 <h3 style="color:#2ecc40;margin:0;">💰 Auszahlung</h3>
                 <div class="payout-week-selector">
@@ -1099,6 +1154,9 @@ let allUsernames = [];
 let userDisplayNames = {};
 let selectedPersonName = '';
 
+// Manuelle Bootskontrollen
+let manualBootkontrollenCount = 0;
+
 // Bootverwaltung
 let editingBoatKey = null;
 const DEFAULT_BOATS = {
@@ -1152,6 +1210,27 @@ function calcStats(entries) {
         avgMs: Math.round(sum / validTimes.length),
         count: validTimes.length
     };
+}
+
+// ==================== MANUELLE BOOTSKONTROLLEN ====================
+function applyManualBootkontrollen() {
+    const input = document.getElementById('manualBootkontrollen');
+    const wert = parseInt(input.value);
+    
+    if (!isNaN(wert) && wert >= 0) {
+        manualBootkontrollenCount = wert;
+    } else {
+        manualBootkontrollenCount = 0;
+        input.value = 0;
+    }
+    
+    // Status anzeigen
+    const statusEl = document.getElementById('manualBootStatus');
+    statusEl.style.display = 'block';
+    setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+    
+    // Auszahlungsdaten neu laden mit dem manuellen Wert
+    loadPayoutData();
 }
 
 // ==================== BOOTKONTROLLEN-BERECHTIGUNG ====================
@@ -2624,10 +2703,13 @@ async function loadPayoutData() {
         return boatcheckSettings[name] !== false;
     });
     
+    // VERWENDE MANUELLEN WERT, WENN GESETZT (>0), SONST DEN GESPEICHERTEN WERT
+    const useCount = manualBootkontrollenCount > 0 ? manualBootkontrollenCount : null;
+    
     // Für jeden autorisierten Benutzer den gespeicherten Count aus der Auszahlung laden
     for (const name of authorizedUsers) {
         const saved = payoutData[name] || { count: 0, paid: false };
-        const displayCount = saved.count || 0;
+        const displayCount = useCount !== null ? useCount : (saved.count || 0);
         const summe = displayCount * PRICE_PER_CHECK;
         totalKontrollen += displayCount;
         totalSumme += summe;
