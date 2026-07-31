@@ -32,18 +32,6 @@
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
         }
 
-        [data-theme="light"] {
-            --bg-primary: #f0f4f8;
-            --bg-secondary: #ffffff;
-            --bg-card: #f8fafc;
-            --bg-input: #ffffff;
-            --text-primary: #1a2332;
-            --text-secondary: #2d3748;
-            --text-muted: #4a6fa5;
-            --navy-line: #d0d7e0;
-            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -65,30 +53,6 @@
         .background,
         .overlay {
             display: none !important;
-        }
-
-        /* ===== THEME TOGGLE ===== */
-        .theme-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            background: var(--bg-secondary);
-            border: 1px solid var(--navy-line);
-            border-radius: 50%;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 22px;
-            transition: 0.3s;
-            color: var(--text-primary);
-        }
-        .theme-toggle:hover {
-            transform: scale(1.1);
-            border-color: var(--navy-blue);
         }
 
         /* ===== LOGIN ===== */
@@ -876,6 +840,32 @@
             border: 1px solid var(--navy-line);
         }
 
+        .action-btn {
+            background: none;
+            border: 1px solid var(--navy-line);
+            padding: 4px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+            color: var(--text-secondary);
+        }
+        .action-btn:hover {
+            background: rgba(31, 111, 235, 0.1);
+        }
+        .action-btn.eye {
+            border-color: var(--navy-blue);
+            color: var(--navy-blue-bright);
+        }
+        .action-btn.edit {
+            border-color: var(--navy-blue);
+            color: var(--navy-blue-bright);
+        }
+        .action-btn.delete {
+            border-color: var(--navy-red);
+            color: var(--navy-red);
+        }
+
         /* ===== PAYOUT ===== */
         .payout-header {
             display: flex;
@@ -955,7 +945,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.85);
             z-index: 1000;
             justify-content: center;
             align-items: center;
@@ -1034,6 +1024,22 @@
             padding-top: 12px;
             border-top: 1px solid var(--navy-line);
             flex-wrap: wrap;
+        }
+
+        .modal .detail-row {
+            display: flex;
+            padding: 6px 0;
+            border-bottom: 1px solid var(--navy-line);
+            font-size: 14px;
+        }
+        .modal .detail-label {
+            font-weight: 600;
+            color: var(--text-muted);
+            min-width: 140px;
+        }
+        .modal .detail-value {
+            color: var(--text-secondary);
+            flex: 1;
         }
 
         /* ===== ADMIN ===== */
@@ -1139,13 +1145,6 @@
                 width: calc(100% - 24px) !important;
                 padding: 30px 20px;
             }
-            .theme-toggle {
-                top: 10px;
-                right: 10px;
-                width: 36px;
-                height: 36px;
-                font-size: 18px;
-            }
             .stats-layout {
                 grid-template-columns: 1fr;
             }
@@ -1187,8 +1186,6 @@
     </style>
 </head>
 <body>
-
-    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
 
     <div id="loginScreen">
         <div class="login-box">
@@ -1238,14 +1235,12 @@
                 <div class="time" id="display">00:00.00</div>
                 <div class="stopwatch-controls">
                     <button class="btn-start" onclick="startStop()" id="startBtn">▶ Start</button>
-                    <button onclick="addLap()">⏱ Lap</button>
                     <button onclick="resetTimer()">↺ Reset</button>
                 </div>
                 <div id="lapList" style="text-align:center;font-size:14px;color:var(--text-muted);min-height:24px;"></div>
 
                 <div class="input-group">
                     <input type="text" id="personName" placeholder="Name der Person" autocomplete="off">
-                    <button onclick="autoFillName()" style="font-size:12px;">📋 Letzte</button>
                 </div>
 
                 <div class="section-title">🚤 BOOTE & SPEICHERN</div>
@@ -1296,7 +1291,6 @@
                 <!-- SUCHE & FILTER -->
                 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:15px;">
                     <input type="text" id="confiscationSearch" placeholder="🔍 Suchen..." oninput="filterConfiscations()" style="flex:1;min-width:200px;">
-                    <input type="date" id="confiscationDateFilter" onchange="filterConfiscations()" style="width:160px;">
                     <select id="confiscationOrgFilter" onchange="filterConfiscations()" style="width:140px;">
                         <option value="">Alle</option>
                         <option value="Zivi">Zivi</option>
@@ -1371,32 +1365,7 @@
                 </div>
             </div>
 
-            <!-- STATISTIKEN -->
-            <div id="tab-stats" class="tab-content">
-                <h3 style="color:var(--navy-blue-bright);margin-bottom:16px;">📊 Statistiken</h3>
-
-                <div class="stats-layout">
-                    <div class="stats-panel">
-                        <h4>💰 Auszahlung pro Woche (letzte 8 Wochen)</h4>
-                        <div class="chart-container"><canvas id="payoutChart"></canvas></div>
-                    </div>
-                    <div class="stats-panel">
-                        <h4>🚤 Bootskontrollen pro Woche (letzte 8 Wochen)</h4>
-                        <div class="chart-container"><canvas id="boatChecksChart"></canvas></div>
-                    </div>
-                </div>
-
-                <div class="stats-layout" style="margin-top:20px;">
-                    <div class="stats-panel">
-                        <h4>👤 Kontrollen pro Benutzer (aktuelle Woche)</h4>
-                        <div class="chart-container"><canvas id="userChecksChart"></canvas></div>
-                    </div>
-                    <div class="stats-panel">
-                        <h4>📋 Boot-Protokolle Entwicklung (letzte 8 Wochen)</h4>
-                        <div class="chart-container"><canvas id="protocolsChart"></canvas></div>
-                    </div>
-                </div>
-            </div>
+            <!-- STATISTIKEN ENTFERNT -->
 
             <!-- LOGS -->
             <div id="tab-logs" class="tab-content">
@@ -1442,7 +1411,6 @@
                             <div class="permission-item"><input type="checkbox" id="permStopwatch" onchange="savePermission('stopwatch', this.checked)"><label for="permStopwatch">⏱️ Stoppuhr</label></div>
                             <div class="permission-item"><input type="checkbox" id="permConfiscations" onchange="savePermission('confiscations', this.checked)"><label for="permConfiscations">📋 Beschlagnahmungen</label></div>
                             <div class="permission-item"><input type="checkbox" id="permPayout" onchange="savePermission('payout', this.checked)"><label for="permPayout">💰 Auszahlung</label></div>
-                            <div class="permission-item"><input type="checkbox" id="permStats" onchange="savePermission('stats', this.checked)"><label for="permStats">📊 Statistiken</label></div>
                             <div class="permission-item"><input type="checkbox" id="permLogs" onchange="savePermission('logs', this.checked)"><label for="permLogs">📊 Logs</label></div>
                             <div class="permission-item"><input type="checkbox" id="permAdmin" onchange="savePermission('admin', this.checked)"><label for="permAdmin">🔑 Admin</label></div>
                         </div>
@@ -1461,7 +1429,7 @@
                     <div id="boatOrderListContainer"></div>
                 </div>
 
-                <!-- Zeitkorrektur (NEU) -->
+                <!-- Zeitkorrektur -->
                 <div class="admin-section">
                     <h4>✏️ Zeitkorrektur (ADMIN)</h4>
                     <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Bearbeite oder lösche Zeiteinträge von Benutzern.</p>
@@ -1573,6 +1541,16 @@
         </div>
     </div>
 
+    <!-- MODAL: DETAIL ANSICHT BESCHLAGNAHMUNG -->
+    <div class="modal-overlay" id="confiscationDetailOverlay">
+        <div class="modal">
+            <button class="close-modal-x" onclick="closeConfiscationDetail()">✕</button>
+            <h3 id="detailModalTitle">📋 Beschlagnahmung Details</h3>
+            <div id="detailModalContent"></div>
+            <div class="modal-actions"><button onclick="closeConfiscationDetail()" style="border-color:#666;">Schließen</button></div>
+        </div>
+    </div>
+
     <!-- MODAL: BOOT -->
     <div class="modal-overlay" id="boatModalOverlay">
         <div class="modal" style="max-width:500px;">
@@ -1602,7 +1580,7 @@
         // ==================== GLOBALE VARIABLEN ====================
         let currentUser = null;
         let isAdmin = false;
-        let userPermissions = { stopwatch: true, confiscations: true, payout: true, stats: true, logs: true, admin: false };
+        let userPermissions = { stopwatch: true, confiscations: true, payout: true, logs: true, admin: false };
         const PRICE_PER_CHECK = 5000;
         const SESSION_DURATION = 30 * 60 * 1000;
         let userDataListener = null;
@@ -1611,7 +1589,6 @@
             elapsed = 0,
             stopwatchInterval = null,
             running = false;
-        let laps = [];
         let editingConfiscationId = null;
         let currentPayoutWeek = '';
         let allUsernames = [];
@@ -1622,7 +1599,6 @@
         let boatOrder = [];
         let confiscationWeekOffset = 0;
         let allConfiscations = [];
-        let chartInstances = {};
         let lastUsedName = '';
 
         const DEFAULT_BOATS = {
@@ -1694,19 +1670,6 @@
             return { avgMs: Math.round(validTimes.reduce((a, b) => a + b, 0) / validTimes.length), count: validTimes.length };
         }
 
-        // ==================== THEME ====================
-        function toggleTheme() {
-            const html = document.documentElement;
-            const current = html.getAttribute('data-theme');
-            html.setAttribute('data-theme', current === 'light' ? 'dark' : 'light');
-            localStorage.setItem('theme', html.getAttribute('data-theme'));
-        }
-
-        function loadTheme() {
-            const saved = localStorage.getItem('theme') || 'dark';
-            document.documentElement.setAttribute('data-theme', saved);
-        }
-
         // ==================== SESSION ====================
         function saveSession(username, isAdminUser, permissions) {
             localStorage.setItem('navySession', JSON.stringify({ username, isAdmin: isAdminUser, permissions, expiry: Date
@@ -1763,8 +1726,7 @@
                     password: '22122009',
                     isAdmin: true,
                     created: Date.now(),
-                    permissions: { stopwatch: true, confiscations: true, payout: true, stats: true, logs: true,
-                        admin: true }
+                    permissions: { stopwatch: true, confiscations: true, payout: true, logs: true, admin: true }
                 });
             }
         }
@@ -1809,7 +1771,6 @@
                     userPermissions.stopwatch = p.stopwatch !== false;
                     userPermissions.confiscations = p.confiscations !== false;
                     userPermissions.payout = p.payout !== false;
-                    userPermissions.stats = p.stats !== false;
                     userPermissions.logs = p.logs !== false;
                     saveSession(currentUser.username, isAdmin, userPermissions);
                     updateTabs();
@@ -1841,15 +1802,13 @@
             currentUser = { username, isAdmin: userData.isAdmin === true };
             isAdmin = currentUser.isAdmin;
             if (isAdmin) {
-                userPermissions = { stopwatch: true, confiscations: true, payout: true, stats: true, logs: true,
-                    admin: true };
+                userPermissions = { stopwatch: true, confiscations: true, payout: true, logs: true, admin: true };
             } else {
                 const p = userData.permissions || {};
                 userPermissions = {
                     stopwatch: p.stopwatch !== false,
                     confiscations: p.confiscations !== false,
                     payout: p.payout !== false,
-                    stats: p.stats !== false,
                     logs: p.logs !== false,
                     admin: false
                 };
@@ -1861,7 +1820,6 @@
             updateTabs();
             await addLog(username, 'Login', 'Benutzer hat sich angemeldet');
             switchTab('home');
-            loadTheme();
         }
 
         async function tryAutoLogin() {
@@ -1908,7 +1866,7 @@
                 currentListener = null; }
             currentUser = null;
             isAdmin = false;
-            userPermissions = { stopwatch: true, confiscations: true, payout: true, stats: true, logs: true, admin: false };
+            userPermissions = { stopwatch: true, confiscations: true, payout: true, logs: true, admin: false };
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('mainApp').classList.remove('show');
             document.getElementById('loginPassword').value = '';
@@ -1929,7 +1887,6 @@
                 { id: 'stopwatch', label: '⏱️ Stoppuhr', perm: userPermissions.stopwatch },
                 { id: 'confiscations', label: '📋 Beschlagnahmungen', perm: userPermissions.confiscations },
                 { id: 'payout', label: '💰 Auszahlung', perm: userPermissions.payout },
-                { id: 'stats', label: '📊 Statistiken', perm: userPermissions.stats },
                 { id: 'logs', label: '📊 Logs', perm: userPermissions.logs }
             ];
             if (isAdmin) tabs.push({ id: 'admin', label: '🔑 Admin', perm: true });
@@ -1964,7 +1921,7 @@
                 loadAllUsersList(); } else if (name === 'confiscations') { updateConfiscationWeekUI();
                 loadConfiscations(); } else if (name === 'payout') { goToCurrentWeek();
                 loadPayoutData();
-                populateHistoryUserSelect(); } else if (name === 'stats') { renderAllCharts(); } else if (name === 'logs')
+                populateHistoryUserSelect(); } else if (name === 'logs')
                 populateLogUserSelect();
             else if (name === 'admin') setupAdminTab();
         }
@@ -2239,25 +2196,7 @@
             document.getElementById('display').textContent = '00:00.00';
             document.getElementById('startBtn').textContent = '▶ Start';
             document.getElementById('startBtn').classList.remove('running');
-            laps = [];
             document.getElementById('lapList').innerHTML = '';
-        }
-
-        function addLap() {
-            if (!running) { showToast('⏱️ Stoppuhr läuft nicht!', '#ffaa33'); return; }
-            laps.push(formatTime(elapsed));
-            document.getElementById('lapList').innerHTML = laps.map((l, i) =>
-                `<span style="margin:0 8px;">Lap ${i+1}: ${l}</span>`).join(' | ');
-        }
-
-        function autoFillName() {
-            if (lastUsedName) {
-                document.getElementById('personName').value = lastUsedName;
-                document.getElementById('searchName').value = lastUsedName;
-                selectedPersonName = lastUsedName.toLowerCase();
-                loadPersonalStats(selectedPersonName);
-                autoLoadPerson();
-            }
         }
 
         // ==================== USER LIST ====================
@@ -2302,8 +2241,11 @@
             if (users) {
                 Object.entries(users).forEach(([un, ud]) => {
                     if (ud && typeof ud === 'object') {
-                        keys.forEach(bk => { if (ud[bk] && Array.isArray(ud[bk])) allEntries[bk].push(...ud[
-                            bk]); });
+                        keys.forEach(bk => { 
+                            if (ud[bk] && Array.isArray(ud[bk])) {
+                                allEntries[bk].push(...ud[bk]);
+                            }
+                        });
                     }
                 });
             }
@@ -2627,7 +2569,8 @@
                 itemsTotal: parseInt(document.getElementById('modalItemsTotal').value) || 0,
                 items: document.getElementById('modalItems').value.trim(),
                 notes: document.getElementById('modalNotes').value.trim(),
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                visible: true
             };
             if (!data.akteName) return alert('Bitte Aktennamen eingeben!');
             const ref = database.ref('Navy-boote/confiscations');
@@ -2668,13 +2611,11 @@
 
         function renderConfiscations() {
             const search = document.getElementById('confiscationSearch').value.toLowerCase();
-            const dateFilter = document.getElementById('confiscationDateFilter').value;
             const orgFilter = document.getElementById('confiscationOrgFilter').value;
             const filtered = allConfiscations.filter(e => {
                 if (!isInConfiscationWeek(e.date, confiscationWeekOffset)) return false;
                 if (search && !(e.akteName || '').toLowerCase().includes(search) && !(e.familyName || '').toLowerCase()
                     .includes(search)) return false;
-                if (dateFilter && e.date !== dateFilter) return false;
                 if (orgFilter && e.organisation !== orgFilter) return false;
                 return true;
             });
@@ -2684,7 +2625,8 @@
                 cardsDiv.innerHTML = '<p style="color:var(--text-muted);grid-column:1/-1;">Keine Beschlagnahmungen gefunden.</p>';
                 return;
             }
-            cardsDiv.innerHTML = filtered.map(e => `
+            cardsDiv.innerHTML = filtered.map(e => {
+                return `
                 <div class="confiscation-card">
                     <div class="card-header">
                         <h4>📋 ${esc(e.akteName||'?')}</h4>
@@ -2702,18 +2644,21 @@
                     </div>
                     ${e.items?`<div class="card-items">${esc(e.items)}</div>`:''}
                     ${e.notes?`<div style="font-size:12px;color:var(--text-muted);margin-top:6px;">📝 ${esc(e.notes)}</div>`:''}
-                    ${isAdmin?`<div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end;">
-                        <button onclick="editConfiscation('${e.id}')" style="background:none;border:1px solid var(--navy-blue);color:var(--navy-blue-bright);padding:4px 12px;border-radius:20px;cursor:pointer;">✏️</button>
-                        <button onclick="deleteConfiscation('${e.id}')" style="background:none;border:1px solid var(--navy-red);color:var(--navy-red);padding:4px 12px;border-radius:20px;cursor:pointer;">🗑️</button>
-                    </div>`:''}
-                </div>`).join('');
+                    <div style="display:flex;gap:6px;margin-top:12px;justify-content:flex-end;flex-wrap:wrap;">
+                        <button onclick="showConfiscationDetail('${e.id}')" class="action-btn eye">👁️ Details</button>
+                        ${isAdmin ? `
+                        <button onclick="editConfiscation('${e.id}')" class="action-btn edit">✏️ Bearbeiten</button>
+                        <button onclick="deleteConfiscation('${e.id}')" class="action-btn delete">🗑️ Löschen</button>
+                        ` : ''}
+                    </div>
+                </div>`;
+            }).join('');
         }
 
         function filterConfiscations() { renderConfiscations(); }
 
         function clearConfiscationFilters() {
             document.getElementById('confiscationSearch').value = '';
-            document.getElementById('confiscationDateFilter').value = '';
             document.getElementById('confiscationOrgFilter').value = '';
             renderConfiscations();
         }
@@ -2735,6 +2680,36 @@
             const snap = await database.ref('Navy-boote/confiscations/' + id).once('value');
             const data = snap.val();
             if (data) openNewConfiscationModal({ id, ...data });
+        }
+
+        // ===== DETAIL ANSICHT =====
+        function showConfiscationDetail(id) {
+            const entry = allConfiscations.find(e => e.id === id);
+            if (!entry) { showToast('Eintrag nicht gefunden!', '#ff4444'); return; }
+            document.getElementById('detailModalTitle').textContent = `📋 ${esc(entry.akteName || 'Unbekannt')}`;
+            let html = `
+                <div class="detail-row"><span class="detail-label">Akte</span><span class="detail-value">${esc(entry.akteName || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">Organisation</span><span class="detail-value">${esc(entry.organisation || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">Familienname</span><span class="detail-value">${esc(entry.familyName || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">Abgenommen von</span><span class="detail-value">${esc(entry.takenBy || '-')}${entry.takenByName ? ' ('+esc(entry.takenByName)+')' : ''}</span></div>
+                <div class="detail-row"><span class="detail-label">Abnahme Datum</span><span class="detail-value">${esc(entry.date || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">Abgegeben an</span><span class="detail-value">${esc(entry.givenTo || '-')}${entry.givenToName ? ' ('+esc(entry.givenToName)+')' : ''}</span></div>
+                <div class="detail-row"><span class="detail-label">Abgabe Datum</span><span class="detail-value">${esc(entry.givenDate || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">Einsatzleitung</span><span class="detail-value">${esc(entry.einsatzleitung || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">Verhandlungsführung</span><span class="detail-value">${esc(entry.verhandlungsfuehrung || '-')}</span></div>
+                <div class="detail-row"><span class="detail-label">Grüngeld</span><span class="detail-value" style="color:var(--navy-green);">${formatNumber(entry.greenMoney||0)} €</span></div>
+                <div class="detail-row"><span class="detail-label">Schwarzgeld</span><span class="detail-value" style="color:#ccc;">${formatNumber(entry.blackMoney||0)} €</span></div>
+                <div class="detail-row"><span class="detail-label">Gesamtmenge</span><span class="detail-value">${entry.itemsTotal||0}</span></div>
+                ${entry.items ? `<div class="detail-row"><span class="detail-label">Gegenstände</span><span class="detail-value" style="white-space:pre-wrap;">${esc(entry.items)}</span></div>` : ''}
+                ${entry.notes ? `<div class="detail-row"><span class="detail-label">Notizen</span><span class="detail-value" style="white-space:pre-wrap;">${esc(entry.notes)}</span></div>` : ''}
+                <div class="detail-row"><span class="detail-label">Sichtbar</span><span class="detail-value">${entry.visible !== false ? '✅ Ja' : '🚫 Nein'}</span></div>
+            `;
+            document.getElementById('detailModalContent').innerHTML = html;
+            document.getElementById('confiscationDetailOverlay').classList.add('show');
+        }
+
+        function closeConfiscationDetail() {
+            document.getElementById('confiscationDetailOverlay').classList.remove('show');
         }
 
         // ==================== AUSZAHLUNG ====================
@@ -2815,7 +2790,6 @@
                 setTimeout(() => { statusEl.style.display = 'none'; }, 2500);
                 if (currentUser) addLog(currentUser.username, 'Boot-Protokolle aktualisiert',
                     `Woche: ${currentPayoutWeek}, Protokolle: ${count}`);
-                renderAllCharts();
             } catch (error) { showToast('❌ Fehler beim Speichern!', '#ff4444'); }
         }
 
@@ -2925,7 +2899,6 @@
             if (currentUser) addLog(currentUser.username, 'Auszahlung aktualisiert',
                 `Benutzer: ${getDisplayName(name)}, Kontrollen: ${count}`);
             loadPayoutData();
-            renderAllCharts();
         }
 
         async function togglePayoutPaid(name, isPaid) {
@@ -2934,7 +2907,6 @@
             if (currentUser) addLog(currentUser.username, 'Auszahlungsstatus geändert',
                 `Benutzer: ${getDisplayName(name)}, Status: ${isPaid ? 'Ausgezahlt' : 'Offen'}`);
             loadPayoutData();
-            renderAllCharts();
         }
 
         // ==================== ZAHLUNGSHISTORIE ====================
@@ -2945,7 +2917,9 @@
             const users = snap.val();
             select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
             if (users) {
+                const boatcheckSettings = await loadBoatcheckSettings();
                 for (const [name] of Object.entries(users)) {
+                    if (boatcheckSettings[name] === false) continue;
                     const opt = document.createElement('option');
                     opt.value = name;
                     opt.textContent = getDisplayName(name);
@@ -2985,136 +2959,11 @@
             container.innerHTML = html;
         }
 
-        // ==================== STATISTIKEN (CHARTS) ====================
-        async function renderAllCharts() {
-            if (!userPermissions.stats) return;
-            await renderPayoutChart();
-            await renderBoatChecksChart();
-            await renderUserChecksChart();
-            await renderProtocolsChart();
-        }
-
         function getSunday(monday) {
             const d = new Date(monday);
             d.setDate(d.getDate() + 6);
             d.setHours(23, 59, 59, 999);
             return d;
-        }
-
-        async function getLast8Weeks() {
-            const weeks = [];
-            const now = new Date();
-            for (let i = 0; i < 8; i++) {
-                const monday = getMonday(new Date(now));
-                monday.setDate(monday.getDate() - (i * 7));
-                weeks.push({ key: getWeekKey(monday), label: `${monday.getDate()}.${monday.getMonth()+1}`, monday });
-            }
-            return weeks.reverse();
-        }
-
-        async function renderPayoutChart() {
-            const ctx = document.getElementById('payoutChart');
-            if (!ctx) return;
-            if (chartInstances.payout) chartInstances.payout.destroy();
-            const weeks = await getLast8Weeks();
-            const labels = weeks.map(w => w.label);
-            const data = [];
-            for (const week of weeks) {
-                const snap = await database.ref('Navy-boote/payouts/' + week.key).once('value');
-                const payouts = snap.val() || {};
-                let total = 0;
-                for (const [name, p] of Object.entries(payouts)) { total += (p.count || 0) * PRICE_PER_CHECK; }
-                data.push(total);
-            }
-            chartInstances.payout = new Chart(ctx, {
-                type: 'bar',
-                data: { labels, datasets: [{ label: 'Auszahlung ($)', data, backgroundColor: 'rgba(46,204,64,0.7)',
-                        borderColor: '#2ecc40', borderWidth: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: getComputedStyle(
-                                document.documentElement).getPropertyValue('--text-secondary').trim() ||
-                            '#dbe2ea' } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue(
-                                    '--text-muted').trim() || '#91b8ea' } }, x: { grid: { display: false },
-                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue(
-                                    '--text-muted').trim() || '#91b8ea' } } } }
-            });
-        }
-
-        async function renderBoatChecksChart() {
-            const ctx = document.getElementById('boatChecksChart');
-            if (!ctx) return;
-            if (chartInstances.boatChecks) chartInstances.boatChecks.destroy();
-            const weeks = await getLast8Weeks();
-            const labels = weeks.map(w => w.label);
-            const data = [];
-            for (const week of weeks) {
-                const snap = await database.ref('Navy-boote/payouts/' + week.key).once('value');
-                const payouts = snap.val() || {};
-                let total = 0;
-                for (const [name, p] of Object.entries(payouts)) { total += p.count || 0; }
-                data.push(total);
-            }
-            chartInstances.boatChecks = new Chart(ctx, {
-                type: 'line',
-                data: { labels, datasets: [{ label: 'Bootskontrollen', data, backgroundColor: 'rgba(59,130,246,0.2)',
-                        borderColor: '#3b82f6', borderWidth: 3, fill: true, tension: 0.3 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: getComputedStyle(
-                                document.documentElement).getPropertyValue('--text-secondary').trim() ||
-                            '#dbe2ea' } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue(
-                                    '--text-muted').trim() || '#91b8ea' } }, x: { grid: { display: false },
-                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue(
-                                    '--text-muted').trim() || '#91b8ea' } } } }
-            });
-        }
-
-        async function renderUserChecksChart() {
-            const ctx = document.getElementById('userChecksChart');
-            if (!ctx) return;
-            if (chartInstances.userChecks) chartInstances.userChecks.destroy();
-            const currentWeek = currentPayoutWeek || getWeekKey(getMonday(new Date()));
-            const snap = await database.ref('Navy-boote/payouts/' + currentWeek).once('value');
-            const payouts = snap.val() || {};
-            const users = Object.keys(payouts);
-            const counts = users.map(u => payouts[u].count || 0);
-            const displayNames = users.map(u => getDisplayName(u));
-            chartInstances.userChecks = new Chart(ctx, {
-                type: 'bar',
-                data: { labels: displayNames, datasets: [{ label: 'Kontrollen', data: counts,
-                        backgroundColor: 'rgba(255,170,51,0.7)', borderColor: '#ffaa33', borderWidth: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: getComputedStyle(
-                                document.documentElement).getPropertyValue('--text-secondary').trim() ||
-                            '#dbe2ea' } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue(
-                                    '--text-muted').trim() || '#91b8ea' } }, x: { grid: { display: false },
-                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue(
-                                    '--text-muted').trim() || '#91b8ea' } } } }
-            });
-        }
-
-        async function renderProtocolsChart() {
-            const ctx = document.getElementById('protocolsChart');
-            if (!ctx) return;
-            if (chartInstances.protocols) chartInstances.protocols.destroy();
-            const weeks = await getLast8Weeks();
-            const labels = weeks.map(w => w.label);
-            const data = [];
-            for (const week of weeks) {
-                const snap = await database.ref('Navy-boote/protocols/' + week.key).once('value');
-                data.push(snap.val() || 0);
-            }
-            chartInstances.protocols = new Chart(ctx, {
-                type: 'bar',
-                data: { labels, datasets: [{ label: 'Boot-Protokolle', data, backgroundColor: 'rgba(211,33,45,0.7)',
-                        borderColor: '#d3212d', borderWidth: 2 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: getComputedStyle(
-                                document.documentElement).getPropertyValue('--text-secondary').trim() ||
-                            '#dbe2ea' } } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' },
-                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue(
-                                    '--text-muted').trim() || '#91b8ea' } }, x: { grid: { display: false },
-                            ticks: { color: getComputedStyle(document.documentElement).getPropertyValue(
-                                    '--text-muted').trim() || '#91b8ea' } } } }
-            });
         }
 
         // ==================== LOGS ====================
@@ -3225,7 +3074,6 @@
                 if (perms.stopwatch !== false) activePerms.push('⏱️');
                 if (perms.confiscations !== false) activePerms.push('📋');
                 if (perms.payout !== false) activePerms.push('💰');
-                if (perms.stats !== false) activePerms.push('📊');
                 if (perms.logs !== false) activePerms.push('📊');
                 if (userData.isAdmin || perms.admin === true) activePerms.push('🔑');
                 html += `<tr>
@@ -3266,8 +3114,7 @@
                 password: p,
                 isAdmin: false,
                 created: Date.now(),
-                permissions: { stopwatch: true, confiscations: true, payout: true, stats: true, logs: true,
-                    admin: false }
+                permissions: { stopwatch: true, confiscations: true, payout: true, logs: true, admin: false }
             });
             if (currentUser) addLog(currentUser.username, 'Benutzer erstellt', `Neuer Benutzer: ${getDisplayName(u)}`);
             showToast('✅ Benutzer erstellt!', '#2ecc40');
@@ -3309,7 +3156,6 @@
             document.getElementById('permStopwatch').checked = perms.stopwatch !== false;
             document.getElementById('permConfiscations').checked = perms.confiscations !== false;
             document.getElementById('permPayout').checked = perms.payout !== false;
-            document.getElementById('permStats').checked = perms.stats !== false;
             document.getElementById('permLogs').checked = perms.logs !== false;
             document.getElementById('permAdmin').checked = perms.admin === true;
             editor.style.display = 'block';
@@ -3368,6 +3214,9 @@
         document.getElementById('confiscationModalOverlay').addEventListener('click', function(e) {
             if (e.target === this) closeConfiscationModal();
         });
+        document.getElementById('confiscationDetailOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeConfiscationDetail();
+        });
         document.getElementById('boatModalOverlay').addEventListener('click', function(e) {
             if (e.target === this) closeBoatModal();
         });
@@ -3381,7 +3230,6 @@
 
         // ==================== INIT ====================
         async function init() {
-            loadTheme();
             await ensureAdminExists();
             await cleanupOldLogs();
             await loadUsernames();
