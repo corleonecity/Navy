@@ -1794,6 +1794,44 @@
             display: none;
         }
 
+        /* Letzte Notiz für Auszahlung */
+        .payout-note {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 18px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 170, 51, 0.3);
+            border-radius: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .payout-note label {
+            color: #ffaa33;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+        }
+        .payout-note input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            font-size: 14px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+        }
+        .payout-note input:focus {
+            border-color: var(--navy-blue-bright);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .payout-note .note-save-status {
+            color: #2ecc40;
+            font-size: 12px;
+            display: none;
+        }
+
         /* Boot-Reihenfolge Admin */
         .boat-order-list {
             display: flex;
@@ -1917,6 +1955,18 @@
         }
         .detail-value.money-black {
             color: #ccc;
+        }
+
+        /* Zahlungshistorie */
+        .history-section {
+            margin-top: 25px;
+            border-top: 1px solid rgba(100, 150, 255, 0.2);
+            padding-top: 20px;
+        }
+        .history-section h4 {
+            color: #91b8ea;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
         }
     </style>
 </head>
@@ -2042,9 +2092,16 @@
                 <!-- Boot-Protokolle mit DB-Speicherung pro Woche (NUR ADMIN) -->
                 <div class="protocol-global">
                     <label>📋 Boot-Protokolle:</label>
-                    <input type="number" id="protocolGlobalInput" value="0" min="0" onchange="updateProtocolGlobal(this.value)" ${isAdmin ? '' : 'disabled'}>
+                    <input type="number" id="protocolGlobalInput" value="0" min="0" onchange="updateProtocolGlobal(this.value)">
                     <span class="protocol-count-display" id="protocolGlobalDisplay">0</span>
                     <span class="protocol-save-status" id="protocolSaveStatus">✅ Gespeichert</span>
+                </div>
+
+                <!-- Letzte Notiz (NUR ADMIN) -->
+                <div class="payout-note">
+                    <label>📝 Letzte Notiz:</label>
+                    <input type="text" id="payoutNoteInput" placeholder="Notiz eingeben..." onchange="updatePayoutNote(this.value)">
+                    <span class="note-save-status" id="noteSaveStatus">✅ Gespeichert</span>
                 </div>
 
                 <div class="payout-table-wrapper">
@@ -2058,6 +2115,17 @@
                     <div class="payout-total-item"><div class="big" id="totalAusgezahlt">0 $</div><div class="lbl">Ausgezahlt</div></div>
                     <div class="payout-total-item"><div class="big" id="totalOffen">0 $</div><div class="lbl">Offen</div></div>
                     <div class="payout-total-item"><div class="big" id="totalSumme">0 $</div><div class="lbl">Gesamt</div></div>
+                </div>
+
+                <!-- ZAHLUNGSHISTORIE -->
+                <div class="history-section">
+                    <h4>📜 Zahlungshistorie</h4>
+                    <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
+                        <select id="historyUserSelect" onchange="loadPaymentHistory()" style="width:250px;">
+                            <option value="">-- Benutzer wählen --</option>
+                        </select>
+                    </div>
+                    <div id="paymentHistoryContainer"><p style="color:#aaa;">Wähle einen Benutzer aus.</p></div>
                 </div>
             </div>
 
@@ -3200,6 +3268,7 @@
             } else if (name === 'payout') {
                 goToCurrentWeek();
                 loadPayoutData();
+                populateHistoryUserSelect();
             } else if (name === 'logs') populateLogUserSelect();
             else if (name === 'admin') setupAdminTab();
         }
@@ -3923,18 +3992,15 @@
                         </div>
                         ${e.einsatzleitung ? `<div class="card-row"><span class="card-label">🪖 Einsatzleitung:</span><span class="card-value">${esc(e.einsatzleitung)}</span></div>` : ''}
                         ${e.verhandlungsfuehrung ? `<div class="card-row"><span class="card-label">⚖️ Verhandlungsführung:</span><span class="card-value">${esc(e.verhandlungsfuehrung)}</span></div>` : ''}
-                        <div class="card-row"><span class="card-label">👮 Abg. von:</span><span class="card-value">${esc(e.takenBy||'-')}${e.takenByName?' ('+esc(e.takenByName)+')':''}</span></div>
                         <div class="card-row"><span class="card-label">📅 Abnahme:</span><span class="card-value">${esc(e.date||'-')}</span></div>
-                        <div class="card-row"><span class="card-label">📤 Abg. an:</span><span class="card-value">${esc(e.givenTo||'-')}${e.givenToName?' ('+esc(e.givenToName)+')':''}</span></div>
                         <div class="money-values">
-                            <span class="money-green">🟢 ${formatNumber(e.greenMoney||0)} €</span>
-                            <span class="money-black">⚫ ${formatNumber(e.blackMoney||0)} €</span>
+                            <span class="money-green">🟢 Grüngeld: ${formatNumber(e.greenMoney||0)} €</span>
+                            <span class="money-black">⚫ Schwarzgeld: ${formatNumber(e.blackMoney||0)} €</span>
                             <span style="color:#64b4ff;">📦 ${e.itemsTotal||0} Items</span>
                         </div>
                         ${e.items?`<div class="card-items">${esc(e.items)}</div>`:''}
                         ${e.notes?`<div class="card-notes">📝 ${esc(e.notes)}</div>`:''}
                         <div class="card-actions">
-                            <!-- Auge-Button für volle Ansicht -->
                             <button class="btn-card-action" onclick="showConfiscationDetail('${e.id}')" style="border-color:#ffaa33;color:#ffaa33;">👁️ Details</button>
                             ${isAdmin?`
                             <button class="btn-card-action" onclick="editConfiscation('${e.id}')">✏️ Bearbeiten</button>
@@ -4108,6 +4174,54 @@
             }
         }
 
+        // ==================== LETZTE NOTIZ (NUR ADMIN) ====================
+        async function loadPayoutNote() {
+            if (!currentPayoutWeek) {
+                document.getElementById('payoutNoteInput').value = '';
+                return;
+            }
+            try {
+                const snap = await database.ref('Navy-boote/payout_notes/' + currentPayoutWeek).once('value');
+                const val = snap.val() || '';
+                document.getElementById('payoutNoteInput').value = val;
+                document.getElementById('payoutNoteInput').disabled = !isAdmin;
+            } catch (error) {
+                console.error('Fehler beim Laden der Notiz:', error);
+                document.getElementById('payoutNoteInput').value = '';
+            }
+        }
+
+        async function updatePayoutNote(value) {
+            if (!isAdmin) {
+                showToast('🔒 Nur Admin kann Notizen ändern!', '#ff5555');
+                document.getElementById('payoutNoteInput').value = document.getElementById('payoutNoteInput').value;
+                return;
+            }
+
+            const note = value.trim();
+            if (!currentPayoutWeek) {
+                showToast('⚠️ Bitte zuerst eine Woche auswählen!', '#ffaa33');
+                document.getElementById('payoutNoteInput').value = '';
+                return;
+            }
+
+            try {
+                await database.ref('Navy-boote/payout_notes/' + currentPayoutWeek).set(note);
+                const statusEl = document.getElementById('noteSaveStatus');
+                statusEl.style.display = 'inline';
+                statusEl.textContent = '✅ Gespeichert!';
+                setTimeout(() => { statusEl.style.display = 'none'; }, 2500);
+
+                if (currentUser) {
+                    await addLog(currentUser.username, 'Notiz aktualisiert',
+                        `Woche: ${currentPayoutWeek}, Notiz: ${note || '(leer)'}`);
+                }
+            } catch (error) {
+                console.error('Fehler beim Speichern der Notiz:', error);
+                showToast('❌ Fehler beim Speichern!', '#ff4444');
+            }
+        }
+
         // ==================== AUSZAHLUNG DATA LOAD ====================
         async function loadPayoutData() {
             const weekInput = document.getElementById('payoutWeekInput').value;
@@ -4119,6 +4233,7 @@
             document.getElementById('payoutInfo').textContent = '📅 Woche: ' + getWeekString(monday);
 
             await loadProtocolGlobal();
+            await loadPayoutNote();
 
             const usersAuthSnap = await database.ref('Navy-boote/users_auth').once('value');
             const usersAuth = usersAuthSnap.val() || {};
@@ -4186,6 +4301,68 @@
             if (currentUser) await addLog(currentUser.username, 'Auszahlungsstatus geändert',
                 `Benutzer: ${getDisplayName(name)}, Woche: ${weekKey}, Status: ${isPaid ? 'Ausgezahlt' : 'Offen'}`);
             loadPayoutData();
+        }
+
+        // ==================== ZAHLUNGSHISTORIE ====================
+        async function populateHistoryUserSelect() {
+            const select = document.getElementById('historyUserSelect');
+            if (!select) return;
+            const snap = await database.ref('Navy-boote/users_auth').once('value');
+            const users = snap.val();
+            select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
+            if (users) {
+                const boatcheckSettings = await loadBoatcheckSettings();
+                for (const [name] of Object.entries(users)) {
+                    if (boatcheckSettings[name] === false) continue;
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = getDisplayName(name);
+                    select.appendChild(option);
+                }
+            }
+        }
+
+        async function loadPaymentHistory() {
+            const username = document.getElementById('historyUserSelect').value;
+            const container = document.getElementById('paymentHistoryContainer');
+            if (!username) {
+                container.innerHTML = '<p style="color:#aaa;">Wähle einen Benutzer aus.</p>';
+                return;
+            }
+            const snap = await database.ref('Navy-boote/payouts').once('value');
+            const allPayouts = snap.val() || {};
+            const history = [];
+            for (const [week, data] of Object.entries(allPayouts)) {
+                if (data[username]) {
+                    history.push({ 
+                        week, 
+                        count: data[username].count || 0, 
+                        paid: data[username].paid || false,
+                        summe: (data[username].count || 0) * PRICE_PER_CHECK 
+                    });
+                }
+            }
+            history.sort((a, b) => b.week.localeCompare(a.week));
+            
+            if (history.length === 0) {
+                container.innerHTML = '<p style="color:#aaa;">Keine Zahlungen für diesen Benutzer.</p>';
+                return;
+            }
+            
+            let html = '<div class="table-wrapper"><table><thead><tr><th>Woche</th><th>Kontrollen</th><th>Summe</th><th>Status</th></tr></thead><tbody>';
+            history.forEach(h => {
+                const status = h.paid ? 
+                    '<span class="payout-status paid">✅ Ausgezahlt</span>' : 
+                    '<span class="payout-status unpaid">⏳ Offen</span>';
+                html += `<tr>
+                    <td>${h.week}</td>
+                    <td>${h.count}</td>
+                    <td class="amount-cell">${formatNumber(h.summe)} $</td>
+                    <td>${status}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
         }
 
         // ==================== EVENT LISTENER ====================
