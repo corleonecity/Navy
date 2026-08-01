@@ -2005,6 +2005,132 @@
             font-size: 12px;
             display: none;
         }
+
+        /* INTERESSENTEN LISTE */
+        .interessenten-section {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(46, 204, 64, 0.3);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 18px;
+        }
+        .interessenten-section h4 {
+            color: #2ecc40;
+            margin-bottom: 12px;
+            border-bottom: 1px solid rgba(46, 204, 64, 0.3);
+            padding-bottom: 8px;
+        }
+        .interessenten-input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+        .interessenten-input-group input {
+            flex: 1;
+            min-width: 150px;
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        .interessenten-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .interessent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 10px 14px;
+            transition: 0.15s;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .interessent-item:hover {
+            border-color: #2ecc40;
+            background: #111;
+        }
+        .interessent-item .info {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .interessent-item .info .name {
+            font-weight: bold;
+            color: #d9ecff;
+        }
+        .interessent-item .info .dienstnummer {
+            color: #8ab4e0;
+            font-size: 13px;
+        }
+        .interessent-item .info .telefon {
+            color: #64b4ff;
+            font-size: 13px;
+        }
+        .interessent-item .info .status {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .interessent-item .info .status.active {
+            background: rgba(46, 204, 64, 0.2);
+            color: #2ecc40;
+            border: 1px solid #2ecc40;
+        }
+        .interessent-item .info .status.archived {
+            background: rgba(255, 170, 51, 0.2);
+            color: #ffaa33;
+            border: 1px solid #ffaa33;
+        }
+        .interessent-item .actions {
+            display: flex;
+            gap: 6px;
+        }
+        .interessent-item .actions button {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+        .btn-archive {
+            background: rgba(255, 170, 51, 0.2);
+            border-color: #ffaa33;
+            color: #ffaa33;
+        }
+        .btn-archive:hover {
+            background: rgba(255, 170, 51, 0.4);
+        }
+        .btn-active {
+            background: rgba(46, 204, 64, 0.2);
+            border-color: #2ecc40;
+            color: #2ecc40;
+        }
+        .btn-active:hover {
+            background: rgba(46, 204, 64, 0.4);
+        }
+        .btn-delete-small {
+            background: rgba(255, 80, 80, 0.2);
+            border-color: #ff5555;
+            color: #ff5555;
+        }
+        .btn-delete-small:hover {
+            background: rgba(255, 80, 80, 0.4);
+        }
+
+        /* Admin Tab fix - immer sichtbar wenn aktiv */
+        #tab-admin {
+            display: none !important;
+        }
+        #tab-admin.active {
+            display: block !important;
+        }
     </style>
 </head>
 <body>
@@ -2093,7 +2219,6 @@
                     <button class="btn-new-confiscation" onclick="openNewConfiscationModal()">➕ Neue Beschlagnahmung</button>
                 </div>
 
-                <!-- Wochen-Navigation für Beschlagnahmungen -->
                 <div class="confiscation-week-nav" style="margin-bottom:15px;">
                     <button onclick="confiscationPrevWeek()">◀ Vorherige</button>
                     <span class="week-label" id="confiscationWeekLabel">20. – 26.07.2026</span>
@@ -2126,14 +2251,12 @@
                 </div>
                 <div id="payoutInfo" style="margin-bottom:10px;color:#8ab4e0;font-size:13px;"></div>
 
-                <!-- Preis pro Kontrolle (NUR ADMIN) -->
                 <div class="price-admin">
                     <label>💰 Preis pro Kontrolle:</label>
                     <input type="number" id="pricePerCheckInput" value="5000" min="0" step="100" onchange="updatePricePerCheck(this.value)">
                     <span class="price-save-status" id="priceSaveStatus">✅ Gespeichert</span>
                 </div>
 
-                <!-- Boot-Protokolle mit DB-Speicherung pro Woche (NUR ADMIN) -->
                 <div class="protocol-global">
                     <label>📋 Boot-Protokolle:</label>
                     <input type="number" id="protocolGlobalInput" value="0" min="0" onchange="updateProtocolGlobal(this.value)">
@@ -2141,7 +2264,6 @@
                     <span class="protocol-save-status" id="protocolSaveStatus">✅ Gespeichert</span>
                 </div>
 
-                <!-- Letzte Notiz (NUR ADMIN) -->
                 <div class="payout-note">
                     <label>📝 Letzte Notiz:</label>
                     <input type="text" id="payoutNoteInput" placeholder="Notiz eingeben..." onchange="updatePayoutNote(this.value)">
@@ -2161,7 +2283,6 @@
                     <div class="payout-total-item"><div class="big" id="totalSumme">0 $</div><div class="lbl">Gesamt</div></div>
                 </div>
 
-                <!-- ZAHLUNGSHISTORIE -->
                 <div class="history-section">
                     <h4>📜 Zahlungshistorie</h4>
                     <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
@@ -2170,6 +2291,30 @@
                         </select>
                     </div>
                     <div id="paymentHistoryContainer"><p style="color:#aaa;">Wähle einen Benutzer aus.</p></div>
+                </div>
+            </div>
+
+            <div id="tab-interessenten" class="tab-content">
+                <div class="interessenten-section">
+                    <h4>👥 Interessenten für die Navy</h4>
+                    <p style="color:#8ab4e0;font-size:13px;margin-bottom:12px;">Hier können Personen erfasst werden, die Interesse an einer Navy-Mission haben. Mit einem Klick auf "Archivieren" werden sie in den Archiv-Status versetzt.</p>
+                    
+                    <div class="interessenten-input-group">
+                        <input type="text" id="interessentName" placeholder="Name *" style="min-width:150px;">
+                        <input type="text" id="interessentDienstnummer" placeholder="Dienstnummer" style="min-width:120px;">
+                        <input type="text" id="interessentTelefon" placeholder="Telefon" style="min-width:120px;">
+                        <button onclick="addInteressent()" style="background:#2e7d32;border-color:#2ecc40;color:#2ecc40;">➕ Hinzufügen</button>
+                    </div>
+                    
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                        <button onclick="filterInteressenten('alle')" id="filterAlle" style="background:#1e2a47;border-color:#64b4ff;color:#64b4ff;">📋 Alle</button>
+                        <button onclick="filterInteressenten('active')" id="filterActive" style="background:rgba(46,204,64,0.15);border-color:#2ecc40;color:#2ecc40;">🟢 Aktiv</button>
+                        <button onclick="filterInteressenten('archived')" id="filterArchived" style="background:rgba(255,170,51,0.15);border-color:#ffaa33;color:#ffaa33;">📦 Archiviert</button>
+                    </div>
+                    
+                    <div id="interessentenList" class="interessenten-list">
+                        <p style="color:#aaa;text-align:center;padding:20px;">Lade Interessenten...</p>
+                    </div>
                 </div>
             </div>
 
@@ -2184,17 +2329,87 @@
                 </div>
                 <div id="logContainer"><p style="color:#aaa;">Wähle einen Benutzer aus oder klicke auf "Alle Logs anzeigen".</p></div>
             </div>
+
+            <!-- ADMIN TAB - WICHTIG: Die active Klasse wird von switchTab gesetzt -->
+            <div id="tab-admin" class="tab-content">
+                <h3 style="color:#ff5555;margin-bottom:16px;">🔑 Admin</h3>
+                <div class="admin-section">
+                    <h4>👥 Benutzerverwaltung</h4>
+                    <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;flex-wrap:wrap;">
+                        <input type="text" id="newUsername" placeholder="Benutzername" style="width:180px;">
+                        <input type="password" id="newPassword" placeholder="Passwort" style="width:180px;">
+                        <button onclick="createUser()" style="background:#2e7d32;">➕ Erstellen</button>
+                    </div>
+                    <div id="userList"></div>
+                </div>
+                <div class="admin-section">
+                    <h4>🔐 Berechtigungen</h4>
+                    <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Berechtigungen zu bearbeiten:</p>
+                    <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
+                        <select id="permissionUserSelect" onchange="loadUserPermissions()" style="width:250px;">
+                            <option value="">-- Benutzer wählen --</option>
+                        </select>
+                    </div>
+                    <div id="permissionsEditor" style="display:none;">
+                        <div class="permissions-grid">
+                            <div class="permission-item"><input type="checkbox" id="permStopwatch" onchange="savePermission('stopwatch', this.checked)"><label for="permStopwatch">⏱️ Stoppuhr</label></div>
+                            <div class="permission-item"><input type="checkbox" id="permConfiscations" onchange="savePermission('confiscations', this.checked)"><label for="permConfiscations">📋 Beschlagnahmungen</label></div>
+                            <div class="permission-item"><input type="checkbox" id="permPayout" onchange="savePermission('payout', this.checked)"><label for="permPayout">💰 Auszahlung</label></div>
+                            <div class="permission-item"><input type="checkbox" id="permLogs" onchange="savePermission('logs', this.checked)"><label for="permLogs">📊 Logs</label></div>
+                            <div class="permission-item"><input type="checkbox" id="permInteressenten" onchange="savePermission('interessenten', this.checked)"><label for="permInteressenten">👥 Interessenten</label></div>
+                            <div class="permission-item"><input type="checkbox" id="permAdmin" onchange="savePermission('admin', this.checked)"><label for="permAdmin">🔑 Admin</label></div>
+                        </div>
+                        <p id="permissionSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Berechtigungen gespeichert!</p>
+                    </div>
+                </div>
+                <div class="admin-section">
+                    <h4>🚤 Bootverwaltung & Reihenfolge</h4>
+                    <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Boote können per Drag & Drop sortiert werden. Die Reihenfolge wird in der Stoppuhr übernommen.</p>
+                    <div style="margin-bottom:12px;">
+                        <button onclick="openBoatModal()" style="background:rgba(255,170,51,0.2);border:2px solid #ffaa33;color:#ffaa33;">➕ Neues Boot</button>
+                        <button onclick="resetBoatOrder()" style="background:rgba(255,170,51,0.1);border:1px solid #ffaa33;color:#ffaa33;margin-left:8px;">↺ Standard-Reihenfolge</button>
+                    </div>
+                    <div id="boatOrderListContainer" style="margin-top:10px;"></div>
+                </div>
+                <div class="admin-section">
+                    <h4>📋 Bootskontrolle-Sichtbarkeit</h4>
+                    <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Sichtbarkeit in der Auszahlung zu bearbeiten:</p>
+                    <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
+                        <select id="boatcheckUserSelect" onchange="loadUserBoatcheck()" style="width:250px;">
+                            <option value="">-- Benutzer wählen --</option>
+                        </select>
+                    </div>
+                    <div id="boatcheckEditor" style="display:none;">
+                        <div class="permissions-grid">
+                            <div class="permission-item">
+                                <input type="checkbox" id="boatcheckEnabled" onchange="saveBoatcheck()">
+                                <label for="boatcheckEnabled">✅ In Auszahlung anzeigen</label>
+                            </div>
+                        </div>
+                        <p id="boatcheckSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Einstellung gespeichert!</p>
+                    </div>
+                </div>
+                <div class="admin-section">
+                    <h4>🗑️ Gefahrenzone</h4>
+                    <div class="input-group" style="justify-content:flex-start;flex-wrap:wrap;">
+                        <input type="text" id="adminDeletePerson" placeholder="Name der Person" style="width:200px;">
+                        <button class="btn-danger" onclick="adminDeletePerson()">🗑️ Person löschen</button>
+                    </div>
+                    <div style="margin-top:10px;">
+                        <button class="btn-danger" onclick="manualCleanupLogs()">🧹 Logs manuell bereinigen (>32 Tage)</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Modal für Beschlagnahmungen (angepasst) -->
+    <!-- Modal für Beschlagnahmungen -->
     <div class="modal-overlay" id="confiscationModalOverlay">
         <div class="modal">
             <button class="close-modal-x" onclick="closeConfiscationModal()">✕</button>
             <h3 id="confiscationModalTitle">📝 Neue Beschlagnahmung</h3>
             <div class="modal-row"><div class="modal-field"><label>📋 Name der Akte</label><input type="text" id="modalAkteName" placeholder="z.B. Bootskontrolle 001"></div></div>
             
-            <!-- Organisation Dropdown (Zivi / Familie / Behörde / Unternehmen) -->
             <div class="modal-row">
                 <div class="modal-field"><label>👤 Organisation</label>
                     <select id="modalOrganisation">
@@ -2207,7 +2422,6 @@
                 <div class="modal-field"><label>👤 Familienname (optional)</label><input type="text" id="modalFamilyName" placeholder="Familienname"></div>
             </div>
 
-            <!-- Abgenommen von (USMS + Name, NUR Datum, KEINE Uhrzeit) -->
             <div class="modal-row">
                 <div class="modal-field"><label>👮 Abgenommen von</label>
                     <div class="dropdown-with-text">
@@ -2225,7 +2439,6 @@
                 <div class="modal-field" style="flex:0.8;min-width:180px;"><label>📅 Abnahme Datum</label><input type="date" id="modalDate"></div>
             </div>
 
-            <!-- Abgegeben an (USMS + Name, NUR Datum, KEINE Uhrzeit) -->
             <div class="modal-row">
                 <div class="modal-field"><label>📤 Abgegeben an</label>
                     <div class="dropdown-with-text">
@@ -2244,7 +2457,6 @@
                 <div class="modal-field" style="flex:0.8;min-width:180px;"><label>📅 Abgabe Datum</label><input type="date" id="modalGivenDate"></div>
             </div>
 
-            <!-- Einsatzleitung und Verhandlungsführung -->
             <div class="modal-row">
                 <div class="modal-field"><label>🪖 Einsatzleitung</label><input type="text" id="modalEinsatzleitung" placeholder="Name der Einsatzleitung"></div>
                 <div class="modal-field"><label>⚖️ Verhandlungsführung</label><input type="text" id="modalVerhandlungsfuehrung" placeholder="Name der Verhandlungsführung"></div>
@@ -2261,7 +2473,7 @@
         </div>
     </div>
 
-    <!-- Detail-Modal für Beschlagnahmungen (volle Ansicht mit Auge-Button) -->
+    <!-- Detail-Modal für Beschlagnahmungen -->
     <div class="modal-overlay" id="confiscationDetailOverlay">
         <div class="modal" style="max-width:700px;">
             <button class="close-modal-x" onclick="closeConfiscationDetail()">✕</button>
@@ -2308,6 +2520,7 @@
             confiscations: true,
             payout: true,
             logs: true,
+            interessenten: true,
             admin: false
         };
         const SESSION_DURATION = 30 * 60 * 1000;
@@ -2326,6 +2539,7 @@
         let userDisplayNames = {};
         let selectedPersonName = '';
         let PRICE_PER_CHECK = 5000;
+        let interessentenFilter = 'alle';
 
         let editingBoatKey = null;
         const DEFAULT_BOATS = {
@@ -2337,6 +2551,7 @@
         let boatOrder = [];
         let boatCache = {};
         let allConfiscations = [];
+        let allInteressenten = [];
 
         // ==================== PREIS PRO KONTROLLE ====================
         async function loadPricePerCheck() {
@@ -2382,7 +2597,6 @@
                     await addLog(currentUser.username, 'Preis pro Kontrolle geändert',
                         `Neuer Preis: ${price} $`);
                 }
-                // Aktuelle Auszahlung neu laden
                 loadPayoutData();
             } catch (error) {
                 console.error('Fehler beim Speichern des Preises:', error);
@@ -2458,12 +2672,6 @@
             if (!username) return 'Unbekannt';
             if (username === 'colin') return 'Colin Ehrlich';
             return username.charAt(0).toUpperCase() + username.slice(1);
-        }
-
-        function getDisplayNameLower(username) {
-            if (!username) return 'unbekannt';
-            if (username === 'colin') return 'Colin Ehrlich';
-            return username;
         }
 
         // ==================== ZEIT-HILFSFUNKTIONEN ====================
@@ -3069,6 +3277,147 @@
             }
         }
 
+        // ==================== INTERESSENTEN ====================
+        async function loadInteressenten() {
+            try {
+                const snap = await database.ref('Navy-boote/interessenten').once('value');
+                const data = snap.val();
+                allInteressenten = [];
+                if (data) {
+                    Object.entries(data).forEach(([id, entry]) => {
+                        allInteressenten.push({ id, ...entry });
+                    });
+                }
+                renderInteressenten();
+            } catch (error) {
+                console.error('Fehler beim Laden der Interessenten:', error);
+                document.getElementById('interessentenList').innerHTML = '<p style="color:#ff5555;">Fehler beim Laden.</p>';
+            }
+        }
+
+        function renderInteressenten() {
+            const list = document.getElementById('interessentenList');
+            let filtered = allInteressenten;
+            
+            if (interessentenFilter === 'active') {
+                filtered = allInteressenten.filter(i => i.status !== 'archived');
+            } else if (interessentenFilter === 'archived') {
+                filtered = allInteressenten.filter(i => i.status === 'archived');
+            }
+            
+            filtered.sort((a, b) => {
+                if (a.status === 'archived' && b.status !== 'archived') return 1;
+                if (a.status !== 'archived' && b.status === 'archived') return -1;
+                return (a.name || '').localeCompare(b.name || '');
+            });
+            
+            if (filtered.length === 0) {
+                list.innerHTML = '<p style="color:#aaa;text-align:center;padding:20px;">Keine Interessenten gefunden.</p>';
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(entry => {
+                const isArchived = entry.status === 'archived';
+                const statusText = isArchived ? '📦 Archiviert' : '🟢 Aktiv';
+                const statusClass = isArchived ? 'archived' : 'active';
+                html += `
+                    <div class="interessent-item">
+                        <div class="info">
+                            <span class="name">${esc(entry.name || 'Unbekannt')}</span>
+                            <span class="dienstnummer">${esc(entry.dienstnummer || '-')}</span>
+                            <span class="telefon">📞 ${esc(entry.telefon || '-')}</span>
+                            <span class="status ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="actions">
+                            ${isArchived ? 
+                                `<button onclick="setInteressentStatus('${entry.id}', 'active')" class="btn-active">🔄 Reaktivieren</button>` :
+                                `<button onclick="setInteressentStatus('${entry.id}', 'archived')" class="btn-archive">📦 Archivieren</button>`
+                            }
+                            <button onclick="deleteInteressent('${entry.id}')" class="btn-delete-small">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            });
+            list.innerHTML = html;
+        }
+
+        function filterInteressenten(filter) {
+            interessentenFilter = filter;
+            renderInteressenten();
+        }
+
+        async function addInteressent() {
+            const name = document.getElementById('interessentName').value.trim();
+            const dienstnummer = document.getElementById('interessentDienstnummer').value.trim();
+            const telefon = document.getElementById('interessentTelefon').value.trim();
+            
+            if (!name) {
+                showToast('⚠️ Bitte Namen eingeben!', '#ffaa33');
+                return;
+            }
+            
+            try {
+                const newEntry = {
+                    name: name,
+                    dienstnummer: dienstnummer || '-',
+                    telefon: telefon || '-',
+                    status: 'active',
+                    createdAt: Date.now()
+                };
+                const ref = await database.ref('Navy-boote/interessenten').push(newEntry);
+                newEntry.id = ref.key;
+                allInteressenten.push(newEntry);
+                renderInteressenten();
+                document.getElementById('interessentName').value = '';
+                document.getElementById('interessentDienstnummer').value = '';
+                document.getElementById('interessentTelefon').value = '';
+                if (currentUser) {
+                    await addLog(currentUser.username, 'Interessent hinzugefügt', `Name: ${name}`);
+                }
+                showToast('✅ Interessent hinzugefügt!', '#2ecc40');
+            } catch (error) {
+                console.error('Fehler beim Hinzufügen:', error);
+                showToast('❌ Fehler beim Hinzufügen!', '#ff4444');
+            }
+        }
+
+        async function setInteressentStatus(id, newStatus) {
+            try {
+                await database.ref('Navy-boote/interessenten/' + id + '/status').set(newStatus);
+                const entry = allInteressenten.find(i => i.id === id);
+                if (entry) {
+                    entry.status = newStatus;
+                    renderInteressenten();
+                    if (currentUser) {
+                        await addLog(currentUser.username, 'Interessent Status geändert',
+                            `Name: ${entry.name}, Status: ${newStatus === 'archived' ? 'Archiviert' : 'Reaktiviert'}`);
+                    }
+                    showToast(`✅ Status geändert: ${newStatus === 'archived' ? 'Archiviert' : 'Reaktiviert'}`, '#2ecc40');
+                }
+            } catch (error) {
+                console.error('Fehler beim Statuswechsel:', error);
+                showToast('❌ Fehler beim Statuswechsel!', '#ff4444');
+            }
+        }
+
+        async function deleteInteressent(id) {
+            if (!confirm('Interessent wirklich löschen?')) return;
+            try {
+                const entry = allInteressenten.find(i => i.id === id);
+                await database.ref('Navy-boote/interessenten/' + id).remove();
+                allInteressenten = allInteressenten.filter(i => i.id !== id);
+                renderInteressenten();
+                if (currentUser && entry) {
+                    await addLog(currentUser.username, 'Interessent gelöscht', `Name: ${entry.name}`);
+                }
+                showToast('🗑️ Gelöscht.', '#ff5555');
+            } catch (error) {
+                console.error('Fehler beim Löschen:', error);
+                showToast('❌ Fehler beim Löschen!', '#ff4444');
+            }
+        }
+
         // ==================== HILFSFUNKTIONEN ====================
         function esc(s) {
             if (!s) return '';
@@ -3118,6 +3467,7 @@
                             confiscations: true,
                             payout: true,
                             logs: true,
+                            interessenten: true,
                             admin: true
                         }
                     });
@@ -3143,6 +3493,7 @@
                     userPermissions.confiscations = newPerms.confiscations !== false;
                     userPermissions.payout = newPerms.payout !== false;
                     userPermissions.logs = newPerms.logs !== false;
+                    userPermissions.interessenten = newPerms.interessenten !== false;
                     if (currentUser) {
                         saveSession(currentUser.username, isAdmin, userPermissions);
                     }
@@ -3196,6 +3547,7 @@
                     confiscations: true,
                     payout: true,
                     logs: true,
+                    interessenten: true,
                     admin: true
                 };
             } else {
@@ -3205,6 +3557,7 @@
                     confiscations: perms.confiscations !== false,
                     payout: perms.payout !== false,
                     logs: perms.logs !== false,
+                    interessenten: perms.interessenten !== false,
                     admin: false
                 };
             }
@@ -3284,6 +3637,7 @@
                 confiscations: true,
                 payout: true,
                 logs: true,
+                interessenten: true,
                 admin: false
             };
             document.getElementById('loginScreen').classList.remove('hidden');
@@ -3309,6 +3663,7 @@
                 'stopwatch': { icon: '⏱️', label: 'Stoppuhr' },
                 'confiscations': { icon: '📋', label: 'Beschlagnahmungen' },
                 'payout': { icon: '💰', label: 'Auszahlung' },
+                'interessenten': { icon: '👥', label: 'Interessenten' },
                 'logs': { icon: '📊', label: 'Logs' }
             };
             for (const [key, config] of Object.entries(tabConfig)) {
@@ -3340,7 +3695,7 @@
             }
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             const buttons = document.querySelectorAll('.tab-btn');
-            const tabOrder = ['home', 'stopwatch', 'confiscations', 'payout', 'logs', 'admin'];
+            const tabOrder = ['home', 'stopwatch', 'confiscations', 'payout', 'interessenten', 'logs', 'admin'];
             const index = tabOrder.indexOf(name);
             let buttonIndex = 0;
             for (let i = 0; i <= index; i++) {
@@ -3354,7 +3709,13 @@
             }
             document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
             const tabEl = document.getElementById('tab-' + name);
-            if (tabEl) tabEl.classList.add('active');
+            if (tabEl) {
+                tabEl.classList.add('active');
+                // Bei Admin-Tab sicherstellen, dass er sichtbar ist
+                if (name === 'admin') {
+                    tabEl.style.display = 'block';
+                }
+            }
             if (name === 'home') { /* nichts */ } else if (name === 'stopwatch') {
                 renderBoats();
                 loadAllSoldiersAverage();
@@ -3367,6 +3728,8 @@
                 loadPricePerCheck();
                 loadPayoutData();
                 populateHistoryUserSelect();
+            } else if (name === 'interessenten') {
+                loadInteressenten();
             } else if (name === 'logs') populateLogUserSelect();
             else if (name === 'admin') setupAdminTab();
         }
@@ -3374,80 +3737,7 @@
         // ==================== ADMIN TAB ====================
         function setupAdminTab() {
             if (!isAdmin) return;
-            let adminTab = document.getElementById('tab-admin');
-            if (!adminTab) {
-                adminTab = document.createElement('div');
-                adminTab.id = 'tab-admin';
-                adminTab.className = 'tab-content';
-                adminTab.innerHTML = `
-                    <h3 style="color:#ff5555;margin-bottom:16px;">🔑 Admin</h3>
-                    <div class="admin-section">
-                        <h4>👥 Benutzerverwaltung</h4>
-                        <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;flex-wrap:wrap;">
-                            <input type="text" id="newUsername" placeholder="Benutzername" style="width:180px;">
-                            <input type="password" id="newPassword" placeholder="Passwort" style="width:180px;">
-                            <button onclick="createUser()" style="background:#2e7d32;">➕ Erstellen</button>
-                        </div>
-                        <div id="userList"></div>
-                    </div>
-                    <div class="admin-section">
-                        <h4>🔐 Berechtigungen</h4>
-                        <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Berechtigungen zu bearbeiten:</p>
-                        <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
-                            <select id="permissionUserSelect" onchange="loadUserPermissions()" style="width:250px;">
-                                <option value="">-- Benutzer wählen --</option>
-                            </select>
-                        </div>
-                        <div id="permissionsEditor" style="display:none;">
-                            <div class="permissions-grid">
-                                <div class="permission-item"><input type="checkbox" id="permStopwatch" onchange="savePermission('stopwatch', this.checked)"><label for="permStopwatch">⏱️ Stoppuhr</label></div>
-                                <div class="permission-item"><input type="checkbox" id="permConfiscations" onchange="savePermission('confiscations', this.checked)"><label for="permConfiscations">📋 Beschlagnahmungen</label></div>
-                                <div class="permission-item"><input type="checkbox" id="permPayout" onchange="savePermission('payout', this.checked)"><label for="permPayout">💰 Auszahlung</label></div>
-                                <div class="permission-item"><input type="checkbox" id="permLogs" onchange="savePermission('logs', this.checked)"><label for="permLogs">📊 Logs</label></div>
-                                <div class="permission-item"><input type="checkbox" id="permAdmin" onchange="savePermission('admin', this.checked)"><label for="permAdmin">🔑 Admin</label></div>
-                            </div>
-                            <p id="permissionSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Berechtigungen gespeichert!</p>
-                        </div>
-                    </div>
-                    <div class="admin-section">
-                        <h4>🚤 Bootverwaltung & Reihenfolge</h4>
-                        <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Boote können per Drag & Drop sortiert werden. Die Reihenfolge wird in der Stoppuhr übernommen.</p>
-                        <div style="margin-bottom:12px;">
-                            <button onclick="openBoatModal()" style="background:rgba(255,170,51,0.2);border:2px solid #ffaa33;color:#ffaa33;">➕ Neues Boot</button>
-                            <button onclick="resetBoatOrder()" style="background:rgba(255,170,51,0.1);border:1px solid #ffaa33;color:#ffaa33;margin-left:8px;">↺ Standard-Reihenfolge</button>
-                        </div>
-                        <div id="boatOrderListContainer" style="margin-top:10px;"></div>
-                    </div>
-                    <div class="admin-section">
-                        <h4>📋 Bootskontrolle-Sichtbarkeit</h4>
-                        <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Sichtbarkeit in der Auszahlung zu bearbeiten:</p>
-                        <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
-                            <select id="boatcheckUserSelect" onchange="loadUserBoatcheck()" style="width:250px;">
-                                <option value="">-- Benutzer wählen --</option>
-                            </select>
-                        </div>
-                        <div id="boatcheckEditor" style="display:none;">
-                            <div class="permissions-grid">
-                                <div class="permission-item">
-                                    <input type="checkbox" id="boatcheckEnabled" onchange="saveBoatcheck()">
-                                    <label for="boatcheckEnabled">✅ In Auszahlung anzeigen</label>
-                                </div>
-                            </div>
-                            <p id="boatcheckSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Einstellung gespeichert!</p>
-                        </div>
-                    </div>
-                    <div class="admin-section">
-                        <h4>🗑️ Gefahrenzone</h4>
-                        <div class="input-group" style="justify-content:flex-start;flex-wrap:wrap;">
-                            <input type="text" id="adminDeletePerson" placeholder="Name der Person" style="width:200px;">
-                            <button class="btn-danger" onclick="adminDeletePerson()">🗑️ Person löschen</button>
-                        </div>
-                        <div style="margin-top:10px;">
-                            <button class="btn-danger" onclick="manualCleanupLogs()">🧹 Logs manuell bereinigen (>32 Tage)</button>
-                        </div>
-                    </div>`;
-                document.querySelector('.container').appendChild(adminTab);
-            }
+            // Admin Tab existiert bereits im HTML, muss nur initialisiert werden
             loadUserList();
             populatePermissionUserSelect();
             loadBoatAdminList();
@@ -3510,6 +3800,7 @@
             document.getElementById('permConfiscations').checked = permissions.confiscations !== false;
             document.getElementById('permPayout').checked = permissions.payout !== false;
             document.getElementById('permLogs').checked = permissions.logs !== false;
+            document.getElementById('permInteressenten').checked = permissions.interessenten !== false;
             document.getElementById('permAdmin').checked = permissions.admin === true;
             editor.style.display = 'block';
         }
@@ -3588,6 +3879,7 @@
                         confiscations: true,
                         payout: true,
                         logs: true,
+                        interessenten: true,
                         admin: false
                     }
                 });
@@ -3622,6 +3914,7 @@
                 if (perms.confiscations !== false) activePerms.push('📋 Beschlagn.');
                 if (perms.payout !== false) activePerms.push('💰 Auszahlung');
                 if (perms.logs !== false) activePerms.push('📊 Logs');
+                if (perms.interessenten !== false) activePerms.push('👥 Interessenten');
                 if (userData.isAdmin || perms.admin === true) activePerms.push('🔑 Admin');
                 const permissionsDisplay = activePerms.length > 0 ?
                     activePerms.map(p => `<div style="margin:2px 0;">${p}</div>`).join('') :
@@ -4052,20 +4345,17 @@
                     });
                 }
                 
-                // Nach Woche filtern
                 const filtered = entries.filter(e => {
                     if (!e.date) return false;
                     return isInConfiscationWeek(e.date, confiscationWeekOffset);
                 });
                 
-                // Sortieren nach Datum (neueste zuerst)
                 filtered.sort((a, b) => {
                     if (!a.date) return 1;
                     if (!b.date) return -1;
                     return new Date(b.date) - new Date(a.date);
                 });
                 
-                // Summen für die gefilterten Einträge
                 let filterTg = 0, filterTb = 0, filterTi = 0;
                 filtered.forEach(e => {
                     filterTg += parseFloat(e.greenMoney || 0);
@@ -4109,7 +4399,6 @@
             });
         }
 
-        // ===== DETAIL ANSICHT (VOLLE ANSICHT MIT AUGE-BUTTON) =====
         function showConfiscationDetail(id) {
             const entry = allConfiscations.find(e => e.id === id);
             if (!entry) {
@@ -4141,7 +4430,6 @@
             document.getElementById('confiscationDetailOverlay').classList.remove('show');
         }
 
-        // Detail-Modal Overlay schließen bei Klick außerhalb
         document.getElementById('confiscationDetailOverlay').addEventListener('click', function(e) {
             if (e.target === this) closeConfiscationDetail();
         });
