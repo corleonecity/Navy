@@ -1749,7 +1749,52 @@
             }
         }
 
-        /* Boot-Protokolle als eigenständiges Feld neben der Auszahlung */
+        /* Admin-Settings nebeneinander */
+        .admin-settings-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+        .admin-settings-row > div {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            border: 1px solid rgba(100, 150, 255, 0.15);
+        }
+        .admin-settings-row label {
+            color: #91b8ea;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .admin-settings-row input {
+            flex: 1;
+            min-width: 60px;
+            padding: 6px 8px;
+            font-size: 13px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+        }
+        .admin-settings-row input:focus {
+            border-color: var(--navy-blue-bright);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .admin-settings-row .status-indicator {
+            color: #2ecc40;
+            font-size: 12px;
+            display: none;
+        }
+
+        /* Boot-Protokolle */
         .protocol-global {
             display: flex;
             align-items: center;
@@ -1794,7 +1839,7 @@
             display: none;
         }
 
-        /* Letzte Notiz für Auszahlung */
+        /* Letzte Notiz für Auszahlung (NUR ADMIN) */
         .payout-note {
             display: flex;
             align-items: center;
@@ -1827,6 +1872,43 @@
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
         }
         .payout-note .note-save-status {
+            color: #2ecc40;
+            font-size: 12px;
+            display: none;
+        }
+
+        /* Preis pro Kontrolle - Wochenabhängig */
+        .price-admin {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            border: 1px solid rgba(46, 204, 64, 0.3);
+            flex: 1;
+            min-width: 200px;
+        }
+        .price-admin label {
+            color: #2ecc40;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+        .price-admin input {
+            width: 100px;
+            padding: 6px 8px;
+            font-size: 13px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+        }
+        .price-admin input:focus {
+            border-color: var(--navy-blue-bright);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .price-admin .price-save-status {
             color: #2ecc40;
             font-size: 12px;
             display: none;
@@ -1969,43 +2051,6 @@
             font-size: 1.1rem;
         }
 
-        /* Preis pro Kontrolle Admin */
-        .price-admin {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 12px 18px;
-            background: rgba(0, 0, 0, 0.5);
-            border: 1px solid rgba(46, 204, 64, 0.3);
-            border-radius: 10px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .price-admin label {
-            color: #2ecc40;
-            font-weight: 600;
-            font-size: 14px;
-            letter-spacing: 0.5px;
-        }
-        .price-admin input {
-            width: 120px;
-            padding: 8px 12px;
-            font-size: 14px;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 6px;
-            color: #fff;
-        }
-        .price-admin input:focus {
-            border-color: var(--navy-blue-bright);
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-        }
-        .price-admin .price-save-status {
-            color: #2ecc40;
-            font-size: 12px;
-            display: none;
-        }
-
         /* INTERESSENTEN LISTE */
         .interessenten-section {
             background: rgba(0, 0, 0, 0.3);
@@ -2131,6 +2176,200 @@
         #tab-admin.active {
             display: block !important;
         }
+
+        /* ==================== ELK (EINSATZLEITUNG KONTROLLLISTE) ==================== */
+        .elk-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 12px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .elk-card {
+            background: #030303;
+            border: 1px solid #2a2a2a;
+            border-left: 4px solid #ffaa33;
+            border-radius: 10px;
+            padding: 18px 20px;
+            transition: 0.2s;
+        }
+        .elk-card:hover {
+            border-color: #ffaa33;
+        }
+        .elk-card .elk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+        .elk-card .elk-header h3 {
+            color: #ffaa33;
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .elk-card .elk-header .elk-delete {
+            background: none;
+            border: none;
+            color: #ff5555;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 8px;
+            border-radius: 6px;
+        }
+        .elk-card .elk-header .elk-delete:hover {
+            background: rgba(255,80,80,0.15);
+        }
+        .elk-field {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 6px 0;
+            font-size: 14px;
+            color: #dbeafe;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #181818;
+        }
+        .elk-field:last-child {
+            border-bottom: none;
+        }
+        .elk-field .elk-label {
+            color: #91b8ea;
+            min-width: 200px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        .elk-field .toggle-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            border: 2px solid #444;
+            background: #0a0a0a;
+            color: #555;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+            flex-shrink: 0;
+        }
+        .elk-field .toggle-btn:hover {
+            transform: scale(1.05);
+        }
+        .elk-field .toggle-btn.active {
+            border-color: #2ecc40;
+            color: #2ecc40;
+            background: rgba(46, 204, 64, 0.1);
+        }
+        .elk-field .toggle-btn.error {
+            border-color: #ff5555;
+            color: #ff5555;
+            background: rgba(255, 80, 80, 0.1);
+        }
+        .elk-card .elk-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            justify-content: flex-end;
+            border-top: 1px solid #222;
+            padding-top: 12px;
+        }
+        .elk-card .elk-actions button {
+            font-size: 13px;
+            padding: 6px 18px;
+            border-radius: 6px;
+        }
+        .elk-empty {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            border: 2px dashed #333;
+            border-radius: 12px;
+        }
+        .elk-empty .big-icon {
+            font-size: 48px;
+            display: block;
+            margin-bottom: 12px;
+        }
+
+        /* ELK Admin im Admin-Tab */
+        .elk-admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .elk-admin-table th {
+            background: rgba(255, 170, 51, 0.15);
+            color: #ffaa33;
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 170, 51, 0.2);
+        }
+        .elk-admin-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid rgba(255, 170, 51, 0.1);
+            color: #dbeafe;
+            vertical-align: middle;
+        }
+        .elk-admin-table .elk-label-cell {
+            color: #91b8ea;
+            font-weight: 500;
+        }
+        .elk-admin-table .elk-type-cell {
+            font-size: 11px;
+            color: #666;
+        }
+        .elk-admin-table .elk-actions-cell {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .elk-admin-table .elk-actions-cell button {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 4px;
+        }
+        .elk-admin-input-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .elk-admin-input-group input {
+            padding: 6px 12px;
+            font-size: 13px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            min-width: 150px;
+        }
+        .elk-admin-input-group input:focus {
+            border-color: var(--navy-blue-bright);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .elk-admin-input-group select {
+            padding: 6px 12px;
+            font-size: 13px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+        }
+        .elk-admin-input-group select:focus {
+            border-color: var(--navy-blue-bright);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
     </style>
 </head>
 <body>
@@ -2251,23 +2490,23 @@
                 </div>
                 <div id="payoutInfo" style="margin-bottom:10px;color:#8ab4e0;font-size:13px;"></div>
 
-                <div class="price-admin">
-                    <label>💰 Preis pro Kontrolle:</label>
-                    <input type="number" id="pricePerCheckInput" value="5000" min="0" step="100" onchange="updatePricePerCheck(this.value)">
-                    <span class="price-save-status" id="priceSaveStatus">✅ Gespeichert</span>
-                </div>
-
-                <div class="protocol-global">
-                    <label>📋 Boot-Protokolle:</label>
-                    <input type="number" id="protocolGlobalInput" value="0" min="0" onchange="updateProtocolGlobal(this.value)">
-                    <span class="protocol-count-display" id="protocolGlobalDisplay">0</span>
-                    <span class="protocol-save-status" id="protocolSaveStatus">✅ Gespeichert</span>
-                </div>
-
-                <div class="payout-note">
-                    <label>📝 Letzte Notiz:</label>
-                    <input type="text" id="payoutNoteInput" placeholder="Notiz eingeben..." onchange="updatePayoutNote(this.value)">
-                    <span class="note-save-status" id="noteSaveStatus">✅ Gespeichert</span>
+                <div class="admin-settings-row">
+                    <div class="price-admin">
+                        <label>💰 Preis:</label>
+                        <input type="number" id="pricePerCheckInput" value="5000" min="0" step="100" onchange="updatePricePerCheck(this.value)">
+                        <span class="price-save-status" id="priceSaveStatus">✅</span>
+                    </div>
+                    <div>
+                        <label>📋 Protokolle:</label>
+                        <input type="number" id="protocolGlobalInput" value="0" min="0" onchange="updateProtocolGlobal(this.value)">
+                        <span class="protocol-count-display" id="protocolGlobalDisplay">0</span>
+                        <span class="protocol-save-status" id="protocolSaveStatus">✅</span>
+                    </div>
+                    <div>
+                        <label>📝 Notiz:</label>
+                        <input type="text" id="payoutNoteInput" placeholder="Notiz eingeben..." onchange="updatePayoutNote(this.value)">
+                        <span class="note-save-status" id="noteSaveStatus">✅</span>
+                    </div>
                 </div>
 
                 <div class="payout-table-wrapper">
@@ -2297,7 +2536,7 @@
             <div id="tab-interessenten" class="tab-content">
                 <div class="interessenten-section">
                     <h4>👥 Interessenten für die Navy</h4>
-                    <p style="color:#8ab4e0;font-size:13px;margin-bottom:12px;">Hier können Personen erfasst werden, die Interesse an einer Navy-Mission haben. Mit einem Klick auf "Archivieren" werden sie in den Archiv-Status versetzt.</p>
+                    <p style="color:#8ab4e0;font-size:13px;margin-bottom:12px;">Hier können Personen erfasst werden, die Interesse an einer Navy-Mission haben.</p>
                     
                     <div class="interessenten-input-group">
                         <input type="text" id="interessentName" placeholder="Name *" style="min-width:150px;">
@@ -2318,6 +2557,16 @@
                 </div>
             </div>
 
+            <!-- ==================== ELK (EINSATZLEITUNG KONTROLLLISTE) ==================== -->
+            <div id="tab-elk" class="tab-content">
+                <h3 style="color:#ffaa33;margin-bottom:6px;">📋 Einsatzleitung Kontrollliste (ELK)</h3>
+                <p style="color:#8ab4e0;font-size:13px;margin-bottom:16px;">Hier werden alle wichtigen Einsatzpunkte mit <strong style="color:#ffaa33;">Toggle</strong> (✅ / ❌) verwaltet.</p>
+                
+                <div id="elkContainer" class="elk-container">
+                    <!-- Wird dynamisch geladen -->
+                </div>
+            </div>
+
             <div id="tab-logs" class="tab-content">
                 <h3 style="color:#ffaa33;margin-bottom:16px;">📊 Aktivitätslogs</h3>
                 <div class="admin-section">
@@ -2330,7 +2579,7 @@
                 <div id="logContainer"><p style="color:#aaa;">Wähle einen Benutzer aus oder klicke auf "Alle Logs anzeigen".</p></div>
             </div>
 
-            <!-- ADMIN TAB - WICHTIG: Die active Klasse wird von switchTab gesetzt -->
+            <!-- ADMIN TAB -->
             <div id="tab-admin" class="tab-content">
                 <h3 style="color:#ff5555;margin-bottom:16px;">🔑 Admin</h3>
                 <div class="admin-section">
@@ -2357,6 +2606,7 @@
                             <div class="permission-item"><input type="checkbox" id="permPayout" onchange="savePermission('payout', this.checked)"><label for="permPayout">💰 Auszahlung</label></div>
                             <div class="permission-item"><input type="checkbox" id="permLogs" onchange="savePermission('logs', this.checked)"><label for="permLogs">📊 Logs</label></div>
                             <div class="permission-item"><input type="checkbox" id="permInteressenten" onchange="savePermission('interessenten', this.checked)"><label for="permInteressenten">👥 Interessenten</label></div>
+                            <div class="permission-item"><input type="checkbox" id="permElk" onchange="savePermission('elk', this.checked)"><label for="permElk">📋 ELK</label></div>
                             <div class="permission-item"><input type="checkbox" id="permAdmin" onchange="savePermission('admin', this.checked)"><label for="permAdmin">🔑 Admin</label></div>
                         </div>
                         <p id="permissionSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Berechtigungen gespeichert!</p>
@@ -2387,6 +2637,25 @@
                             </div>
                         </div>
                         <p id="boatcheckSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Einstellung gespeichert!</p>
+                    </div>
+                </div>
+                <div class="admin-section">
+                    <h4>📋 ELK Felder verwalten</h4>
+                    <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Hier kannst du neue Felder für die ELK hinzufügen oder bestehende löschen. <strong style="color:#ffaa33;">Alle Felder sind Toggle (✅/❌)</strong>.</p>
+                    <div class="elk-admin-input-group">
+                        <input type="text" id="elkNewLabel" placeholder="Feldname (z.B. 10-07)" style="min-width:180px;">
+                        <button onclick="addElkField()" style="background:rgba(46,204,64,0.15);border-color:#2ecc40;color:#2ecc40;">➕ Feld hinzufügen</button>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="elk-admin-table" id="elkAdminTable">
+                            <thead><tr><th>Feldname</th><th>Aktionen</th></tr></thead>
+                            <tbody id="elkAdminBody">
+                                <!-- wird dynamisch geladen -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
+                        <button onclick="resetElkFieldsToDefault()" style="background:rgba(255,170,51,0.15);border-color:#ffaa33;color:#ffaa33;">↺ Auf Standard zurücksetzen</button>
                     </div>
                 </div>
                 <div class="admin-section">
@@ -2521,9 +2790,11 @@
             payout: true,
             logs: true,
             interessenten: true,
+            elk: true,
             admin: false
         };
         const SESSION_DURATION = 30 * 60 * 1000;
+        const DEFAULT_PRICE = 5000;
         let currentPermissionUser = null;
         let currentBoatcheckUser = null;
         let sessionTimeout = null;
@@ -2538,7 +2809,7 @@
         let allUsernames = [];
         let userDisplayNames = {};
         let selectedPersonName = '';
-        let PRICE_PER_CHECK = 5000;
+        let PRICE_PER_CHECK = DEFAULT_PRICE;
         let interessentenFilter = 'alle';
 
         let editingBoatKey = null;
@@ -2552,25 +2823,297 @@
         let boatCache = {};
         let allConfiscations = [];
         let allInteressenten = [];
+        let priceHistoryCache = {};
+
+        // ==================== ELK (EINSATZLEITUNG KONTROLLLISTE) - ALLES TOGGLE ====================
+        let elkData = [];
+        let ELK_FIELD_DEFS = [
+            { id: 'sperrzone', label: 'Sperrzone erstellen/erneuern' },
+            { id: 'sperrradius', label: 'Sperrzonenradius' },
+            { id: 'eigenschutz', label: 'Eigenschutz' },
+            { id: 'code10_07', label: '10-07' },
+            { id: 'tv_beschreibung', label: 'TV Beschreibung' },
+            { id: 'tv_fahrzeug', label: 'TV Fahrzeugbeschreibung' },
+            { id: 'geisel_beschreibung', label: 'Geisel Beschreibung' },
+            { id: 'einheiten', label: 'Einheiten aufteilen + Fahrzeuge' },
+            { id: 'funk_updates', label: 'Updates im Funk' },
+            { id: 'prioritaet', label: 'Prioritätsfahrzeug (10-80)' },
+            { id: 'geiseln_uebergabe', label: 'Geiseln an die Soldaten übergeben' },
+            { id: 'einsatzbericht', label: 'Einsatzbericht' }
+        ];
+
+        function getDefaultElkCard() {
+            const fields = {};
+            ELK_FIELD_DEFS.forEach(f => {
+                fields[f.id] = false;
+            });
+            return {
+                id: 'default_elk',
+                name: 'Standard ELK',
+                fields: fields,
+                createdAt: Date.now(),
+                isDefault: true
+            };
+        }
+
+        async function loadElkData() {
+            try {
+                const snap = await database.ref('Navy-boote/elk').once('value');
+                const data = snap.val();
+                if (data && typeof data === 'object') {
+                    const cards = Object.values(data);
+                    if (cards.length > 0) {
+                        elkData = cards;
+                        renderElk();
+                        renderElkAdmin();
+                        return;
+                    }
+                }
+                elkData = [getDefaultElkCard()];
+                await saveElkData(elkData);
+                renderElk();
+                renderElkAdmin();
+            } catch (error) {
+                console.error('Fehler beim Laden der ELK:', error);
+                elkData = [getDefaultElkCard()];
+                renderElk();
+                renderElkAdmin();
+            }
+        }
+
+        async function saveElkData(cards) {
+            const obj = {};
+            cards.forEach(c => { obj[c.id] = c; });
+            await database.ref('Navy-boote/elk').set(obj);
+        }
+
+        function renderElk() {
+            const container = document.getElementById('elkContainer');
+            if (!container) return;
+            
+            if (!elkData || elkData.length === 0) {
+                container.innerHTML = `
+                    <div class="elk-empty">
+                        <span class="big-icon">📋</span>
+                        <p>Keine ELK-Karten vorhanden.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            elkData.forEach((card) => {
+                const fields = card.fields || {};
+                const isDefault = card.isDefault === true;
+                
+                html += `<div class="elk-card" data-id="${card.id}">
+                    <div class="elk-header">
+                        <h3>${esc(card.name || 'ELK')} ${isDefault ? '⭐' : ''}</h3>
+                        ${!isDefault ? `<button class="elk-delete" onclick="deleteElkCard('${card.id}')" title="Karte löschen">✕</button>` : ''}
+                    </div>`;
+
+                ELK_FIELD_DEFS.forEach(f => {
+                    const val = fields[f.id] !== undefined ? fields[f.id] : false;
+                    const isActive = val === true;
+                    const cls = isActive ? 'active' : 'error';
+                    const symbol = isActive ? '✅' : '❌';
+                    
+                    html += `<div class="elk-field">
+                        <span class="elk-label">${f.label}:</span>
+                        <button class="toggle-btn ${cls}" onclick="toggleElkField('${card.id}','${f.id}')">${symbol}</button>
+                    </div>`;
+                });
+
+                html += `<div class="elk-actions">
+                    ${!isDefault ? `<button onclick="deleteElkCard('${card.id}')" class="btn-danger" style="padding:6px 16px;font-size:13px;">🗑️ Löschen</button>` : ''}
+                </div>
+                </div>`;
+            });
+
+            container.innerHTML = html;
+        }
+
+        function renderElkAdmin() {
+            const tbody = document.getElementById('elkAdminBody');
+            if (!tbody) return;
+            
+            tbody.innerHTML = '';
+            ELK_FIELD_DEFS.forEach((f, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="elk-label-cell">${esc(f.label)}</td>
+                    <td class="elk-actions-cell">
+                        <button onclick="editElkFieldLabel(${index})" style="background:rgba(100,150,255,0.15);border-color:#64b4ff;color:#64b4ff;">✏️ Umbenennen</button>
+                        <button onclick="deleteElkField(${index})" class="btn-danger" style="padding:3px 10px;font-size:11px;">🗑️ Löschen</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function editElkFieldLabel(index) {
+            const newLabel = prompt('Neuer Name für das Feld:', ELK_FIELD_DEFS[index].label);
+            if (newLabel && newLabel.trim().length > 0) {
+                ELK_FIELD_DEFS[index].label = newLabel.trim();
+                saveElkData(elkData);
+                renderElk();
+                renderElkAdmin();
+                if (currentUser) {
+                    addLog(currentUser.username, 'ELK Feld umbenannt', `Neuer Name: ${newLabel.trim()}`);
+                }
+                showToast('✅ Feld umbenannt!', '#2ecc40');
+            }
+        }
+
+        function deleteElkField(index) {
+            if (ELK_FIELD_DEFS.length <= 1) {
+                showToast('⚠️ Mindestens ein Feld muss bleiben!', '#ffaa33');
+                return;
+            }
+            if (!confirm(`Feld "${ELK_FIELD_DEFS[index].label}" wirklich löschen?`)) return;
+            const fieldId = ELK_FIELD_DEFS[index].id;
+            ELK_FIELD_DEFS.splice(index, 1);
+            elkData.forEach(card => {
+                delete card.fields[fieldId];
+            });
+            saveElkData(elkData);
+            renderElk();
+            renderElkAdmin();
+            if (currentUser) {
+                addLog(currentUser.username, 'ELK Feld gelöscht', `Feld: ${fieldId}`);
+            }
+            showToast('🗑️ Feld gelöscht.', '#ff5555');
+        }
+
+        function addElkField() {
+            const label = document.getElementById('elkNewLabel').value.trim();
+            if (!label) {
+                showToast('⚠️ Bitte einen Namen eingeben!', '#ffaa33');
+                return;
+            }
+            if (ELK_FIELD_DEFS.some(f => f.label.toLowerCase() === label.toLowerCase())) {
+                showToast('⚠️ Feld existiert bereits!', '#ffaa33');
+                return;
+            }
+            const id = label.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+            ELK_FIELD_DEFS.push({ id, label });
+            elkData.forEach(card => {
+                card.fields[id] = false;
+            });
+            saveElkData(elkData);
+            renderElk();
+            renderElkAdmin();
+            document.getElementById('elkNewLabel').value = '';
+            if (currentUser) {
+                addLog(currentUser.username, 'ELK Feld hinzugefügt', `Feld: ${label}`);
+            }
+            showToast('✅ Feld hinzugefügt!', '#2ecc40');
+        }
+
+        function resetElkFieldsToDefault() {
+            if (!confirm('Alle ELK-Felder auf Standard zurücksetzen? Eigene Felder gehen verloren!')) return;
+            const defaultDefs = [
+                { id: 'sperrzone', label: 'Sperrzone erstellen/erneuern' },
+                { id: 'sperrradius', label: 'Sperrzonenradius' },
+                { id: 'eigenschutz', label: 'Eigenschutz' },
+                { id: 'code10_07', label: '10-07' },
+                { id: 'tv_beschreibung', label: 'TV Beschreibung' },
+                { id: 'tv_fahrzeug', label: 'TV Fahrzeugbeschreibung' },
+                { id: 'geisel_beschreibung', label: 'Geisel Beschreibung' },
+                { id: 'einheiten', label: 'Einheiten aufteilen + Fahrzeuge' },
+                { id: 'funk_updates', label: 'Updates im Funk' },
+                { id: 'prioritaet', label: 'Prioritätsfahrzeug (10-80)' },
+                { id: 'geiseln_uebergabe', label: 'Geiseln an die Soldaten übergeben' },
+                { id: 'einsatzbericht', label: 'Einsatzbericht' }
+            ];
+            ELK_FIELD_DEFS = defaultDefs;
+            const defaultCard = getDefaultElkCard();
+            elkData = [defaultCard];
+            saveElkData(elkData);
+            renderElk();
+            renderElkAdmin();
+            if (currentUser) {
+                addLog(currentUser.username, 'ELK auf Standard zurückgesetzt', 'Alle Felder zurückgesetzt');
+            }
+            showToast('✅ ELK auf Standard zurückgesetzt!', '#2ecc40');
+        }
+
+        async function deleteElkCard(id) {
+            if (!userPermissions.elk && !isAdmin) {
+                showToast('❌ Keine Berechtigung!', '#ff4444');
+                return;
+            }
+            const card = elkData.find(c => c.id === id);
+            if (card && card.isDefault) {
+                showToast('⚠️ Standard-ELK kann nicht gelöscht werden!', '#ffaa33');
+                return;
+            }
+            if (!confirm('ELK-Karte wirklich löschen?')) return;
+            elkData = elkData.filter(c => c.id !== id);
+            await saveElkData(elkData);
+            renderElk();
+            if (currentUser && card) {
+                await addLog(currentUser.username, 'ELK-Karte gelöscht', `Name: ${card.name}`);
+            }
+            showToast('🗑️ ELK-Karte gelöscht.', '#ff5555');
+        }
+
+        async function toggleElkField(cardId, fieldId) {
+            if (!userPermissions.elk && !isAdmin) {
+                showToast('❌ Keine Berechtigung!', '#ff4444');
+                return;
+            }
+            const card = elkData.find(c => c.id === cardId);
+            if (!card) return;
+            const current = card.fields[fieldId] !== undefined ? card.fields[fieldId] : false;
+            card.fields[fieldId] = !current;
+            await saveElkData(elkData);
+            renderElk();
+            if (currentUser) {
+                const label = ELK_FIELD_DEFS.find(f => f.id === fieldId)?.label || fieldId;
+                await addLog(currentUser.username, 'ELK-Toggle geändert', 
+                    `Karte: ${card.name}, Feld: ${label}, Neuer Status: ${card.fields[fieldId] ? 'Aktiv' : 'Inaktiv'}`);
+            }
+        }
 
         // ==================== PREIS PRO KONTROLLE ====================
         async function loadPricePerCheck() {
+            if (!currentPayoutWeek) {
+                PRICE_PER_CHECK = DEFAULT_PRICE;
+                document.getElementById('pricePerCheckInput').value = DEFAULT_PRICE;
+                document.getElementById('pricePerCheckInput').disabled = !isAdmin;
+                return DEFAULT_PRICE;
+            }
             try {
-                const snap = await database.ref('Navy-boote/price_per_check').once('value');
+                const snap = await database.ref('Navy-boote/price_per_check/' + currentPayoutWeek).once('value');
                 const val = snap.val();
                 if (val && !isNaN(val) && val > 0) {
                     PRICE_PER_CHECK = val;
                 } else {
-                    PRICE_PER_CHECK = 5000;
+                    PRICE_PER_CHECK = DEFAULT_PRICE;
                 }
                 document.getElementById('pricePerCheckInput').value = PRICE_PER_CHECK;
                 document.getElementById('pricePerCheckInput').disabled = !isAdmin;
                 return PRICE_PER_CHECK;
             } catch (error) {
                 console.error('Fehler beim Laden des Preises:', error);
-                PRICE_PER_CHECK = 5000;
-                document.getElementById('pricePerCheckInput').value = PRICE_PER_CHECK;
+                PRICE_PER_CHECK = DEFAULT_PRICE;
+                document.getElementById('pricePerCheckInput').value = DEFAULT_PRICE;
                 return PRICE_PER_CHECK;
+            }
+        }
+
+        async function getPriceForWeek(weekKey) {
+            if (!weekKey) return DEFAULT_PRICE;
+            try {
+                if (priceHistoryCache[weekKey] !== undefined) return priceHistoryCache[weekKey];
+                const snap = await database.ref('Navy-boote/price_per_check/' + weekKey).once('value');
+                const val = snap.val();
+                const price = (val && !isNaN(val) && val > 0) ? val : DEFAULT_PRICE;
+                priceHistoryCache[weekKey] = price;
+                return price;
+            } catch (error) {
+                return DEFAULT_PRICE;
             }
         }
 
@@ -2586,17 +3129,22 @@
                 document.getElementById('pricePerCheckInput').value = PRICE_PER_CHECK;
                 return;
             }
+            if (!currentPayoutWeek) {
+                showToast('⚠️ Bitte zuerst eine Woche auswählen!', '#ffaa33');
+                document.getElementById('pricePerCheckInput').value = PRICE_PER_CHECK;
+                return;
+            }
             try {
-                await database.ref('Navy-boote/price_per_check').set(price);
+                await database.ref('Navy-boote/price_per_check/' + currentPayoutWeek).set(price);
                 PRICE_PER_CHECK = price;
                 const statusEl = document.getElementById('priceSaveStatus');
                 statusEl.style.display = 'inline';
-                statusEl.textContent = '✅ Gespeichert!';
                 setTimeout(() => { statusEl.style.display = 'none'; }, 2500);
                 if (currentUser) {
                     await addLog(currentUser.username, 'Preis pro Kontrolle geändert',
-                        `Neuer Preis: ${price} $`);
+                        `Woche: ${currentPayoutWeek}, Neuer Preis: ${price} $`);
                 }
+                priceHistoryCache[currentPayoutWeek] = price;
                 loadPayoutData();
             } catch (error) {
                 console.error('Fehler beim Speichern des Preises:', error);
@@ -3468,6 +4016,7 @@
                             payout: true,
                             logs: true,
                             interessenten: true,
+                            elk: true,
                             admin: true
                         }
                     });
@@ -3494,6 +4043,7 @@
                     userPermissions.payout = newPerms.payout !== false;
                     userPermissions.logs = newPerms.logs !== false;
                     userPermissions.interessenten = newPerms.interessenten !== false;
+                    userPermissions.elk = newPerms.elk !== false;
                     if (currentUser) {
                         saveSession(currentUser.username, isAdmin, userPermissions);
                     }
@@ -3501,7 +4051,7 @@
                     const currentTab = document.querySelector('.tab-content.active');
                     if (currentTab) {
                         const tabId = currentTab.id.replace('tab-', '');
-                        if (tabId !== 'home' && !userPermissions[tabId]) {
+                        if (tabId !== 'home' && !userPermissions[tabId] && tabId !== 'admin') {
                             switchTab('home');
                         }
                     }
@@ -3548,6 +4098,7 @@
                     payout: true,
                     logs: true,
                     interessenten: true,
+                    elk: true,
                     admin: true
                 };
             } else {
@@ -3558,6 +4109,7 @@
                     payout: perms.payout !== false,
                     logs: perms.logs !== false,
                     interessenten: perms.interessenten !== false,
+                    elk: perms.elk !== false,
                     admin: false
                 };
             }
@@ -3638,6 +4190,7 @@
                 payout: true,
                 logs: true,
                 interessenten: true,
+                elk: true,
                 admin: false
             };
             document.getElementById('loginScreen').classList.remove('hidden');
@@ -3664,6 +4217,7 @@
                 'confiscations': { icon: '📋', label: 'Beschlagnahmungen' },
                 'payout': { icon: '💰', label: 'Auszahlung' },
                 'interessenten': { icon: '👥', label: 'Interessenten' },
+                'elk': { icon: '📋', label: 'ELK' },
                 'logs': { icon: '📊', label: 'Logs' }
             };
             for (const [key, config] of Object.entries(tabConfig)) {
@@ -3695,7 +4249,7 @@
             }
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             const buttons = document.querySelectorAll('.tab-btn');
-            const tabOrder = ['home', 'stopwatch', 'confiscations', 'payout', 'interessenten', 'logs', 'admin'];
+            const tabOrder = ['home', 'stopwatch', 'confiscations', 'payout', 'interessenten', 'elk', 'logs', 'admin'];
             const index = tabOrder.indexOf(name);
             let buttonIndex = 0;
             for (let i = 0; i <= index; i++) {
@@ -3711,12 +4265,12 @@
             const tabEl = document.getElementById('tab-' + name);
             if (tabEl) {
                 tabEl.classList.add('active');
-                // Bei Admin-Tab sicherstellen, dass er sichtbar ist
                 if (name === 'admin') {
                     tabEl.style.display = 'block';
                 }
             }
-            if (name === 'home') { /* nichts */ } else if (name === 'stopwatch') {
+            if (name === 'home') { /* nichts */ } 
+            else if (name === 'stopwatch') {
                 renderBoats();
                 loadAllSoldiersAverage();
                 loadAllUsersList();
@@ -3730,6 +4284,8 @@
                 populateHistoryUserSelect();
             } else if (name === 'interessenten') {
                 loadInteressenten();
+            } else if (name === 'elk') {
+                loadElkData();
             } else if (name === 'logs') populateLogUserSelect();
             else if (name === 'admin') setupAdminTab();
         }
@@ -3737,13 +4293,13 @@
         // ==================== ADMIN TAB ====================
         function setupAdminTab() {
             if (!isAdmin) return;
-            // Admin Tab existiert bereits im HTML, muss nur initialisiert werden
             loadUserList();
             populatePermissionUserSelect();
             loadBoatAdminList();
             renderBoatcheckDropdown();
             document.getElementById('boatcheckEditor').style.display = 'none';
             currentBoatcheckUser = null;
+            loadElkData();
         }
 
         async function resetBoatOrder() {
@@ -3801,6 +4357,7 @@
             document.getElementById('permPayout').checked = permissions.payout !== false;
             document.getElementById('permLogs').checked = permissions.logs !== false;
             document.getElementById('permInteressenten').checked = permissions.interessenten !== false;
+            document.getElementById('permElk').checked = permissions.elk !== false;
             document.getElementById('permAdmin').checked = permissions.admin === true;
             editor.style.display = 'block';
         }
@@ -3880,6 +4437,7 @@
                         payout: true,
                         logs: true,
                         interessenten: true,
+                        elk: true,
                         admin: false
                     }
                 });
@@ -3915,6 +4473,7 @@
                 if (perms.payout !== false) activePerms.push('💰 Auszahlung');
                 if (perms.logs !== false) activePerms.push('📊 Logs');
                 if (perms.interessenten !== false) activePerms.push('👥 Interessenten');
+                if (perms.elk !== false) activePerms.push('📋 ELK');
                 if (userData.isAdmin || perms.admin === true) activePerms.push('🔑 Admin');
                 const permissionsDisplay = activePerms.length > 0 ?
                     activePerms.map(p => `<div style="margin:2px 0;">${p}</div>`).join('') :
@@ -4228,7 +4787,7 @@
             }
         };
 
-        // ==================== BESCHLAGNAHMUNGEN (ANGEPASST) ====================
+        // ==================== BESCHLAGNAHMUNGEN ====================
         function openNewConfiscationModal(editData = null) {
             document.getElementById('confiscationModalOverlay').classList.add('show');
             const now = new Date();
@@ -4547,7 +5106,6 @@
                 await database.ref('Navy-boote/protocols/' + currentPayoutWeek).set(count);
                 const statusEl = document.getElementById('protocolSaveStatus');
                 statusEl.style.display = 'inline';
-                statusEl.textContent = '✅ Gespeichert!';
                 setTimeout(() => { statusEl.style.display = 'none'; }, 2500);
 
                 if (currentUser) {
@@ -4595,7 +5153,6 @@
                 await database.ref('Navy-boote/payout_notes/' + currentPayoutWeek).set(note);
                 const statusEl = document.getElementById('noteSaveStatus');
                 statusEl.style.display = 'inline';
-                statusEl.textContent = '✅ Gespeichert!';
                 setTimeout(() => { statusEl.style.display = 'none'; }, 2500);
 
                 if (currentUser) {
@@ -4639,10 +5196,12 @@
                 return boatcheckSettings[name] !== false;
             });
 
+            const weekPrice = await getPriceForWeek(weekKey);
+
             for (const name of authorizedUsers) {
                 const saved = payoutData[name] || { count: 0, paid: false };
                 const displayCount = saved.count || 0;
-                const summe = displayCount * PRICE_PER_CHECK;
+                const summe = displayCount * weekPrice;
                 totalKontrollen += displayCount;
                 totalSumme += summe;
                 if (saved.paid) totalAusgezahlt += summe;
@@ -4656,7 +5215,7 @@
                         <tr>
                             <td><strong>${esc(getDisplayName(name))}</strong></td>
                             <td>${isAdmin ? `<input type="number" class="count-input" value="${displayCount}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : `<strong>${displayCount}</strong>`}</td>
-                            <td>${formatNumber(PRICE_PER_CHECK)} $</td>
+                            <td>${formatNumber(weekPrice)} $</td>
                             <td class="amount-cell">${formatNumber(summe)} $</td>
                             <td style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
                                 ${isAdmin ? `<input type="checkbox" class="payout-checkbox" ${saved.paid ? 'checked' : ''} onchange="togglePayoutPaid('${esc(name)}', this.checked)">` : ''}
@@ -4723,11 +5282,13 @@
                 if (data[username]) {
                     const count = data[username].count || 0;
                     if (count > 0) {
+                        const weekPrice = await getPriceForWeek(week);
                         history.push({ 
                             week, 
                             count: count, 
                             paid: data[username].paid || false,
-                            summe: count * PRICE_PER_CHECK 
+                            summe: count * weekPrice,
+                            pricePerCheck: weekPrice
                         });
                     }
                 }
@@ -4739,7 +5300,7 @@
                 return;
             }
             
-            let html = '<div class="table-wrapper"><table><thead><tr><th>Woche</th><th>Kontrollen</th><th>Summe</th><th>Status</th></tr></thead><tbody>';
+            let html = '<div class="table-wrapper"><table><thead><tr><th>Woche</th><th>Kontrollen</th><th>Preis/Kontrolle</th><th>Summe</th><th>Status</th></tr></thead><tbody>';
             history.forEach(h => {
                 const status = h.paid ? 
                     '<span class="payout-status paid">✅ Ausgezahlt</span>' : 
@@ -4747,6 +5308,7 @@
                 html += `<tr>
                     <td>${h.week}</td>
                     <td>${h.count}</td>
+                    <td>${formatNumber(h.pricePerCheck)} $</td>
                     <td class="amount-cell">${formatNumber(h.summe)} $</td>
                     <td>${status}</td>
                 </tr>`;
