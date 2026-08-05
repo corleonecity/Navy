@@ -2324,10 +2324,6 @@
             color: #91b8ea;
             font-weight: 500;
         }
-        .elk-admin-table .elk-type-cell {
-            font-size: 11px;
-            color: #666;
-        }
         .elk-admin-table .elk-actions-cell {
             display: flex;
             gap: 6px;
@@ -2369,6 +2365,333 @@
         .elk-admin-input-group select:focus {
             border-color: var(--navy-blue-bright);
             box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* ==================== ADMIN TAB VERBESSERUNGEN ==================== */
+        .admin-search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        .admin-search-box input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 14px;
+            font-size: 14px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+        }
+        .admin-search-box input:focus {
+            border-color: var(--navy-blue-bright);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .admin-search-box .search-count {
+            color: #666;
+            font-size: 13px;
+            white-space: nowrap;
+        }
+
+        .user-table-wrap {
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid #222;
+            border-radius: 8px;
+        }
+        .user-table-wrap table {
+            font-size: 13px;
+        }
+        .user-table-wrap thead {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        .user-table-wrap thead th {
+            background: #0d0d0d;
+            border-bottom: 2px solid #333;
+            padding: 8px 10px;
+            color: #ff9999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .user-table-wrap td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #1a1a1a;
+            vertical-align: middle;
+        }
+        .user-table-wrap tr:hover td {
+            background: #0a0a0a;
+        }
+
+        .perm-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin: 1px 2px;
+            white-space: nowrap;
+        }
+        .perm-badge.active {
+            background: rgba(46, 204, 64, 0.2);
+            color: #2ecc40;
+            border: 1px solid #2ecc40;
+        }
+        .perm-badge.inactive {
+            background: rgba(255, 80, 80, 0.15);
+            color: #ff5555;
+            border: 1px solid #ff5555;
+        }
+        .perm-badge.admin-badge {
+            background: rgba(255, 50, 50, 0.25);
+            color: #ff5555;
+            border: 1px solid #ff5555;
+        }
+
+        .role-badge {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .role-badge.admin {
+            background: rgba(255, 50, 50, 0.2);
+            color: #ff5555;
+            border: 1px solid #ff5555;
+        }
+        .role-badge.user {
+            background: rgba(59, 130, 246, 0.15);
+            color: #64b4ff;
+            border: 1px solid #64b4ff;
+        }
+
+        .user-clickable {
+            cursor: pointer;
+            transition: 0.15s;
+        }
+        .user-clickable:hover {
+            color: #ffaa33;
+            text-decoration: underline;
+        }
+
+        .admin-compact-section {
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 85, 85, 0.15);
+        }
+        .admin-compact-section h4 {
+            color: #ff7b83;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 85, 85, 0.15);
+            padding-bottom: 6px;
+        }
+        .admin-compact-section .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .admin-compact-section .row label {
+            color: #91b8ea;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .admin-compact-section .row input,
+        .admin-compact-section .row select {
+            padding: 6px 10px;
+            font-size: 13px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            flex: 1;
+            min-width: 120px;
+        }
+        .admin-compact-section .row input:focus,
+        .admin-compact-section .row select:focus {
+            border-color: var(--navy-blue-bright);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .admin-compact-section .row button {
+            padding: 6px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .admin-perm-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .admin-perm-grid .perm-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #0a0a0a;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid #222;
+            font-size: 12px;
+            color: #dbeafe;
+        }
+        .admin-perm-grid .perm-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #2ecc40;
+            margin: 0;
+            cursor: pointer;
+        }
+        .admin-perm-grid .perm-item label {
+            cursor: pointer;
+            font-size: 12px;
+            color: #dbeafe;
+        }
+
+        .boatcheck-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 4px;
+        }
+        .boatcheck-list .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 4px 10px;
+            background: #0a0a0a;
+            border-radius: 6px;
+            border: 1px solid #1a1a1a;
+            font-size: 13px;
+        }
+        .boatcheck-list .item .name {
+            color: #dbeafe;
+        }
+        .boatcheck-list .item .status {
+            font-size: 11px;
+            padding: 2px 10px;
+            border-radius: 12px;
+        }
+        .boatcheck-list .item .status.on {
+            background: rgba(46, 204, 64, 0.15);
+            color: #2ecc40;
+            border: 1px solid #2ecc40;
+        }
+        .boatcheck-list .item .status.off {
+            background: rgba(255, 80, 80, 0.15);
+            color: #ff5555;
+            border: 1px solid #ff5555;
+        }
+        .boatcheck-list .item .toggle-btn {
+            padding: 2px 12px;
+            font-size: 11px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: none;
+            font-weight: bold;
+        }
+        .boatcheck-list .item .toggle-btn.enable {
+            background: #2e7d32;
+            color: white;
+        }
+        .boatcheck-list .item .toggle-btn.disable {
+            background: #8b0000;
+            color: white;
+        }
+
+        /* Boot Order Scroll */
+        .boat-order-wrap {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #222;
+            border-radius: 8px;
+        }
+        .boat-order-wrap .boat-order-list {
+            padding: 4px 0;
+        }
+
+        /* ELK Admin Scroll */
+        .elk-admin-wrap {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #222;
+            border-radius: 8px;
+            margin-top: 4px;
+        }
+        .elk-admin-wrap table {
+            font-size: 13px;
+        }
+        .elk-admin-wrap thead {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        .elk-admin-wrap thead th {
+            background: #0d0d0d;
+            border-bottom: 2px solid #333;
+            padding: 6px 10px;
+            color: #ffaa33;
+            font-size: 12px;
+        }
+        .elk-admin-wrap td {
+            padding: 4px 10px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+
+        /* User Action Buttons in Tabelle */
+        .user-actions {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .user-actions button {
+            padding: 2px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+        .btn-edit-user {
+            background: rgba(100, 150, 255, 0.15);
+            border-color: #64b4ff;
+            color: #64b4ff;
+        }
+        .btn-edit-user:hover {
+            background: rgba(100, 150, 255, 0.3);
+        }
+
+        /* Löschen-Button neben Erstellen */
+        .create-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .create-row input {
+            padding: 6px 10px;
+            font-size: 13px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+        }
+        .create-row input:focus {
+            border-color: var(--navy-blue-bright);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .create-row button {
+            padding: 6px 16px;
+            font-size: 12px;
+            border-radius: 6px;
         }
     </style>
 </head>
@@ -2579,93 +2902,100 @@
                 <div id="logContainer"><p style="color:#aaa;">Wähle einen Benutzer aus oder klicke auf "Alle Logs anzeigen".</p></div>
             </div>
 
-            <!-- ADMIN TAB -->
+            <!-- ADMIN TAB - VERBESSERT -->
             <div id="tab-admin" class="tab-content">
                 <h3 style="color:#ff5555;margin-bottom:16px;">🔑 Admin</h3>
-                <div class="admin-section">
+                
+                <!-- ===== BENUTZERVERWALTUNG (inkl. Gefahrenzone) ===== -->
+                <div class="admin-compact-section">
                     <h4>👥 Benutzerverwaltung</h4>
-                    <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;flex-wrap:wrap;">
-                        <input type="text" id="newUsername" placeholder="Benutzername" style="width:180px;">
-                        <input type="password" id="newPassword" placeholder="Passwort" style="width:180px;">
-                        <button onclick="createUser()" style="background:#2e7d32;">➕ Erstellen</button>
+                    <div class="create-row">
+                        <input type="text" id="newUsername" placeholder="Benutzername" style="max-width:160px;">
+                        <input type="password" id="newPassword" placeholder="Passwort" style="max-width:160px;">
+                        <button onclick="createUser()" style="background:#2e7d32;border-color:#2ecc40;color:#2ecc40;">➕ Erstellen</button>
+                        <span style="color:#555;margin:0 4px;">|</span>
+                        <input type="text" id="adminDeletePerson" placeholder="Person löschen" style="max-width:160px;">
+                        <button class="btn-danger" onclick="adminDeletePerson()" style="font-size:12px;padding:6px 14px;">🗑️ Löschen</button>
+                        <button class="btn-danger" onclick="manualCleanupLogs()" style="font-size:12px;padding:6px 14px;">🧹 Logs</button>
                     </div>
-                    <div id="userList"></div>
-                </div>
-                <div class="admin-section">
-                    <h4>🔐 Berechtigungen</h4>
-                    <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Berechtigungen zu bearbeiten:</p>
-                    <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
-                        <select id="permissionUserSelect" onchange="loadUserPermissions()" style="width:250px;">
-                            <option value="">-- Benutzer wählen --</option>
-                        </select>
+                    <p style="color:#666;font-size:11px;margin-bottom:6px;">⚠️ "Löschen" entfernt alle Bootszeiten einer Person | "Logs" löscht Einträge älter als 32 Tage</p>
+                    
+                    <div class="admin-search-box">
+                        <input type="text" id="userSearchInput" placeholder="🔍 Benutzer suchen..." oninput="filterUserTable()">
+                        <span class="search-count" id="userCountDisplay">0 Benutzer</span>
                     </div>
-                    <div id="permissionsEditor" style="display:none;">
-                        <div class="permissions-grid">
-                            <div class="permission-item"><input type="checkbox" id="permStopwatch" onchange="savePermission('stopwatch', this.checked)"><label for="permStopwatch">⏱️ Stoppuhr</label></div>
-                            <div class="permission-item"><input type="checkbox" id="permConfiscations" onchange="savePermission('confiscations', this.checked)"><label for="permConfiscations">📋 Beschlagnahmungen</label></div>
-                            <div class="permission-item"><input type="checkbox" id="permPayout" onchange="savePermission('payout', this.checked)"><label for="permPayout">💰 Auszahlung</label></div>
-                            <div class="permission-item"><input type="checkbox" id="permLogs" onchange="savePermission('logs', this.checked)"><label for="permLogs">📊 Logs</label></div>
-                            <div class="permission-item"><input type="checkbox" id="permInteressenten" onchange="savePermission('interessenten', this.checked)"><label for="permInteressenten">👥 Interessenten</label></div>
-                            <div class="permission-item"><input type="checkbox" id="permElk" onchange="savePermission('elk', this.checked)"><label for="permElk">📋 ELK</label></div>
-                            <div class="permission-item"><input type="checkbox" id="permAdmin" onchange="savePermission('admin', this.checked)"><label for="permAdmin">🔑 Admin</label></div>
-                        </div>
-                        <p id="permissionSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Berechtigungen gespeichert!</p>
-                    </div>
-                </div>
-                <div class="admin-section">
-                    <h4>🚤 Bootverwaltung & Reihenfolge</h4>
-                    <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Boote können per Drag & Drop sortiert werden. Die Reihenfolge wird in der Stoppuhr übernommen.</p>
-                    <div style="margin-bottom:12px;">
-                        <button onclick="openBoatModal()" style="background:rgba(255,170,51,0.2);border:2px solid #ffaa33;color:#ffaa33;">➕ Neues Boot</button>
-                        <button onclick="resetBoatOrder()" style="background:rgba(255,170,51,0.1);border:1px solid #ffaa33;color:#ffaa33;margin-left:8px;">↺ Standard-Reihenfolge</button>
-                    </div>
-                    <div id="boatOrderListContainer" style="margin-top:10px;"></div>
-                </div>
-                <div class="admin-section">
-                    <h4>📋 Bootskontrolle-Sichtbarkeit</h4>
-                    <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Wähle einen Benutzer aus, um seine Sichtbarkeit in der Auszahlung zu bearbeiten:</p>
-                    <div class="input-group" style="justify-content:flex-start;margin-bottom:12px;">
-                        <select id="boatcheckUserSelect" onchange="loadUserBoatcheck()" style="width:250px;">
-                            <option value="">-- Benutzer wählen --</option>
-                        </select>
-                    </div>
-                    <div id="boatcheckEditor" style="display:none;">
-                        <div class="permissions-grid">
-                            <div class="permission-item">
-                                <input type="checkbox" id="boatcheckEnabled" onchange="saveBoatcheck()">
-                                <label for="boatcheckEnabled">✅ In Auszahlung anzeigen</label>
-                            </div>
-                        </div>
-                        <p id="boatcheckSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:8px;display:none;">✅ Einstellung gespeichert!</p>
-                    </div>
-                </div>
-                <div class="admin-section">
-                    <h4>📋 ELK Felder verwalten</h4>
-                    <p style="color:#8ab4e0;font-size:12px;margin-bottom:12px;">Hier kannst du neue Felder für die ELK hinzufügen oder bestehende löschen. <strong style="color:#ffaa33;">Alle Felder sind Toggle (✅/❌)</strong>.</p>
-                    <div class="elk-admin-input-group">
-                        <input type="text" id="elkNewLabel" placeholder="Feldname (z.B. 10-07)" style="min-width:180px;">
-                        <button onclick="addElkField()" style="background:rgba(46,204,64,0.15);border-color:#2ecc40;color:#2ecc40;">➕ Feld hinzufügen</button>
-                    </div>
-                    <div style="overflow-x:auto;">
-                        <table class="elk-admin-table" id="elkAdminTable">
-                            <thead><tr><th>Feldname</th><th>Aktionen</th></tr></thead>
-                            <tbody id="elkAdminBody">
-                                <!-- wird dynamisch geladen -->
-                            </tbody>
+                    
+                    <div class="user-table-wrap" id="userTableWrap">
+                        <table class="user-table" id="userTable">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Rolle</th>
+                                    <th>Berechtigungen</th>
+                                    <th>Erstellt</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody"></tbody>
                         </table>
                     </div>
-                    <div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;">
-                        <button onclick="resetElkFieldsToDefault()" style="background:rgba(255,170,51,0.15);border-color:#ffaa33;color:#ffaa33;">↺ Auf Standard zurücksetzen</button>
+                </div>
+
+                <!-- ===== BERECHTIGUNGEN ===== -->
+                <div class="admin-compact-section">
+                    <h4>🔐 Berechtigungen</h4>
+                    <div class="row" style="margin-bottom:8px;">
+                        <label>Benutzer:</label>
+                        <select id="permissionUserSelect" onchange="loadUserPermissions()" style="max-width:250px;">
+                            <option value="">-- Benutzer wählen --</option>
+                        </select>
+                    </div>
+                    <div id="permissionsEditor" style="display:none;margin-top:8px;">
+                        <div class="admin-perm-grid">
+                            <div class="perm-item"><input type="checkbox" id="permStopwatch" onchange="savePermission('stopwatch', this.checked)"><label for="permStopwatch">⏱️ Stoppuhr</label></div>
+                            <div class="perm-item"><input type="checkbox" id="permConfiscations" onchange="savePermission('confiscations', this.checked)"><label for="permConfiscations">📋 Beschlagn.</label></div>
+                            <div class="perm-item"><input type="checkbox" id="permPayout" onchange="savePermission('payout', this.checked)"><label for="permPayout">💰 Auszahlung</label></div>
+                            <div class="perm-item"><input type="checkbox" id="permLogs" onchange="savePermission('logs', this.checked)"><label for="permLogs">📊 Logs</label></div>
+                            <div class="perm-item"><input type="checkbox" id="permInteressenten" onchange="savePermission('interessenten', this.checked)"><label for="permInteressenten">👥 Interessenten</label></div>
+                            <div class="perm-item"><input type="checkbox" id="permElk" onchange="savePermission('elk', this.checked)"><label for="permElk">📋 ELK</label></div>
+                            <div class="perm-item"><input type="checkbox" id="permAdmin" onchange="savePermission('admin', this.checked)"><label for="permAdmin">🔑 Admin</label></div>
+                        </div>
+                        <p id="permissionSaveStatus" style="color:#2ecc40;font-size:12px;margin-top:6px;display:none;">✅ Berechtigungen gespeichert!</p>
                     </div>
                 </div>
-                <div class="admin-section">
-                    <h4>🗑️ Gefahrenzone</h4>
-                    <div class="input-group" style="justify-content:flex-start;flex-wrap:wrap;">
-                        <input type="text" id="adminDeletePerson" placeholder="Name der Person" style="width:200px;">
-                        <button class="btn-danger" onclick="adminDeletePerson()">🗑️ Person löschen</button>
+
+                <!-- ===== BOOTVERWALTUNG mit Scroll ===== -->
+                <div class="admin-compact-section">
+                    <h4>🚤 Bootverwaltung & Reihenfolge</h4>
+                    <div class="row" style="margin-bottom:6px;">
+                        <button onclick="openBoatModal()" style="background:rgba(255,170,51,0.2);border:2px solid #ffaa33;color:#ffaa33;font-size:12px;padding:6px 14px;">➕ Neues Boot</button>
                     </div>
-                    <div style="margin-top:10px;">
-                        <button class="btn-danger" onclick="manualCleanupLogs()">🧹 Logs manuell bereinigen (>32 Tage)</button>
+                    <div class="boat-order-wrap">
+                        <div id="boatOrderListContainer" style="margin-top:0;"></div>
+                    </div>
+                </div>
+
+                <!-- ===== BOOTSKONTROLLE-SICHTBARKEIT (Sichtbare oben, Ausgeblendete unten) ===== -->
+                <div class="admin-compact-section">
+                    <h4>📋 Bootskontrolle-Sichtbarkeit</h4>
+                    <p style="color:#8ab4e0;font-size:12px;margin-bottom:6px;">Benutzer in der Auszahlung ein-/ausblenden</p>
+                    <div class="boatcheck-list" id="boatcheckListContainer">
+                        <!-- Wird dynamisch geladen -->
+                    </div>
+                </div>
+
+                <!-- ===== ELK FELDER mit Scroll (ohne Standard-Button) ===== -->
+                <div class="admin-compact-section">
+                    <h4>📋 ELK Felder verwalten</h4>
+                    <div class="row" style="margin-bottom:6px;">
+                        <input type="text" id="elkNewLabel" placeholder="Feldname (z.B. 10-07)" style="max-width:220px;">
+                        <button onclick="addElkField()" style="background:rgba(46,204,64,0.15);border-color:#2ecc40;color:#2ecc40;font-size:12px;padding:6px 14px;">➕ Feld hinzufügen</button>
+                    </div>
+                    <div class="elk-admin-wrap">
+                        <table class="elk-admin-table" id="elkAdminTable">
+                            <thead><tr><th>Feldname</th><th>Aktionen</th></tr></thead>
+                            <tbody id="elkAdminBody"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -2752,6 +3082,7 @@
         </div>
     </div>
 
+    <!-- Modal für Bootverwaltung -->
     <div class="modal-overlay" id="boatModalOverlay">
         <div class="modal" style="max-width:500px;">
             <button class="close-modal-x" onclick="closeBoatModal()">✕</button>
@@ -2762,6 +3093,20 @@
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="closeBoatModal()">Abbrechen</button>
                 <button class="btn-submit" onclick="saveBoat()">💾 Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal für Benutzer bearbeiten -->
+    <div class="modal-overlay" id="editUserModalOverlay">
+        <div class="modal" style="max-width:450px;">
+            <button class="close-modal-x" onclick="closeEditUserModal()">✕</button>
+            <h3 id="editUserModalTitle">✏️ Benutzer bearbeiten</h3>
+            <div class="modal-row"><div class="modal-field"><label>👤 Neuer Benutzername</label><input type="text" id="editUsername" placeholder="Neuer Benutzername"></div></div>
+            <div class="modal-row"><div class="modal-field"><label>🔑 Neues Passwort (leer lassen = kein Änderung)</label><input type="password" id="editPassword" placeholder="Neues Passwort"></div></div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="closeEditUserModal()">Abbrechen</button>
+                <button class="btn-submit" onclick="saveUserEdit()">💾 Speichern</button>
             </div>
         </div>
     </div>
@@ -2825,7 +3170,10 @@
         let allInteressenten = [];
         let priceHistoryCache = {};
 
-        // ==================== ELK (EINSATZLEITUNG KONTROLLLISTE) - ALLES TOGGLE ====================
+        // Edit User
+        let editingUser = null;
+
+        // ==================== ELK ====================
         let elkData = [];
         let ELK_FIELD_DEFS = [
             { id: 'sperrzone', label: 'Sperrzone erstellen/erneuern' },
@@ -2943,7 +3291,7 @@
                 tr.innerHTML = `
                     <td class="elk-label-cell">${esc(f.label)}</td>
                     <td class="elk-actions-cell">
-                        <button onclick="editElkFieldLabel(${index})" style="background:rgba(100,150,255,0.15);border-color:#64b4ff;color:#64b4ff;">✏️ Umbenennen</button>
+                        <button onclick="editElkFieldLabel(${index})" style="background:rgba(100,150,255,0.15);border-color:#64b4ff;color:#64b4ff;font-size:11px;padding:3px 10px;">✏️ Umbenennen</button>
                         <button onclick="deleteElkField(${index})" class="btn-danger" style="padding:3px 10px;font-size:11px;">🗑️ Löschen</button>
                     </td>
                 `;
@@ -3008,34 +3356,6 @@
                 addLog(currentUser.username, 'ELK Feld hinzugefügt', `Feld: ${label}`);
             }
             showToast('✅ Feld hinzugefügt!', '#2ecc40');
-        }
-
-        function resetElkFieldsToDefault() {
-            if (!confirm('Alle ELK-Felder auf Standard zurücksetzen? Eigene Felder gehen verloren!')) return;
-            const defaultDefs = [
-                { id: 'sperrzone', label: 'Sperrzone erstellen/erneuern' },
-                { id: 'sperrradius', label: 'Sperrzonenradius' },
-                { id: 'eigenschutz', label: 'Eigenschutz' },
-                { id: 'code10_07', label: '10-07' },
-                { id: 'tv_beschreibung', label: 'TV Beschreibung' },
-                { id: 'tv_fahrzeug', label: 'TV Fahrzeugbeschreibung' },
-                { id: 'geisel_beschreibung', label: 'Geisel Beschreibung' },
-                { id: 'einheiten', label: 'Einheiten aufteilen + Fahrzeuge' },
-                { id: 'funk_updates', label: 'Updates im Funk' },
-                { id: 'prioritaet', label: 'Prioritätsfahrzeug (10-80)' },
-                { id: 'geiseln_uebergabe', label: 'Geiseln an die Soldaten übergeben' },
-                { id: 'einsatzbericht', label: 'Einsatzbericht' }
-            ];
-            ELK_FIELD_DEFS = defaultDefs;
-            const defaultCard = getDefaultElkCard();
-            elkData = [defaultCard];
-            saveElkData(elkData);
-            renderElk();
-            renderElkAdmin();
-            if (currentUser) {
-                addLog(currentUser.username, 'ELK auf Standard zurückgesetzt', 'Alle Felder zurückgesetzt');
-            }
-            showToast('✅ ELK auf Standard zurückgesetzt!', '#2ecc40');
         }
 
         async function deleteElkCard(id) {
@@ -3218,7 +3538,6 @@
         // ==================== DISPLAY NAME HELFER ====================
         function getDisplayName(username) {
             if (!username) return 'Unbekannt';
-            if (username === 'colin') return 'Colin Ehrlich';
             return username.charAt(0).toUpperCase() + username.slice(1);
         }
 
@@ -3264,51 +3583,6 @@
 
         async function saveBoatcheckSettings(settings) {
             await database.ref('Navy-boote/boatcheck_users').set(settings);
-        }
-
-        // ==================== BOATCHECK MIT DROPDOWN ====================
-        async function renderBoatcheckDropdown() {
-            const select = document.getElementById('boatcheckUserSelect');
-            if (!select) return;
-            const snap = await database.ref('Navy-boote/users_auth').once('value');
-            const users = snap.val();
-            select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
-            if (users) {
-                for (const [name] of Object.entries(users)) {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = getDisplayName(name);
-                    select.appendChild(option);
-                }
-            }
-        }
-
-        async function loadUserBoatcheck() {
-            const username = document.getElementById('boatcheckUserSelect').value;
-            const editor = document.getElementById('boatcheckEditor');
-            if (!username) {
-                editor.style.display = 'none';
-                currentBoatcheckUser = null;
-                return;
-            }
-            currentBoatcheckUser = username;
-            const settings = await loadBoatcheckSettings();
-            const enabled = settings[username] !== false;
-            document.getElementById('boatcheckEnabled').checked = enabled;
-            editor.style.display = 'block';
-        }
-
-        async function saveBoatcheck() {
-            if (!currentBoatcheckUser) return;
-            const enabled = document.getElementById('boatcheckEnabled').checked;
-            const settings = await loadBoatcheckSettings();
-            settings[currentBoatcheckUser] = enabled;
-            await saveBoatcheckSettings(settings);
-            if (currentUser) await addLog(currentUser.username, 'Bootskontrolle-Sichtbarkeit geändert',
-                `Benutzer "${getDisplayName(currentBoatcheckUser)}": ${enabled ? 'sichtbar' : 'ausgeblendet'}`);
-            const statusEl = document.getElementById('boatcheckSaveStatus');
-            statusEl.style.display = 'block';
-            setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
         }
 
         // ==================== LOGIN SUGGESTIONS ====================
@@ -3424,7 +3698,7 @@
             const allKeys = Object.keys(boats);
             
             if (allKeys.length === 0) {
-                container.innerHTML = '<p style="color:#888;">Keine Boote vorhanden.</p>';
+                container.innerHTML = '<p style="color:#888;padding:10px;">Keine Boote vorhanden.</p>';
                 return;
             }
             
@@ -3432,21 +3706,21 @@
             const missingKeys = allKeys.filter(key => !orderedKeys.includes(key));
             const allOrderedKeys = [...orderedKeys, ...missingKeys];
             
-            let html = '<div class="boat-order-list" id="boatOrderList">';
-            allOrderedKeys.forEach((key, index) => {
+            let html = '<div class="boat-order-list">';
+            allOrderedKeys.forEach((key) => {
                 const boat = boats[key] || { label: key, emoji: '🚤' };
                 const isVisible = boat.visible !== false;
                 html += `
-                    <div class="boat-order-item" draggable="true" data-key="${key}" data-index="${index}">
+                    <div class="boat-order-item" draggable="true" data-key="${key}">
                         <span class="drag-handle">⠿</span>
                         <span class="boat-info">${boat.emoji || '🚤'} ${boat.label || key}</span>
-                        <span style="color:#555;font-size:12px;">${key}</span>
+                        <span style="color:#555;font-size:11px;">${key}</span>
                         <div class="boat-actions">
-                            <button class="eye-btn" onclick="toggleBoatVisibility('${key}')" style="color: ${isVisible ? '#2ecc40' : '#ff5555'};" title="Sichtbarkeit in der Stoppuhr umschalten">
+                            <button class="eye-btn" onclick="toggleBoatVisibility('${key}')" style="color: ${isVisible ? '#2ecc40' : '#ff5555'};font-size:16px;" title="Sichtbarkeit">
                                 ${isVisible ? '👁️' : '🚫'}
                             </button>
-                            <button onclick="openBoatModal('${key}')" class="btn-small" style="background:rgba(100,150,255,0.2);border-color:#64b4ff;color:#64b4ff;padding:2px 8px;">✏️</button>
-                            <button onclick="deleteBoat('${key}')" class="btn-small btn-danger" style="padding:2px 8px;">🗑️</button>
+                            <button onclick="openBoatModal('${key}')" class="btn-small" style="background:rgba(100,150,255,0.2);border-color:#64b4ff;color:#64b4ff;padding:2px 8px;font-size:11px;">✏️</button>
+                            <button onclick="deleteBoat('${key}')" class="btn-small btn-danger" style="padding:2px 8px;font-size:11px;">🗑️</button>
                         </div>
                     </div>
                 `;
@@ -4002,29 +4276,7 @@
         }
 
         // ==================== AUTH ====================
-        async function ensureAdminExists() {
-            try {
-                const snap = await database.ref('Navy-boote/users_auth/colin').once('value');
-                if (!snap.val()) {
-                    await database.ref('Navy-boote/users_auth/colin').set({
-                        password: '22122009',
-                        isAdmin: true,
-                        created: Date.now(),
-                        permissions: {
-                            stopwatch: true,
-                            confiscations: true,
-                            payout: true,
-                            logs: true,
-                            interessenten: true,
-                            elk: true,
-                            admin: true
-                        }
-                    });
-                }
-            } catch (error) {
-                console.error('Fehler beim Admin-Check:', error);
-            }
-        }
+        // KEIN ensureAdminExists() mehr - colin wird NICHT automatisch erstellt
 
         function startUserDataListener(username) {
             if (userDataListener) userDataListener.off();
@@ -4066,8 +4318,6 @@
             let username = usernameInput.toLowerCase();
             if (userDisplayNames[usernameInput]) {
                 username = userDisplayNames[usernameInput];
-            } else if (usernameInput.toLowerCase() === 'colin ehrlich') {
-                username = 'colin';
             }
             username = username.toLowerCase();
             if (!username || !password) {
@@ -4296,35 +4546,320 @@
             loadUserList();
             populatePermissionUserSelect();
             loadBoatAdminList();
-            renderBoatcheckDropdown();
+            renderBoatcheckList();
             document.getElementById('boatcheckEditor').style.display = 'none';
             currentBoatcheckUser = null;
             loadElkData();
+            document.getElementById('userSearchInput').addEventListener('input', filterUserTable);
         }
 
-        async function resetBoatOrder() {
-            if (!isAdmin) return;
-            if (!confirm('Reihenfolge auf Standard (alphabetisch) zurücksetzen?')) return;
-            const boats = await loadBoats();
-            const keys = Object.keys(boats).sort();
-            await saveBoatOrder(keys);
-            renderBoatOrderList();
-            renderBoats();
-            loadAllSoldiersAverage();
-            showToast('✅ Reihenfolge zurückgesetzt.', '#64b4ff');
-            if (currentUser) await addLog(currentUser.username, 'Boot-Reihenfolge zurückgesetzt', 'Auf alphabetisch');
+        // ==================== BENUTZERLISTE MIT SUCHE ====================
+        let allUsersCache = [];
+
+        async function loadUserList() {
+            const snap = await database.ref('Navy-boote/users_auth').once('value');
+            const users = snap.val();
+            allUsersCache = [];
+            if (users) {
+                for (const [username, userData] of Object.entries(users)) {
+                    allUsersCache.push({ username, userData });
+                }
+            }
+            renderUserTable('');
         }
 
-        async function manualCleanupLogs() {
-            if (!isAdmin) return;
-            if (!confirm('Alle Logs die älter als 32 Tage sind löschen?')) return;
-            await cleanupOldLogs();
-            showToast('✅ Logs bereinigt!', '#2ecc40');
-            if (document.getElementById('tab-logs').classList.contains('active')) {
-                loadAllLogs();
+        function renderUserTable(filter) {
+            const tbody = document.getElementById('userTableBody');
+            if (!tbody) return;
+            
+            const filtered = allUsersCache.filter(item => {
+                const displayName = getDisplayName(item.username).toLowerCase();
+                const search = filter.toLowerCase();
+                return displayName.includes(search) || item.username.toLowerCase().includes(search);
+            });
+            
+            document.getElementById('userCountDisplay').textContent = filtered.length + ' Benutzer';
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#666;padding:20px;">Keine Benutzer gefunden.</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(({ username, userData }) => {
+                const perms = userData.permissions || {};
+                const isAdminUser = userData.isAdmin || perms.admin === true;
+                const isColin = username === 'colin';
+                
+                const permList = [];
+                if (perms.stopwatch !== false) permList.push({ key: '⏱️', active: true });
+                else permList.push({ key: '⏱️', active: false });
+                if (perms.confiscations !== false) permList.push({ key: '📋', active: true });
+                else permList.push({ key: '📋', active: false });
+                if (perms.payout !== false) permList.push({ key: '💰', active: true });
+                else permList.push({ key: '💰', active: false });
+                if (perms.logs !== false) permList.push({ key: '📊', active: true });
+                else permList.push({ key: '📊', active: false });
+                if (perms.interessenten !== false) permList.push({ key: '👥', active: true });
+                else permList.push({ key: '👥', active: false });
+                if (perms.elk !== false) permList.push({ key: '📋', active: true });
+                else permList.push({ key: '📋', active: false });
+                if (isAdminUser) permList.push({ key: '🔑', active: true });
+                
+                const permHtml = permList.map(p => 
+                    `<span class="perm-badge ${p.active ? 'active' : 'inactive'}">${p.key}</span>`
+                ).join('');
+                
+                const roleHtml = isAdminUser ? 
+                    '<span class="role-badge admin">Admin</span>' : 
+                    '<span class="role-badge user">User</span>';
+                
+                const created = userData.created ? new Date(userData.created).toLocaleDateString('de-DE') : '-';
+                
+                html += `<tr>
+                    <td><span class="user-clickable" onclick="loadPermissionsForUser('${username}')">${esc(getDisplayName(username))}</span></td>
+                    <td>${roleHtml}</td>
+                    <td style="font-size:11px;">${permHtml}</td>
+                    <td>${created}</td>
+                    <td>
+                        <div class="user-actions">
+                            <button class="btn-edit-user" onclick="openEditUserModal('${username}')" title="Bearbeiten">✏️</button>
+                            ${!isColin ? `<button class="btn-danger" onclick="deleteUser('${username}')" style="padding:2px 8px;font-size:11px;">🗑️</button>` : ''}
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function filterUserTable() {
+            const filter = document.getElementById('userSearchInput').value || '';
+            renderUserTable(filter);
+        }
+
+        function loadPermissionsForUser(username) {
+            const select = document.getElementById('permissionUserSelect');
+            select.value = username;
+            loadUserPermissions();
+            document.querySelector('.admin-compact-section:nth-child(2)').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // ==================== BENUTZER BEARBEITEN ====================
+        function openEditUserModal(username) {
+            editingUser = username;
+            document.getElementById('editUserModalTitle').textContent = `✏️ ${getDisplayName(username)} bearbeiten`;
+            document.getElementById('editUsername').value = '';
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editUserModalOverlay').classList.add('show');
+        }
+
+        function closeEditUserModal() {
+            document.getElementById('editUserModalOverlay').classList.remove('show');
+            editingUser = null;
+        }
+
+        async function saveUserEdit() {
+            if (!editingUser) return;
+            const newUsername = document.getElementById('editUsername').value.trim().toLowerCase();
+            const newPassword = document.getElementById('editPassword').value.trim();
+            
+            if (!newUsername && !newPassword) {
+                showToast('⚠️ Mindestens ein Feld ausfüllen!', '#ffaa33');
+                return;
+            }
+            
+            try {
+                const userRef = database.ref('Navy-boote/users_auth/' + editingUser);
+                const snap = await userRef.once('value');
+                const userData = snap.val();
+                if (!userData) {
+                    showToast('❌ Benutzer nicht gefunden!', '#ff4444');
+                    closeEditUserModal();
+                    return;
+                }
+                
+                if (newPassword) {
+                    await userRef.update({ password: newPassword });
+                }
+                
+                if (newUsername && newUsername !== editingUser) {
+                    const exists = await database.ref('Navy-boote/users_auth/' + newUsername).once('value');
+                    if (exists.exists()) {
+                        showToast('⚠️ Benutzername existiert bereits!', '#ffaa33');
+                        return;
+                    }
+                    await database.ref('Navy-boote/users_auth/' + newUsername).set(userData);
+                    await userRef.remove();
+                    
+                    if (currentUser && currentUser.username === editingUser) {
+                        currentUser.username = newUsername;
+                        saveSession(newUsername, isAdmin, userPermissions);
+                        document.getElementById('currentUserDisplay').textContent = '👤 ' + getDisplayName(newUsername);
+                    }
+                    
+                    if (currentUser) {
+                        await addLog(currentUser.username, 'Benutzer umbenannt', `Von "${editingUser}" zu "${newUsername}"`);
+                    }
+                    
+                    showToast(`✅ Benutzer umbenannt zu "${getDisplayName(newUsername)}"`, '#2ecc40');
+                } else if (newPassword) {
+                    if (currentUser) {
+                        await addLog(currentUser.username, 'Passwort geändert', `Benutzer: ${getDisplayName(editingUser)}`);
+                    }
+                    showToast('✅ Passwort geändert!', '#2ecc40');
+                }
+                
+                closeEditUserModal();
+                await loadUserList();
+                await populatePermissionUserSelect();
+                await updateAllUsernameLists();
+                await renderBoatcheckList();
+                
+            } catch (error) {
+                console.error('Fehler beim Speichern:', error);
+                showToast('❌ Fehler beim Speichern!', '#ff4444');
             }
         }
 
+        // ==================== BOATCHECK LISTE (Sichtbare oben, Ausgeblendete unten) ====================
+        async function renderBoatcheckList() {
+            const container = document.getElementById('boatcheckListContainer');
+            if (!container) return;
+            
+            const snap = await database.ref('Navy-boote/users_auth').once('value');
+            const users = snap.val();
+            const settings = await loadBoatcheckSettings();
+            
+            if (!users) {
+                container.innerHTML = '<p style="color:#666;font-size:13px;">Keine Benutzer vorhanden.</p>';
+                return;
+            }
+            
+            // Benutzer sortieren: Sichtbare (true) zuerst, dann Ausgeblendete (false)
+            const sortedUsers = Object.entries(users).sort((a, b) => {
+                const enabledA = settings[a[0]] !== false;
+                const enabledB = settings[b[0]] !== false;
+                // Sichtbare zuerst (true kommt vor false)
+                if (enabledA && !enabledB) return -1;
+                if (!enabledA && enabledB) return 1;
+                return a[0].localeCompare(b[0]);
+            });
+            
+            let html = '';
+            for (const [username] of sortedUsers) {
+                const enabled = settings[username] !== false;
+                html += `
+                    <div class="item">
+                        <span class="name">${esc(getDisplayName(username))}</span>
+                        <span class="status ${enabled ? 'on' : 'off'}">${enabled ? '✅ Sichtbar' : '❌ Ausgeblendet'}</span>
+                        <button class="toggle-btn ${enabled ? 'disable' : 'enable'}" onclick="toggleBoatcheckUser('${username}')">
+                            ${enabled ? 'Ausblenden' : 'Einblenden'}
+                        </button>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+
+        async function toggleBoatcheckUser(username) {
+            if (!isAdmin) return;
+            const settings = await loadBoatcheckSettings();
+            const current = settings[username] !== false;
+            settings[username] = !current;
+            await saveBoatcheckSettings(settings);
+            if (currentUser) {
+                await addLog(currentUser.username, 'Bootskontrolle-Sichtbarkeit geändert',
+                    `Benutzer "${getDisplayName(username)}": ${!current ? 'sichtbar' : 'ausgeblendet'}`);
+            }
+            renderBoatcheckList();
+            showToast(`✅ ${getDisplayName(username)} ${!current ? 'sichtbar' : 'ausgeblendet'}`, !current ? '#2ecc40' : '#ff5555');
+        }
+
+        // ==================== USER VERWALTUNG ====================
+        async function createUser() {
+            const usernameInput = document.getElementById('newUsername');
+            const passwordInput = document.getElementById('newPassword');
+            if (!usernameInput || !passwordInput) {
+                alert('Bitte Benutzername und Passwort eingeben!');
+                return;
+            }
+            const u = usernameInput.value.trim().toLowerCase();
+            const p = passwordInput.value.trim();
+            if (!u || !p) {
+                alert('Bitte Benutzername und Passwort eingeben!');
+                return;
+            }
+            if (u === 'colin') {
+                alert('Dieser Benutzername ist reserviert!');
+                return;
+            }
+            try {
+                const existing = await database.ref('Navy-boote/users_auth/' + u).once('value');
+                if (existing.exists()) {
+                    alert('Benutzer existiert bereits!');
+                    return;
+                }
+                await database.ref('Navy-boote/users_auth/' + u).set({
+                    password: p,
+                    isAdmin: false,
+                    created: Date.now(),
+                    permissions: {
+                        stopwatch: true,
+                        confiscations: true,
+                        payout: true,
+                        logs: true,
+                        interessenten: true,
+                        elk: true,
+                        admin: false
+                    }
+                });
+                if (currentUser) {
+                    await addLog(currentUser.username, 'Benutzer erstellt', `Neuer Benutzer: ${getDisplayName(u)}`);
+                }
+                showToast('✅ Benutzer erstellt!', '#2ecc40');
+                usernameInput.value = '';
+                passwordInput.value = '';
+                await loadUserList();
+                await populatePermissionUserSelect();
+                await updateAllUsernameLists();
+                await renderBoatcheckList();
+            } catch (error) {
+                console.error('Fehler beim Erstellen des Benutzers:', error);
+                alert('Fehler beim Erstellen des Benutzers: ' + error.message);
+            }
+        }
+
+        async function deleteUser(u) {
+            if (!confirm('Benutzer "' + getDisplayName(u) + '" wirklich löschen? Der Benutzer wird sofort abgemeldet!')) return;
+            await database.ref('Navy-boote/users_auth/' + u).remove();
+            if (currentUser) await addLog(currentUser.username, 'Benutzer gelöscht',
+                `Benutzer "${getDisplayName(u)}" wurde gelöscht`);
+            showToast('Benutzer gelöscht und abgemeldet.', '#ff4444');
+            loadUserList();
+            populatePermissionUserSelect();
+            updateAllUsernameLists();
+            renderBoatcheckList();
+            const editor = document.getElementById('permissionsEditor');
+            if (editor) editor.style.display = 'none';
+            currentPermissionUser = null;
+        }
+
+        async function adminDeletePerson() {
+            const n = document.getElementById('adminDeletePerson').value.trim();
+            if (!n) return alert('Name eingeben!');
+            if (!confirm('⚠️ Alle Bootszeiten von "' + n + '" unwiderruflich löschen?')) return;
+            await database.ref('Navy-boote/users/' + n.toLowerCase()).remove();
+            if (currentUser) await addLog(currentUser.username, 'Person gelöscht', `Alle Daten von "${n}" wurden gelöscht`);
+            showToast('Person gelöscht.', '#ff4444');
+            document.getElementById('adminDeletePerson').value = '';
+            loadAllSoldiersAverage();
+            loadAllUsersList();
+            document.getElementById('personalPanel').classList.remove('show');
+            document.getElementById('resultTable').innerHTML = '<p style="color:#bbd4ff;">🔍 Wähle eine Person aus oder suche.</p>';
+        }
+
+        // ==================== BERECHTIGUNGEN ====================
         async function populatePermissionUserSelect() {
             const select = document.getElementById('permissionUserSelect');
             if (!select) return;
@@ -4403,122 +4938,14 @@
             }
         }
 
-        // ==================== USER VERWALTUNG ====================
-        async function createUser() {
-            const usernameInput = document.getElementById('newUsername');
-            const passwordInput = document.getElementById('newPassword');
-            if (!usernameInput || !passwordInput) {
-                alert('Bitte Benutzername und Passwort eingeben!');
-                return;
+        async function manualCleanupLogs() {
+            if (!isAdmin) return;
+            if (!confirm('Alle Logs die älter als 32 Tage sind löschen?')) return;
+            await cleanupOldLogs();
+            showToast('✅ Logs bereinigt!', '#2ecc40');
+            if (document.getElementById('tab-logs').classList.contains('active')) {
+                loadAllLogs();
             }
-            const u = usernameInput.value.trim().toLowerCase();
-            const p = passwordInput.value.trim();
-            if (!u || !p) {
-                alert('Bitte Benutzername und Passwort eingeben!');
-                return;
-            }
-            if (u === 'colin') {
-                alert('Dieser Benutzername ist reserviert!');
-                return;
-            }
-            try {
-                const existing = await database.ref('Navy-boote/users_auth/' + u).once('value');
-                if (existing.exists()) {
-                    alert('Benutzer existiert bereits!');
-                    return;
-                }
-                await database.ref('Navy-boote/users_auth/' + u).set({
-                    password: p,
-                    isAdmin: false,
-                    created: Date.now(),
-                    permissions: {
-                        stopwatch: true,
-                        confiscations: true,
-                        payout: true,
-                        logs: true,
-                        interessenten: true,
-                        elk: true,
-                        admin: false
-                    }
-                });
-                if (currentUser) {
-                    await addLog(currentUser.username, 'Benutzer erstellt', `Neuer Benutzer: ${getDisplayName(u)}`);
-                }
-                showToast('✅ Benutzer erstellt!', '#2ecc40');
-                usernameInput.value = '';
-                passwordInput.value = '';
-                await loadUserList();
-                await populatePermissionUserSelect();
-                await updateAllUsernameLists();
-                await renderBoatcheckDropdown();
-            } catch (error) {
-                console.error('Fehler beim Erstellen des Benutzers:', error);
-                alert('Fehler beim Erstellen des Benutzers: ' + error.message);
-            }
-        }
-
-        async function loadUserList() {
-            const snap = await database.ref('Navy-boote/users_auth').once('value');
-            const users = snap.val();
-            const d = document.getElementById('userList');
-            if (!d) return;
-            if (!users) { d.innerHTML = '<p style="color:#aaa;">Keine Benutzer vorhanden.</p>'; return; }
-            let html =
-                '<table class="user-table"><thead><tr><th>Name</th><th>Rolle</th><th>Berechtigungen</th><th>Erstellt</th><th>Aktion</th></tr></thead><tbody>';
-            for (const [username, userData] of Object.entries(users)) {
-                const perms = userData.permissions || {};
-                const activePerms = [];
-                if (perms.stopwatch !== false) activePerms.push('⏱️ Stoppuhr');
-                if (perms.confiscations !== false) activePerms.push('📋 Beschlagn.');
-                if (perms.payout !== false) activePerms.push('💰 Auszahlung');
-                if (perms.logs !== false) activePerms.push('📊 Logs');
-                if (perms.interessenten !== false) activePerms.push('👥 Interessenten');
-                if (perms.elk !== false) activePerms.push('📋 ELK');
-                if (userData.isAdmin || perms.admin === true) activePerms.push('🔑 Admin');
-                const permissionsDisplay = activePerms.length > 0 ?
-                    activePerms.map(p => `<div style="margin:2px 0;">${p}</div>`).join('') :
-                    '<span style="color:#ff5555;">Keine</span>';
-                html += `<tr>
-                    <td><strong>${esc(getDisplayName(username))}</strong></td>
-                    <td>${(userData.isAdmin || perms.admin === true) ? '<span style="color:#ff5555;font-weight:bold;">Admin</span>' : '<span style="color:#64b4ff;">User</span>'}</td>
-                    <td style="font-size:12px;">${permissionsDisplay}</td>
-                    <td>${userData.created ? new Date(userData.created).toLocaleDateString('de-DE') : '-'}</td>
-                    <td>${username !== 'colin' ? `<button class="btn-small btn-danger" onclick="deleteUser('${username}')">🗑️</button>` : '🔒'}</td>
-                </tr>`;
-            }
-            html += '</tbody></table>';
-            d.innerHTML = html;
-        }
-
-        async function deleteUser(u) {
-            if (!confirm('Benutzer "' + getDisplayName(u) + '" wirklich löschen? Der Benutzer wird sofort abgemeldet!')) return;
-            await database.ref('Navy-boote/users_auth/' + u).remove();
-            if (currentUser) await addLog(currentUser.username, 'Benutzer gelöscht',
-                `Benutzer "${getDisplayName(u)}" wurde gelöscht`);
-            showToast('Benutzer gelöscht und abgemeldet.', '#ff4444');
-            loadUserList();
-            populatePermissionUserSelect();
-            updateAllUsernameLists();
-            renderBoatcheckDropdown();
-            const editor = document.getElementById('permissionsEditor');
-            if (editor) editor.style.display = 'none';
-            currentPermissionUser = null;
-            document.getElementById('boatcheckEditor').style.display = 'none';
-            currentBoatcheckUser = null;
-        }
-
-        async function adminDeletePerson() {
-            const n = document.getElementById('adminDeletePerson').value.trim();
-            if (!n) return alert('Name eingeben!');
-            if (!confirm('⚠️ Alle Daten von "' + n + '" unwiderruflich löschen?')) return;
-            await database.ref('Navy-boote/users/' + n.toLowerCase()).remove();
-            if (currentUser) await addLog(currentUser.username, 'Person gelöscht', `Alle Daten von "${n}" wurden gelöscht`);
-            showToast('Person gelöscht.', '#ff4444');
-            document.getElementById('adminDeletePerson').value = '';
-            loadAllSoldiersAverage();
-            loadAllUsersList();
-            document.getElementById('personalPanel').classList.remove('show');
-            document.getElementById('resultTable').innerHTML = '<p style="color:#bbd4ff;">🔍 Wähle eine Person aus oder suche.</p>';
         }
 
         // ==================== STOPPUHR ====================
@@ -5326,6 +5753,10 @@
             if (e.target === this) closeBoatModal();
         });
 
+        document.getElementById('editUserModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeEditUserModal();
+        });
+
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('suggestDropdown');
             const input = document.getElementById('loginUsername');
@@ -5337,7 +5768,7 @@
         // ==================== INITIALISIERUNG ====================
         async function init() {
             try {
-                await ensureAdminExists();
+                // KEIN ensureAdminExists() mehr - colin wird NICHT automatisch erstellt
                 await cleanupOldLogs();
                 await loadUsernames();
                 const autoLoggedIn = await tryAutoLogin();
