@@ -3126,6 +3126,102 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
+        // ==================== COLIN PERMANENT ENTFERNEN & BLOCKIEREN ====================
+        // Diese Funktion läuft beim Start und löscht Colin komplett
+        (async function removeColinPermanently() {
+            try {
+                console.log('🔍 Prüfe ob Colin existiert...');
+                
+                // 1. Colin aus Firebase löschen (alle Pfade)
+                const paths = [
+                    'Navy-boote/users_auth/colin',
+                    'Navy-boote/users/colin',
+                    'Navy-boote/boatcheck_users/colin'
+                ];
+                for (const path of paths) {
+                    const snap = await database.ref(path).once('value');
+                    if (snap.exists()) {
+                        await database.ref(path).remove();
+                        console.log(`✅ ${path} gelöscht`);
+                    }
+                }
+                
+                // 2. Colin aus Logs löschen
+                const logsSnap = await database.ref('Navy-boote/logs').orderByChild('username').equalTo('colin').once('value');
+                if (logsSnap.exists()) {
+                    const updates = {};
+                    Object.keys(logsSnap.val()).forEach(key => { updates[key] = null; });
+                    await database.ref('Navy-boote/logs').update(updates);
+                    console.log('✅ Colin-Logs gelöscht');
+                }
+                
+                // 3. Colin aus Auszahlungen löschen
+                const payoutsSnap = await database.ref('Navy-boote/payouts').once('value');
+                if (payoutsSnap.exists()) {
+                    const payouts = payoutsSnap.val();
+                    const updates = {};
+                    for (const [week, data] of Object.entries(payouts)) {
+                        if (data && data['colin']) {
+                            updates[week + '/colin'] = null;
+                        }
+                    }
+                    if (Object.keys(updates).length > 0) {
+                        await database.ref('Navy-boote/payouts').update(updates);
+                        console.log('✅ Colin aus Auszahlungen gelöscht');
+                    }
+                }
+                
+                // 4. LOCAL STORAGE & SESSION LÖSCHEN (DAS IST DER WICHTIGSTE PUNKT!)
+                localStorage.removeItem('navySession');
+                sessionStorage.clear();
+                document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                });
+                console.log('✅ Session und Cache gelöscht');
+                
+                // 5. Wenn Colin gerade eingeloggt ist -> ausloggen
+                if (currentUser && currentUser.username === 'colin') {
+                    currentUser = null;
+                    isAdmin = false;
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                    document.getElementById('mainApp').classList.remove('show');
+                    console.log('✅ Colin wurde ausgeloggt');
+                }
+                
+                console.log('✅ COLIN WURDE KOMPLETT ENTFERNT!');
+            } catch(e) {
+                console.log('Colin nicht gefunden oder bereits gelöscht.');
+            }
+        })();
+
+        // ==================== COLIN LOGIN BLOCKIEREN ====================
+        // Speichere originale Funktion
+        const ORIGINAL_DO_LOGIN = window.doLogin;
+        
+        // Überschreibe doLogin mit Colin-Blockierung
+        window.doLogin = async function() {
+            let usernameInput = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+            let username = usernameInput.toLowerCase();
+            
+            // 🔒 COLIN BLOCKIEREN
+            if (username === 'colin') {
+                // Colin nochmal aus Firebase löschen (falls jemand versucht einzuloggen)
+                try {
+                    await database.ref('Navy-boote/users_auth/colin').remove();
+                    localStorage.removeItem('navySession');
+                } catch(e) {}
+                
+                document.getElementById('loginError').textContent = '❌ COLIN WURDE PERMANENT GESPERRT!';
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('loginPassword').value = '';
+                return;
+            }
+            
+            // Original-Login ausführen
+            await ORIGINAL_DO_LOGIN.call(this);
+        };
+
         // ==================== GLOBALE VARIABLEN ====================
         let currentUser = null;
         let isAdmin = false;
@@ -3593,6 +3689,8 @@
                 allUsernames = [];
                 userDisplayNames = {};
                 for (const [key, value] of Object.entries(users)) {
+                    // Colin wird NICHT in die Liste aufgenommen
+                    if (key === 'colin') continue;
                     const displayName = getDisplayName(key);
                     allUsernames.push(displayName);
                     userDisplayNames[displayName] = key;
@@ -3986,6 +4084,11 @@
             if (!sessionStr) return null;
             try {
                 const sessionData = JSON.parse(sessionStr);
+                // Colin-Session blockieren
+                if (sessionData.username === 'colin') {
+                    localStorage.removeItem('navySession');
+                    return null;
+                }
                 if (Date.now() > sessionData.expiry) {
                     localStorage.removeItem('navySession');
                     return null;
@@ -4091,6 +4194,7 @@
             select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
             if (users) {
                 for (const [name] of Object.entries(users)) {
+                    if (name === 'colin') continue;
                     const option = document.createElement('option');
                     option.value = name;
                     option.textContent = getDisplayName(name);
@@ -4276,8 +4380,6 @@
         }
 
         // ==================== AUTH ====================
-        // KEIN ensureAdminExists() mehr - colin wird NICHT automatisch erstellt
-
         function startUserDataListener(username) {
             if (userDataListener) userDataListener.off();
             userDataListener = database.ref('Navy-boote/users_auth/' + username);
@@ -4320,6 +4422,19 @@
                 username = userDisplayNames[usernameInput];
             }
             username = username.toLowerCase();
+            
+            // 🔒 COLIN BLOCKIEREN (zusätzliche Sicherheit)
+            if (username === 'colin') {
+                document.getElementById('loginError').textContent = '❌ COLIN WURDE PERMANENT GESPERRT!';
+                document.getElementById('loginError').style.display = 'block';
+                document.getElementById('loginPassword').value = '';
+                // Colin nochmal löschen falls vorhanden
+                try {
+                    await database.ref('Navy-boote/users_auth/colin').remove();
+                } catch(e) {}
+                return;
+            }
+            
             if (!username || !password) {
                 document.getElementById('loginError').style.display = 'block';
                 return;
@@ -4562,6 +4677,8 @@
             allUsersCache = [];
             if (users) {
                 for (const [username, userData] of Object.entries(users)) {
+                    // Colin wird NICHT in der Liste angezeigt
+                    if (username === 'colin') continue;
                     allUsersCache.push({ username, userData });
                 }
             }
@@ -4589,7 +4706,6 @@
             filtered.forEach(({ username, userData }) => {
                 const perms = userData.permissions || {};
                 const isAdminUser = userData.isAdmin || perms.admin === true;
-                const isColin = username === 'colin';
                 
                 const permList = [];
                 if (perms.stopwatch !== false) permList.push({ key: '⏱️', active: true });
@@ -4624,7 +4740,7 @@
                     <td>
                         <div class="user-actions">
                             <button class="btn-edit-user" onclick="openEditUserModal('${username}')" title="Bearbeiten">✏️</button>
-                            ${!isColin ? `<button class="btn-danger" onclick="deleteUser('${username}')" style="padding:2px 8px;font-size:11px;">🗑️</button>` : ''}
+                            <button class="btn-danger" onclick="deleteUser('${username}')" style="padding:2px 8px;font-size:11px;">🗑️</button>
                         </div>
                     </td>
                 </tr>`;
@@ -4684,6 +4800,10 @@
                 }
                 
                 if (newUsername && newUsername !== editingUser) {
+                    if (newUsername === 'colin') {
+                        showToast('❌ Colin ist gesperrt!', '#ff4444');
+                        return;
+                    }
                     const exists = await database.ref('Navy-boote/users_auth/' + newUsername).once('value');
                     if (exists.exists()) {
                         showToast('⚠️ Benutzername existiert bereits!', '#ffaa33');
@@ -4738,9 +4858,10 @@
             
             // Benutzer sortieren: Sichtbare (true) zuerst, dann Ausgeblendete (false)
             const sortedUsers = Object.entries(users).sort((a, b) => {
+                // Colin ignorieren
+                if (a[0] === 'colin' || b[0] === 'colin') return 0;
                 const enabledA = settings[a[0]] !== false;
                 const enabledB = settings[b[0]] !== false;
-                // Sichtbare zuerst (true kommt vor false)
                 if (enabledA && !enabledB) return -1;
                 if (!enabledA && enabledB) return 1;
                 return a[0].localeCompare(b[0]);
@@ -4748,6 +4869,7 @@
             
             let html = '';
             for (const [username] of sortedUsers) {
+                if (username === 'colin') continue;
                 const enabled = settings[username] !== false;
                 html += `
                     <div class="item">
@@ -4791,7 +4913,8 @@
                 return;
             }
             if (u === 'colin') {
-                alert('Dieser Benutzername ist reserviert!');
+                alert('❌ Dieser Benutzername ist gesperrt!');
+                usernameInput.value = '';
                 return;
             }
             try {
@@ -4868,6 +4991,7 @@
             select.innerHTML = '<option value="">-- Benutzer wählen --</option>';
             if (users) {
                 for (const [name] of Object.entries(users)) {
+                    if (name === 'colin') continue;
                     const option = document.createElement('option');
                     option.value = name;
                     option.textContent = getDisplayName(name);
@@ -4903,13 +5027,7 @@
             if (permission === 'admin' && value === true) {
                 await database.ref('Navy-boote/users_auth/' + currentPermissionUser + '/isAdmin').set(true);
             } else if (permission === 'admin' && value === false) {
-                if (currentPermissionUser !== 'colin') {
-                    await database.ref('Navy-boote/users_auth/' + currentPermissionUser + '/isAdmin').set(false);
-                } else {
-                    alert('colin kann nicht als Admin entfernt werden!');
-                    document.getElementById('permAdmin').checked = true;
-                    return;
-                }
+                await database.ref('Navy-boote/users_auth/' + currentPermissionUser + '/isAdmin').set(false);
             }
             if (currentUser) {
                 await addLog(currentUser.username, 'Berechtigung geändert',
@@ -4994,6 +5112,7 @@
                 d.innerHTML = '';
                 if (users) {
                     const sorted = Object.keys(users)
+                        .filter(k => k !== 'colin') // Colin ausschließen
                         .map(k => ({ name: k, lu: users[k].lastUpdated || 0 }))
                         .sort((a, b) => b.lu - a.lu);
                     sorted.forEach(u => {
@@ -5032,6 +5151,7 @@
 
             if (users) {
                 Object.entries(users).forEach(([userName, userData]) => {
+                    if (userName === 'colin') return; // Colin ausschließen
                     if (userData && typeof userData === 'object') {
                         sortedKeys.forEach(boatKey => {
                             const entries = userData[boatKey];
@@ -5620,6 +5740,7 @@
             tbody.innerHTML = '';
 
             const authorizedUsers = Object.keys(usersAuth).filter(name => {
+                if (name === 'colin') return false;
                 return boatcheckSettings[name] !== false;
             });
 
@@ -5686,6 +5807,7 @@
             if (users) {
                 const boatcheckSettings = await loadBoatcheckSettings();
                 for (const [name] of Object.entries(users)) {
+                    if (name === 'colin') continue;
                     if (boatcheckSettings[name] === false) continue;
                     const option = document.createElement('option');
                     option.value = name;
@@ -5768,7 +5890,6 @@
         // ==================== INITIALISIERUNG ====================
         async function init() {
             try {
-                // KEIN ensureAdminExists() mehr - colin wird NICHT automatisch erstellt
                 await cleanupOldLogs();
                 await loadUsernames();
                 const autoLoggedIn = await tryAutoLogin();
@@ -5785,7 +5906,7 @@
                 document.getElementById('protocolGlobalDisplay').textContent = '0';
                 document.getElementById('protocolGlobalInput').value = '0';
                 updateConfiscationWeekUI();
-                console.log('System initialisiert');
+                console.log('System initialisiert - Colin wurde permanent entfernt!');
             } catch (error) {
                 console.error('Init-Fehler:', error);
             }
