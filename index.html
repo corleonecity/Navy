@@ -549,7 +549,7 @@
         }
 
         /* ============================================================
-                   KURZANLEITUNG (Handbook)
+                   KURZANLEITUNG (Handbook) - NUR KATEGORIE-ERKLÄRUNGEN
                    ============================================================ */
         .handbook-section {
             background: #030303;
@@ -579,40 +579,27 @@
                 grid-template-columns: 1fr;
             }
         }
-        .handbook-section .role-card {
+        .handbook-section .category-card {
             background: #050505;
             border: 1px solid #292929;
             border-radius: 8px;
             padding: 14px;
+            border-left: 3px solid #1f6feb;
         }
-        .handbook-section .role-card .role-name {
+        .handbook-section .category-card .cat-icon {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+        .handbook-section .category-card .cat-name {
             font-weight: 700;
             font-size: 15px;
             color: #ffffff;
         }
-        .handbook-section .role-card .role-perms {
-            font-size: 12px;
+        .handbook-section .category-card .cat-desc {
+            font-size: 13px;
             color: #8f9499;
             margin-top: 4px;
-        }
-        .handbook-section .role-card .role-perms .perm-item {
-            display: inline-block;
-            padding: 2px 8px;
-            margin: 2px 3px;
-            border-radius: 4px;
-            font-size: 11px;
-        }
-        .handbook-section .role-card .role-perms .perm-item.allowed {
-            background: rgba(34, 197, 94, 0.12);
-            color: #22c55e;
-        }
-        .handbook-section .role-card .role-perms .perm-item.denied {
-            background: rgba(211, 33, 45, 0.08);
-            color: #d3212d;
-        }
-        .handbook-section .role-card .role-perms .perm-item.readonly {
-            background: rgba(255, 170, 51, 0.12);
-            color: #ffaa33;
+            line-height: 1.4;
         }
 
         /* ============================================================
@@ -1024,6 +1011,24 @@
             font-size: 12px;
             min-width: 60px;
         }
+        /* Admin-Checkbox im Perm-Grid */
+        .perm-grid .perm-group .perm-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #ef3340;
+            cursor: pointer;
+            margin-left: auto;
+            background: #050505;
+            border: 1px solid #303030;
+            border-radius: 4px;
+        }
+        .perm-grid .perm-group .perm-item input[type="checkbox"]:checked {
+            accent-color: #22c55e;
+        }
+        .perm-grid .perm-group .perm-item .admin-label {
+            color: #ff7b83;
+            font-weight: 600;
+        }
 
         .admin-search-box {
             display: flex;
@@ -1075,129 +1080,6 @@
             padding: 6px 16px;
             font-size: 12px;
             border-radius: 6px;
-        }
-
-        /* ============================================================
-                   ADMIN COMPACT SECTIONS
-                   ============================================================ */
-        .admin-compact-section {
-            padding: 12px 14px;
-            margin-bottom: 12px;
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 85, 85, 0.15);
-        }
-        .admin-compact-section h4 {
-            color: #ff7b83;
-            margin-bottom: 8px;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(255, 85, 85, 0.15);
-            padding-bottom: 6px;
-        }
-        .admin-compact-section .row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .admin-compact-section .row label {
-            color: #91b8ea;
-            font-size: 13px;
-            font-weight: 500;
-        }
-        .admin-compact-section .row input,
-        .admin-compact-section .row select {
-            padding: 6px 10px;
-            font-size: 13px;
-            background: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 6px;
-            color: #fff;
-            flex: 1;
-            min-width: 120px;
-        }
-        .admin-compact-section .row input:focus,
-        .admin-compact-section .row select:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
-        }
-        .admin-compact-section .row button {
-            padding: 6px 16px;
-            font-size: 12px;
-            border-radius: 6px;
-        }
-
-        /* ============================================================
-                   BOOTSKONTROLLE-SICHTBARKEIT (Info rechts neben Button)
-                   ============================================================ */
-        .boatcheck-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 6px;
-        }
-        .boatcheck-header .boatcheck-info {
-            color: #8f9499;
-            font-size: 12px;
-        }
-        .boatcheck-header .boatcheck-info i {
-            color: #ffaa33;
-            margin-right: 4px;
-        }
-
-        .boatcheck-list {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            max-height: 200px;
-            overflow-y: auto;
-            margin-top: 4px;
-        }
-        .boatcheck-list .item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 10px;
-            background: #0a0a0a;
-            border-radius: 6px;
-            border: 1px solid #1a1a1a;
-            font-size: 13px;
-        }
-        .boatcheck-list .item .name {
-            color: #dbeafe;
-        }
-        .boatcheck-list .item .status {
-            font-size: 11px;
-            padding: 2px 10px;
-            border-radius: 4px;
-        }
-        .boatcheck-list .item .status.on {
-            background: rgba(34, 197, 94, 0.12);
-            color: #22c55e;
-            border: 1px solid #22c55e;
-        }
-        .boatcheck-list .item .status.off {
-            background: rgba(211, 33, 45, 0.12);
-            color: #d3212d;
-            border: 1px solid #d3212d;
-        }
-        .boatcheck-list .item .toggle-btn {
-            padding: 2px 12px;
-            font-size: 11px;
-            border-radius: 4px;
-            cursor: pointer;
-            border: none;
-            font-weight: bold;
-        }
-        .boatcheck-list .item .toggle-btn.enable {
-            background: #2e7d32;
-            color: white;
-        }
-        .boatcheck-list .item .toggle-btn.disable {
-            background: #8b0000;
-            color: white;
         }
 
         /* ============================================================
@@ -1451,7 +1333,7 @@
         }
 
         /* ============================================================
-                   MODAL
+                   MODAL (ALLGEMEIN)
                    ============================================================ */
         .modal-overlay {
             display: none;
@@ -1539,26 +1421,84 @@
             margin-top: 4px;
         }
 
-        .detail-row {
+        /* ============================================================
+                   EIGENES LÖSCH-POPUP (CONFIRM MODAL)
+                   ============================================================ */
+        .confirm-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(4px);
+        }
+        .confirm-modal-overlay.show {
             display: flex;
-            padding: 6px 0;
-            border-bottom: 1px solid #282828;
+        }
+        .confirm-modal {
+            background: #0a0a0a;
+            border: 1px solid #303030;
+            border-top: 3px solid #d3212d;
+            border-radius: 12px;
+            padding: 28px 32px;
+            width: 95%;
+            max-width: 420px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95);
+            text-align: center;
+        }
+        .confirm-modal .confirm-icon {
+            font-size: 48px;
+            color: #ffaa33;
+            margin-bottom: 12px;
+        }
+        .confirm-modal h3 {
+            color: #ffffff;
+            font-size: 20px;
+            margin-bottom: 8px;
+            border-bottom: none;
+        }
+        .confirm-modal p {
+            color: #8f9499;
             font-size: 14px;
+            margin-bottom: 20px;
         }
-        .detail-label {
-            font-weight: 600;
-            color: #91b8ea;
-            min-width: 140px;
+        .confirm-modal .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
         }
-        .detail-value {
-            color: #dbeafe;
-            flex: 1;
+        .confirm-modal .confirm-actions button {
+            min-width: 100px;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.3s ease;
         }
-        .detail-value.money-green {
-            color: #22c55e;
+        .confirm-modal .confirm-actions .btn-confirm-yes {
+            background: #d3212d;
+            color: white;
         }
-        .detail-value.money-black {
-            color: #ccc;
+        .confirm-modal .confirm-actions .btn-confirm-yes:hover {
+            background: #ef3340;
+            transform: scale(1.03);
+        }
+        .confirm-modal .confirm-actions .btn-confirm-no {
+            background: #1a1a1a;
+            color: #e5e7eb;
+            border: 1px solid #444;
+        }
+        .confirm-modal .confirm-actions .btn-confirm-no:hover {
+            background: #2a2a2a;
+            transform: scale(1.03);
         }
 
         /* ============================================================
@@ -1879,9 +1819,9 @@
             .perm-grid .perm-group {
                 min-width: 100%;
             }
-            .boatcheck-header {
-                flex-direction: column;
-                align-items: flex-start;
+            .confirm-modal {
+                padding: 20px;
+                max-width: 95%;
             }
         }
     </style>
@@ -2163,7 +2103,7 @@
                         <button onclick="adminDeletePerson()" class="btn-danger btn-sm"><i class="fas fa-trash"></i> Löschen</button>
                         <button onclick="manualCleanupLogs()" class="btn-sm" style="border-color:#ffaa33;color:#ffaa33;"><i class="fas fa-broom"></i> Logs</button>
                     </div>
-                    <p style="color:#62676c;font-size:11px;margin-bottom:6px;">⚠️ "Löschen" entfernt alle Bootszeiten einer Person | "Logs" löscht Einträge älter als 32 Tage</p>
+                    <p style="color:#62676c;font-size:11px;margin-bottom:6px;">⚠️ "Löschen" entfernt alle Bootszeiten einer Person | "Logs" löscht Einträge älter als 7 Tage</p>
 
                     <div class="admin-search-box">
                         <input type="text" id="userSearchInput" placeholder="🔍 Benutzer suchen..." oninput="filterUserTable()">
@@ -2209,7 +2149,7 @@
                             <span style="color:#d3212d;">❌ Darf nicht</span>
                         </p>
                         <div class="perm-grid">
-                            <!-- Stoppuhr - Detaillierte Rechte -->
+                            <!-- Stoppuhr - NUR Ansehen, Erstellen, Löschen (kein Bearbeiten) -->
                             <div class="perm-group">
                                 <span class="group-title">⏱️ Stoppuhr</span>
                                 <div class="perm-item">
@@ -2222,13 +2162,6 @@
                                 <div class="perm-item">
                                     <label>Erstellen</label>
                                     <select id="rolePermStopwatchCreate" onchange="rolePermChanged()">
-                                        <option value="write">✅ Darf</option>
-                                        <option value="none">❌ Darf nicht</option>
-                                    </select>
-                                </div>
-                                <div class="perm-item">
-                                    <label>Bearbeiten</label>
-                                    <select id="rolePermStopwatchEdit" onchange="rolePermChanged()">
                                         <option value="write">✅ Darf</option>
                                         <option value="none">❌ Darf nicht</option>
                                     </select>
@@ -2325,15 +2258,13 @@
                                 </div>
                             </div>
 
-                            <!-- Admin -->
+                            <!-- Admin - JETZT ALS CHECKBOX -->
                             <div class="perm-group">
                                 <span class="group-title">🔑 Admin</span>
                                 <div class="perm-item">
-                                    <label>Admin</label>
-                                    <select id="rolePermAdmin" onchange="rolePermChanged()">
-                                        <option value="none">❌ Darf nicht</option>
-                                        <option value="write">✅ Darf</option>
-                                    </select>
+                                    <label class="admin-label">Admin-Rechte</label>
+                                    <input type="checkbox" id="rolePermAdminCheck" onchange="rolePermChanged()">
+                                    <span style="font-size:11px;color:#8f9499;margin-left:4px;" id="adminCheckLabel">Nein</span>
                                 </div>
                             </div>
                         </div>
@@ -2354,23 +2285,6 @@
                     </div>
                     <div class="boat-order-wrap">
                         <div id="boatOrderListContainer" style="padding:4px 0;"></div>
-                    </div>
-                </div>
-
-                <!-- BOOTSKONTROLLE-SICHTBARKEIT mit Info rechts -->
-                <div class="admin-section" style="border-left-color:#22c55e;">
-                    <h4 style="color:#22c55e;"><i class="fas fa-eye"></i> Bootskontrolle-Sichtbarkeit</h4>
-                    <div class="boatcheck-header">
-                        <button onclick="renderBoatcheckList()" class="btn-sm btn-primary" style="background:#0b3d66;border-color:#1f6feb;">
-                            <i class="fas fa-sync"></i> Aktualisieren
-                        </button>
-                        <span class="boatcheck-info">
-                            <i class="fas fa-info-circle"></i>
-                            Sichtbare Benutzer erscheinen in der Auszahlung
-                        </span>
-                    </div>
-                    <div class="boatcheck-list" id="boatcheckListContainer">
-                        <!-- Wird dynamisch geladen -->
                     </div>
                 </div>
 
@@ -2523,7 +2437,7 @@
             <div class="modal-row"><div class="modal-field"><label>🎖️ Rolle</label>
                 <select id="editUserRole" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;"></select>
             </div></div>
-            <!-- NEU: Sichtbarkeit in der Auszahlung -->
+            <!-- Sichtbarkeit in der Auszahlung -->
             <div class="modal-row">
                 <div class="modal-field" style="flex-direction:row;align-items:center;gap:12px;">
                     <label style="margin:0;cursor:pointer;color:#8f9499;font-size:13px;">👁️ In Auszahlung sichtbar:</label>
@@ -2533,6 +2447,21 @@
             <div class="modal-actions">
                 <button onclick="closeEditUserModal()" class="btn-sm"><i class="fas fa-times"></i> Abbrechen</button>
                 <button onclick="saveUserEdit()" class="btn-success"><i class="fas fa-save"></i> Speichern</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+    EIGENES CONFIRM MODAL (LÖSCH-POPUP)
+    ============================================================ -->
+    <div class="confirm-modal-overlay" id="confirmModalOverlay">
+        <div class="confirm-modal">
+            <div class="confirm-icon">⚠️</div>
+            <h3 id="confirmModalTitle">Sind Sie sicher?</h3>
+            <p id="confirmModalMessage">Diese Aktion kann nicht rückgängig gemacht werden.</p>
+            <div class="confirm-actions">
+                <button class="btn-confirm-yes" id="confirmModalYesBtn">Ja, löschen</button>
+                <button class="btn-confirm-no" id="confirmModalNoBtn">Abbrechen</button>
             </div>
         </div>
     </div>
@@ -2569,7 +2498,7 @@
         let isAdmin = false;
         let userRole = 'admin';
         let userPermissions = {
-            stopwatch: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
+            stopwatch: { view: 'read', create: 'write', delete: 'write' },
             confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
             payout: { view: 'read', edit: 'write' },
             logs: { view: 'read' },
@@ -2603,6 +2532,7 @@
         let allUsersCache = [];
         let elkData = [];
         let currentRole = null;
+        let confirmCallback = null;
 
         const DEFAULT_BOATS = {
             'Predator': { emoji: '⚡', label: 'Predator' },
@@ -2623,7 +2553,7 @@
                     icon: '🔑',
                     color: '#ef3340',
                     permissions: {
-                        stopwatch: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
+                        stopwatch: { view: 'read', create: 'write', delete: 'write' },
                         confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
                         payout: { view: 'read', edit: 'write' },
                         logs: { view: 'read' },
@@ -2712,6 +2642,36 @@
         }
 
         // =====================================================================
+        // EIGENES CONFIRM MODAL (LÖSCH-POPUP)
+        // =====================================================================
+        function showConfirmModal(title, message, onConfirm) {
+            document.getElementById('confirmModalTitle').textContent = title || 'Sind Sie sicher?';
+            document.getElementById('confirmModalMessage').textContent = message || 'Diese Aktion kann nicht rückgängig gemacht werden.';
+            confirmCallback = onConfirm || null;
+            document.getElementById('confirmModalOverlay').classList.add('show');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModalOverlay').classList.remove('show');
+            confirmCallback = null;
+        }
+
+        document.getElementById('confirmModalYesBtn').addEventListener('click', function() {
+            if (typeof confirmCallback === 'function') {
+                confirmCallback();
+            }
+            closeConfirmModal();
+        });
+
+        document.getElementById('confirmModalNoBtn').addEventListener('click', function() {
+            closeConfirmModal();
+        });
+
+        document.getElementById('confirmModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) closeConfirmModal();
+        });
+
+        // =====================================================================
         // SESSION MANAGEMENT
         // =====================================================================
         function saveSession(username, isAdminUser, permissions, role) {
@@ -2739,7 +2699,7 @@
         function clearSession() { localStorage.removeItem('navySession'); }
 
         // =====================================================================
-        // LOGGING
+        // LOGGING - JETZT 7 TAGE
         // =====================================================================
         async function addLog(username, action, details = '') {
             try {
@@ -2755,7 +2715,7 @@
 
         async function cleanupOldLogs() {
             try {
-                const cutoff = Date.now() - (32 * 24 * 60 * 60 * 1000);
+                const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 Tage
                 const snap = await database.ref('Navy-boote/logs').once('value');
                 const logs = snap.val();
                 if (!logs) return;
@@ -2950,7 +2910,7 @@
             isAdmin = false;
             userRole = 'admin';
             userPermissions = {
-                stopwatch: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
+                stopwatch: { view: 'read', create: 'write', delete: 'write' },
                 confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
                 payout: { view: 'read', edit: 'write' },
                 logs: { view: 'read' },
@@ -3162,79 +3122,57 @@
         }
 
         // =====================================================================
-        // KURZANLEITUNG (Handbook)
+        // KURZANLEITUNG (Handbook) - NUR KATEGORIE-ERKLÄRUNGEN
         // =====================================================================
         function renderHandbook() {
             const grid = document.getElementById('handbookGrid');
             if (!grid) return;
             grid.innerHTML = '';
 
-            for (const [key, def] of Object.entries(ROLE_DEFS)) {
-                const perms = def.permissions;
+            const categories = [{
+                key: 'stopwatch',
+                icon: '⏱️',
+                name: 'Stoppuhr',
+                desc: 'Hier kannst du Zeiten für verschiedene Boote stoppen und speichern. Du siehst deine eigenen Zeiten und die Durchschnittszeiten aller Soldaten.'
+            }, {
+                key: 'confiscations',
+                icon: '📋',
+                name: 'Beschlagnahmungen',
+                desc: 'Verwalte alle beschlagnahmten Gegenstände und Geldbeträge. Du kannst neue Einträge erstellen, bearbeiten und löschen.'
+            }, {
+                key: 'payout',
+                icon: '💰',
+                name: 'Auszahlung',
+                desc: 'Hier siehst du die wöchentlichen Auszahlungen für alle sichtbaren Benutzer. Du kannst Kontrollen zählen und Auszahlungen als "bezahlt" markieren.'
+            }, {
+                key: 'elk',
+                icon: '📋',
+                name: 'ELK (Einsatzleitung Kontrollliste)',
+                desc: 'Verwalte die Einsatzpunkte mit einem einfachen Toggle-System. Jeder Punkt kann aktiviert oder deaktiviert werden.'
+            }, {
+                key: 'logs',
+                icon: '📊',
+                name: 'Logs',
+                desc: 'Zeige alle Aktivitäten im System an. Du kannst nach Benutzern filtern oder alle Logs der letzten 100 Einträge sehen.'
+            }, {
+                key: 'admin',
+                icon: '🔑',
+                name: 'Admin-Bereich',
+                desc: 'Hier verwaltest du Benutzer, Rollen, Berechtigungen, Boote und ELK-Felder. Nur für Administratoren sichtbar.'
+            }];
+
+            categories.forEach(cat => {
                 const card = document.createElement('div');
-                card.className = 'role-card';
-
-                let permHtml = '';
-
-                const sw = perms.stopwatch || {};
-                const swView = sw.view || 'none';
-                const swCreate = sw.create || 'none';
-                const swEdit = sw.edit || 'none';
-                const swDelete = sw.delete || 'none';
-                permHtml +=
-                    `<span class="perm-item ${swView === 'read' ? 'allowed' : 'denied'}">${swView === 'read' ? '👁️' : '❌'} ⏱️ Ansehen</span>`;
-                permHtml +=
-                    `<span class="perm-item ${swCreate === 'write' ? 'allowed' : 'denied'}">${swCreate === 'write' ? '✅' : '❌'} ⏱️ Erstellen</span>`;
-                permHtml +=
-                    `<span class="perm-item ${swEdit === 'write' ? 'allowed' : 'denied'}">${swEdit === 'write' ? '✅' : '❌'} ⏱️ Bearbeiten</span>`;
-                permHtml +=
-                    `<span class="perm-item ${swDelete === 'write' ? 'allowed' : 'denied'}">${swDelete === 'write' ? '✅' : '❌'} ⏱️ Löschen</span>`;
-
-                const conf = perms.confiscations || {};
-                const confView = conf.view || 'none';
-                const confCreate = conf.create || 'none';
-                const confEdit = conf.edit || 'none';
-                const confDelete = conf.delete || 'none';
-                permHtml +=
-                    `<span class="perm-item ${confView === 'read' ? 'allowed' : 'denied'}">${confView === 'read' ? '👁️' : '❌'} 📋 Ansehen</span>`;
-                permHtml +=
-                    `<span class="perm-item ${confCreate === 'write' ? 'allowed' : 'denied'}">${confCreate === 'write' ? '✅' : '❌'} 📋 Erstellen</span>`;
-                permHtml +=
-                    `<span class="perm-item ${confEdit === 'write' ? 'allowed' : 'denied'}">${confEdit === 'write' ? '✅' : '❌'} 📋 Bearbeiten</span>`;
-                permHtml +=
-                    `<span class="perm-item ${confDelete === 'write' ? 'allowed' : 'denied'}">${confDelete === 'write' ? '✅' : '❌'} 📋 Löschen</span>`;
-
-                const pay = perms.payout || {};
-                const payView = pay.view || 'none';
-                const payEdit = pay.edit || 'none';
-                permHtml +=
-                    `<span class="perm-item ${payView === 'read' ? 'allowed' : 'denied'}">${payView === 'read' ? '👁️' : '❌'} 💰 Ansehen</span>`;
-                permHtml +=
-                    `<span class="perm-item ${payEdit === 'write' ? 'allowed' : 'denied'}">${payEdit === 'write' ? '✅' : '❌'} 💰 Bearbeiten</span>`;
-
-                const logs = perms.logs || {};
-                const logsView = logs.view || 'none';
-                permHtml +=
-                    `<span class="perm-item ${logsView === 'read' ? 'allowed' : 'denied'}">${logsView === 'read' ? '👁️' : '❌'} 📊 Logs</span>`;
-
-                const elk = perms.elk || {};
-                const elkView = elk.view || 'none';
-                const elkEdit = elk.edit || 'none';
-                permHtml +=
-                    `<span class="perm-item ${elkView === 'read' ? 'allowed' : 'denied'}">${elkView === 'read' ? '👁️' : '❌'} 📋 Ansehen</span>`;
-                permHtml +=
-                    `<span class="perm-item ${elkEdit === 'write' ? 'allowed' : 'denied'}">${elkEdit === 'write' ? '✅' : '❌'} 📋 Bearbeiten</span>`;
-
-                const admin = perms.admin || 'none';
-                permHtml +=
-                    `<span class="perm-item ${admin === 'write' ? 'allowed' : 'denied'}">${admin === 'write' ? '✅' : '❌'} 🔑 Admin</span>`;
-
+                card.className = 'category-card';
                 card.innerHTML = `
-                    <div class="role-name">${def.icon} ${def.label}</div>
-                    <div class="role-perms">${permHtml}</div>
+                    <div>
+                        <span class="cat-icon">${cat.icon}</span>
+                        <span class="cat-name">${cat.name}</span>
+                    </div>
+                    <div class="cat-desc">${cat.desc}</div>
                 `;
                 grid.appendChild(card);
-            }
+            });
         }
 
         // =====================================================================
@@ -3462,16 +3400,21 @@
                 showToast('Keine Admin-Berechtigung!', 'error');
                 return;
             }
-            if (!confirm('Boot "' + key + '" wirklich löschen?')) return;
-            await database.ref('Navy-boote/boats/' + key).remove();
-            const idx = boatOrder.indexOf(key);
-            if (idx !== -1) { boatOrder.splice(idx, 1);
-                await database.ref('Navy-boote/boatOrder').set(boatOrder); }
-            if (currentUser) await addLog(currentUser.username, 'Boot gelöscht', `Boot: ${key}`);
-            showToast('Boot gelöscht.', 'error');
-            await renderBoats();
-            await loadBoatAdminList();
-            loadAllSoldiersAverage();
+            showConfirmModal(
+                'Boot löschen?',
+                `Möchten Sie das Boot "${key}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+                async function() {
+                    await database.ref('Navy-boote/boats/' + key).remove();
+                    const idx = boatOrder.indexOf(key);
+                    if (idx !== -1) { boatOrder.splice(idx, 1);
+                        await database.ref('Navy-boote/boatOrder').set(boatOrder); }
+                    if (currentUser) await addLog(currentUser.username, 'Boot gelöscht', `Boot: ${key}`);
+                    showToast('Boot gelöscht.', 'error');
+                    await renderBoats();
+                    await loadBoatAdminList();
+                    loadAllSoldiersAverage();
+                }
+            );
         }
 
         async function toggleBoatVisibility(key) {
@@ -3775,21 +3718,26 @@
                 showToast('Keine Berechtigung zum Löschen!', 'error');
                 return;
             }
-            if (!confirm('Eintrag löschen?')) return;
-            const ref = database.ref('Navy-boote/users/' + nl + '/' + bi);
-            const snap = await ref.once('value');
-            let arr = snap.val();
-            if (arr && Array.isArray(arr)) {
-                arr = arr.filter(e => e.timestamp !== ts);
-                await ref.set(arr);
-                await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now());
-                if (currentUser) await addLog(currentUser.username, 'Zeiteintrag gelöscht',
-                    `Person: ${getDisplayName(nl)}, Boot: ${bi}`);
-                autoLoadPerson();
-                loadAllSoldiersAverage();
-                loadPersonalStats(nl);
-                showToast('🗑️ Gelöscht.', 'error');
-            }
+            showConfirmModal(
+                'Eintrag löschen?',
+                `Möchten Sie diesen Zeiteintrag für "${getDisplayName(nl)}" wirklich löschen?`,
+                async function() {
+                    const ref = database.ref('Navy-boote/users/' + nl + '/' + bi);
+                    const snap = await ref.once('value');
+                    let arr = snap.val();
+                    if (arr && Array.isArray(arr)) {
+                        arr = arr.filter(e => e.timestamp !== ts);
+                        await ref.set(arr);
+                        await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now());
+                        if (currentUser) await addLog(currentUser.username, 'Zeiteintrag gelöscht',
+                            `Person: ${getDisplayName(nl)}, Boot: ${bi}`);
+                        autoLoadPerson();
+                        loadAllSoldiersAverage();
+                        loadPersonalStats(nl);
+                        showToast('🗑️ Gelöscht.', 'error');
+                    }
+                }
+            );
         };
 
         // =====================================================================
@@ -4111,14 +4059,19 @@
                 showToast('Keine Berechtigung zum Löschen!', 'error');
                 return;
             }
-            if (!confirm('Beschlagnahmung löschen?')) return;
-            const snap = await database.ref('Navy-boote/confiscations/' + id).once('value');
-            const data = snap.val();
-            await database.ref('Navy-boote/confiscations/' + id).remove();
-            if (currentUser && data) await addLog(currentUser.username, 'Beschlagnahmung gelöscht',
-                `Akte: ${data.akteName || 'Unbekannt'}`);
-            showToast('Gelöscht.', 'error');
-            loadConfiscations();
+            const entry = allConfiscations.find(e => e.id === id);
+            if (!entry) { showToast('Eintrag nicht gefunden!', 'error'); return; }
+            showConfirmModal(
+                'Beschlagnahmung löschen?',
+                `Möchten Sie die Beschlagnahmung "${entry.akteName || 'Unbekannt'}" wirklich löschen?`,
+                async function() {
+                    await database.ref('Navy-boote/confiscations/' + id).remove();
+                    if (currentUser) await addLog(currentUser.username, 'Beschlagnahmung gelöscht',
+                        `Akte: ${entry.akteName || 'Unbekannt'}`);
+                    showToast('Gelöscht.', 'error');
+                    loadConfiscations();
+                }
+            );
         }
 
         async function editConfiscation(id) {
@@ -4404,56 +4357,6 @@
             await database.ref('Navy-boote/boatcheck_users').set(settings);
         }
 
-        async function renderBoatcheckList() {
-            const container = document.getElementById('boatcheckListContainer');
-            if (!container) return;
-            const snap = await database.ref('Navy-boote/users_auth').once('value');
-            const users = snap.val();
-            const settings = await loadBoatcheckSettings();
-            if (!users) { container.innerHTML = '<p class="text-muted">Keine Benutzer vorhanden.</p>'; return; }
-
-            const sortedUsers = Object.entries(users).sort((a, b) => {
-                if (a[0] === BLOCKED_USER || b[0] === BLOCKED_USER) return 0;
-                const enabledA = settings[a[0]] !== false;
-                const enabledB = settings[b[0]] !== false;
-                if (enabledA && !enabledB) return -1;
-                if (!enabledA && enabledB) return 1;
-                return a[0].localeCompare(b[0]);
-            });
-
-            let html = '';
-            for (const [username] of sortedUsers) {
-                if (username === BLOCKED_USER) continue;
-                const enabled = settings[username] !== false;
-                html += `
-                    <div class="item">
-                        <span class="name">${esc(getDisplayName(username))}</span>
-                        <span class="status ${enabled ? 'on' : 'off'}">${enabled ? '✅ Sichtbar' : '❌ Ausgeblendet'}</span>
-                        <button class="toggle-btn ${enabled ? 'disable' : 'enable'}" onclick="toggleBoatcheckUser('${username}')">
-                            ${enabled ? 'Ausblenden' : 'Einblenden'}
-                        </button>
-                    </div>
-                `;
-            }
-            container.innerHTML = html;
-        }
-
-        async function toggleBoatcheckUser(username) {
-            if (userPermissions.admin !== 'write') {
-                showToast('Keine Admin-Berechtigung!', 'error');
-                return;
-            }
-            const settings = await loadBoatcheckSettings();
-            const current = settings[username] !== false;
-            settings[username] = !current;
-            await saveBoatcheckSettings(settings);
-            if (currentUser) await addLog(currentUser.username, 'Bootskontrolle-Sichtbarkeit geändert',
-                `Benutzer "${getDisplayName(username)}": ${!current ? 'sichtbar' : 'ausgeblendet'}`);
-            renderBoatcheckList();
-            showToast(`✅ ${getDisplayName(username)} ${!current ? 'sichtbar' : 'ausgeblendet'}`, !current ? 'success' :
-                'warning');
-        }
-
         // =====================================================================
         // ADMIN: BENUTZERVERWALTUNG
         // =====================================================================
@@ -4557,7 +4460,6 @@
                 };
                 await database.ref('Navy-boote/users_auth/' + u).set(userData);
 
-                // NEU: Standardmäßig in Auszahlung sichtbar
                 const settings = await loadBoatcheckSettings();
                 settings[u] = true;
                 await saveBoatcheckSettings(settings);
@@ -4568,7 +4470,6 @@
                 passwordInput.value = '';
                 await loadUserList();
                 await populateRoleSelect();
-                await renderBoatcheckList();
                 await updateAllUsernameLists();
             } catch (error) {
                 showToast('❌ Fehler beim Erstellen!', 'error');
@@ -4585,19 +4486,21 @@
                 showToast('❌ Dieser Benutzer kann nicht gelöscht werden!', 'error');
                 return;
             }
-            if (!confirm('Benutzer "' + getDisplayName(u) + '" wirklich löschen? Der Benutzer wird sofort abgemeldet!')) return;
-            await database.ref('Navy-boote/users_auth/' + u).remove();
-            // NEU: Auch aus boatcheck_users entfernen
-            const settings = await loadBoatcheckSettings();
-            delete settings[u];
-            await saveBoatcheckSettings(settings);
-
-            if (currentUser) await addLog(currentUser.username, 'Benutzer gelöscht', `Benutzer "${getDisplayName(u)}" wurde gelöscht`);
-            showToast('Benutzer gelöscht.', 'error');
-            loadUserList();
-            populateRoleSelect();
-            updateAllUsernameLists();
-            renderBoatcheckList();
+            showConfirmModal(
+                'Benutzer löschen?',
+                `Möchten Sie den Benutzer "${getDisplayName(u)}" wirklich löschen? Der Benutzer wird sofort abgemeldet!`,
+                async function() {
+                    await database.ref('Navy-boote/users_auth/' + u).remove();
+                    const settings = await loadBoatcheckSettings();
+                    delete settings[u];
+                    await saveBoatcheckSettings(settings);
+                    if (currentUser) await addLog(currentUser.username, 'Benutzer gelöscht', `Benutzer "${getDisplayName(u)}" wurde gelöscht`);
+                    showToast('Benutzer gelöscht.', 'error');
+                    loadUserList();
+                    populateRoleSelect();
+                    updateAllUsernameLists();
+                }
+            );
         }
 
         async function adminDeletePerson() {
@@ -4611,15 +4514,20 @@
                 showToast('❌ Colin kann nicht gelöscht werden!', 'error');
                 return;
             }
-            if (!confirm('⚠️ Alle Bootszeiten von "' + n + '" unwiderruflich löschen?')) return;
-            await database.ref('Navy-boote/users/' + n.toLowerCase()).remove();
-            if (currentUser) await addLog(currentUser.username, 'Person gelöscht', `Alle Daten von "${n}" wurden gelöscht`);
-            showToast('Person gelöscht.', 'error');
-            document.getElementById('adminDeletePerson').value = '';
-            loadAllSoldiersAverage();
-            loadAllUsersList();
-            document.getElementById('personalPanel').classList.remove('show');
-            document.getElementById('resultTable').innerHTML = '<p class="text-muted">🔍 Wähle eine Person aus oder suche.</p>';
+            showConfirmModal(
+                'Person löschen?',
+                `Möchten Sie alle Bootszeiten von "${n}" unwiderruflich löschen?`,
+                async function() {
+                    await database.ref('Navy-boote/users/' + n.toLowerCase()).remove();
+                    if (currentUser) await addLog(currentUser.username, 'Person gelöscht', `Alle Daten von "${n}" wurden gelöscht`);
+                    showToast('Person gelöscht.', 'error');
+                    document.getElementById('adminDeletePerson').value = '';
+                    loadAllSoldiersAverage();
+                    loadAllUsersList();
+                    document.getElementById('personalPanel').classList.remove('show');
+                    document.getElementById('resultTable').innerHTML = '<p class="text-muted">🔍 Wähle eine Person aus oder suche.</p>';
+                }
+            );
         }
 
         async function manualCleanupLogs() {
@@ -4627,10 +4535,15 @@
                 showToast('Keine Admin-Berechtigung!', 'error');
                 return;
             }
-            if (!confirm('Alle Logs die älter als 32 Tage sind löschen?')) return;
-            await cleanupOldLogs();
-            showToast('✅ Logs bereinigt!', 'success');
-            if (document.getElementById('tab-logs').classList.contains('active')) loadAllLogs();
+            showConfirmModal(
+                'Logs bereinigen?',
+                'Möchten Sie alle Logs die älter als 7 Tage sind löschen?',
+                async function() {
+                    await cleanupOldLogs();
+                    showToast('✅ Logs bereinigt (7 Tage)!', 'success');
+                    if (document.getElementById('tab-logs').classList.contains('active')) loadAllLogs();
+                }
+            );
         }
 
         // =====================================================================
@@ -4659,13 +4572,11 @@
                 roleSelect.appendChild(opt);
             }
 
-            // Lade aktuelle Benutzerdaten und Sichtbarkeit
             database.ref('Navy-boote/users_auth/' + username).once('value').then(async snap => {
                 const data = snap.val();
                 if (data) {
                     document.getElementById('editUserRole').value = data.role || 'admin';
                 }
-                // Lade Sichtbarkeit
                 const settings = await loadBoatcheckSettings();
                 const isVisible = settings[username] !== false;
                 document.getElementById('editUserVisible').checked = isVisible;
@@ -4715,7 +4626,6 @@
                     updates.permissions = { ...roleDef.permissions };
                 }
 
-                // NEU: Sichtbarkeit speichern
                 const settings = await loadBoatcheckSettings();
                 const oldVisible = settings[editingUser] !== false;
                 if (isVisible !== oldVisible) {
@@ -4731,7 +4641,6 @@
                     await database.ref('Navy-boote/users_auth/' + newUsername).set({ ...userData, ...updates });
                     await userRef.remove();
 
-                    // Sichtbarkeit für neuen Usernamen übertragen
                     settings[newUsername] = isVisible;
                     delete settings[editingUser];
                     await saveBoatcheckSettings(settings);
@@ -4768,7 +4677,6 @@
                 await loadUserList();
                 await populateRoleSelect();
                 await updateAllUsernameLists();
-                await renderBoatcheckList();
 
             } catch (error) {
                 console.error('Fehler beim Speichern:', error);
@@ -4777,7 +4685,7 @@
         }
 
         // =====================================================================
-        // ADMIN: ROLLEN & BERECHTIGUNGEN (DETAILIERT)
+        // ADMIN: ROLLEN & BERECHTIGUNGEN (DETAILIERT MIT ADMIN-CHECKBOX)
         // =====================================================================
         async function populateRoleSelect() {
             const createSelect = document.getElementById('newUserRole');
@@ -4822,11 +4730,10 @@
 
             const perms = ROLE_DEFS[currentRole].permissions;
 
-            // Stoppuhr
+            // Stoppuhr (ohne Bearbeiten)
             const sw = perms.stopwatch || {};
             document.getElementById('rolePermStopwatchView').value = sw.view || 'none';
             document.getElementById('rolePermStopwatchCreate').value = sw.create || 'none';
-            document.getElementById('rolePermStopwatchEdit').value = sw.edit || 'none';
             document.getElementById('rolePermStopwatchDelete').value = sw.delete || 'none';
 
             // Beschlagnahmungen
@@ -4850,12 +4757,20 @@
             document.getElementById('rolePermElkView').value = elk.view || 'none';
             document.getElementById('rolePermElkEdit').value = elk.edit || 'none';
 
-            // Admin
-            document.getElementById('rolePermAdmin').value = perms.admin || 'none';
+            // Admin - Checkbox
+            const isAdminPerm = perms.admin === 'write';
+            document.getElementById('rolePermAdminCheck').checked = isAdminPerm;
+            document.getElementById('adminCheckLabel').textContent = isAdminPerm ? 'Ja' : 'Nein';
 
             editor.style.display = 'block';
             document.getElementById('rolePermissionStatus').style.display = 'none';
         }
+
+        // Admin-Checkbox Toggle Label
+        document.getElementById('rolePermAdminCheck').addEventListener('change', function() {
+            document.getElementById('adminCheckLabel').textContent = this.checked ? 'Ja' : 'Nein';
+            rolePermChanged();
+        });
 
         function rolePermChanged() {
             const status = document.getElementById('rolePermissionStatus');
@@ -4874,11 +4789,12 @@
                 return;
             }
 
+            const isAdminChecked = document.getElementById('rolePermAdminCheck').checked;
+
             const perms = {
                 stopwatch: {
                     view: document.getElementById('rolePermStopwatchView').value,
                     create: document.getElementById('rolePermStopwatchCreate').value,
-                    edit: document.getElementById('rolePermStopwatchEdit').value,
                     delete: document.getElementById('rolePermStopwatchDelete').value
                 },
                 confiscations: {
@@ -4898,7 +4814,7 @@
                     view: document.getElementById('rolePermElkView').value,
                     edit: document.getElementById('rolePermElkEdit').value
                 },
-                admin: document.getElementById('rolePermAdmin').value
+                admin: isAdminChecked ? 'write' : 'none'
             };
 
             try {
@@ -4961,7 +4877,7 @@
                 icon: '🎖️',
                 color: '#3b82f6',
                 permissions: {
-                    stopwatch: { view: 'read', create: 'none', edit: 'none', delete: 'none' },
+                    stopwatch: { view: 'read', create: 'none', delete: 'none' },
                     confiscations: { view: 'read', create: 'none', edit: 'none', delete: 'none' },
                     payout: { view: 'none', edit: 'none' },
                     logs: { view: 'none' },
@@ -4991,29 +4907,33 @@
                 showToast('⚠️ System-Rollen können nicht gelöscht werden!', 'warning');
                 return;
             }
-            if (!confirm('Rolle "' + ROLE_DEFS[currentRole].label + '" wirklich löschen?')) return;
+            showConfirmModal(
+                'Rolle löschen?',
+                `Möchten Sie die Rolle "${ROLE_DEFS[currentRole].label}" wirklich löschen?`,
+                async function() {
+                    const usersSnap = await database.ref('Navy-boote/users_auth').once('value');
+                    const users = usersSnap.val() || {};
+                    const updates = {};
+                    for (const [username, userData] of Object.entries(users)) {
+                        if (userData.role === currentRole) {
+                            updates[username + '/role'] = 'admin';
+                            updates[username + '/permissions'] = ROLE_DEFS['admin'].permissions;
+                        }
+                    }
+                    if (Object.keys(updates).length > 0) {
+                        await database.ref('Navy-boote/users_auth').update(updates);
+                    }
 
-            const usersSnap = await database.ref('Navy-boote/users_auth').once('value');
-            const users = usersSnap.val() || {};
-            const updates = {};
-            for (const [username, userData] of Object.entries(users)) {
-                if (userData.role === currentRole) {
-                    updates[username + '/role'] = 'admin';
-                    updates[username + '/permissions'] = ROLE_DEFS['admin'].permissions;
+                    await database.ref('Navy-boote/roles/' + currentRole).remove();
+
+                    delete ROLE_DEFS[currentRole];
+                    await populateRoleSelect();
+                    document.getElementById('rolePermissionsEditor').style.display = 'none';
+                    showToast('🗑️ Rolle gelöscht.', 'error');
+                    renderHandbook();
+                    loadUserList();
                 }
-            }
-            if (Object.keys(updates).length > 0) {
-                await database.ref('Navy-boote/users_auth').update(updates);
-            }
-
-            await database.ref('Navy-boote/roles/' + currentRole).remove();
-
-            delete ROLE_DEFS[currentRole];
-            await populateRoleSelect();
-            document.getElementById('rolePermissionsEditor').style.display = 'none';
-            showToast('🗑️ Rolle gelöscht.', 'error');
-            renderHandbook();
-            loadUserList();
+            );
         }
 
         // =====================================================================
@@ -5218,15 +5138,20 @@
                 return;
             }
             if (ELK_FIELD_DEFS.length <= 1) { showToast('⚠️ Mindestens ein Feld muss bleiben!', 'warning'); return; }
-            if (!confirm(`Feld "${ELK_FIELD_DEFS[index].label}" wirklich löschen?`)) return;
-            const fieldId = ELK_FIELD_DEFS[index].id;
-            ELK_FIELD_DEFS.splice(index, 1);
-            elkData.forEach(card => delete card.fields[fieldId]);
-            saveElkData(elkData);
-            renderElk();
-            renderElkAdmin();
-            if (currentUser) addLog(currentUser.username, 'ELK Feld gelöscht', `Feld: ${fieldId}`);
-            showToast('🗑️ Feld gelöscht.', 'error');
+            showConfirmModal(
+                'ELK Feld löschen?',
+                `Möchten Sie das Feld "${ELK_FIELD_DEFS[index].label}" wirklich löschen?`,
+                function() {
+                    const fieldId = ELK_FIELD_DEFS[index].id;
+                    ELK_FIELD_DEFS.splice(index, 1);
+                    elkData.forEach(card => delete card.fields[fieldId]);
+                    saveElkData(elkData);
+                    renderElk();
+                    renderElkAdmin();
+                    if (currentUser) addLog(currentUser.username, 'ELK Feld gelöscht', `Feld: ${fieldId}`);
+                    showToast('🗑️ Feld gelöscht.', 'error');
+                }
+            );
         }
 
         function addElkField() {
@@ -5264,12 +5189,17 @@
             }
             const card = elkData.find(c => c.id === id);
             if (card && card.isDefault) { showToast('⚠️ Standard-ELK kann nicht gelöscht werden!', 'warning'); return; }
-            if (!confirm('ELK-Karte wirklich löschen?')) return;
-            elkData = elkData.filter(c => c.id !== id);
-            await saveElkData(elkData);
-            renderElk();
-            if (currentUser && card) await addLog(currentUser.username, 'ELK-Karte gelöscht', `Name: ${card.name}`);
-            showToast('🗑️ ELK-Karte gelöscht.', 'error');
+            showConfirmModal(
+                'ELK-Karte löschen?',
+                `Möchten Sie die ELK-Karte "${card?.name || 'Unbekannt'}" wirklich löschen?`,
+                async function() {
+                    elkData = elkData.filter(c => c.id !== id);
+                    await saveElkData(elkData);
+                    renderElk();
+                    if (currentUser && card) await addLog(currentUser.username, 'ELK-Karte gelöscht', `Name: ${card.name}`);
+                    showToast('🗑️ ELK-Karte gelöscht.', 'error');
+                }
+            );
         }
 
         async function toggleElkField(cardId, fieldId) {
@@ -5298,7 +5228,6 @@
             loadUserList();
             populateRoleSelect();
             loadBoatAdminList();
-            renderBoatcheckList();
             loadElkData();
             document.getElementById('userSearchInput').addEventListener('input', filterUserTable);
         }
@@ -5365,6 +5294,10 @@
                 console.log('🔒 Colin ist permanent gesperrt!');
                 console.log('📋 Detaillierte Beschlagnahmungs-Berechtigungen aktiv!');
                 console.log('👁️ Sichtbarkeit in der Benutzerbearbeitung integriert!');
+                console.log('✅ Logs werden nach 7 Tagen gelöscht!');
+                console.log('✅ Eigenes Lösch-Popup aktiv!');
+                console.log('✅ Admin-Berechtigung als Checkbox in Rollen integriert!');
+                console.log('✅ Bootskontrolle-Sichtbarkeit aus Admin entfernt (nur noch bei User-Bearbeitung)!');
             } catch (error) {
                 console.error('Init-Fehler:', error);
             }
