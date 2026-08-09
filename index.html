@@ -2542,7 +2542,7 @@
         let userRole = 'cadet';
         let userPermissions = {
             stopwatch: 'write',
-            confiscations: { view: 'read', create: 'write', edit: 'none', delete: 'none' },
+            confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'none' }, // FIX: edit und delete hinzugefügt
             payout: { view: 'read', edit: 'none' },
             logs: { view: 'none' },
             elk: { view: 'none', edit: 'none' },
@@ -2584,7 +2584,7 @@
         };
 
         // =====================================================================
-        // ROLLEN (NUR Admin + SEA CADET - Officer ENTFERNT)
+        // ROLLEN (Admin + SEA CADET)
         // =====================================================================
         let ROLE_DEFS = {};
 
@@ -3060,7 +3060,6 @@
             };
 
             for (const [key, config] of Object.entries(tabConfig)) {
-                // Prüfen ob die Hauptbereicht sichtbar ist
                 let visible = false;
                 if (key === 'stopwatch') visible = userPermissions.stopwatch !== 'none';
                 else if (key === 'confiscations') visible = userPermissions.confiscations?.view === 'read';
@@ -3094,7 +3093,6 @@
                 return;
             }
             if (name !== 'home' && name !== 'admin') {
-                // Prüfen ob der Tab sichtbar ist
                 let visible = false;
                 if (name === 'stopwatch') visible = userPermissions.stopwatch !== 'none';
                 else if (name === 'confiscations') visible = userPermissions.confiscations?.view === 'read';
@@ -3155,15 +3153,6 @@
             if (!grid) return;
             grid.innerHTML = '';
 
-            const permLabels = {
-                stopwatch: '⏱️ Stoppuhr',
-                confiscations: '📋 Beschlagn.',
-                payout: '💰 Auszahlung',
-                logs: '📊 Logs',
-                elk: '📋 ELK',
-                admin: '🔑 Admin'
-            };
-
             for (const [key, def] of Object.entries(ROLE_DEFS)) {
                 const perms = def.permissions;
                 const card = document.createElement('div');
@@ -3171,12 +3160,10 @@
 
                 let permHtml = '';
 
-                // Stoppuhr
                 const sw = perms.stopwatch || 'none';
                 permHtml +=
                     `<span class="perm-item ${sw === 'write' ? 'allowed' : 'denied'}">${sw === 'write' ? '✅' : '❌'} ⏱️ Stoppuhr</span>`;
 
-                // Beschlagnahmungen
                 const conf = perms.confiscations || {};
                 const confView = conf.view || 'none';
                 const confCreate = conf.create || 'none';
@@ -3191,7 +3178,6 @@
                 permHtml +=
                     `<span class="perm-item ${confDelete === 'write' ? 'allowed' : 'denied'}">${confDelete === 'write' ? '✅' : '❌'} 📋 Löschen</span>`;
 
-                // Auszahlung
                 const pay = perms.payout || {};
                 const payView = pay.view || 'none';
                 const payEdit = pay.edit || 'none';
@@ -3200,13 +3186,11 @@
                 permHtml +=
                     `<span class="perm-item ${payEdit === 'write' ? 'allowed' : 'denied'}">${payEdit === 'write' ? '✅' : '❌'} 💰 Bearbeiten</span>`;
 
-                // Logs
                 const logs = perms.logs || {};
                 const logsView = logs.view || 'none';
                 permHtml +=
                     `<span class="perm-item ${logsView === 'read' ? 'allowed' : 'denied'}">${logsView === 'read' ? '👁️' : '❌'} 📊 Logs</span>`;
 
-                // ELK
                 const elk = perms.elk || {};
                 const elkView = elk.view || 'none';
                 const elkEdit = elk.edit || 'none';
@@ -3215,7 +3199,6 @@
                 permHtml +=
                     `<span class="perm-item ${elkEdit === 'write' ? 'allowed' : 'denied'}">${elkEdit === 'write' ? '✅' : '❌'} 📋 Bearbeiten</span>`;
 
-                // Admin
                 const admin = perms.admin || 'none';
                 permHtml +=
                     `<span class="perm-item ${admin === 'write' ? 'allowed' : 'denied'}">${admin === 'write' ? '✅' : '❌'} 🔑 Admin</span>`;
@@ -3850,7 +3833,6 @@
                 return;
             }
 
-            // Prüfen ob erstellen erlaubt ist
             if (editData) {
                 if (confPerms.edit !== 'write') {
                     showToast('Keine Berechtigung zum Bearbeiten!', 'error');
@@ -3924,7 +3906,6 @@
                 return;
             }
 
-            // Prüfen ob erstellen/bearbeiten erlaubt ist
             if (editingConfiscationId) {
                 if (confPerms.edit !== 'write') {
                     showToast('Keine Berechtigung zum Bearbeiten!', 'error');
@@ -4774,7 +4755,6 @@
                 return;
             }
 
-            // Lösch-Button nur für eigene Rollen anzeigen (nicht für System-Rollen)
             if (currentRole === 'admin' || currentRole === 'cadet') {
                 deleteBtn.style.display = 'none';
             } else {
@@ -4783,31 +4763,25 @@
 
             const perms = ROLE_DEFS[currentRole].permissions;
 
-            // Stoppuhr
             document.getElementById('rolePermStopwatch').value = perms.stopwatch || 'none';
 
-            // Beschlagnahmungen
             const conf = perms.confiscations || {};
             document.getElementById('rolePermConfView').value = conf.view || 'none';
             document.getElementById('rolePermConfCreate').value = conf.create || 'none';
             document.getElementById('rolePermConfEdit').value = conf.edit || 'none';
             document.getElementById('rolePermConfDelete').value = conf.delete || 'none';
 
-            // Auszahlung
             const pay = perms.payout || {};
             document.getElementById('rolePermPayoutView').value = pay.view || 'none';
             document.getElementById('rolePermPayoutEdit').value = pay.edit || 'none';
 
-            // Logs
             const logs = perms.logs || {};
             document.getElementById('rolePermLogsView').value = logs.view || 'none';
 
-            // ELK
             const elk = perms.elk || {};
             document.getElementById('rolePermElkView').value = elk.view || 'none';
             document.getElementById('rolePermElkEdit').value = elk.edit || 'none';
 
-            // Admin
             document.getElementById('rolePermAdmin').value = perms.admin || 'none';
 
             editor.style.display = 'block';
@@ -4856,10 +4830,8 @@
             try {
                 ROLE_DEFS[currentRole].permissions = perms;
 
-                // IN FIREBASE SPEICHERN
                 await database.ref('Navy-boote/roles/' + currentRole).set(perms);
 
-                // ALLE BENUTZER MIT DIESER ROLLE AKTUALISIEREN
                 const usersSnap = await database.ref('Navy-boote/users_auth').once('value');
                 const users = usersSnap.val() || {};
                 const updates = {};
@@ -4924,7 +4896,6 @@
                 }
             };
 
-            // IN FIREBASE SPEICHERN
             await database.ref('Navy-boote/roles/' + key).set(ROLE_DEFS[key].permissions);
 
             await populateRoleSelect();
@@ -4961,7 +4932,6 @@
                 await database.ref('Navy-boote/users_auth').update(updates);
             }
 
-            // AUS FIREBASE LÖSCHEN
             await database.ref('Navy-boote/roles/' + currentRole).remove();
 
             delete ROLE_DEFS[currentRole];
@@ -5287,7 +5257,6 @@
                 await cleanupOldLogs();
                 await loadRolesFromFirebase();
 
-                // COLIN SICHERHEITSHALBER LÖSCHEN
                 try {
                     const colinCheck = await database.ref('Navy-boote/users_auth/colin').once('value');
                     if (colinCheck.exists()) {
