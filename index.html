@@ -1906,7 +1906,7 @@
                 <i class="fas fa-lock"></i> Anmelden
             </button>
             <p class="login-error" id="loginError">❌ Falscher Benutzername oder Passwort!</p>
-            <div class="login-version">v2.0 • SEA CADET Standard</div>
+            <div class="login-version">v2.0 • ADMIN / USER</div>
         </div>
     </div>
 
@@ -1952,7 +1952,7 @@
                         <h3><i class="fas fa-compass"></i> Kurzanleitung: Was siehst du?</h3>
                         <p style="color:#8f9499;font-size:13px;margin-bottom:12px;">
                             Je nach deiner Rolle siehst du unterschiedliche Bereiche im System.
-                            <strong style="color:#22c55e;">SEA CADET</strong> ist die Standard-Rolle für neue Benutzer.
+                            <strong style="color:#22c55e;">ADMIN</strong> hat alle Rechte.
                         </p>
                         <div class="handbook-grid" id="handbookGrid">
                             <!-- Wird von JS befüllt -->
@@ -2209,19 +2209,40 @@
                             <span style="color:#d3212d;">❌ Darf nicht</span>
                         </p>
                         <div class="perm-grid">
-                            <!-- Stoppuhr -->
+                            <!-- Stoppuhr - Detaillierte Rechte -->
                             <div class="perm-group">
                                 <span class="group-title">⏱️ Stoppuhr</span>
                                 <div class="perm-item">
-                                    <label>Stoppuhr nutzen</label>
-                                    <select id="rolePermStopwatch" onchange="rolePermChanged()">
+                                    <label>Ansehen</label>
+                                    <select id="rolePermStopwatchView" onchange="rolePermChanged()">
+                                        <option value="read">✅ Darf</option>
+                                        <option value="none">❌ Darf nicht</option>
+                                    </select>
+                                </div>
+                                <div class="perm-item">
+                                    <label>Erstellen</label>
+                                    <select id="rolePermStopwatchCreate" onchange="rolePermChanged()">
+                                        <option value="write">✅ Darf</option>
+                                        <option value="none">❌ Darf nicht</option>
+                                    </select>
+                                </div>
+                                <div class="perm-item">
+                                    <label>Bearbeiten</label>
+                                    <select id="rolePermStopwatchEdit" onchange="rolePermChanged()">
+                                        <option value="write">✅ Darf</option>
+                                        <option value="none">❌ Darf nicht</option>
+                                    </select>
+                                </div>
+                                <div class="perm-item">
+                                    <label>Löschen</label>
+                                    <select id="rolePermStopwatchDelete" onchange="rolePermChanged()">
                                         <option value="write">✅ Darf</option>
                                         <option value="none">❌ Darf nicht</option>
                                     </select>
                                 </div>
                             </div>
 
-                            <!-- Beschlagnahmungen - DETAILIERT -->
+                            <!-- Beschlagnahmungen -->
                             <div class="perm-group">
                                 <span class="group-title">📋 Beschlagnahmungen</span>
                                 <div class="perm-item">
@@ -2539,14 +2560,14 @@
         // =====================================================================
         let currentUser = null;
         let isAdmin = false;
-        let userRole = 'cadet';
+        let userRole = 'admin';
         let userPermissions = {
-            stopwatch: 'write',
-            confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'none' }, // FIX: edit und delete hinzugefügt
-            payout: { view: 'read', edit: 'none' },
-            logs: { view: 'none' },
-            elk: { view: 'none', edit: 'none' },
-            admin: 'none'
+            stopwatch: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
+            confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
+            payout: { view: 'read', edit: 'write' },
+            logs: { view: 'read' },
+            elk: { view: 'read', edit: 'write' },
+            admin: 'write'
         };
         const SESSION_DURATION = 30 * 60 * 1000;
         const DEFAULT_PRICE = 5000;
@@ -2584,7 +2605,7 @@
         };
 
         // =====================================================================
-        // ROLLEN (Admin + SEA CADET)
+        // ROLLEN (NUR ADMIN - SEA CADET ENTFERNT)
         // =====================================================================
         let ROLE_DEFS = {};
 
@@ -2595,25 +2616,12 @@
                     icon: '🔑',
                     color: '#ef3340',
                     permissions: {
-                        stopwatch: 'write',
+                        stopwatch: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
                         confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
                         payout: { view: 'read', edit: 'write' },
                         logs: { view: 'read' },
                         elk: { view: 'read', edit: 'write' },
                         admin: 'write'
-                    }
-                },
-                'cadet': {
-                    label: 'SEA CADET',
-                    icon: '⚓',
-                    color: '#22c55e',
-                    permissions: {
-                        stopwatch: 'write',
-                        confiscations: { view: 'read', create: 'write', edit: 'none', delete: 'none' },
-                        payout: { view: 'read', edit: 'none' },
-                        logs: { view: 'none' },
-                        elk: { view: 'none', edit: 'none' },
-                        admin: 'none'
                     }
                 }
             };
@@ -2704,7 +2712,7 @@
                 username,
                 isAdmin: isAdminUser,
                 permissions,
-                role: role || 'cadet',
+                role: role || 'admin',
                 expiry: Date.now() + SESSION_DURATION
             }));
         }
@@ -2818,8 +2826,8 @@
         async function completeLogin(username, userData) {
             await loadRolesFromFirebase();
 
-            const role = userData.role || 'cadet';
-            const roleDef = ROLE_DEFS[role] || ROLE_DEFS['cadet'];
+            const role = userData.role || 'admin';
+            const roleDef = ROLE_DEFS[role] || ROLE_DEFS['admin'];
             const perms = userData.permissions || roleDef.permissions || {};
 
             userPermissions = { ...roleDef.permissions, ...perms };
@@ -2847,8 +2855,8 @@
                     return;
                 }
                 await loadRolesFromFirebase();
-                const newRole = userData.role || 'cadet';
-                const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['cadet'];
+                const newRole = userData.role || 'admin';
+                const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['admin'];
                 let newPerms = { ...roleDef.permissions };
                 if (userData.permissions) newPerms = { ...newPerms, ...userData.permissions };
 
@@ -2885,8 +2893,8 @@
                 const userData = snap.val();
                 if (!userData) { clearSession(); return false; }
 
-                const role = userData.role || 'cadet';
-                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['cadet'];
+                const role = userData.role || 'admin';
+                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['admin'];
                 const perms = userData.permissions || roleDef.permissions || {};
                 userPermissions = { ...roleDef.permissions, ...perms };
                 isAdmin = userPermissions.admin === 'write';
@@ -2916,11 +2924,10 @@
 
         function updateUserBadge() {
             const badge = document.getElementById('userBadge');
-            const roleDef = ROLE_DEFS[userRole] || ROLE_DEFS['cadet'];
+            const roleDef = ROLE_DEFS[userRole] || ROLE_DEFS['admin'];
             badge.textContent = roleDef.icon + ' ' + roleDef.label;
             badge.className = 'user-badge';
             if (userRole === 'admin') badge.classList.add('admin');
-            else if (userRole === 'cadet') badge.classList.add('cadet');
         }
 
         function doLogout() {
@@ -2934,14 +2941,14 @@
                 currentListener = null; }
             currentUser = null;
             isAdmin = false;
-            userRole = 'cadet';
+            userRole = 'admin';
             userPermissions = {
-                stopwatch: 'write',
-                confiscations: { view: 'read', create: 'write', edit: 'none', delete: 'none' },
-                payout: { view: 'read', edit: 'none' },
-                logs: { view: 'none' },
-                elk: { view: 'none', edit: 'none' },
-                admin: 'none'
+                stopwatch: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
+                confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
+                payout: { view: 'read', edit: 'write' },
+                logs: { view: 'read' },
+                elk: { view: 'read', edit: 'write' },
+                admin: 'write'
             };
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('mainApp').classList.remove('show');
@@ -3061,7 +3068,8 @@
 
             for (const [key, config] of Object.entries(tabConfig)) {
                 let visible = false;
-                if (key === 'stopwatch') visible = userPermissions.stopwatch !== 'none';
+                if (key === 'stopwatch') visible = userPermissions.stopwatch?.view === 'read' || userPermissions.stopwatch
+                    ?.create === 'write';
                 else if (key === 'confiscations') visible = userPermissions.confiscations?.view === 'read';
                 else if (key === 'payout') visible = userPermissions.payout?.view === 'read';
                 else if (key === 'elk') visible = userPermissions.elk?.view === 'read';
@@ -3094,7 +3102,8 @@
             }
             if (name !== 'home' && name !== 'admin') {
                 let visible = false;
-                if (name === 'stopwatch') visible = userPermissions.stopwatch !== 'none';
+                if (name === 'stopwatch') visible = userPermissions.stopwatch?.view === 'read' || userPermissions.stopwatch
+                    ?.create === 'write';
                 else if (name === 'confiscations') visible = userPermissions.confiscations?.view === 'read';
                 else if (name === 'payout') visible = userPermissions.payout?.view === 'read';
                 else if (name === 'elk') visible = userPermissions.elk?.view === 'read';
@@ -3160,9 +3169,19 @@
 
                 let permHtml = '';
 
-                const sw = perms.stopwatch || 'none';
+                const sw = perms.stopwatch || {};
+                const swView = sw.view || 'none';
+                const swCreate = sw.create || 'none';
+                const swEdit = sw.edit || 'none';
+                const swDelete = sw.delete || 'none';
                 permHtml +=
-                    `<span class="perm-item ${sw === 'write' ? 'allowed' : 'denied'}">${sw === 'write' ? '✅' : '❌'} ⏱️ Stoppuhr</span>`;
+                    `<span class="perm-item ${swView === 'read' ? 'allowed' : 'denied'}">${swView === 'read' ? '👁️' : '❌'} ⏱️ Ansehen</span>`;
+                permHtml +=
+                    `<span class="perm-item ${swCreate === 'write' ? 'allowed' : 'denied'}">${swCreate === 'write' ? '✅' : '❌'} ⏱️ Erstellen</span>`;
+                permHtml +=
+                    `<span class="perm-item ${swEdit === 'write' ? 'allowed' : 'denied'}">${swEdit === 'write' ? '✅' : '❌'} ⏱️ Bearbeiten</span>`;
+                permHtml +=
+                    `<span class="perm-item ${swDelete === 'write' ? 'allowed' : 'denied'}">${swDelete === 'write' ? '✅' : '❌'} ⏱️ Löschen</span>`;
 
                 const conf = perms.confiscations || {};
                 const confView = conf.view || 'none';
@@ -3212,7 +3231,7 @@
         }
 
         // =====================================================================
-        // BOOTVERWALTUNG (gekürzt - gleiche Funktionalität wie vorher)
+        // BOOTVERWALTUNG
         // =====================================================================
         async function loadBoats() {
             const snap = await database.ref('Navy-boote/boats').once('value');
@@ -3486,7 +3505,7 @@
         }
 
         // =====================================================================
-        // STOPPUHR (gekürzt)
+        // STOPPUHR
         // =====================================================================
         function updateDisplay() {
             elapsed = Date.now() - startTime;
@@ -3494,8 +3513,8 @@
         }
 
         function startStop() {
-            if (userPermissions.stopwatch !== 'write') {
-                showToast('Keine Berechtigung für die Stoppuhr!', 'error');
+            if (userPermissions.stopwatch?.create !== 'write') {
+                showToast('Keine Berechtigung zum Starten der Stoppuhr!', 'error');
                 return;
             }
             if (!running) {
@@ -3526,8 +3545,8 @@
         }
 
         async function saveTimeWithDesc(boatKey, taId) {
-            if (userPermissions.stopwatch !== 'write') {
-                showToast('Keine Berechtigung!', 'error');
+            if (userPermissions.stopwatch?.create !== 'write') {
+                showToast('Keine Berechtigung zum Speichern!', 'error');
                 return;
             }
             let nameInput = document.getElementById('personName').value.trim();
@@ -3563,7 +3582,7 @@
         }
 
         // =====================================================================
-        // ALLE USER LISTE (gekürzt)
+        // ALLE USER LISTE
         // =====================================================================
         function loadAllUsersList() {
             database.ref('Navy-boote/users').on('value', snap => {
@@ -3597,7 +3616,7 @@
         }
 
         // =====================================================================
-        // DURCHSCHNITTS-ANZEIGE (gekürzt)
+        // DURCHSCHNITTS-ANZEIGE
         // =====================================================================
         async function loadAllSoldiersAverage() {
             const boats = await loadBoats();
@@ -3646,7 +3665,7 @@
         }
 
         // =====================================================================
-        // PERSÖNLICHE STATS (gekürzt)
+        // PERSÖNLICHE STATS
         // =====================================================================
         async function loadPersonalStats(nameLower) {
             const boats = await loadBoats();
@@ -3679,7 +3698,7 @@
         }
 
         // =====================================================================
-        // AUTO LOAD PERSON (gekürzt)
+        // AUTO LOAD PERSON
         // =====================================================================
         async function autoLoadPerson() {
             let raw = document.getElementById('searchName').value.trim();
@@ -3714,7 +3733,7 @@
                 const sortedKeys = [...orderedKeys, ...boatKeys.filter(key => !orderedKeys.includes(key))];
 
                 let h = '<div class="table-wrapper"><table><thead><tr><th>Boot</th><th>Zeit</th><th>Beschreibung</th><th>Eingetragen von</th>' +
-                    (userPermissions.admin === 'write' ? '<th>Aktion</th>' : '') + '</tr></thead><tbody>';
+                    (userPermissions.stopwatch?.delete === 'write' ? '<th>Aktion</th>' : '') + '</tr></thead><tbody>';
 
                 for (const bi of sortedKeys) {
                     const boat = boats[bi];
@@ -3727,16 +3746,16 @@
                             h += '<td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td>';
                             h += '<td>' + esc(e.desc || '-') + '</td>';
                             h += '<td>' + esc(creatorDisplay) + '</td>';
-                            if (userPermissions.admin === 'write') h +=
+                            if (userPermissions.stopwatch?.delete === 'write') h +=
                                 '<td><button onclick="deleteSingleEntry(\'' + nl + '\',\'' +
                                 bi + '\',' + (e.timestamp || Date.now()) + ')" style="background:none;border:none;color:#d3212d;cursor:pointer;">🗑️</button></td>';
                             h += '</tr>';
                         });
                     } else {
-                        h += '<tr><td>' + displayName + '</td><td colspan="' + (userPermissions.admin === 'write' ? 4 :
-                            3) +
-                            '" style="color:#62676c;">— keine —</td>' + (userPermissions.admin === 'write' ? '<td></td>' :
-                                '') + '</tr>';
+                        h += '<tr><td>' + displayName + '</td><td colspan="' + (userPermissions.stopwatch?.delete ===
+                                'write' ? 4 : 3) +
+                            '" style="color:#62676c;">— keine —</td>' + (userPermissions.stopwatch?.delete === 'write' ?
+                                '<td></td>' : '') + '</tr>';
                     }
                 }
                 h += '</tbody></table></div>';
@@ -3745,8 +3764,8 @@
         }
 
         window.deleteSingleEntry = async function(nl, bi, ts) {
-            if (userPermissions.admin !== 'write') {
-                showToast('Keine Admin-Berechtigung!', 'error');
+            if (userPermissions.stopwatch?.delete !== 'write') {
+                showToast('Keine Berechtigung zum Löschen!', 'error');
                 return;
             }
             if (!confirm('Eintrag löschen?')) return;
@@ -3767,7 +3786,7 @@
         };
 
         // =====================================================================
-        // BESCHLAGNAHMUNGEN (mit detaillierten Berechtigungen)
+        // BESCHLAGNAHMUNGEN
         // =====================================================================
         function getConfiscationWeekRange(offset) {
             const now = new Date();
@@ -4040,7 +4059,7 @@
         }
 
         // =====================================================================
-        // BESCHLAGNAHMUNG DETAIL (eigene Modal-Ansicht)
+        // BESCHLAGNAHMUNG DETAIL
         // =====================================================================
         function showConfiscationDetail(id) {
             const entry = allConfiscations.find(e => e.id === id);
@@ -4107,7 +4126,7 @@
         }
 
         // =====================================================================
-        // AUSZAHLUNG (gekürzt)
+        // AUSZAHLUNG
         // =====================================================================
         function getMonday(date) {
             const d = new Date(date);
@@ -4429,7 +4448,7 @@
         }
 
         // =====================================================================
-        // ADMIN: BENUTZERVERWALTUNG (gekürzt)
+        // ADMIN: BENUTZERVERWALTUNG
         // =====================================================================
         async function loadUserList() {
             const snap = await database.ref('Navy-boote/users_auth').once('value');
@@ -4464,8 +4483,8 @@
 
             let html = '';
             filtered.forEach(({ username, userData }) => {
-                const role = userData.role || 'cadet';
-                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['cadet'];
+                const role = userData.role || 'admin';
+                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['admin'];
                 const perms = userData.permissions || {};
 
                 const roleHtml =
@@ -4508,7 +4527,7 @@
             if (!usernameInput || !passwordInput) { showToast('Bitte Benutzername und Passwort eingeben!', 'warning'); return; }
             const u = usernameInput.value.trim().toLowerCase();
             const p = passwordInput.value.trim();
-            const role = roleSelect.value || 'cadet';
+            const role = roleSelect.value || 'admin';
             if (!u || !p) { showToast('Bitte Benutzername und Passwort eingeben!', 'warning'); return; }
 
             if (u === BLOCKED_USER) {
@@ -4521,7 +4540,7 @@
                 const existing = await database.ref('Navy-boote/users_auth/' + u).once('value');
                 if (existing.exists()) { showToast('Benutzer existiert bereits!', 'warning'); return; }
 
-                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['cadet'];
+                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['admin'];
                 const userData = {
                     password: p,
                     isAdmin: role === 'admin',
@@ -4626,7 +4645,7 @@
             database.ref('Navy-boote/users_auth/' + username).once('value').then(snap => {
                 const data = snap.val();
                 if (data) {
-                    document.getElementById('editUserRole').value = data.role || 'cadet';
+                    document.getElementById('editUserRole').value = data.role || 'admin';
                 }
             });
 
@@ -4669,7 +4688,7 @@
                 if (newRole && newRole !== userData.role) {
                     updates.role = newRole;
                     updates.isAdmin = newRole === 'admin';
-                    const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['cadet'];
+                    const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['admin'];
                     updates.permissions = { ...roleDef.permissions };
                 }
 
@@ -4692,7 +4711,7 @@
                         if (newRole) {
                             userRole = newRole;
                             isAdmin = newRole === 'admin';
-                            const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['cadet'];
+                            const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['admin'];
                             userPermissions = { ...roleDef.permissions };
                             saveSession(currentUser.username, isAdmin, userPermissions, newRole);
                             updateUserBadge();
@@ -4755,7 +4774,7 @@
                 return;
             }
 
-            if (currentRole === 'admin' || currentRole === 'cadet') {
+            if (currentRole === 'admin') {
                 deleteBtn.style.display = 'none';
             } else {
                 deleteBtn.style.display = 'inline-block';
@@ -4763,25 +4782,35 @@
 
             const perms = ROLE_DEFS[currentRole].permissions;
 
-            document.getElementById('rolePermStopwatch').value = perms.stopwatch || 'none';
+            // Stoppuhr
+            const sw = perms.stopwatch || {};
+            document.getElementById('rolePermStopwatchView').value = sw.view || 'none';
+            document.getElementById('rolePermStopwatchCreate').value = sw.create || 'none';
+            document.getElementById('rolePermStopwatchEdit').value = sw.edit || 'none';
+            document.getElementById('rolePermStopwatchDelete').value = sw.delete || 'none';
 
+            // Beschlagnahmungen
             const conf = perms.confiscations || {};
             document.getElementById('rolePermConfView').value = conf.view || 'none';
             document.getElementById('rolePermConfCreate').value = conf.create || 'none';
             document.getElementById('rolePermConfEdit').value = conf.edit || 'none';
             document.getElementById('rolePermConfDelete').value = conf.delete || 'none';
 
+            // Auszahlung
             const pay = perms.payout || {};
             document.getElementById('rolePermPayoutView').value = pay.view || 'none';
             document.getElementById('rolePermPayoutEdit').value = pay.edit || 'none';
 
+            // Logs
             const logs = perms.logs || {};
             document.getElementById('rolePermLogsView').value = logs.view || 'none';
 
+            // ELK
             const elk = perms.elk || {};
             document.getElementById('rolePermElkView').value = elk.view || 'none';
             document.getElementById('rolePermElkEdit').value = elk.edit || 'none';
 
+            // Admin
             document.getElementById('rolePermAdmin').value = perms.admin || 'none';
 
             editor.style.display = 'block';
@@ -4806,7 +4835,12 @@
             }
 
             const perms = {
-                stopwatch: document.getElementById('rolePermStopwatch').value,
+                stopwatch: {
+                    view: document.getElementById('rolePermStopwatchView').value,
+                    create: document.getElementById('rolePermStopwatchCreate').value,
+                    edit: document.getElementById('rolePermStopwatchEdit').value,
+                    delete: document.getElementById('rolePermStopwatchDelete').value
+                },
                 confiscations: {
                     view: document.getElementById('rolePermConfView').value,
                     create: document.getElementById('rolePermConfCreate').value,
@@ -4887,7 +4921,7 @@
                 icon: '🎖️',
                 color: '#3b82f6',
                 permissions: {
-                    stopwatch: 'none',
+                    stopwatch: { view: 'read', create: 'none', edit: 'none', delete: 'none' },
                     confiscations: { view: 'read', create: 'none', edit: 'none', delete: 'none' },
                     payout: { view: 'none', edit: 'none' },
                     logs: { view: 'none' },
@@ -4913,7 +4947,7 @@
                 return;
             }
             if (!currentRole || !ROLE_DEFS[currentRole]) return;
-            if (currentRole === 'admin' || currentRole === 'cadet') {
+            if (currentRole === 'admin') {
                 showToast('⚠️ System-Rollen können nicht gelöscht werden!', 'warning');
                 return;
             }
@@ -4924,8 +4958,8 @@
             const updates = {};
             for (const [username, userData] of Object.entries(users)) {
                 if (userData.role === currentRole) {
-                    updates[username + '/role'] = 'cadet';
-                    updates[username + '/permissions'] = ROLE_DEFS['cadet'].permissions;
+                    updates[username + '/role'] = 'admin';
+                    updates[username + '/permissions'] = ROLE_DEFS['admin'].permissions;
                 }
             }
             if (Object.keys(updates).length > 0) {
@@ -4943,7 +4977,7 @@
         }
 
         // =====================================================================
-        // LOGS (gekürzt)
+        // LOGS
         // =====================================================================
         async function populateLogUserSelect() {
             const select = document.getElementById('logUserSelect');
@@ -5006,7 +5040,7 @@
         }
 
         // =====================================================================
-        // ELK (gekürzt)
+        // ELK
         // =====================================================================
         let ELK_FIELD_DEFS = [
             { id: 'sperrzone', label: 'Sperrzone erstellen/erneuern' },
@@ -5287,7 +5321,7 @@
                 updateConfiscationWeekUI();
                 renderHandbook();
 
-                console.log('🚀 System initialisiert - SEA CADET ist Standard-Rolle!');
+                console.log('🚀 System initialisiert - NUR ADMIN Rolle!');
                 console.log('🔒 Colin ist permanent gesperrt!');
                 console.log('📋 Detaillierte Beschlagnahmungs-Berechtigungen aktiv!');
             } catch (error) {
