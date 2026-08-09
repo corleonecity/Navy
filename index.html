@@ -549,7 +549,7 @@
         }
 
         /* ============================================================
-                   KURZANLEITUNG (Handbook) - NUR KATEGORIE-ERKLÄRUNGEN FÜR SICHTBARE BEREICHE
+                   KURZANLEITUNG (Handbook)
                    ============================================================ */
         .handbook-section {
             background: #030303;
@@ -600,6 +600,142 @@
             color: #8f9499;
             margin-top: 4px;
             line-height: 1.4;
+        }
+
+        /* ============================================================
+                   INTERESSENTEN
+                   ============================================================ */
+        .interessenten-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        .interessenten-header .filter-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .interessenten-header .filter-group label {
+            color: #8f9499;
+            font-size: 13px;
+        }
+        .interessenten-header .filter-group select,
+        .interessenten-header .filter-group input {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #303030;
+            background: #050505;
+            color: #ffffff;
+            font-size: 13px;
+        }
+        .interessenten-header .filter-group input:focus,
+        .interessenten-header .filter-group select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .interessenten-table-wrap {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #222;
+            border-radius: 8px;
+            margin-top: 8px;
+        }
+        .interessenten-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            table-layout: fixed;
+        }
+        .interessenten-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        .interessenten-table th {
+            background: #0d0d0d;
+            border-bottom: 2px solid #333;
+            padding: 8px 10px;
+            color: #ffaa33;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+        .interessenten-table th:nth-child(1),
+        .interessenten-table td:nth-child(1) {
+            width: 28%;
+        }
+        .interessenten-table th:nth-child(2),
+        .interessenten-table td:nth-child(2) {
+            width: 22%;
+        }
+        .interessenten-table th:nth-child(3),
+        .interessenten-table td:nth-child(3) {
+            width: 25%;
+        }
+        .interessenten-table th:nth-child(4),
+        .interessenten-table td:nth-child(4) {
+            width: 12%;
+        }
+        .interessenten-table th:nth-child(5),
+        .interessenten-table td:nth-child(5) {
+            width: 13%;
+        }
+
+        .interessenten-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #1a1a1a;
+            color: #dbe2ea;
+            vertical-align: middle;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+        .interessenten-table tr:hover td {
+            background: #0a0a0a;
+        }
+
+        .interessenten-table .status-badge {
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+            display: inline-block;
+            white-space: nowrap;
+        }
+        .interessenten-table .status-badge.active {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        .interessenten-table .status-badge.archived {
+            background: rgba(255, 170, 51, 0.12);
+            color: #ffaa33;
+            border: 1px solid rgba(255, 170, 51, 0.2);
+        }
+        .interessenten-table .actions-cell {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+        }
+        .interessenten-table .name-cell {
+            font-weight: 600;
+            color: #dbeafe;
+        }
+        .interessenten-table .notiz-cell {
+            font-size: 12px;
+            color: #8f9499;
+            max-height: 40px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .interessenten-table .telefon-cell {
+            color: #9cc7ff;
         }
 
         /* ============================================================
@@ -965,7 +1101,7 @@
             border: 1px solid rgba(255, 170, 51, 0.2);
         }
 
-        /* Permissions Grid - DETAILIERTE BERECHTIGUNGEN */
+        /* Permissions Grid */
         .perm-grid {
             display: flex;
             flex-wrap: wrap;
@@ -1011,7 +1147,6 @@
             font-size: 12px;
             min-width: 60px;
         }
-        /* Admin-Checkbox im Perm-Grid */
         .perm-grid .perm-group .perm-item input[type="checkbox"] {
             width: 18px;
             height: 18px;
@@ -1422,7 +1557,7 @@
         }
 
         /* ============================================================
-                   BESCHLAGNAHMUNG DETAIL - OPTIMIERTES LAYOUT
+                   BESCHLAGNAHMUNG DETAIL
                    ============================================================ */
         .detail-grid {
             display: grid;
@@ -1898,6 +2033,34 @@
             .detail-grid {
                 grid-template-columns: 1fr;
             }
+            .interessenten-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .interessenten-table th,
+            .interessenten-table td {
+                padding: 4px 6px;
+                font-size: 11px;
+            }
+            .interessenten-table .actions-cell {
+                flex-direction: row;
+                gap: 2px;
+            }
+            .interessenten-table th:nth-child(1),
+            .interessenten-table td:nth-child(1),
+            .interessenten-table th:nth-child(2),
+            .interessenten-table td:nth-child(2),
+            .interessenten-table th:nth-child(3),
+            .interessenten-table td:nth-child(3),
+            .interessenten-table th:nth-child(4),
+            .interessenten-table td:nth-child(4),
+            .interessenten-table th:nth-child(5),
+            .interessenten-table td:nth-child(5) {
+                width: auto;
+            }
+            .interessenten-table .notiz-cell {
+                max-width: 80px;
+            }
         }
     </style>
 </head>
@@ -2018,6 +2181,54 @@
                             <div id="resultTable"><p class="text-muted">🔍 Wähle eine Person aus oder suche.</p></div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            TAB: INTERESSENTEN
+            ============================================================ -->
+            <div id="tab-interessenten" class="tab-content">
+                <div class="page-header">
+                    <div>
+                        <h3 style="color:#22c55e;"><i class="fas fa-phone"></i> Interessenten</h3>
+                        <span class="text-muted" style="font-size:13px;">Verwalte alle Interessenten mit Kontaktdaten</span>
+                    </div>
+                    <button class="btn-success" id="newInteressentBtn" onclick="openNewInteressentModal()">
+                        <i class="fas fa-plus"></i> Neuer Interessent
+                    </button>
+                </div>
+
+                <div class="interessenten-header">
+                    <div class="filter-group">
+                        <label>📋 Status:</label>
+                        <select id="interessentFilterStatus" onchange="renderInteressenten()">
+                            <option value="all">Alle</option>
+                            <option value="active" selected>Aktiv</option>
+                            <option value="archived">Archiviert</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>🔍 Suche:</label>
+                        <input type="text" id="interessentSearchInput" placeholder="Name oder Telefon..." oninput="renderInteressenten()" style="min-width:200px;">
+                        <span style="color:#62676c;font-size:12px;" id="interessentCountDisplay">0 Einträge</span>
+                    </div>
+                </div>
+
+                <div class="interessenten-table-wrap">
+                    <table class="interessenten-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Telefon</th>
+                                <th>Notiz</th>
+                                <th>Status</th>
+                                <th>Aktionen</th>
+                            </tr>
+                        </thead>
+                        <tbody id="interessentenTableBody">
+                            <tr><td colspan="5" style="text-align:center;color:#62676c;padding:20px;">Laden...</td></tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -2201,7 +2412,7 @@
                     </div>
                 </div>
 
-                <!-- ROLLEN & BERECHTIGUNGEN - DETAILIERT -->
+                <!-- ROLLEN & BERECHTIGUNGEN -->
                 <div class="admin-section" style="border-left-color:#ffaa33;">
                     <h4 style="color:#ffaa33;"><i class="fas fa-user-tag"></i> Rollen & Berechtigungen</h4>
 
@@ -2217,14 +2428,13 @@
                         <button onclick="deleteRole()" class="btn-danger btn-sm" style="display:none;" id="deleteRoleBtn"><i class="fas fa-trash"></i> Löschen</button>
                     </div>
 
-                    <!-- DETAILIERTE BERECHTIGUNGEN -->
                     <div id="rolePermissionsEditor" style="display:none;margin-top:8px;">
                         <p style="color:#8f9499;font-size:12px;margin-bottom:8px;">
                             <span style="color:#22c55e;">✅ Darf</span> &nbsp;
                             <span style="color:#d3212d;">❌ Darf nicht</span>
                         </p>
                         <div class="perm-grid">
-                            <!-- Stoppuhr - NUR Ansehen, Erstellen, Löschen (kein Bearbeiten) -->
+                            <!-- Stoppuhr -->
                             <div class="perm-group">
                                 <span class="group-title">⏱️ Stoppuhr</span>
                                 <div class="perm-item">
@@ -2244,6 +2454,39 @@
                                 <div class="perm-item">
                                     <label>Löschen</label>
                                     <select id="rolePermStopwatchDelete" onchange="rolePermChanged()">
+                                        <option value="write">✅ Darf</option>
+                                        <option value="none">❌ Darf nicht</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Interessenten -->
+                            <div class="perm-group">
+                                <span class="group-title">📞 Interessenten</span>
+                                <div class="perm-item">
+                                    <label>Ansehen</label>
+                                    <select id="rolePermInteressentView" onchange="rolePermChanged()">
+                                        <option value="read">✅ Darf</option>
+                                        <option value="none">❌ Darf nicht</option>
+                                    </select>
+                                </div>
+                                <div class="perm-item">
+                                    <label>Hinzufügen</label>
+                                    <select id="rolePermInteressentCreate" onchange="rolePermChanged()">
+                                        <option value="write">✅ Darf</option>
+                                        <option value="none">❌ Darf nicht</option>
+                                    </select>
+                                </div>
+                                <div class="perm-item">
+                                    <label>Archivieren</label>
+                                    <select id="rolePermInteressentArchive" onchange="rolePermChanged()">
+                                        <option value="write">✅ Darf</option>
+                                        <option value="none">❌ Darf nicht</option>
+                                    </select>
+                                </div>
+                                <div class="perm-item">
+                                    <label>Löschen</label>
+                                    <select id="rolePermInteressentDelete" onchange="rolePermChanged()">
                                         <option value="write">✅ Darf</option>
                                         <option value="none">❌ Darf nicht</option>
                                     </select>
@@ -2333,7 +2576,7 @@
                                 </div>
                             </div>
 
-                            <!-- Admin - JETZT ALS CHECKBOX -->
+                            <!-- Admin -->
                             <div class="perm-group">
                                 <span class="group-title">🔑 Admin</span>
                                 <div class="perm-item">
@@ -2384,6 +2627,29 @@
                 </div>
             </div>
 
+        </div>
+    </div>
+
+    <!-- ============================================================
+    MODAL: INTERESSENT
+    ============================================================ -->
+    <div class="modal-overlay" id="interessentModalOverlay">
+        <div class="modal" style="max-width:500px;">
+            <button class="close-modal-x" onclick="closeInteressentModal()">✕</button>
+            <h3 id="interessentModalTitle"><i class="fas fa-phone"></i> Interessent verwalten</h3>
+            <div class="modal-row">
+                <div class="modal-field"><label>👤 Name *</label><input type="text" id="interessentName" placeholder="z.B. Max Mustermann"></div>
+            </div>
+            <div class="modal-row">
+                <div class="modal-field"><label>📞 Telefon *</label><input type="text" id="interessentTelefon" placeholder="z.B. +49 123 456789"></div>
+            </div>
+            <div class="modal-row">
+                <div class="modal-field"><label>📝 Notiz (optional)</label><textarea id="interessentNotiz" rows="2" placeholder="Zusätzliche Informationen..."></textarea></div>
+            </div>
+            <div class="modal-actions">
+                <button onclick="closeInteressentModal()" class="btn-sm"><i class="fas fa-times"></i> Abbrechen</button>
+                <button onclick="saveInteressent()" class="btn-success"><i class="fas fa-save"></i> Speichern</button>
+            </div>
         </div>
     </div>
 
@@ -2464,7 +2730,7 @@
     </div>
 
     <!-- ============================================================
-    MODAL: DETAIL BESCHLAGNAHMUNG - OPTIMIERT
+    MODAL: DETAIL BESCHLAGNAHMUNG
     ============================================================ -->
     <div class="modal-overlay" id="confiscationDetailOverlay">
         <div class="modal" style="max-width:750px;">
@@ -2501,7 +2767,7 @@
     </div>
 
     <!-- ============================================================
-    MODAL: BENUTZER BEARBEITEN (MIT SICHTBARKEIT)
+    MODAL: BENUTZER BEARBEITEN
     ============================================================ -->
     <div class="modal-overlay" id="editUserModalOverlay" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:1000;justify-content:center;align-items:center;">
         <div class="modal" style="max-width:450px;">
@@ -2512,7 +2778,6 @@
             <div class="modal-row"><div class="modal-field"><label>🎖️ Rolle</label>
                 <select id="editUserRole" style="width:100%;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;"></select>
             </div></div>
-            <!-- Sichtbarkeit in der Auszahlung -->
             <div class="modal-row">
                 <div class="modal-field" style="flex-direction:row;align-items:center;gap:12px;">
                     <label style="margin:0;cursor:pointer;color:#8f9499;font-size:13px;">👁️ In Auszahlung sichtbar:</label>
@@ -2574,6 +2839,7 @@
         let userRole = 'admin';
         let userPermissions = {
             stopwatch: { view: 'read', create: 'write', delete: 'write' },
+            interessenten: { view: 'read', create: 'write', archive: 'write', delete: 'write' },
             confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
             payout: { view: 'read', edit: 'write' },
             logs: { view: 'read' },
@@ -2592,6 +2858,7 @@
             stopwatchInterval = null,
             running = false;
         let editingConfiscationId = null;
+        let editingInteressentId = null;
         let currentPayoutWeek = '';
         let allUsernames = [];
         let userDisplayNames = {};
@@ -2601,6 +2868,7 @@
         let boatOrder = [];
         let boatCache = {};
         let allConfiscations = [];
+        let allInteressenten = [];
         let priceHistoryCache = {};
         let editingUser = null;
         let confiscationWeekOffset = 0;
@@ -2617,7 +2885,7 @@
         };
 
         // =====================================================================
-        // ROLLEN (NUR ADMIN - SEA CADET ENTFERNT)
+        // ROLLEN
         // =====================================================================
         let ROLE_DEFS = {};
 
@@ -2629,6 +2897,7 @@
                     color: '#ef3340',
                     permissions: {
                         stopwatch: { view: 'read', create: 'write', delete: 'write' },
+                        interessenten: { view: 'read', create: 'write', archive: 'write', delete: 'write' },
                         confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
                         payout: { view: 'read', edit: 'write' },
                         logs: { view: 'read' },
@@ -2717,7 +2986,7 @@
         }
 
         // =====================================================================
-        // EIGENES CONFIRM MODAL (LÖSCH-POPUP)
+        // EIGENES CONFIRM MODAL
         // =====================================================================
         function showConfirmModal(title, message, onConfirm) {
             document.getElementById('confirmModalTitle').textContent = title || 'Sind Sie sicher?';
@@ -2774,7 +3043,7 @@
         function clearSession() { localStorage.removeItem('navySession'); }
 
         // =====================================================================
-        // LOGGING - JETZT 7 TAGE
+        // LOGGING - 7 TAGE
         // =====================================================================
         async function addLog(username, action, details = '') {
             try {
@@ -2790,7 +3059,7 @@
 
         async function cleanupOldLogs() {
             try {
-                const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 Tage
+                const cutoff = Date.now() - (7 * 24 * 60 * 60 * 1000);
                 const snap = await database.ref('Navy-boote/logs').once('value');
                 const logs = snap.val();
                 if (!logs) return;
@@ -2986,6 +3255,7 @@
             userRole = 'admin';
             userPermissions = {
                 stopwatch: { view: 'read', create: 'write', delete: 'write' },
+                interessenten: { view: 'read', create: 'write', archive: 'write', delete: 'write' },
                 confiscations: { view: 'read', create: 'write', edit: 'write', delete: 'write' },
                 payout: { view: 'read', edit: 'write' },
                 logs: { view: 'read' },
@@ -3102,6 +3372,7 @@
 
             const tabConfig = {
                 'stopwatch': { icon: 'fa-stopwatch', label: 'Stoppuhr' },
+                'interessenten': { icon: 'fa-phone', label: 'Interessenten' },
                 'confiscations': { icon: 'fa-clipboard-list', label: 'Beschlagn.' },
                 'payout': { icon: 'fa-money-bill-wave', label: 'Auszahlung' },
                 'elk': { icon: 'fa-clipboard-check', label: 'ELK' },
@@ -3112,6 +3383,7 @@
                 let visible = false;
                 if (key === 'stopwatch') visible = userPermissions.stopwatch?.view === 'read' || userPermissions.stopwatch
                     ?.create === 'write';
+                else if (key === 'interessenten') visible = userPermissions.interessenten?.view === 'read';
                 else if (key === 'confiscations') visible = userPermissions.confiscations?.view === 'read';
                 else if (key === 'payout') visible = userPermissions.payout?.view === 'read';
                 else if (key === 'elk') visible = userPermissions.elk?.view === 'read';
@@ -3146,6 +3418,7 @@
                 let visible = false;
                 if (name === 'stopwatch') visible = userPermissions.stopwatch?.view === 'read' || userPermissions.stopwatch
                     ?.create === 'write';
+                else if (name === 'interessenten') visible = userPermissions.interessenten?.view === 'read';
                 else if (name === 'confiscations') visible = userPermissions.confiscations?.view === 'read';
                 else if (name === 'payout') visible = userPermissions.payout?.view === 'read';
                 else if (name === 'elk') visible = userPermissions.elk?.view === 'read';
@@ -3178,6 +3451,8 @@
                 renderBoats();
                 loadAllSoldiersAverage();
                 loadAllUsersList();
+            } else if (name === 'interessenten') {
+                loadInteressenten();
             } else if (name === 'confiscations') {
                 updateConfiscationWeekUI();
                 loadConfiscations();
@@ -3197,14 +3472,13 @@
         }
 
         // =====================================================================
-        // KURZANLEITUNG (Handbook) - NUR KATEGORIEN DIE DER USER AUCH SIEHT
+        // KURZANLEITUNG (Handbook)
         // =====================================================================
         function renderHandbook() {
             const grid = document.getElementById('handbookGrid');
             if (!grid) return;
             grid.innerHTML = '';
 
-            // Admin-Hinweis nur anzeigen wenn User Admin ist
             const adminHint = document.getElementById('adminHint');
             if (userPermissions.admin === 'write') {
                 adminHint.style.display = 'inline';
@@ -3212,13 +3486,18 @@
                 adminHint.style.display = 'none';
             }
 
-            // Alle möglichen Kategorien mit Berechtigungsprüfung
             const allCategories = [{
                 key: 'stopwatch',
                 icon: '⏱️',
                 name: 'Stoppuhr',
                 desc: 'Hier kannst du Zeiten für verschiedene Boote stoppen und speichern. Du siehst deine eigenen Zeiten und die Durchschnittszeiten aller Soldaten.',
                 visible: userPermissions.stopwatch?.view === 'read' || userPermissions.stopwatch?.create === 'write'
+            }, {
+                key: 'interessenten',
+                icon: '📞',
+                name: 'Interessenten',
+                desc: 'Verwalte alle Interessenten mit Name, Telefon und Notiz. Du kannst Einträge hinzufügen, bearbeiten, archivieren und löschen.',
+                visible: userPermissions.interessenten?.view === 'read'
             }, {
                 key: 'confiscations',
                 icon: '📋',
@@ -3251,7 +3530,6 @@
                 visible: userPermissions.admin === 'write'
             }];
 
-            // Nur sichtbare Kategorien anzeigen
             const visibleCategories = allCategories.filter(cat => cat.visible);
 
             if (visibleCategories.length === 0) {
@@ -3271,6 +3549,207 @@
                 `;
                 grid.appendChild(card);
             });
+        }
+
+        // =====================================================================
+        // INTERESSENTEN
+        // =====================================================================
+        function openNewInteressentModal(editData = null) {
+            const interPerms = userPermissions.interessenten || {};
+            if (interPerms.view !== 'read') {
+                showToast('Keine Berechtigung!', 'error');
+                return;
+            }
+
+            if (editData) {
+                if (interPerms.create !== 'write') {
+                    showToast('Keine Berechtigung zum Bearbeiten!', 'error');
+                    return;
+                }
+                editingInteressentId = editData.id;
+                document.getElementById('interessentModalTitle').innerHTML = '<i class="fas fa-edit"></i> Interessent bearbeiten';
+                document.getElementById('interessentName').value = editData.name || '';
+                document.getElementById('interessentTelefon').value = editData.telefon || '';
+                document.getElementById('interessentNotiz').value = editData.notiz || '';
+            } else {
+                if (interPerms.create !== 'write') {
+                    showToast('Keine Berechtigung zum Hinzufügen!', 'error');
+                    return;
+                }
+                editingInteressentId = null;
+                document.getElementById('interessentModalTitle').innerHTML = '<i class="fas fa-phone"></i> Neuer Interessent';
+                document.getElementById('interessentName').value = '';
+                document.getElementById('interessentTelefon').value = '';
+                document.getElementById('interessentNotiz').value = '';
+            }
+            document.getElementById('interessentModalOverlay').classList.add('show');
+        }
+
+        function closeInteressentModal() {
+            document.getElementById('interessentModalOverlay').classList.remove('show');
+            editingInteressentId = null;
+        }
+
+        async function saveInteressent() {
+            const interPerms = userPermissions.interessenten || {};
+            if (interPerms.view !== 'read') { showToast('Keine Berechtigung!', 'error'); return; }
+
+            const name = document.getElementById('interessentName').value.trim();
+            const telefon = document.getElementById('interessentTelefon').value.trim();
+            const notiz = document.getElementById('interessentNotiz').value.trim();
+
+            if (!name || !telefon) {
+                showToast('⚠️ Bitte Name und Telefon eingeben!', 'warning');
+                return;
+            }
+
+            const data = {
+                name: name,
+                telefon: telefon,
+                notiz: notiz || '',
+                archived: false,
+                createdAt: Date.now(),
+                updatedAt: Date.now()
+            };
+
+            try {
+                const ref = database.ref('Navy-boote/interessenten');
+                if (editingInteressentId) {
+                    await ref.child(editingInteressentId).update(data);
+                    if (currentUser) await addLog(currentUser.username, 'Interessent aktualisiert', `Name: ${name}`);
+                    showToast('✅ Interessent aktualisiert!', 'success');
+                } else {
+                    await ref.push(data);
+                    if (currentUser) await addLog(currentUser.username, 'Interessent hinzugefügt', `Name: ${name}`);
+                    showToast('✅ Interessent hinzugefügt!', 'success');
+                }
+                closeInteressentModal();
+                loadInteressenten();
+            } catch (error) {
+                showToast('❌ Fehler beim Speichern!', 'error');
+                console.error(error);
+            }
+        }
+
+        function loadInteressenten() {
+            database.ref('Navy-boote/interessenten').on('value', snap => {
+                const data = snap.val();
+                allInteressenten = [];
+                if (data) {
+                    Object.entries(data).forEach(([id, e]) => {
+                        allInteressenten.push({ id, ...e });
+                    });
+                }
+                renderInteressenten();
+            });
+        }
+
+        function renderInteressenten() {
+            const tbody = document.getElementById('interessentenTableBody');
+            const filterStatus = document.getElementById('interessentFilterStatus').value;
+            const searchTerm = document.getElementById('interessentSearchInput').value.toLowerCase();
+
+            let filtered = allInteressenten;
+
+            if (filterStatus === 'active') {
+                filtered = filtered.filter(i => i.archived !== true);
+            } else if (filterStatus === 'archived') {
+                filtered = filtered.filter(i => i.archived === true);
+            }
+
+            if (searchTerm) {
+                filtered = filtered.filter(i =>
+                    (i.name || '').toLowerCase().includes(searchTerm) ||
+                    (i.telefon || '').toLowerCase().includes(searchTerm)
+                );
+            }
+
+            filtered.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+
+            document.getElementById('interessentCountDisplay').textContent = filtered.length + ' Einträge';
+
+            const interPerms = userPermissions.interessenten || {};
+            const canArchive = interPerms.archive === 'write';
+            const canDelete = interPerms.delete === 'write';
+            const canCreate = interPerms.create === 'write';
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#62676c;padding:20px;">Keine Interessenten gefunden.</td></tr>';
+                return;
+            }
+
+            let html = '';
+            filtered.forEach(entry => {
+                const isArchived = entry.archived === true;
+                const statusHtml = isArchived ?
+                    '<span class="status-badge archived">📦 Archiviert</span>' :
+                    '<span class="status-badge active">✅ Aktiv</span>';
+
+                html += `<tr>
+                    <td class="name-cell">${esc(entry.name || '-')}</td>
+                    <td class="telefon-cell">${esc(entry.telefon || '-')}</td>
+                    <td class="notiz-cell" title="${esc(entry.notiz || '')}">${esc(entry.notiz || '-')}</td>
+                    <td>${statusHtml}</td>
+                    <td>
+                        <div class="actions-cell">
+                            ${canCreate ? `<button onclick="openNewInteressentModal({id:'${entry.id}', name:'${esc(entry.name)}', telefon:'${esc(entry.telefon)}', notiz:'${esc(entry.notiz||'')}'})" class="btn-xs" style="border-color:#1f6feb;color:#3b82f6;"><i class="fas fa-edit"></i></button>` : ''}
+                            ${canArchive ? `<button onclick="toggleInteressentArchive('${entry.id}')" class="btn-xs" style="border-color:${isArchived ? '#22c55e' : '#ffaa33'};color:${isArchived ? '#22c55e' : '#ffaa33'};">${isArchived ? '📤 Aktivieren' : '📦 Archivieren'}</button>` : ''}
+                            ${canDelete ? `<button onclick="deleteInteressent('${entry.id}')" class="btn-xs" style="border-color:#d3212d;color:#d3212d;"><i class="fas fa-trash"></i></button>` : ''}
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // ⚠️ FIX: Archivieren löscht NICHT den Eintrag, sondern setzt nur den Status
+        async function toggleInteressentArchive(id) {
+            const interPerms = userPermissions.interessenten || {};
+            if (interPerms.archive !== 'write') {
+                showToast('Keine Berechtigung zum Archivieren!', 'error');
+                return;
+            }
+            const entry = allInteressenten.find(e => e.id === id);
+            if (!entry) { showToast('Eintrag nicht gefunden!', 'error'); return; }
+
+            const newStatus = !entry.archived;
+            const action = newStatus ? 'archivieren' : 'aktivieren';
+
+            showConfirmModal(
+                `Interessent ${action}?`,
+                `Möchten Sie "${entry.name}" wirklich ${action}?`,
+                async function() {
+                    // ✅ NUR den Status ändern, NICHT löschen!
+                    await database.ref('Navy-boote/interessenten/' + id).update({
+                        archived: newStatus,
+                        updatedAt: Date.now()
+                    });
+                    if (currentUser) await addLog(currentUser.username, `Interessent ${action}d`, `Name: ${entry.name}`);
+                    showToast(`✅ ${entry.name} ${action}d!`, 'success');
+                    loadInteressenten();
+                }
+            );
+        }
+
+        async function deleteInteressent(id) {
+            const interPerms = userPermissions.interessenten || {};
+            if (interPerms.delete !== 'write') {
+                showToast('Keine Berechtigung zum Löschen!', 'error');
+                return;
+            }
+            const entry = allInteressenten.find(e => e.id === id);
+            if (!entry) { showToast('Eintrag nicht gefunden!', 'error'); return; }
+
+            showConfirmModal(
+                'Interessent löschen?',
+                `Möchten Sie "${entry.name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`,
+                async function() {
+                    await database.ref('Navy-boote/interessenten/' + id).remove();
+                    if (currentUser) await addLog(currentUser.username, 'Interessent gelöscht', `Name: ${entry.name}`);
+                    showToast('🗑️ Interessent gelöscht.', 'error');
+                    loadInteressenten();
+                }
+            );
         }
 
         // =====================================================================
@@ -3331,7 +3810,6 @@
             html += '</div>';
             container.innerHTML = html;
 
-            // Drag & Drop
             const items = container.querySelectorAll('.boat-order-item');
             let draggedItem = null;
             items.forEach(item => {
@@ -4112,7 +4590,7 @@
         }
 
         // =====================================================================
-        // BESCHLAGNAHMUNG DETAIL - OPTIMIERTES LAYOUT
+        // BESCHLAGNAHMUNG DETAIL
         // =====================================================================
         function showConfiscationDetail(id) {
             const entry = allConfiscations.find(e => e.id === id);
@@ -4122,8 +4600,6 @@
             }
 
             document.getElementById('detailModalTitle').innerHTML = `<i class="fas fa-clipboard-list"></i> ${esc(entry.akteName || 'Unbekannt')}`;
-
-            const formatValue = (val, prefix = '') => val ? prefix + esc(val) : '<span style="color:#62676c;">—</span>';
 
             let html = `
                 <div class="detail-grid">
@@ -4693,7 +5169,7 @@
         }
 
         // =====================================================================
-        // ADMIN: USER BEARBEITEN (MIT SICHTBARKEIT)
+        // ADMIN: USER BEARBEITEN
         // =====================================================================
         function openEditUserModal(username) {
             if (userPermissions.admin !== 'write') {
@@ -4831,7 +5307,7 @@
         }
 
         // =====================================================================
-        // ADMIN: ROLLEN & BERECHTIGUNGEN (DETAILIERT MIT ADMIN-CHECKBOX)
+        // ADMIN: ROLLEN & BERECHTIGUNGEN
         // =====================================================================
         async function populateRoleSelect() {
             const createSelect = document.getElementById('newUserRole');
@@ -4876,11 +5352,18 @@
 
             const perms = ROLE_DEFS[currentRole].permissions;
 
-            // Stoppuhr (ohne Bearbeiten)
+            // Stoppuhr
             const sw = perms.stopwatch || {};
             document.getElementById('rolePermStopwatchView').value = sw.view || 'none';
             document.getElementById('rolePermStopwatchCreate').value = sw.create || 'none';
             document.getElementById('rolePermStopwatchDelete').value = sw.delete || 'none';
+
+            // Interessenten
+            const inter = perms.interessenten || {};
+            document.getElementById('rolePermInteressentView').value = inter.view || 'none';
+            document.getElementById('rolePermInteressentCreate').value = inter.create || 'none';
+            document.getElementById('rolePermInteressentArchive').value = inter.archive || 'none';
+            document.getElementById('rolePermInteressentDelete').value = inter.delete || 'none';
 
             // Beschlagnahmungen
             const conf = perms.confiscations || {};
@@ -4903,7 +5386,7 @@
             document.getElementById('rolePermElkView').value = elk.view || 'none';
             document.getElementById('rolePermElkEdit').value = elk.edit || 'none';
 
-            // Admin - Checkbox
+            // Admin
             const isAdminPerm = perms.admin === 'write';
             document.getElementById('rolePermAdminCheck').checked = isAdminPerm;
             document.getElementById('adminCheckLabel').textContent = isAdminPerm ? 'Ja' : 'Nein';
@@ -4912,7 +5395,6 @@
             document.getElementById('rolePermissionStatus').style.display = 'none';
         }
 
-        // Admin-Checkbox Toggle Label
         document.getElementById('rolePermAdminCheck').addEventListener('change', function() {
             document.getElementById('adminCheckLabel').textContent = this.checked ? 'Ja' : 'Nein';
             rolePermChanged();
@@ -4942,6 +5424,12 @@
                     view: document.getElementById('rolePermStopwatchView').value,
                     create: document.getElementById('rolePermStopwatchCreate').value,
                     delete: document.getElementById('rolePermStopwatchDelete').value
+                },
+                interessenten: {
+                    view: document.getElementById('rolePermInteressentView').value,
+                    create: document.getElementById('rolePermInteressentCreate').value,
+                    archive: document.getElementById('rolePermInteressentArchive').value,
+                    delete: document.getElementById('rolePermInteressentDelete').value
                 },
                 confiscations: {
                     view: document.getElementById('rolePermConfView').value,
@@ -5024,6 +5512,7 @@
                 color: '#3b82f6',
                 permissions: {
                     stopwatch: { view: 'read', create: 'none', delete: 'none' },
+                    interessenten: { view: 'read', create: 'none', archive: 'none', delete: 'none' },
                     confiscations: { view: 'read', create: 'none', edit: 'none', delete: 'none' },
                     payout: { view: 'none', edit: 'none' },
                     logs: { view: 'none' },
@@ -5438,14 +5927,11 @@
 
                 console.log('🚀 System initialisiert - NUR ADMIN Rolle!');
                 console.log('🔒 Colin ist permanent gesperrt!');
-                console.log('📋 Detaillierte Beschlagnahmungs-Berechtigungen aktiv!');
-                console.log('👁️ Sichtbarkeit in der Benutzerbearbeitung integriert!');
+                console.log('📞 Interessenten-Kategorie hinzugefügt!');
+                console.log('✅ Rechte: Ansehen, Hinzufügen, Archivieren, Löschen');
+                console.log('✅ Archivieren löscht NICHT den Eintrag (nur Statusänderung)!');
+                console.log('✅ Interessenten-Seite optimiert (bessere Spaltenbreiten)!');
                 console.log('✅ Logs werden nach 7 Tagen gelöscht!');
-                console.log('✅ Eigenes Lösch-Popup aktiv!');
-                console.log('✅ Admin-Berechtigung als Checkbox in Rollen integriert!');
-                console.log('✅ Bootskontrolle-Sichtbarkeit aus Admin entfernt (nur noch bei User-Bearbeitung)!');
-                console.log('✅ Kurzanleitung zeigt nur Bereiche die der User auch sehen darf!');
-                console.log('✅ Beschlagnahmung-Details mit optimiertem Grid-Layout!');
             } catch (error) {
                 console.error('Init-Fehler:', error);
             }
