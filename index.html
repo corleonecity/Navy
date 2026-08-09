@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>U.S Navy Marine - Diensthandbuch & Verwaltung</title>
+    <title>U.S Navy Marine - Verwaltungssystem</title>
 
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -37,470 +37,8 @@
         }
 
         /* ============================================================
-                   QUARTERDECK - DIENSTHANDBUCH (Hauptseite)
+                   LOGIN
                    ============================================================ */
-        .quarterdeck-page {
-            position: relative;
-            width: 100%;
-            padding: 18px;
-            overflow: hidden;
-            background: #000000;
-            border-top: 2px solid #1f6feb;
-            border-bottom: 2px solid #1f6feb;
-        }
-
-        .page-wrapper {
-            width: min(1180px, 100%);
-            margin: 0 auto;
-        }
-
-        .hero {
-            position: relative;
-            display: grid;
-            grid-template-columns: 230px 1fr;
-            align-items: center;
-            gap: 48px;
-            min-height: 310px;
-            padding: 30px 25px;
-            overflow: hidden;
-            background: #000000;
-            border: 1px solid #272727;
-            border-top: 3px solid #1f6feb;
-        }
-
-        .hero::after {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: -35%;
-            width: 35%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.65);
-            animation: lineMovement 6s linear infinite;
-        }
-
-        .logo-box {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 210px;
-            height: 210px;
-            margin: 0 auto;
-        }
-
-        .logo-ring {
-            position: absolute;
-            inset: 5px;
-            border: 1px solid rgba(31, 111, 235, 0.65);
-            border-radius: 50%;
-            box-shadow: 0 0 12px rgba(31, 111, 235, 0.12), inset 0 0 12px rgba(31, 111, 235, 0.08);
-            animation: ringPulse 4s ease-in-out infinite;
-        }
-
-        .logo-ring::before {
-            content: "";
-            position: absolute;
-            inset: 15px;
-            border: 1px dashed rgba(255, 255, 255, 0.18);
-            border-radius: 50%;
-            animation: ringRotation 20s linear infinite;
-        }
-
-        .logo-ring::after {
-            content: "";
-            position: absolute;
-            inset: 32px;
-            border: 1px dashed rgba(59, 130, 246, 0.38);
-            border-radius: 50%;
-            animation: ringRotationReverse 14s linear infinite;
-        }
-
-        .logo-glow {
-            position: absolute;
-            inset: 39px;
-            border-radius: 50%;
-            background: rgba(31, 111, 235, 0.34);
-            filter: blur(27px);
-            animation: logoGlow 4s ease-in-out infinite;
-        }
-
-        .navy-logo {
-            position: relative;
-            z-index: 3;
-            display: block;
-            width: 168px;
-            height: 168px;
-            object-fit: contain;
-            filter: drop-shadow(0 9px 10px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 9px rgba(59, 130, 246, 0.38));
-            animation: logoFloat 5s ease-in-out infinite;
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
-        }
-
-        .official-label {
-            display: flex;
-            align-items: center;
-            gap: 11px;
-            margin-bottom: 11px;
-            color: #aeb4bb;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-        }
-
-        .official-label::before {
-            content: "";
-            width: 38px;
-            height: 2px;
-            background: #3b82f6;
-            box-shadow: 0 0 9px rgba(59, 130, 246, 0.7);
-        }
-
-        .hero-title {
-            position: relative;
-            display: inline-block;
-            margin: 0;
-            overflow: hidden;
-            color: #3b82f6;
-            font-family: Impact, "Arial Narrow", Arial, sans-serif;
-            font-size: clamp(48px, 7vw, 78px);
-            font-weight: 400;
-            line-height: 1;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            text-shadow: 0 4px 5px #000000, 0 0 18px rgba(31, 111, 235, 0.4);
-        }
-
-        .hero-title::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -110%;
-            width: 60%;
-            height: 100%;
-            transform: skewX(-24deg);
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.32), transparent);
-            animation: titleShine 7s ease-in-out infinite;
-        }
-
-        .hero-subtitle {
-            margin: 10px 0 18px;
-            color: #ffffff;
-            font-size: clamp(19px, 2.5vw, 27px);
-            font-weight: 700;
-        }
-
-        .hero-description {
-            max-width: 780px;
-            margin: 0;
-            color: #c9cdd1;
-            font-size: 16px;
-            line-height: 1.65;
-        }
-
-        .service-values {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 9px;
-            margin-top: 21px;
-        }
-
-        .service-value {
-            padding: 8px 13px;
-            color: #d6d6d6;
-            background: #080808;
-            border: 1px solid #292929;
-            border-left: 3px solid #1f6feb;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            transition: transform 0.25s ease, color 0.25s ease, border-color 0.25s ease, background 0.25s ease,
-                box-shadow 0.25s ease;
-        }
-
-        .service-value:hover {
-            transform: translateY(-3px);
-            color: #ffffff;
-            background: #0a101a;
-            border-color: #3b82f6;
-            box-shadow: 0 0 14px rgba(31, 111, 235, 0.18);
-        }
-
-        .status-bar {
-            position: relative;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            align-items: center;
-            gap: 20px;
-            min-height: 82px;
-            margin-top: 12px;
-            padding: 15px 23px;
-            overflow: hidden;
-            background: #000000;
-            border: 1px solid #272727;
-        }
-
-        .status-bar::after {
-            content: "";
-            position: absolute;
-            top: 0;
-            left: -30%;
-            width: 30%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.6);
-            animation: statusLine 8s linear infinite;
-        }
-
-        .system-status {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #e4e4e4;
-            font-size: 12px;
-            font-weight: 700;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            flex-shrink: 0;
-            border-radius: 50%;
-            background: #3b82f6;
-            box-shadow: 0 0 11px rgba(59, 130, 246, 0.95);
-            animation: statusPulse 2s infinite;
-        }
-
-        .news-label {
-            text-align: center;
-        }
-
-        .news-label strong {
-            display: block;
-            color: #d3212d;
-            font-family: Impact, "Arial Narrow", Arial, sans-serif;
-            font-size: 23px;
-            font-weight: 400;
-            letter-spacing: 1px;
-            text-shadow: 0 0 13px rgba(211, 33, 45, 0.4);
-        }
-
-        .news-label span {
-            display: block;
-            margin-top: 4px;
-            color: #8f9499;
-            font-size: 10px;
-            font-weight: 700;
-            letter-spacing: 1.4px;
-            text-transform: uppercase;
-        }
-
-        .date-area {
-            color: #91979c;
-            font-size: 10px;
-            font-weight: 700;
-            line-height: 1.5;
-            text-align: right;
-            letter-spacing: 0.7px;
-            text-transform: uppercase;
-        }
-
-        .date-area strong {
-            display: block;
-            color: #3b82f6;
-            font-size: 13px;
-            text-shadow: 0 0 8px rgba(31, 111, 235, 0.32);
-        }
-
-        .footer {
-            margin-top: 14px;
-            padding: 18px 10px;
-            color: #62676c;
-            background: #000000;
-            border-top: 1px solid #242424;
-            font-size: 10px;
-            font-weight: 700;
-            text-align: center;
-            letter-spacing: 2.4px;
-            text-transform: uppercase;
-        }
-
-        /* ============================================================
-                   ANIMATIONEN
-                   ============================================================ */
-        @keyframes lineMovement {
-            from {
-                left: -35%;
-            }
-            to {
-                left: 110%;
-            }
-        }
-        @keyframes statusLine {
-            from {
-                left: -30%;
-            }
-            to {
-                left: 110%;
-            }
-        }
-        @keyframes logoFloat {
-            0%,
-            100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-6px);
-            }
-        }
-        @keyframes logoGlow {
-            0%,
-            100% {
-                opacity: 0.3;
-                transform: scale(0.92);
-            }
-            50% {
-                opacity: 0.72;
-                transform: scale(1.08);
-            }
-        }
-        @keyframes ringPulse {
-            0%,
-            100% {
-                opacity: 0.45;
-                transform: scale(0.97);
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.03);
-            }
-        }
-        @keyframes ringRotation {
-            from {
-                transform: rotate(0deg);
-            }
-            to {
-                transform: rotate(360deg);
-            }
-        }
-        @keyframes ringRotationReverse {
-            from {
-                transform: rotate(360deg);
-            }
-            to {
-                transform: rotate(0deg);
-            }
-        }
-        @keyframes titleShine {
-            0%,
-            58% {
-                left: -110%;
-            }
-            82%,
-            100% {
-                left: 140%;
-            }
-        }
-        @keyframes statusPulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.75), 0 0 11px rgba(59, 130, 246, 0.95);
-            }
-            70% {
-                box-shadow: 0 0 0 9px rgba(59, 130, 246, 0), 0 0 15px rgba(59, 130, 246, 0.7);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0), 0 0 11px rgba(59, 130, 246, 0.9);
-            }
-        }
-
-        /* ============================================================
-                   RESPONSIVE
-                   ============================================================ */
-        @media (max-width: 900px) {
-            .hero {
-                grid-template-columns: 190px 1fr;
-                gap: 28px;
-            }
-            .logo-box {
-                width: 185px;
-                height: 185px;
-            }
-            .navy-logo {
-                width: 145px;
-                height: 145px;
-            }
-        }
-
-        @media (max-width: 650px) {
-            .quarterdeck-page {
-                padding: 10px;
-            }
-            .hero {
-                grid-template-columns: 1fr;
-                gap: 8px;
-                padding: 22px 16px 27px;
-                text-align: center;
-            }
-            .logo-box {
-                width: 175px;
-                height: 175px;
-            }
-            .navy-logo {
-                width: 137px;
-                height: 137px;
-            }
-            .official-label {
-                justify-content: center;
-            }
-            .official-label::before {
-                display: none;
-            }
-            .hero-title {
-                font-size: 49px;
-                letter-spacing: 2px;
-            }
-            .hero-description {
-                margin: 0 auto;
-            }
-            .service-values {
-                justify-content: center;
-            }
-            .status-bar {
-                grid-template-columns: 1fr;
-                gap: 12px;
-                text-align: center;
-            }
-            .system-status {
-                justify-content: center;
-            }
-            .date-area {
-                text-align: center;
-            }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-            }
-        }
-
-        /* ============================================================
-           VERWALTUNGS-STYLES
-           ============================================================ */
-
-        /* Login */
         #loginScreen {
             position: fixed;
             top: 0;
@@ -540,7 +78,15 @@
             height: 2px;
             background: linear-gradient(90deg, transparent, #3b82f6, transparent);
             box-shadow: 0 0 12px rgba(59, 130, 246, 0.75);
-            animation: lineMovement 6s linear infinite;
+            animation: lineMove 6s linear infinite;
+        }
+        @keyframes lineMove {
+            from {
+                left: -38%;
+            }
+            to {
+                left: 110%;
+            }
         }
         .login-box img {
             width: 110px;
@@ -649,7 +195,9 @@
             letter-spacing: 1px;
         }
 
-        /* Main App */
+        /* ============================================================
+                   MAIN APP
+                   ============================================================ */
         #mainApp {
             display: none;
             width: 100%;
@@ -658,6 +206,43 @@
         }
         #mainApp.show {
             display: block;
+        }
+
+        /* Container - gleiche Größe für alle Seiten */
+        .container {
+            position: relative;
+            width: min(96%, 1450px) !important;
+            max-height: 94vh !important;
+            margin: 3vh auto !important;
+            overflow: hidden auto !important;
+            background: #000000 !important;
+            border: 1px solid #272727 !important;
+            border-top: 3px solid #1f6feb !important;
+            border-radius: 12px !important;
+            box-shadow: 0 22px 65px rgba(0, 0, 0, 0.95), 0 0 24px rgba(31, 111, 235, 0.08) !important;
+            display: flex;
+            flex-direction: column;
+        }
+        .container::before {
+            content: "";
+            position: absolute;
+            z-index: 20;
+            top: 0;
+            left: -32%;
+            width: 32%;
+            height: 2px;
+            pointer-events: none;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.70);
+            animation: lineMove2 8s linear infinite;
+        }
+        @keyframes lineMove2 {
+            from {
+                left: -32%;
+            }
+            to {
+                left: 110%;
+            }
         }
 
         /* Top Bar */
@@ -790,13 +375,14 @@
             margin-right: 6px;
         }
 
-        /* Tab Content - HIDE ALL BY DEFAULT, nur active sichtbar */
+        /* Tab Content - gleiche Größe wie Hauptseite */
         .tab-content {
             display: none !important;
-            padding: 20px;
+            padding: 22px !important;
             flex: 1;
             overflow-y: auto;
             background: #000000;
+            min-height: 50vh;
         }
         .tab-content.active {
             display: block !important;
@@ -897,217 +483,148 @@
             color: white;
         }
 
-        /* Admin Sections */
-        .admin-section {
-            background: #030303;
-            border: 1px solid #292929;
-            border-left: 3px solid #d3212d;
-            border-radius: 9px;
-            padding: 16px;
-            margin-bottom: 16px;
-        }
-        .admin-section h4 {
-            color: #ff7b83;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(211, 33, 45, 0.15);
-            padding-bottom: 8px;
-            margin-bottom: 12px;
-        }
-        .admin-section .admin-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .admin-section .admin-row input,
-        .admin-section .admin-row select {
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid #303030;
-            background: #050505;
-            color: #ffffff;
-            font-size: 13px;
-            outline: none;
-            flex: 1;
-            min-width: 120px;
-        }
-        .admin-section .admin-row input:focus,
-        .admin-section .admin-row select:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
-        }
-
-        /* User Table */
-        .user-table-wrap {
-            max-height: 350px;
-            overflow-y: auto;
-            border: 1px solid #222;
-            border-radius: 8px;
-            margin-top: 8px;
-        }
-        .user-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-        }
-        .user-table thead {
-            position: sticky;
-            top: 0;
-            z-index: 5;
-        }
-        .user-table th {
-            background: #0d0d0d;
-            border-bottom: 2px solid #333;
-            padding: 8px 10px;
-            color: #ff9999;
-            font-size: 12px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            text-align: left;
-        }
-        .user-table td {
-            padding: 6px 10px;
-            border-bottom: 1px solid #1a1a1a;
-            color: #dbe2ea;
-            vertical-align: middle;
-        }
-        .user-table tr:hover td {
-            background: #0a0a0a;
-        }
-
-        .role-badge {
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 700;
-            display: inline-block;
-        }
-        .role-badge.admin {
-            background: rgba(211, 33, 45, 0.15);
-            color: #ef3340;
-            border: 1px solid rgba(211, 33, 45, 0.3);
-        }
-        .role-badge.cadet {
-            background: rgba(34, 197, 94, 0.15);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.3);
-        }
-        .role-badge.officer {
-            background: rgba(255, 170, 51, 0.15);
-            color: #ffaa33;
-            border: 1px solid rgba(255, 170, 51, 0.3);
-        }
-        .role-badge.user {
-            background: rgba(59, 130, 246, 0.15);
-            color: #3b82f6;
-            border: 1px solid rgba(59, 130, 246, 0.3);
-        }
-
-        .perm-badge {
-            display: inline-block;
-            padding: 1px 8px;
-            border-radius: 4px;
-            font-size: 10px;
-            font-weight: 600;
-            margin: 1px 2px;
-        }
-        .perm-badge.active {
-            background: rgba(34, 197, 94, 0.12);
-            color: #22c55e;
-            border: 1px solid rgba(34, 197, 94, 0.2);
-        }
-        .perm-badge.inactive {
-            background: rgba(211, 33, 45, 0.08);
-            color: #d3212d;
-            border: 1px solid rgba(211, 33, 45, 0.15);
-        }
-        .perm-badge.readonly {
-            background: rgba(255, 170, 51, 0.12);
-            color: #ffaa33;
-            border: 1px solid rgba(255, 170, 51, 0.2);
-        }
-
-        /* Permissions Grid with 3 states (write, read, none) */
-        .perm-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 8px;
-        }
-        .perm-grid .perm-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #050505;
-            padding: 6px 12px;
-            border-radius: 6px;
-            border: 1px solid #282828;
-            font-size: 12px;
-        }
-        .perm-grid .perm-item select {
-            padding: 2px 6px;
-            border-radius: 4px;
-            border: 1px solid #303030;
-            background: #050505;
-            color: #ffffff;
-            font-size: 11px;
-            min-width: 80px;
-        }
-        .perm-grid .perm-item label {
-            cursor: pointer;
-            color: #dbeafe;
-            font-size: 12px;
-            min-width: 80px;
-        }
-
-        /* Toast */
-        .toast-container {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
+        /* ============================================================
+                   HAUPTSEITE (ohne Quarterdeck)
+                   ============================================================ */
+        .homepage {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            max-width: 400px;
-        }
-        .toast {
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 14px;
-            color: white;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-            animation: slideIn 0.3s ease;
-            display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            min-height: 55vh;
+            text-align: center;
+            padding: 30px 20px;
+            background: #000000;
+            border: 1px solid #272727;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
         }
-        .toast.success {
-            background: #22c55e;
+        .homepage::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: -35%;
+            width: 35%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.70);
+            animation: lineMove3 7s linear infinite;
         }
-        .toast.error {
-            background: #ef3340;
-        }
-        .toast.warning {
-            background: #ffaa33;
-            color: #000000;
-        }
-        .toast.info {
-            background: #3b82f6;
-        }
-        @keyframes slideIn {
+        @keyframes lineMove3 {
             from {
-                transform: translateX(100%);
-                opacity: 0;
+                left: -35%;
             }
             to {
-                transform: translateX(0);
-                opacity: 1;
+                left: 110%;
             }
         }
+        .homepage img {
+            width: 175px !important;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 10px 12px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 16px rgba(59, 130, 246, 0.42)) !important;
+            animation: logoFloat 5s ease-in-out infinite;
+        }
+        @keyframes logoFloat {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+        }
+        .homepage h1 {
+            color: #d3212d !important;
+            font-family: Impact, "Arial Narrow", Arial, sans-serif !important;
+            font-size: clamp(38px, 5vw, 64px) !important;
+            font-weight: 400 !important;
+            letter-spacing: 2px !important;
+            text-shadow: 0 0 18px rgba(211, 33, 45, 0.30) !important;
+        }
+        .homepage .subtitle {
+            color: #a9b0b7 !important;
+            font-size: 1.1rem;
+            letter-spacing: 3px !important;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .homepage .welcome-user {
+            color: #3b82f6;
+            font-size: 18px;
+            margin-top: 4px;
+        }
 
-        /* Stopwatch */
+        /* ============================================================
+                   KURZANLEITUNG (Handbook)
+                   ============================================================ */
+        .handbook-section {
+            background: #030303;
+            border: 1px solid #292929;
+            border-left: 3px solid #1f6feb;
+            border-radius: 9px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: left;
+            width: 100%;
+            max-width: 800px;
+        }
+        .handbook-section h3 {
+            color: #ffaa33;
+            font-size: 18px;
+            border-bottom: 1px solid #292929;
+            padding-bottom: 10px;
+            margin-bottom: 14px;
+        }
+        .handbook-section .handbook-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 600px) {
+            .handbook-section .handbook-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .handbook-section .role-card {
+            background: #050505;
+            border: 1px solid #292929;
+            border-radius: 8px;
+            padding: 14px;
+        }
+        .handbook-section .role-card .role-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: #ffffff;
+        }
+        .handbook-section .role-card .role-perms {
+            font-size: 12px;
+            color: #8f9499;
+            margin-top: 4px;
+        }
+        .handbook-section .role-card .role-perms .perm-item {
+            display: inline-block;
+            padding: 2px 8px;
+            margin: 2px 3px;
+            border-radius: 4px;
+            font-size: 11px;
+        }
+        .handbook-section .role-card .role-perms .perm-item.allowed {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+        }
+        .handbook-section .role-card .role-perms .perm-item.denied {
+            background: rgba(211, 33, 45, 0.08);
+            color: #d3212d;
+        }
+        .handbook-section .role-card .role-perms .perm-item.readonly {
+            background: rgba(255, 170, 51, 0.12);
+            color: #ffaa33;
+        }
+
+        /* ============================================================
+                   STOPWATCH
+                   ============================================================ */
         .time {
             font-size: 64px;
             letter-spacing: 4px;
@@ -1347,54 +864,371 @@
             color: #cfe2ff;
         }
 
-        .boat-order-wrap {
-            max-height: 250px;
+        /* ============================================================
+                   ADMIN SECTIONS
+                   ============================================================ */
+        .admin-section {
+            background: #030303;
+            border: 1px solid #292929;
+            border-left: 3px solid #d3212d;
+            border-radius: 9px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .admin-section h4 {
+            color: #ff7b83;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(211, 33, 45, 0.15);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .admin-section .admin-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .admin-section .admin-row input,
+        .admin-section .admin-row select {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #303030;
+            background: #050505;
+            color: #ffffff;
+            font-size: 13px;
+            outline: none;
+            flex: 1;
+            min-width: 120px;
+        }
+        .admin-section .admin-row input:focus,
+        .admin-section .admin-row select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+        }
+
+        .user-table-wrap {
+            max-height: 350px;
             overflow-y: auto;
             border: 1px solid #222;
             border-radius: 8px;
+            margin-top: 8px;
         }
-        .boat-order-list {
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .user-table thead {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        .user-table th {
+            background: #0d0d0d;
+            border-bottom: 2px solid #333;
+            padding: 8px 10px;
+            color: #ff9999;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+        }
+        .user-table td {
+            padding: 6px 10px;
+            border-bottom: 1px solid #1a1a1a;
+            color: #dbe2ea;
+            vertical-align: middle;
+        }
+        .user-table tr:hover td {
+            background: #0a0a0a;
+        }
+
+        .role-badge {
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            display: inline-block;
+        }
+        .role-badge.admin {
+            background: rgba(211, 33, 45, 0.15);
+            color: #ef3340;
+            border: 1px solid rgba(211, 33, 45, 0.3);
+        }
+        .role-badge.cadet {
+            background: rgba(34, 197, 94, 0.15);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.3);
+        }
+        .role-badge.officer {
+            background: rgba(255, 170, 51, 0.15);
+            color: #ffaa33;
+            border: 1px solid rgba(255, 170, 51, 0.3);
+        }
+        .role-badge.user {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .perm-badge {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            margin: 1px 2px;
+        }
+        .perm-badge.active {
+            background: rgba(34, 197, 94, 0.12);
+            color: #22c55e;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+        .perm-badge.inactive {
+            background: rgba(211, 33, 45, 0.08);
+            color: #d3212d;
+            border: 1px solid rgba(211, 33, 45, 0.15);
+        }
+        .perm-badge.readonly {
+            background: rgba(255, 170, 51, 0.12);
+            color: #ffaa33;
+            border: 1px solid rgba(255, 170, 51, 0.2);
+        }
+
+        /* Permissions Grid (3-Stufen) */
+        .perm-grid {
             display: flex;
-            flex-direction: column;
-            gap: 4px;
-            padding: 4px 0;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 8px;
         }
-        .boat-order-item {
+        .perm-grid .perm-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #050505;
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: 1px solid #282828;
+            font-size: 12px;
+        }
+        .perm-grid .perm-item select {
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #303030;
+            background: #050505;
+            color: #ffffff;
+            font-size: 11px;
+            min-width: 80px;
+        }
+        .perm-grid .perm-item label {
+            cursor: pointer;
+            color: #dbeafe;
+            font-size: 12px;
+            min-width: 80px;
+        }
+
+        /* Admin compact sections */
+        .admin-compact-section {
+            padding: 12px 14px;
+            margin-bottom: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 85, 85, 0.15);
+        }
+        .admin-compact-section h4 {
+            color: #ff7b83;
+            margin-bottom: 8px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 85, 85, 0.15);
+            padding-bottom: 6px;
+        }
+        .admin-compact-section .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .admin-compact-section .row label {
+            color: #91b8ea;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        .admin-compact-section .row input,
+        .admin-compact-section .row select {
+            padding: 6px 10px;
+            font-size: 13px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+            flex: 1;
+            min-width: 120px;
+        }
+        .admin-compact-section .row input:focus,
+        .admin-compact-section .row select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .admin-compact-section .row button {
+            padding: 6px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .admin-perm-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 6px;
+        }
+        .admin-perm-grid .perm-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #0a0a0a;
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid #222;
+            font-size: 12px;
+            color: #dbeafe;
+        }
+        .admin-perm-grid .perm-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #22c55e;
+            margin: 0;
+            cursor: pointer;
+        }
+        .admin-perm-grid .perm-item label {
+            cursor: pointer;
+            font-size: 12px;
+            color: #dbeafe;
+        }
+
+        .admin-search-box {
             display: flex;
             align-items: center;
             gap: 10px;
-            padding: 6px 12px;
-            background: #0a0a0a;
-            border: 1px solid #2a2a2a;
-            border-radius: 6px;
-            cursor: grab;
-            transition: 0.15s;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
         }
-        .boat-order-item:hover {
-            border-color: #1f6feb;
-            background: #111;
-        }
-        .boat-order-item .drag-handle {
-            color: #666;
-            font-size: 18px;
-            cursor: grab;
-            user-select: none;
-        }
-        .boat-order-item .boat-info {
+        .admin-search-box input {
             flex: 1;
-            color: #dbeafe;
+            min-width: 200px;
+            padding: 8px 14px;
+            font-size: 14px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
         }
-        .boat-order-item.dragging {
-            opacity: 0.5;
-            border-style: dashed;
-        }
-        .boat-order-item.drag-over {
+        .admin-search-box input:focus {
             border-color: #3b82f6;
-            background: #0a1628;
-            box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .admin-search-box .search-count {
+            color: #666;
+            font-size: 13px;
+            white-space: nowrap;
         }
 
-        /* Confiscations */
+        .create-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .create-row input {
+            padding: 6px 10px;
+            font-size: 13px;
+            background: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #fff;
+        }
+        .create-row input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+        }
+        .create-row button {
+            padding: 6px 16px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .user-actions button {
+            padding: 2px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+        .btn-edit-user {
+            background: rgba(100, 150, 255, 0.15);
+            border-color: #64b4ff;
+            color: #64b4ff;
+        }
+        .btn-edit-user:hover {
+            background: rgba(100, 150, 255, 0.3);
+        }
+
+        /* ============================================================
+                   TOAST
+                   ============================================================ */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-width: 400px;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            animation: slideIn 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast.success {
+            background: #22c55e;
+        }
+        .toast.error {
+            background: #ef3340;
+        }
+        .toast.warning {
+            background: #ffaa33;
+            color: #000000;
+        }
+        .toast.info {
+            background: #3b82f6;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ============================================================
+                   BESCHLAGNAHMUNGEN
+                   ============================================================ */
         .confiscation-week-nav {
             display: flex;
             gap: 10px;
@@ -1487,7 +1321,21 @@
             color: #3b82f6;
         }
 
-        /* Payout */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .page-header h3 {
+            margin: 0;
+        }
+
+        /* ============================================================
+                   AUSZAHLUNG
+                   ============================================================ */
         .payout-table {
             width: 100%;
             border-collapse: collapse;
@@ -1578,7 +1426,9 @@
             border: 1px solid #ffaa33;
         }
 
-        /* Modal */
+        /* ============================================================
+                   MODAL
+                   ============================================================ */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -1665,7 +1515,7 @@
             margin-top: 4px;
         }
 
-        /* Detail Modal - Eigene schöne Ansicht (KEIN Chrome-Popup) */
+        /* Detail Modal */
         .detail-row {
             display: flex;
             padding: 6px 0;
@@ -1688,7 +1538,9 @@
             color: #ccc;
         }
 
-        /* Logs */
+        /* ============================================================
+                   LOGS
+                   ============================================================ */
         .log-entry {
             background: #030303;
             border: 1px solid rgba(59, 130, 246, 0.2);
@@ -1710,7 +1562,9 @@
             font-size: 13px;
         }
 
-        /* ELK */
+        /* ============================================================
+                   ELK
+                   ============================================================ */
         .elk-container {
             max-width: 900px;
             margin: 0 auto;
@@ -1828,6 +1682,9 @@
             border-bottom: 1px solid #1a1a1a;
         }
 
+        /* ============================================================
+                   BOATCHECK
+                   ============================================================ */
         .boatcheck-list {
             display: flex;
             flex-direction: column;
@@ -1881,71 +1738,59 @@
             color: white;
         }
 
-        /* Handbook - Kurzanleitung (NICHT Rollen-Übersicht) */
-        .handbook-section {
-            background: #030303;
-            border: 1px solid #292929;
-            border-left: 3px solid #1f6feb;
-            border-radius: 9px;
-            padding: 20px;
-            margin-top: 20px;
-            text-align: left;
-            width: 100%;
-            max-width: 800px;
-        }
-        .handbook-section h3 {
-            color: #ffaa33;
-            font-size: 18px;
-            border-bottom: 1px solid #292929;
-            padding-bottom: 10px;
-            margin-bottom: 14px;
-        }
-        .handbook-section .handbook-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-        @media (max-width: 600px) {
-            .handbook-section .handbook-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-        .handbook-section .role-card {
-            background: #050505;
-            border: 1px solid #292929;
+        /* ============================================================
+                   BOOT ORDER
+                   ============================================================ */
+        .boat-order-wrap {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid #222;
             border-radius: 8px;
-            padding: 14px;
         }
-        .handbook-section .role-card .role-name {
-            font-weight: 700;
-            font-size: 15px;
-            color: #ffffff;
+        .boat-order-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 4px 0;
         }
-        .handbook-section .role-card .role-perms {
-            font-size: 12px;
-            color: #8f9499;
-            margin-top: 4px;
+        .boat-order-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            background: #0a0a0a;
+            border: 1px solid #2a2a2a;
+            border-radius: 6px;
+            cursor: grab;
+            transition: 0.15s;
         }
-        .handbook-section .role-card .role-perms .perm-item {
-            display: inline-block;
-            padding: 2px 8px;
-            margin: 2px 3px;
-            border-radius: 4px;
-            font-size: 11px;
+        .boat-order-item:hover {
+            border-color: #1f6feb;
+            background: #111;
         }
-        .handbook-section .role-card .role-perms .perm-item.allowed {
-            background: rgba(34, 197, 94, 0.12);
-            color: #22c55e;
+        .boat-order-item .drag-handle {
+            color: #666;
+            font-size: 18px;
+            cursor: grab;
+            user-select: none;
         }
-        .handbook-section .role-card .role-perms .perm-item.denied {
-            background: rgba(211, 33, 45, 0.08);
-            color: #d3212d;
+        .boat-order-item .boat-info {
+            flex: 1;
+            color: #dbeafe;
         }
-        .handbook-section .role-card .role-perms .perm-item.readonly {
-            background: rgba(255, 170, 51, 0.12);
-            color: #ffaa33;
+        .boat-order-item.dragging {
+            opacity: 0.5;
+            border-style: dashed;
+        }
+        .boat-order-item.drag-over {
+            border-color: #3b82f6;
+            background: #0a1628;
+            box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
         }
 
+        /* ============================================================
+                   UTILITY
+                   ============================================================ */
         .text-muted {
             color: #8f9499;
         }
@@ -1998,8 +1843,20 @@
             display: none !important;
         }
 
-        /* Responsive für Verwaltung */
+        /* ============================================================
+                   RESPONSIVE
+                   ============================================================ */
         @media (max-width: 768px) {
+            .container {
+                width: 100% !important;
+                min-height: 100vh;
+                max-height: 100vh !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+                border-left: none !important;
+                border-right: none !important;
+                border-bottom: none !important;
+            }
             .top-bar {
                 flex-direction: column;
                 align-items: stretch;
@@ -2044,6 +1901,15 @@
             .modal-field {
                 min-width: 100%;
             }
+            .handbook-section .handbook-grid {
+                grid-template-columns: 1fr;
+            }
+            .homepage h1 {
+                font-size: 28px !important;
+            }
+            .homepage img {
+                width: 135px !important;
+            }
         }
     </style>
 </head>
@@ -2057,7 +1923,7 @@
         <div class="login-box">
             <img src="https://cdn.phototourl.com/free/2026-07-09-c1b8a06d-a213-4a8a-a938-ef9afda7bba5.png" alt="Navy Logo">
             <h2>U.S NAVY MARINE</h2>
-            <p class="sub">⚓ Diensthandbuch & Verwaltung ⚓</p>
+            <p class="sub">⚓ Verwaltungssystem ⚓</p>
             <div class="input-with-suggest">
                 <input type="text" id="loginUsername" placeholder="Benutzername" autocomplete="off" oninput="showSuggestions(this.value)">
                 <div class="suggest-dropdown" id="suggestDropdown"></div>
@@ -2067,7 +1933,7 @@
                 <i class="fas fa-lock"></i> Anmelden
             </button>
             <p class="login-error" id="loginError">❌ Falscher Benutzername oder Passwort!</p>
-            <div class="login-version">v2.0 • Diensthandbuch & Rollenverwaltung</div>
+            <div class="login-version">v2.0 • SEA CADET Standard</div>
         </div>
     </div>
 
@@ -2075,460 +1941,399 @@
     MAIN APP
     ============================================================ -->
     <div id="mainApp">
+        <div class="container">
 
-        <!-- TOP BAR -->
-        <div class="top-bar">
-            <div class="brand">
-                <span>⚓ U.S NAVY MARINE</span>
-                <span class="badge-version">v2.0</span>
+            <!-- TOP BAR -->
+            <div class="top-bar">
+                <div class="brand">
+                    <span>⚓ U.S NAVY MARINE</span>
+                    <span class="badge-version">v2.0</span>
+                </div>
+                <div class="user-info">
+                    <span id="currentUserDisplay" style="font-size:14px;color:#d9ecff;"></span>
+                    <span class="user-badge" id="userBadge">User</span>
+                    <button class="btn-logout" onclick="doLogout()">
+                        <i class="fas fa-sign-out-alt"></i> Abmelden
+                    </button>
+                </div>
             </div>
-            <div class="user-info">
-                <span id="currentUserDisplay" style="font-size:14px;color:#d9ecff;"></span>
-                <span class="user-badge" id="userBadge">User</span>
-                <button class="btn-logout" onclick="doLogout()">
-                    <i class="fas fa-sign-out-alt"></i> Abmelden
+
+            <!-- TAB NAV -->
+            <div class="tab-nav" id="tabNav">
+                <button class="tab-btn active" onclick="switchTab('home')" data-tab="home">
+                    <i class="fas fa-home tab-icon"></i> Hauptseite
                 </button>
             </div>
-        </div>
 
-        <!-- TAB NAV -->
-        <div class="tab-nav" id="tabNav">
-            <button class="tab-btn active" onclick="switchTab('home')" data-tab="home">
-                <i class="fas fa-home tab-icon"></i> Hauptseite
-            </button>
-        </div>
+            <!-- ============================================================
+            TAB: HOME (Hauptseite ohne Quarterdeck)
+            ============================================================ -->
+            <div id="tab-home" class="tab-content active">
+                <div class="homepage">
+                    <img src="https://cdn.phototourl.com/free/2026-07-09-c1b8a06d-a213-4a8a-a938-ef9afda7bba5.png" alt="Navy Logo">
+                    <h1>U.S NAVY MARINE</h1>
+                    <p class="subtitle">⚓ Verwaltungssystem ⚓</p>
+                    <p class="welcome-user" id="welcomeUser">Willkommen, <span id="welcomeName"></span>!</p>
 
-        <!-- ============================================================
-        TAB: HOME (Quarterdeck + Kurzanleitung)
-        ============================================================ -->
-        <div id="tab-home" class="tab-content active">
-
-            <div class="quarterdeck-page" style="padding:0;border:none;">
-                <div class="page-wrapper">
-
-                    <!-- HERO -->
-                    <section class="hero" style="border:1px solid #272727;border-top:3px solid #1f6feb;">
-
-                        <div class="logo-box">
-                            <div class="logo-glow"></div>
-                            <div class="logo-ring"></div>
-                            <img class="navy-logo" src="https://cdn.phototourl.com/free/2026-07-09-c1b8a06d-a213-4a8a-a938-ef9afda7bba5.png" alt="U.S. Navy Marine Logo">
-                        </div>
-
-                        <div class="hero-content">
-                            <div class="official-label">
-                                Offizielles Diensthandbuch
-                            </div>
-                            <h1 class="hero-title">
-                                Quarterdeck
-                            </h1>
-                            <h2 class="hero-subtitle">
-                                Willkommen an Bord der U.S. Navy Marine
-                            </h2>
-                            <p class="hero-description">
-                                Das Quarterdeck ist die zentrale Hauptseite des offiziellen
-                                Diensthandbuchs der U.S. Navy Marine. Hier findet Ihr alle
-                                wichtigen Informationen, Vorschriften, Ausbildungsinhalte,
-                                Einsatzabläufe, Locations, Dokumente und Ranginformationen
-                                für Euren Dienst.
-                            </p>
-                            <div class="service-values">
-                                <span class="service-value">Honor</span>
-                                <span class="service-value">Courage</span>
-                                <span class="service-value">Commitment</span>
-                                <span class="service-value">Einsatzbereitschaft</span>
-                            </div>
-                        </div>
-
-                    </section>
-
-                    <!-- STATUS BAR -->
-                    <section class="status-bar">
-                        <div class="system-status">
-                            <span class="status-dot"></span>
-                            Diensthandbuch aktiv
-                        </div>
-                        <div class="news-label">
-                            <strong>U.S. NAVY MARINE</strong>
-                            <span>Aktuell · Direkt · Einsatzbereit</span>
-                        </div>
-                        <div class="date-area">
-                            Aktueller Stand
-                            <strong id="current-date">Wird geladen</strong>
-                        </div>
-                    </section>
-
-                    <!-- ============================================================
-                    KURZANLEITUNG (Nur für SEA CADET und andere Rollen)
-                    ============================================================ -->
-                    <div class="handbook-section" style="margin-top:16px;">
+                    <!-- KURZANLEITUNG -->
+                    <div class="handbook-section">
                         <h3><i class="fas fa-compass"></i> Kurzanleitung: Was siehst du?</h3>
                         <p style="color:#8f9499;font-size:13px;margin-bottom:12px;">
                             Je nach deiner Rolle siehst du unterschiedliche Bereiche im System.
-                            Hier siehst du, welche Bereiche für welche Rolle sichtbar sind.
-                            <strong style="color:#ffaa33;">SEA CADET</strong> sieht nur Hauptseite,
-                            Stoppuhr (Start/Stop/Speichern), Beschlagnahmungen (Erstellen) und Auszahlung (nur ansehen).
+                            <strong style="color:#22c55e;">SEA CADET</strong> ist die Standard-Rolle für neue Benutzer.
                         </p>
                         <div class="handbook-grid" id="handbookGrid">
                             <!-- Wird von JS befüllt -->
                         </div>
                     </div>
-
-                    <footer class="footer" style="margin-top:10px;">
-                        United States Navy Marine · Honor · Courage · Commitment
-                    </footer>
-
                 </div>
             </div>
 
-        </div>
-
-        <!-- ============================================================
-        TAB: STOPWATCH
-        ============================================================ -->
-        <div id="tab-stopwatch" class="tab-content">
-            <div class="time" id="display">00:00.00</div>
-            <div class="input-group">
-                <input type="text" id="personName" placeholder="👤 Name der Person" autocomplete="off">
-                <button id="startBtn" onclick="startStop()" class="btn-primary"><i class="fas fa-play"></i> Start</button>
-                <button onclick="resetTimer()"><i class="fas fa-redo"></i> Reset</button>
-            </div>
-
-            <div class="section-title"><i class="fas fa-ship"></i> BOOTE & SPEICHERN</div>
-            <div class="boats-grid" id="dynamicBoatsContainer"></div>
-
-            <div class="stopwatch-layout">
-                <div class="stopwatch-left">
-                    <div class="avg-panel">
-                        <h4><i class="fas fa-chart-bar"></i> DURCHSCHNITT ALLER SOLDATEN</h4>
-                        <table class="avg-table">
-                            <thead><tr><th>Boot</th><th>⌀ Durchschnitt</th><th>📋 Einträge</th></tr></thead>
-                            <tbody id="avgTableBody"></tbody>
-                        </table>
-                    </div>
-                    <div class="section-title"><i class="fas fa-users"></i> REGISTRIERTE PERSONEN</div>
-                    <div id="allNamesList" class="name-list"><span class="text-muted">Laden...</span></div>
+            <!-- ============================================================
+            TAB: STOPWATCH
+            ============================================================ -->
+            <div id="tab-stopwatch" class="tab-content">
+                <div class="time" id="display">00:00.00</div>
+                <div class="input-group">
+                    <input type="text" id="personName" placeholder="👤 Name der Person" autocomplete="off">
+                    <button id="startBtn" onclick="startStop()" class="btn-primary"><i class="fas fa-play"></i> Start</button>
+                    <button onclick="resetTimer()"><i class="fas fa-redo"></i> Reset</button>
                 </div>
-                <div class="stopwatch-right">
-                    <div class="personal-panel" id="personalPanel">
-                        <h4><i class="fas fa-user"></i> PERSÖNLICHE STATS: <span id="personalPanelName" class="text-blue"></span></h4>
-                        <table class="personal-table">
-                            <thead><tr><th>Boot</th><th>⌀ Durchschnitt</th><th>📋 Einträge</th></tr></thead>
-                            <tbody id="personalTableBody"></tbody>
-                        </table>
-                    </div>
-                    <div class="search-results">
-                        <h4><i class="fas fa-search"></i> SUCHE</h4>
-                        <div class="input-group" style="justify-content:flex-start;">
-                            <input type="text" id="searchName" placeholder="Name eingeben..." oninput="autoLoadPerson()" style="flex:1;">
+
+                <div class="section-title"><i class="fas fa-ship"></i> BOOTE & SPEICHERN</div>
+                <div class="boats-grid" id="dynamicBoatsContainer"></div>
+
+                <div class="stopwatch-layout">
+                    <div class="stopwatch-left">
+                        <div class="avg-panel">
+                            <h4><i class="fas fa-chart-bar"></i> DURCHSCHNITT ALLER SOLDATEN</h4>
+                            <table class="avg-table">
+                                <thead><tr><th>Boot</th><th>⌀ Durchschnitt</th><th>📋 Einträge</th></tr></thead>
+                                <tbody id="avgTableBody"></tbody>
+                            </table>
                         </div>
-                        <div id="resultTable"><p class="text-muted">🔍 Wähle eine Person aus oder suche.</p></div>
+                        <div class="section-title"><i class="fas fa-users"></i> REGISTRIERTE PERSONEN</div>
+                        <div id="allNamesList" class="name-list"><span class="text-muted">Laden...</span></div>
+                    </div>
+                    <div class="stopwatch-right">
+                        <div class="personal-panel" id="personalPanel">
+                            <h4><i class="fas fa-user"></i> PERSÖNLICHE STATS: <span id="personalPanelName" class="text-blue"></span></h4>
+                            <table class="personal-table">
+                                <thead><tr><th>Boot</th><th>⌀ Durchschnitt</th><th>📋 Einträge</th></tr></thead>
+                                <tbody id="personalTableBody"></tbody>
+                            </table>
+                        </div>
+                        <div class="search-results">
+                            <h4><i class="fas fa-search"></i> SUCHE</h4>
+                            <div class="input-group" style="justify-content:flex-start;">
+                                <input type="text" id="searchName" placeholder="Name eingeben..." oninput="autoLoadPerson()" style="flex:1;">
+                            </div>
+                            <div id="resultTable"><p class="text-muted">🔍 Wähle eine Person aus oder suche.</p></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- ============================================================
-        TAB: CONFISCATIONS
-        ============================================================ -->
-        <div id="tab-confiscations" class="tab-content">
-            <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-                <div>
-                    <h3 style="color:#3b82f6;margin:0;"><i class="fas fa-clipboard-list"></i> Beschlagnahmungen</h3>
-                    <span class="text-muted" style="font-size:13px;">Verwalte alle Beschlagnahmungen</span>
+            <!-- ============================================================
+            TAB: CONFISCATIONS
+            ============================================================ -->
+            <div id="tab-confiscations" class="tab-content">
+                <div class="page-header">
+                    <div>
+                        <h3 style="color:#3b82f6;"><i class="fas fa-clipboard-list"></i> Beschlagnahmungen</h3>
+                        <span class="text-muted" style="font-size:13px;">Verwalte alle Beschlagnahmungen</span>
+                    </div>
+                    <button class="btn-success" id="newConfiscationBtn" onclick="openNewConfiscationModal()">
+                        <i class="fas fa-plus"></i> Neue Beschlagnahmung
+                    </button>
                 </div>
-                <button class="btn-success" id="newConfiscationBtn" onclick="openNewConfiscationModal()">
-                    <i class="fas fa-plus"></i> Neue Beschlagnahmung
-                </button>
-            </div>
 
-            <div class="confiscation-week-nav">
-                <button onclick="confiscationPrevWeek()" class="btn-sm"><i class="fas fa-chevron-left"></i></button>
-                <span class="week-label" id="confiscationWeekLabel">20. – 26.07.2026</span>
-                <span class="week-badge" id="confiscationWeekBadge">aktuell</span>
-                <button onclick="confiscationNextWeek()" class="btn-sm"><i class="fas fa-chevron-right"></i></button>
-                <button onclick="confiscationGoToCurrent()" class="btn-sm btn-primary"><i class="fas fa-calendar-day"></i> Heute</button>
-            </div>
+                <div class="confiscation-week-nav">
+                    <button onclick="confiscationPrevWeek()" class="btn-sm"><i class="fas fa-chevron-left"></i></button>
+                    <span class="week-label" id="confiscationWeekLabel">20. – 26.07.2026</span>
+                    <span class="week-badge" id="confiscationWeekBadge">aktuell</span>
+                    <button onclick="confiscationNextWeek()" class="btn-sm"><i class="fas fa-chevron-right"></i></button>
+                    <button onclick="confiscationGoToCurrent()" class="btn-sm btn-primary"><i class="fas fa-calendar-day"></i> Heute</button>
+                </div>
 
-            <div class="confiscation-summary">
-                <div class="money-badge green">🟢 Grüngeld: <span id="totalGreenDisplay">0 €</span></div>
-                <div class="money-badge black">⚫ Schwarzgeld: <span id="totalBlackDisplay">0 €</span></div>
-                <div class="money-badge items">📦 Gegenstände: <span id="totalItemsDisplay">0</span></div>
-            </div>
+                <div class="confiscation-summary">
+                    <div class="money-badge green">🟢 Grüngeld: <span id="totalGreenDisplay">0 €</span></div>
+                    <div class="money-badge black">⚫ Schwarzgeld: <span id="totalBlackDisplay">0 €</span></div>
+                    <div class="money-badge items">📦 Gegenstände: <span id="totalItemsDisplay">0</span></div>
+                </div>
 
-            <div id="confiscationCards" class="confiscation-cards">
-                <p class="text-muted" style="grid-column:1/-1;text-align:center;">Keine Beschlagnahmungen in dieser Woche.</p>
-            </div>
-        </div>
-
-        <!-- ============================================================
-        TAB: PAYOUT
-        ============================================================ -->
-        <div id="tab-payout" class="tab-content">
-            <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-                <div>
-                    <h3 style="color:#22c55e;margin:0;"><i class="fas fa-money-bill-wave"></i> Auszahlung</h3>
-                    <span class="text-muted" style="font-size:13px;">Verwalte wöchentliche Auszahlungen</span>
+                <div id="confiscationCards" class="confiscation-cards">
+                    <p class="text-muted" style="grid-column:1/-1;text-align:center;">Keine Beschlagnahmungen in dieser Woche.</p>
                 </div>
             </div>
 
-            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
-                <label style="color:#8f9499;font-size:13px;">📅 Woche:</label>
-                <input type="date" id="payoutWeekInput" onchange="loadPayoutData()" style="width:180px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                <button onclick="previousWeek()" class="btn-sm"><i class="fas fa-chevron-left"></i></button>
-                <button onclick="nextWeek()" class="btn-sm"><i class="fas fa-chevron-right"></i></button>
-                <button onclick="goToCurrentWeek()" class="btn-sm btn-primary"><i class="fas fa-calendar-day"></i> Heute</button>
-            </div>
-            <div id="payoutInfo" style="color:#8f9499;font-size:13px;margin-bottom:10px;"></div>
-
-            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
-                <div style="flex:1;min-width:160px;padding:8px 14px;background:#030303;border-radius:8px;border:1px solid #292929;">
-                    <label style="color:#8f9499;font-size:12px;display:block;">💰 Preis pro Kontrolle</label>
-                    <input type="number" id="pricePerCheckInput" value="5000" min="0" step="100" onchange="updatePricePerCheck(this.value)" style="width:100%;padding:6px 10px;border-radius:4px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                </div>
-                <div style="flex:1;min-width:120px;padding:8px 14px;background:#030303;border-radius:8px;border:1px solid #292929;">
-                    <label style="color:#8f9499;font-size:12px;display:block;">📋 Protokolle</label>
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        <input type="number" id="protocolGlobalInput" value="0" min="0" onchange="updateProtocolGlobal(this.value)" style="flex:1;padding:6px 10px;border-radius:4px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                        <span id="protocolGlobalDisplay" style="color:#22c55e;font-weight:700;font-size:16px;">0</span>
+            <!-- ============================================================
+            TAB: PAYOUT
+            ============================================================ -->
+            <div id="tab-payout" class="tab-content">
+                <div class="page-header">
+                    <div>
+                        <h3 style="color:#22c55e;"><i class="fas fa-money-bill-wave"></i> Auszahlung</h3>
+                        <span class="text-muted" style="font-size:13px;">Verwalte wöchentliche Auszahlungen</span>
                     </div>
                 </div>
-                <div style="flex:2;min-width:200px;padding:8px 14px;background:#030303;border-radius:8px;border:1px solid #292929;">
-                    <label style="color:#8f9499;font-size:12px;display:block;">📝 Notiz</label>
-                    <input type="text" id="payoutNoteInput" placeholder="Notiz eingeben..." onchange="updatePayoutNote(this.value)" style="width:100%;padding:6px 10px;border-radius:4px;border:1px solid #303030;background:#050505;color:#ffffff;">
+
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
+                    <label style="color:#8f9499;font-size:13px;">📅 Woche:</label>
+                    <input type="date" id="payoutWeekInput" onchange="loadPayoutData()" style="width:180px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
+                    <button onclick="previousWeek()" class="btn-sm"><i class="fas fa-chevron-left"></i></button>
+                    <button onclick="nextWeek()" class="btn-sm"><i class="fas fa-chevron-right"></i></button>
+                    <button onclick="goToCurrentWeek()" class="btn-sm btn-primary"><i class="fas fa-calendar-day"></i> Heute</button>
                 </div>
-            </div>
+                <div id="payoutInfo" style="color:#8f9499;font-size:13px;margin-bottom:10px;"></div>
 
-            <div class="payout-table-wrapper">
-                <table class="payout-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Bootskontrollen</th>
-                            <th>Pro Kontrolle</th>
-                            <th>Summe</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="payoutTableBody"><tr><td colspan="5" style="text-align:center;color:#8f9499;padding:20px;">Laden...</td></tr></tbody>
-                </table>
-            </div>
-
-            <div class="payout-total">
-                <div class="payout-total-item"><div class="big" id="totalKontrollen">0</div><div class="lbl">Kontrollen</div></div>
-                <div class="payout-total-item"><div class="big green" id="totalAusgezahlt">0 $</div><div class="lbl">Ausgezahlt</div></div>
-                <div class="payout-total-item"><div class="big gold" id="totalOffen">0 $</div><div class="lbl">Offen</div></div>
-                <div class="payout-total-item"><div class="big blue" id="totalSumme">0 $</div><div class="lbl">Gesamt</div></div>
-            </div>
-        </div>
-
-        <!-- ============================================================
-        TAB: ELK
-        ============================================================ -->
-        <div id="tab-elk" class="tab-content">
-            <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-                <div>
-                    <h3 style="color:#ffaa33;margin:0;"><i class="fas fa-clipboard-check"></i> Einsatzleitung Kontrollliste (ELK)</h3>
-                    <span class="text-muted" style="font-size:13px;">Verwalte alle Einsatzpunkte mit Toggle (✅ / ❌)</span>
-                </div>
-            </div>
-            <div id="elkContainer" class="elk-container">
-                <!-- Wird dynamisch geladen -->
-            </div>
-        </div>
-
-        <!-- ============================================================
-        TAB: LOGS
-        ============================================================ -->
-        <div id="tab-logs" class="tab-content">
-            <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-                <div>
-                    <h3 style="color:#ffaa33;margin:0;"><i class="fas fa-history"></i> Aktivitätslogs</h3>
-                    <span class="text-muted" style="font-size:13px;">Alle Aktionen im System</span>
-                </div>
-            </div>
-            <div class="admin-section" style="border-left-color:#1f6feb;">
-                <h4 style="color:#3b82f6;">🔍 Benutzer auswählen</h4>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-                    <select id="logUserSelect" onchange="loadUserLogs()" style="flex:1;min-width:200px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                        <option value="">-- Benutzer wählen --</option>
-                    </select>
-                    <button onclick="loadAllLogs()" class="btn-primary"><i class="fas fa-list"></i> Alle Logs</button>
-                </div>
-            </div>
-            <div id="logContainer"><p class="text-muted">Wähle einen Benutzer aus oder klicke auf "Alle Logs".</p></div>
-        </div>
-
-        <!-- ============================================================
-        TAB: ADMIN
-        ============================================================ -->
-        <div id="tab-admin" class="tab-content">
-            <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-                <div>
-                    <h3 style="color:#ef3340;margin:0;"><i class="fas fa-shield-alt"></i> Admin</h3>
-                    <span class="text-muted" style="font-size:13px;">Systemverwaltung & Konfiguration</span>
-                </div>
-            </div>
-
-            <!-- ===== BENUTZERVERWALTUNG ===== -->
-            <div class="admin-section">
-                <h4><i class="fas fa-users-cog"></i> Benutzerverwaltung</h4>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:8px;">
-                    <input type="text" id="newUsername" placeholder="Benutzername" style="flex:1;min-width:120px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                    <input type="password" id="newPassword" placeholder="Passwort" style="flex:1;min-width:120px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                    <select id="newUserRole" style="padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                        <!-- Wird von JS befüllt -->
-                    </select>
-                    <button onclick="createUser()" class="btn-success"><i class="fas fa-plus"></i> Erstellen</button>
-                    <span style="color:#62676c;font-size:12px;">|</span>
-                    <input type="text" id="adminDeletePerson" placeholder="Person löschen" style="flex:0.8;min-width:100px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                    <button onclick="adminDeletePerson()" class="btn-danger btn-sm"><i class="fas fa-trash"></i> Löschen</button>
-                    <button onclick="manualCleanupLogs()" class="btn-sm" style="border-color:#ffaa33;color:#ffaa33;"><i class="fas fa-broom"></i> Logs</button>
-                </div>
-                <p style="color:#62676c;font-size:11px;">⚠️ "Löschen" entfernt alle Bootszeiten einer Person | "Logs" löscht Einträge älter als 32 Tage</p>
-
-                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px;">
-                    <input type="text" id="userSearchInput" placeholder="🔍 Benutzer suchen..." oninput="filterUserTable()" style="flex:1;min-width:180px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                    <span id="userCountDisplay" style="color:#62676c;font-size:13px;">0 Benutzer</span>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;">
+                    <div style="flex:1;min-width:160px;padding:8px 14px;background:#030303;border-radius:8px;border:1px solid #292929;">
+                        <label style="color:#8f9499;font-size:12px;display:block;">💰 Preis pro Kontrolle</label>
+                        <input type="number" id="pricePerCheckInput" value="5000" min="0" step="100" onchange="updatePricePerCheck(this.value)" style="width:100%;padding:6px 10px;border-radius:4px;border:1px solid #303030;background:#050505;color:#ffffff;">
+                    </div>
+                    <div style="flex:1;min-width:120px;padding:8px 14px;background:#030303;border-radius:8px;border:1px solid #292929;">
+                        <label style="color:#8f9499;font-size:12px;display:block;">📋 Protokolle</label>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <input type="number" id="protocolGlobalInput" value="0" min="0" onchange="updateProtocolGlobal(this.value)" style="flex:1;padding:6px 10px;border-radius:4px;border:1px solid #303030;background:#050505;color:#ffffff;">
+                            <span id="protocolGlobalDisplay" style="color:#22c55e;font-weight:700;font-size:16px;">0</span>
+                        </div>
+                    </div>
+                    <div style="flex:2;min-width:200px;padding:8px 14px;background:#030303;border-radius:8px;border:1px solid #292929;">
+                        <label style="color:#8f9499;font-size:12px;display:block;">📝 Notiz</label>
+                        <input type="text" id="payoutNoteInput" placeholder="Notiz eingeben..." onchange="updatePayoutNote(this.value)" style="width:100%;padding:6px 10px;border-radius:4px;border:1px solid #303030;background:#050505;color:#ffffff;">
+                    </div>
                 </div>
 
-                <div class="user-table-wrap">
-                    <table class="user-table">
+                <div class="payout-table-wrapper">
+                    <table class="payout-table">
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Rolle</th>
-                                <th>Berechtigungen</th>
-                                <th>Erstellt</th>
-                                <th>Aktionen</th>
+                                <th>Bootskontrollen</th>
+                                <th>Pro Kontrolle</th>
+                                <th>Summe</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
-                        <tbody id="userTableBody"></tbody>
+                        <tbody id="payoutTableBody"><tr><td colspan="5" style="text-align:center;color:#8f9499;padding:20px;">Laden...</td></tr></tbody>
                     </table>
                 </div>
-            </div>
 
-            <!-- ===== ROLLEN & BERECHTIGUNGEN (3-Stufen: write, read, none) ===== -->
-            <div class="admin-section" style="border-left-color:#ffaa33;">
-                <h4 style="color:#ffaa33;"><i class="fas fa-user-tag"></i> Rollen & Berechtigungen</h4>
-
-                <!-- Rollen verwalten -->
-                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
-                    <label style="color:#8f9499;font-size:13px;">Rolle:</label>
-                    <select id="roleSelect" onchange="loadRolePermissions()" style="padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;flex:1;min-width:150px;">
-                        <option value="">-- Rolle wählen --</option>
-                    </select>
-                    <div style="display:flex;gap:6px;">
-                        <input type="text" id="newRoleName" placeholder="Neue Rolle" style="padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;width:140px;">
-                        <button onclick="createRole()" class="btn-success btn-sm"><i class="fas fa-plus"></i> Hinzufügen</button>
-                    </div>
-                </div>
-
-                <!-- Berechtigungen für ausgewählte Rolle (3-Stufen) -->
-                <div id="rolePermissionsEditor" style="display:none;margin-top:8px;">
-                    <p style="color:#8f9499;font-size:12px;margin-bottom:8px;">
-                        <span style="color:#22c55e;">✅ Schreiben/Bearbeiten</span> &nbsp;
-                        <span style="color:#ffaa33;">👁️ Nur Ansehen</span> &nbsp;
-                        <span style="color:#d3212d;">❌ Kein Zugriff</span>
-                    </p>
-                    <div class="perm-grid">
-                        <div class="perm-item">
-                            <label>⏱️ Stoppuhr</label>
-                            <select id="rolePermStopwatch" onchange="rolePermChanged()">
-                                <option value="write">✅ Schreiben</option>
-                                <option value="read">👁️ Ansehen</option>
-                                <option value="none">❌ Kein</option>
-                            </select>
-                        </div>
-                        <div class="perm-item">
-                            <label>📋 Beschlagn.</label>
-                            <select id="rolePermConfiscations" onchange="rolePermChanged()">
-                                <option value="write">✅ Schreiben</option>
-                                <option value="read">👁️ Ansehen</option>
-                                <option value="none">❌ Kein</option>
-                            </select>
-                        </div>
-                        <div class="perm-item">
-                            <label>💰 Auszahlung</label>
-                            <select id="rolePermPayout" onchange="rolePermChanged()">
-                                <option value="write">✅ Schreiben</option>
-                                <option value="read">👁️ Ansehen</option>
-                                <option value="none">❌ Kein</option>
-                            </select>
-                        </div>
-                        <div class="perm-item">
-                            <label>📊 Logs</label>
-                            <select id="rolePermLogs" onchange="rolePermChanged()">
-                                <option value="write">✅ Schreiben</option>
-                                <option value="read">👁️ Ansehen</option>
-                                <option value="none">❌ Kein</option>
-                            </select>
-                        </div>
-                        <div class="perm-item">
-                            <label>📋 ELK</label>
-                            <select id="rolePermElk" onchange="rolePermChanged()">
-                                <option value="write">✅ Schreiben</option>
-                                <option value="read">👁️ Ansehen</option>
-                                <option value="none">❌ Kein</option>
-                            </select>
-                        </div>
-                        <div class="perm-item">
-                            <label>🔑 Admin</label>
-                            <select id="rolePermAdmin" onchange="rolePermChanged()">
-                                <option value="none">❌ Kein</option>
-                                <option value="write">✅ Admin</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;">
-                        <button onclick="saveRolePermissions()" class="btn-success btn-sm"><i class="fas fa-save"></i> Berechtigungen speichern</button>
-                        <button onclick="deleteRole()" class="btn-danger btn-sm"><i class="fas fa-trash"></i> Rolle löschen</button>
-                    </div>
-                    <p id="rolePermissionStatus" style="color:#22c55e;font-size:12px;margin-top:6px;display:none;">✅ Berechtigungen gespeichert! Alle Benutzer mit dieser Rolle wurden aktualisiert.</p>
+                <div class="payout-total">
+                    <div class="payout-total-item"><div class="big" id="totalKontrollen">0</div><div class="lbl">Kontrollen</div></div>
+                    <div class="payout-total-item"><div class="big green" id="totalAusgezahlt">0 $</div><div class="lbl">Ausgezahlt</div></div>
+                    <div class="payout-total-item"><div class="big gold" id="totalOffen">0 $</div><div class="lbl">Offen</div></div>
+                    <div class="payout-total-item"><div class="big blue" id="totalSumme">0 $</div><div class="lbl">Gesamt</div></div>
                 </div>
             </div>
 
-            <!-- ===== BOOTVERWALTUNG ===== -->
-            <div class="admin-section" style="border-left-color:#1f6feb;">
-                <h4 style="color:#3b82f6;"><i class="fas fa-ship"></i> Bootverwaltung & Reihenfolge</h4>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-                    <button onclick="openBoatModal()" class="btn-gold btn-sm"><i class="fas fa-plus"></i> Neues Boot</button>
+            <!-- ============================================================
+            TAB: ELK
+            ============================================================ -->
+            <div id="tab-elk" class="tab-content">
+                <div class="page-header">
+                    <div>
+                        <h3 style="color:#ffaa33;"><i class="fas fa-clipboard-check"></i> Einsatzleitung Kontrollliste (ELK)</h3>
+                        <span class="text-muted" style="font-size:13px;">Verwalte alle Einsatzpunkte mit Toggle (✅ / ❌)</span>
+                    </div>
                 </div>
-                <div class="boat-order-wrap">
-                    <div id="boatOrderListContainer" style="padding:4px 0;"></div>
-                </div>
-            </div>
-
-            <!-- ===== BOATCHECK SICHTBARKEIT ===== -->
-            <div class="admin-section" style="border-left-color:#22c55e;">
-                <h4 style="color:#22c55e;"><i class="fas fa-eye"></i> Bootskontrolle-Sichtbarkeit</h4>
-                <p style="color:#8f9499;font-size:12px;margin-bottom:6px;">Benutzer in der Auszahlung ein-/ausblenden</p>
-                <div class="boatcheck-list" id="boatcheckListContainer">
+                <div id="elkContainer" class="elk-container">
                     <!-- Wird dynamisch geladen -->
                 </div>
             </div>
 
-            <!-- ===== ELK FELDER ===== -->
-            <div class="admin-section" style="border-left-color:#ffaa33;">
-                <h4 style="color:#ffaa33;"><i class="fas fa-list-ul"></i> ELK Felder verwalten</h4>
-                <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-                    <input type="text" id="elkNewLabel" placeholder="Feldname (z.B. 10-07)" style="flex:1;min-width:150px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
-                    <button onclick="addElkField()" class="btn-success btn-sm"><i class="fas fa-plus"></i> Feld hinzufügen</button>
+            <!-- ============================================================
+            TAB: LOGS
+            ============================================================ -->
+            <div id="tab-logs" class="tab-content">
+                <div class="page-header">
+                    <div>
+                        <h3 style="color:#ffaa33;"><i class="fas fa-history"></i> Aktivitätslogs</h3>
+                        <span class="text-muted" style="font-size:13px;">Alle Aktionen im System</span>
+                    </div>
                 </div>
-                <div class="elk-admin-wrap">
-                    <table class="elk-admin-table" style="width:100%;font-size:13px;">
-                        <thead>
-                            <tr>
-                                <th style="position:sticky;top:0;background:#0d0d0d;padding:6px 10px;text-align:left;color:#ffaa33;">Feldname</th>
-                                <th style="position:sticky;top:0;background:#0d0d0d;padding:6px 10px;text-align:left;color:#ffaa33;">Aktionen</th>
-                            </tr>
-                        </thead>
-                        <tbody id="elkAdminBody"></tbody>
-                    </table>
+                <div class="admin-section" style="border-left-color:#1f6feb;">
+                    <h4 style="color:#3b82f6;">🔍 Benutzer auswählen</h4>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+                        <select id="logUserSelect" onchange="loadUserLogs()" style="flex:1;min-width:200px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
+                            <option value="">-- Benutzer wählen --</option>
+                        </select>
+                        <button onclick="loadAllLogs()" class="btn-primary"><i class="fas fa-list"></i> Alle Logs</button>
+                    </div>
+                </div>
+                <div id="logContainer"><p class="text-muted">Wähle einen Benutzer aus oder klicke auf "Alle Logs".</p></div>
+            </div>
+
+            <!-- ============================================================
+            TAB: ADMIN
+            ============================================================ -->
+            <div id="tab-admin" class="tab-content">
+                <div class="page-header">
+                    <div>
+                        <h3 style="color:#ef3340;"><i class="fas fa-shield-alt"></i> Admin</h3>
+                        <span class="text-muted" style="font-size:13px;">Systemverwaltung & Konfiguration</span>
+                    </div>
+                </div>
+
+                <!-- BENUTZERVERWALTUNG -->
+                <div class="admin-section">
+                    <h4><i class="fas fa-users-cog"></i> Benutzerverwaltung</h4>
+                    <div class="create-row">
+                        <input type="text" id="newUsername" placeholder="Benutzername" style="max-width:160px;">
+                        <input type="password" id="newPassword" placeholder="Passwort" style="max-width:160px;">
+                        <select id="newUserRole" style="padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
+                            <!-- Wird von JS befüllt -->
+                        </select>
+                        <button onclick="createUser()" class="btn-success"><i class="fas fa-plus"></i> Erstellen</button>
+                        <span style="color:#62676c;font-size:12px;">|</span>
+                        <input type="text" id="adminDeletePerson" placeholder="Person löschen" style="max-width:160px;">
+                        <button onclick="adminDeletePerson()" class="btn-danger btn-sm"><i class="fas fa-trash"></i> Löschen</button>
+                        <button onclick="manualCleanupLogs()" class="btn-sm" style="border-color:#ffaa33;color:#ffaa33;"><i class="fas fa-broom"></i> Logs</button>
+                    </div>
+                    <p style="color:#62676c;font-size:11px;margin-bottom:6px;">⚠️ "Löschen" entfernt alle Bootszeiten einer Person | "Logs" löscht Einträge älter als 32 Tage</p>
+
+                    <div class="admin-search-box">
+                        <input type="text" id="userSearchInput" placeholder="🔍 Benutzer suchen..." oninput="filterUserTable()">
+                        <span class="search-count" id="userCountDisplay">0 Benutzer</span>
+                    </div>
+
+                    <div class="user-table-wrap">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Rolle</th>
+                                    <th>Berechtigungen</th>
+                                    <th>Erstellt</th>
+                                    <th>Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ROLLEN & BERECHTIGUNGEN -->
+                <div class="admin-section" style="border-left-color:#ffaa33;">
+                    <h4 style="color:#ffaa33;"><i class="fas fa-user-tag"></i> Rollen & Berechtigungen</h4>
+
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+                        <label style="color:#8f9499;font-size:13px;">Rolle:</label>
+                        <select id="roleSelect" onchange="loadRolePermissions()" style="padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;flex:1;min-width:150px;">
+                            <option value="">-- Rolle wählen --</option>
+                        </select>
+                        <div style="display:flex;gap:6px;">
+                            <input type="text" id="newRoleName" placeholder="Neue Rolle" style="padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;width:140px;">
+                            <button onclick="createRole()" class="btn-success btn-sm"><i class="fas fa-plus"></i> Hinzufügen</button>
+                        </div>
+                    </div>
+
+                    <div id="rolePermissionsEditor" style="display:none;margin-top:8px;">
+                        <p style="color:#8f9499;font-size:12px;margin-bottom:8px;">
+                            <span style="color:#22c55e;">✅ Schreiben/Bearbeiten</span> &nbsp;
+                            <span style="color:#ffaa33;">👁️ Nur Ansehen</span> &nbsp;
+                            <span style="color:#d3212d;">❌ Kein Zugriff</span>
+                        </p>
+                        <div class="perm-grid">
+                            <div class="perm-item">
+                                <label>⏱️ Stoppuhr</label>
+                                <select id="rolePermStopwatch" onchange="rolePermChanged()">
+                                    <option value="write">✅ Schreiben</option>
+                                    <option value="read">👁️ Ansehen</option>
+                                    <option value="none">❌ Kein</option>
+                                </select>
+                            </div>
+                            <div class="perm-item">
+                                <label>📋 Beschlagn.</label>
+                                <select id="rolePermConfiscations" onchange="rolePermChanged()">
+                                    <option value="write">✅ Schreiben</option>
+                                    <option value="read">👁️ Ansehen</option>
+                                    <option value="none">❌ Kein</option>
+                                </select>
+                            </div>
+                            <div class="perm-item">
+                                <label>💰 Auszahlung</label>
+                                <select id="rolePermPayout" onchange="rolePermChanged()">
+                                    <option value="write">✅ Schreiben</option>
+                                    <option value="read">👁️ Ansehen</option>
+                                    <option value="none">❌ Kein</option>
+                                </select>
+                            </div>
+                            <div class="perm-item">
+                                <label>📊 Logs</label>
+                                <select id="rolePermLogs" onchange="rolePermChanged()">
+                                    <option value="write">✅ Schreiben</option>
+                                    <option value="read">👁️ Ansehen</option>
+                                    <option value="none">❌ Kein</option>
+                                </select>
+                            </div>
+                            <div class="perm-item">
+                                <label>📋 ELK</label>
+                                <select id="rolePermElk" onchange="rolePermChanged()">
+                                    <option value="write">✅ Schreiben</option>
+                                    <option value="read">👁️ Ansehen</option>
+                                    <option value="none">❌ Kein</option>
+                                </select>
+                            </div>
+                            <div class="perm-item">
+                                <label>🔑 Admin</label>
+                                <select id="rolePermAdmin" onchange="rolePermChanged()">
+                                    <option value="none">❌ Kein</option>
+                                    <option value="write">✅ Admin</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="margin-top:8px;display:flex;gap:10px;flex-wrap:wrap;">
+                            <button onclick="saveRolePermissions()" class="btn-success btn-sm"><i class="fas fa-save"></i> Berechtigungen speichern</button>
+                            <button onclick="deleteRole()" class="btn-danger btn-sm"><i class="fas fa-trash"></i> Rolle löschen</button>
+                        </div>
+                        <p id="rolePermissionStatus" style="color:#22c55e;font-size:12px;margin-top:6px;display:none;">✅ Berechtigungen gespeichert! Alle Benutzer mit dieser Rolle wurden aktualisiert.</p>
+                    </div>
+                </div>
+
+                <!-- BOOTVERWALTUNG -->
+                <div class="admin-section" style="border-left-color:#1f6feb;">
+                    <h4 style="color:#3b82f6;"><i class="fas fa-ship"></i> Bootverwaltung & Reihenfolge</h4>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+                        <button onclick="openBoatModal()" class="btn-gold btn-sm"><i class="fas fa-plus"></i> Neues Boot</button>
+                    </div>
+                    <div class="boat-order-wrap">
+                        <div id="boatOrderListContainer" style="padding:4px 0;"></div>
+                    </div>
+                </div>
+
+                <!-- BOATCHECK SICHTBARKEIT -->
+                <div class="admin-section" style="border-left-color:#22c55e;">
+                    <h4 style="color:#22c55e;"><i class="fas fa-eye"></i> Bootskontrolle-Sichtbarkeit</h4>
+                    <p style="color:#8f9499;font-size:12px;margin-bottom:6px;">Benutzer in der Auszahlung ein-/ausblenden</p>
+                    <div class="boatcheck-list" id="boatcheckListContainer">
+                        <!-- Wird dynamisch geladen -->
+                    </div>
+                </div>
+
+                <!-- ELK FELDER -->
+                <div class="admin-section" style="border-left-color:#ffaa33;">
+                    <h4 style="color:#ffaa33;"><i class="fas fa-list-ul"></i> ELK Felder verwalten</h4>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+                        <input type="text" id="elkNewLabel" placeholder="Feldname (z.B. 10-07)" style="flex:1;min-width:150px;padding:8px 12px;border-radius:6px;border:1px solid #303030;background:#050505;color:#ffffff;">
+                        <button onclick="addElkField()" class="btn-success btn-sm"><i class="fas fa-plus"></i> Feld hinzufügen</button>
+                    </div>
+                    <div class="elk-admin-wrap">
+                        <table class="elk-admin-table" style="width:100%;font-size:13px;">
+                            <thead>
+                                <tr>
+                                    <th style="position:sticky;top:0;background:#0d0d0d;padding:6px 10px;text-align:left;color:#ffaa33;">Feldname</th>
+                                    <th style="position:sticky;top:0;background:#0d0d0d;padding:6px 10px;text-align:left;color:#ffaa33;">Aktionen</th>
+                                </tr>
+                            </thead>
+                            <tbody id="elkAdminBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
 
+        </div>
     </div>
 
     <!-- ============================================================
@@ -2608,7 +2413,7 @@
     </div>
 
     <!-- ============================================================
-    MODAL: DETAIL BESCHLAGNAHMUNG (Eigene schöne Ansicht - KEIN Chrome-Popup)
+    MODAL: DETAIL BESCHLAGNAHMUNG
     ============================================================ -->
     <div class="modal-overlay" id="confiscationDetailOverlay">
         <div class="modal" style="max-width:700px;">
@@ -2673,7 +2478,7 @@
     ============================================================ -->
     <script>
         // =====================================================================
-        // 1. FIREBASE KONFIGURATION
+        // FIREBASE KONFIGURATION
         // =====================================================================
         const firebaseConfig = {
             apiKey: "AIzaSyB7AmLb6NwR8sKyDXtIhmghGszpX_VsICY",
@@ -2689,21 +2494,23 @@
         const database = firebase.database();
 
         // =====================================================================
-        // 2. GLOBALE VARIABLEN
+        // GLOBALE VARIABLEN
         // =====================================================================
         let currentUser = null;
         let isAdmin = false;
-        let userRole = 'user';
+        let userRole = 'cadet';
         let userPermissions = {
             stopwatch: 'write',
             confiscations: 'write',
-            payout: 'write',
-            logs: 'write',
-            elk: 'write',
+            payout: 'read',
+            logs: 'none',
+            elk: 'none',
             admin: 'none'
         };
         const SESSION_DURATION = 30 * 60 * 1000;
         const DEFAULT_PRICE = 5000;
+        const BLOCKED_USER = 'colin';
+
         let sessionTimeout = null;
         let userDataListener = null;
         let currentListener = null;
@@ -2718,21 +2525,25 @@
         let selectedPersonName = '';
         let PRICE_PER_CHECK = DEFAULT_PRICE;
         let editingBoatKey = null;
-        const DEFAULT_BOATS = {
-            'Predator': { emoji: '⚡', label: 'Predator' },
-            'Dinghy': { emoji: '🛶', label: 'Dinghy' },
-            'PatrolBoat': { emoji: '🚢', label: 'Kurtz 31 Patrol Boat' },
-            'WeaponizedDinghy': { emoji: '💥', label: 'Weaponized Dinghy' }
-        };
         let boatOrder = [];
         let boatCache = {};
         let allConfiscations = [];
         let priceHistoryCache = {};
         let editingUser = null;
         let confiscationWeekOffset = 0;
+        let allUsersCache = [];
+        let elkData = [];
+        let currentRole = null;
+
+        const DEFAULT_BOATS = {
+            'Predator': { emoji: '⚡', label: 'Predator' },
+            'Dinghy': { emoji: '🛶', label: 'Dinghy' },
+            'PatrolBoat': { emoji: '🚢', label: 'Kurtz 31 Patrol Boat' },
+            'WeaponizedDinghy': { emoji: '💥', label: 'Weaponized Dinghy' }
+        };
 
         // =====================================================================
-        // 3. ROLLEN & BERECHTIGUNGEN (Standard)
+        // ROLLEN (User entfernt - SEA CADET ist Standard)
         // =====================================================================
         let ROLE_DEFS = {};
 
@@ -2758,20 +2569,13 @@
                     color: '#22c55e',
                     permissions: { stopwatch: 'write', confiscations: 'write', payout: 'read', logs: 'none',
                         elk: 'none', admin: 'none' }
-                },
-                'user': {
-                    label: 'User',
-                    icon: '👤',
-                    color: '#3b82f6',
-                    permissions: { stopwatch: 'write', confiscations: 'none', payout: 'none', logs: 'none',
-                        elk: 'none', admin: 'none' }
                 }
             };
         }
         initDefaultRoles();
 
         // =====================================================================
-        // 4. HELPER FUNKTIONEN
+        // HELPER FUNKTIONEN
         // =====================================================================
         function getDisplayName(username) {
             if (!username) return 'Unbekannt';
@@ -2847,191 +2651,135 @@
         }
 
         // =====================================================================
-        // 5. SESSION MANAGEMENT
+        // SESSION MANAGEMENT
         // =====================================================================
         function saveSession(username, isAdminUser, permissions, role) {
-            const sessionData = {
-                username: username,
+            localStorage.setItem('navySession', JSON.stringify({
+                username,
                 isAdmin: isAdminUser,
-                permissions: permissions,
-                role: role || 'user',
+                permissions,
+                role: role || 'cadet',
                 expiry: Date.now() + SESSION_DURATION
-            };
-            localStorage.setItem('navySession', JSON.stringify(sessionData));
+            }));
         }
 
         function loadSession() {
             const sessionStr = localStorage.getItem('navySession');
             if (!sessionStr) return null;
             try {
-                const sessionData = JSON.parse(sessionStr);
-                if (Date.now() > sessionData.expiry) {
-                    localStorage.removeItem('navySession');
-                    return null;
-                }
-                sessionData.expiry = Date.now() + SESSION_DURATION;
-                localStorage.setItem('navySession', JSON.stringify(sessionData));
-                return sessionData;
-            } catch (error) {
-                localStorage.removeItem('navySession');
-                return null;
-            }
+                const data = JSON.parse(sessionStr);
+                if (Date.now() > data.expiry) { localStorage.removeItem('navySession'); return null; }
+                data.expiry = Date.now() + SESSION_DURATION;
+                localStorage.setItem('navySession', JSON.stringify(data));
+                return data;
+            } catch { localStorage.removeItem('navySession'); return null; }
         }
 
-        function clearSession() {
-            localStorage.removeItem('navySession');
-        }
-
-        function startSessionTimer() {
-            if (sessionTimeout) clearTimeout(sessionTimeout);
-            sessionTimeout = setTimeout(() => {
-                showToast('⚠️ Sitzung abgelaufen (30 Min. Inaktivität)', 'warning');
-                setTimeout(() => doLogout(), 1500);
-            }, SESSION_DURATION);
-        }
-
-        function resetSessionTimer() {
-            if (sessionTimeout) { clearTimeout(sessionTimeout);
-                startSessionTimer(); }
-            const sessionStr = localStorage.getItem('navySession');
-            if (sessionStr) {
-                try {
-                    const sessionData = JSON.parse(sessionStr);
-                    sessionData.expiry = Date.now() + SESSION_DURATION;
-                    localStorage.setItem('navySession', JSON.stringify(sessionData));
-                } catch (error) {}
-            }
-        }
-
-        ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
-            document.addEventListener(event, resetSessionTimer);
-        });
+        function clearSession() { localStorage.removeItem('navySession'); }
 
         // =====================================================================
-        // 6. LOGGING
+        // LOGGING
         // =====================================================================
         async function addLog(username, action, details = '') {
             try {
-                const logEntry = {
-                    username: username,
-                    action: action,
-                    details: details,
+                await database.ref('Navy-boote/logs').push({
+                    username,
+                    action,
+                    details,
                     timestamp: Date.now(),
                     date: new Date().toISOString()
-                };
-                await database.ref('Navy-boote/logs').push(logEntry);
-                cleanupOldLogs();
-            } catch (error) {
-                console.error('Fehler beim Logging:', error);
-            }
+                });
+            } catch (error) { console.error('Fehler beim Logging:', error); }
         }
 
         async function cleanupOldLogs() {
             try {
-                const thirtyTwoDaysAgo = Date.now() - (32 * 24 * 60 * 60 * 1000);
+                const cutoff = Date.now() - (32 * 24 * 60 * 60 * 1000);
                 const snap = await database.ref('Navy-boote/logs').once('value');
                 const logs = snap.val();
                 if (!logs) return;
                 const updates = {};
                 for (const [key, log] of Object.entries(logs)) {
-                    if (log.timestamp && log.timestamp < thirtyTwoDaysAgo) {
-                        updates[key] = null;
-                    }
+                    if (log.timestamp && log.timestamp < cutoff) updates[key] = null;
                 }
                 if (Object.keys(updates).length > 0) {
                     await database.ref('Navy-boote/logs').update(updates);
                 }
-            } catch (error) {
-                console.error('Fehler beim Log-Cleanup:', error);
-            }
+            } catch (error) { console.error('Fehler beim Log-Cleanup:', error); }
         }
 
         // =====================================================================
-        // 7. LOGIN & AUTH
+        // LOGIN
         // =====================================================================
         let loginAttempts = {};
-
-        // COLIN BLOCKIEREN - Colin wird NICHT erstellt und NICHT zugelassen
-        const BLOCKED_USER = 'colin';
 
         async function doLogin() {
             const usernameInput = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value.trim();
             let username = usernameInput.toLowerCase();
-
-            if (userDisplayNames[usernameInput]) {
-                username = userDisplayNames[usernameInput];
-            }
+            if (userDisplayNames[usernameInput]) username = userDisplayNames[usernameInput];
             username = username.toLowerCase();
 
-            // 🔒 COLIN BLOCKIEREN
             if (username === BLOCKED_USER) {
                 document.getElementById('loginError').textContent = '❌ Dieser Benutzername ist gesperrt!';
                 document.getElementById('loginError').classList.add('show');
                 document.getElementById('loginPassword').value = '';
-                // Sicherheitshalber löschen
                 try { await database.ref('Navy-boote/users_auth/colin').remove(); } catch (e) {}
                 return;
             }
 
-            const loginBtn = document.getElementById('loginBtn');
-            const errorEl = document.getElementById('loginError');
-
             if (!username || !password) {
-                errorEl.textContent = '❌ Bitte Benutzername und Passwort eingeben!';
-                errorEl.classList.add('show');
+                document.getElementById('loginError').textContent = '❌ Bitte Benutzername und Passwort eingeben!';
+                document.getElementById('loginError').classList.add('show');
                 return;
             }
 
-            // Rate Limiting
             const now = Date.now();
             const attempts = loginAttempts[username] || [];
             const recent = attempts.filter(t => now - t < 60000);
             if (recent.length >= 5) {
-                errorEl.textContent = '❌ Zu viele Fehlversuche. Bitte warte 1 Minute.';
-                errorEl.classList.add('show');
+                document.getElementById('loginError').textContent = '❌ Zu viele Fehlversuche. Bitte warte 1 Minute.';
+                document.getElementById('loginError').classList.add('show');
                 return;
             }
 
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Anmelden...';
+            const btn = document.getElementById('loginBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Anmelden...';
 
             try {
                 const snap = await database.ref('Navy-boote/users_auth/' + username).once('value');
                 const userData = snap.val();
-
                 if (userData && userData.password === password) {
                     loginAttempts[username] = [];
                     await completeLogin(username, userData);
                 } else {
                     recent.push(now);
                     loginAttempts[username] = recent;
-                    errorEl.textContent = '❌ Falscher Benutzername oder Passwort!';
-                    errorEl.classList.add('show');
+                    document.getElementById('loginError').textContent = '❌ Falscher Benutzername oder Passwort!';
+                    document.getElementById('loginError').classList.add('show');
                     document.getElementById('loginPassword').value = '';
                 }
             } catch (error) {
                 console.error('Login-Fehler:', error);
                 showToast('❌ Fehler bei der Anmeldung!', 'error');
             } finally {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-lock"></i> Anmelden';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> Anmelden';
             }
         }
 
         async function completeLogin(username, userData) {
-            const role = userData.role || 'user';
-
             await loadRolesFromFirebase();
 
-            const roleDef = ROLE_DEFS[role] || ROLE_DEFS['user'];
+            const role = userData.role || 'cadet';
+            const roleDef = ROLE_DEFS[role] || ROLE_DEFS['cadet'];
             const perms = userData.permissions || roleDef.permissions || {};
 
             userPermissions = { ...roleDef.permissions, ...perms };
             isAdmin = userPermissions.admin === 'write';
             userRole = role;
-
-            currentUser = { username, isAdmin, role: role };
+            currentUser = { username, isAdmin, role };
 
             saveSession(username, isAdmin, userPermissions, role);
             showMainApp(username);
@@ -3052,15 +2800,11 @@
                     setTimeout(() => doLogout(), 1500);
                     return;
                 }
-
                 await loadRolesFromFirebase();
-
-                const newRole = userData.role || 'user';
-                const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['user'];
+                const newRole = userData.role || 'cadet';
+                const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['cadet'];
                 let newPerms = { ...roleDef.permissions };
-                if (userData.permissions) {
-                    newPerms = { ...newPerms, ...userData.permissions };
-                }
+                if (userData.permissions) newPerms = { ...newPerms, ...userData.permissions };
 
                 userPermissions = newPerms;
                 userRole = newRole;
@@ -3078,9 +2822,7 @@
                         const tabId = currentTab.id.replace('tab-', '');
                         if (tabId !== 'home' && tabId !== 'admin') {
                             const permLevel = userPermissions[tabId] || 'none';
-                            if (permLevel === 'none') {
-                                switchTab('home');
-                            }
+                            if (permLevel === 'none') switchTab('home');
                         }
                     }
                     showToast('🔄 Berechtigungen aktualisiert', 'info');
@@ -3095,19 +2837,15 @@
                 await loadRolesFromFirebase();
                 const snap = await database.ref('Navy-boote/users_auth/' + sessionData.username).once('value');
                 const userData = snap.val();
-                if (!userData) {
-                    clearSession();
-                    return false;
-                }
+                if (!userData) { clearSession(); return false; }
 
-                const role = userData.role || 'user';
-                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['user'];
+                const role = userData.role || 'cadet';
+                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['cadet'];
                 const perms = userData.permissions || roleDef.permissions || {};
                 userPermissions = { ...roleDef.permissions, ...perms };
                 isAdmin = userPermissions.admin === 'write';
                 userRole = role;
-
-                currentUser = { username: sessionData.username, isAdmin, role: role };
+                currentUser = { username: sessionData.username, isAdmin, role };
 
                 showMainApp(sessionData.username);
                 startUserDataListener(sessionData.username);
@@ -3115,37 +2853,24 @@
                 updateTabs();
                 switchTab('home');
                 return true;
-            } catch (error) {
-                clearSession();
-                return false;
-            }
+            } catch (error) { clearSession(); return false; }
         }
 
         function showMainApp(username) {
             document.getElementById('loginScreen').classList.add('hidden');
             document.getElementById('mainApp').classList.add('show');
             document.getElementById('currentUserDisplay').textContent = '👤 ' + getDisplayName(username);
+            document.getElementById('welcomeName').textContent = getDisplayName(username);
             updateUserBadge();
             document.getElementById('loginError').classList.remove('show');
             document.getElementById('loginPassword').value = '';
             document.getElementById('loginUsername').value = '';
             document.getElementById('suggestDropdown').classList.remove('show');
-
-            // Datum im Quarterdeck aktualisieren
-            const dateElement = document.getElementById('current-date');
-            if (dateElement) {
-                const currentDate = new Date();
-                dateElement.textContent = currentDate.toLocaleDateString('de-DE', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric'
-                });
-            }
         }
 
         function updateUserBadge() {
             const badge = document.getElementById('userBadge');
-            const roleDef = ROLE_DEFS[userRole] || ROLE_DEFS['user'];
+            const roleDef = ROLE_DEFS[userRole] || ROLE_DEFS['cadet'];
             badge.textContent = roleDef.icon + ' ' + roleDef.label;
             badge.className = 'user-badge';
             if (userRole === 'admin') badge.classList.add('admin');
@@ -3154,9 +2879,7 @@
         }
 
         function doLogout() {
-            if (currentUser) {
-                addLog(currentUser.username, 'Logout', 'Benutzer hat sich abgemeldet');
-            }
+            if (currentUser) addLog(currentUser.username, 'Logout', 'Benutzer hat sich abgemeldet');
             clearSession();
             if (sessionTimeout) { clearTimeout(sessionTimeout);
                 sessionTimeout = null; }
@@ -3166,8 +2889,8 @@
                 currentListener = null; }
             currentUser = null;
             isAdmin = false;
-            userRole = 'user';
-            userPermissions = { stopwatch: 'write', confiscations: 'write', payout: 'write', logs: 'write', elk: 'write',
+            userRole = 'cadet';
+            userPermissions = { stopwatch: 'write', confiscations: 'write', payout: 'read', logs: 'none', elk: 'none',
                 admin: 'none' };
             document.getElementById('loginScreen').classList.remove('hidden');
             document.getElementById('mainApp').classList.remove('show');
@@ -3178,8 +2901,32 @@
                 '<button class="tab-btn active" onclick="switchTab(\'home\')" data-tab="home"><i class="fas fa-home tab-icon"></i> Hauptseite</button>';
         }
 
+        function startSessionTimer() {
+            if (sessionTimeout) clearTimeout(sessionTimeout);
+            sessionTimeout = setTimeout(() => {
+                showToast('⚠️ Sitzung abgelaufen (30 Min. Inaktivität)', 'warning');
+                setTimeout(() => doLogout(), 1500);
+            }, SESSION_DURATION);
+        }
+
+        function resetSessionTimer() {
+            if (sessionTimeout) { clearTimeout(sessionTimeout);
+                startSessionTimer(); }
+            const sessionStr = localStorage.getItem('navySession');
+            if (sessionStr) {
+                try {
+                    const data = JSON.parse(sessionStr);
+                    data.expiry = Date.now() + SESSION_DURATION;
+                    localStorage.setItem('navySession', JSON.stringify(data));
+                } catch (error) {}
+            }
+        }
+        ['click', 'keypress', 'scroll', 'mousemove'].forEach(event => {
+            document.addEventListener(event, resetSessionTimer);
+        });
+
         // =====================================================================
-        // 8. ROLLEN AUS FIREBASE LADEN
+        // ROLLEN AUS FIREBASE LADEN
         // =====================================================================
         async function loadRolesFromFirebase() {
             try {
@@ -3199,13 +2946,48 @@
                         }
                     }
                 }
-            } catch (error) {
-                console.error('Fehler beim Laden der Rollen:', error);
-            }
+            } catch (error) { console.error('Fehler beim Laden der Rollen:', error); }
         }
 
         // =====================================================================
-        // 9. TAB SYSTEM
+        // LOGIN SUGGESTIONS
+        // =====================================================================
+        async function updateAllUsernameLists() {
+            try {
+                const snap = await database.ref('Navy-boote/users_auth').once('value');
+                const users = snap.val() || {};
+                allUsernames = [];
+                userDisplayNames = {};
+                for (const [key] of Object.entries(users)) {
+                    if (key === BLOCKED_USER) continue;
+                    const displayName = getDisplayName(key);
+                    allUsernames.push(displayName);
+                    userDisplayNames[displayName] = key;
+                }
+            } catch (error) { console.error('Fehler beim Aktualisieren der Benutzernamen:', error); }
+        }
+
+        function showSuggestions(value) {
+            const dropdown = document.getElementById('suggestDropdown');
+            if (!value || value.length < 1) { dropdown.classList.remove('show'); return; }
+            const val = value.toLowerCase();
+            const matches = allUsernames.filter(name => name.toLowerCase().includes(val));
+            if (matches.length === 0) { dropdown.classList.remove('show'); return; }
+            dropdown.innerHTML = '';
+            matches.forEach(name => {
+                const div = document.createElement('div');
+                div.textContent = name;
+                div.onclick = () => {
+                    document.getElementById('loginUsername').value = name;
+                    dropdown.classList.remove('show');
+                };
+                dropdown.appendChild(div);
+            });
+            dropdown.classList.add('show');
+        }
+
+        // =====================================================================
+        // TAB SYSTEM
         // =====================================================================
         function updateTabs() {
             const tabNav = document.getElementById('tabNav');
@@ -3234,11 +3016,9 @@
                     btn.innerHTML = `<i class="fas ${config.icon} tab-icon"></i> ${config.label}`;
                     btn.onclick = () => switchTab(key);
                     btn.dataset.tab = key;
-
                     if (permLevel === 'read') {
                         btn.innerHTML += ' <span style="font-size:9px;color:#ffaa33;">👁️</span>';
                     }
-
                     tabNav.appendChild(btn);
                 }
             }
@@ -3258,7 +3038,6 @@
                 showToast('Keine Admin-Berechtigung!', 'error');
                 return;
             }
-
             if (name !== 'home' && name !== 'admin') {
                 const permLevel = userPermissions[name] || 'none';
                 if (permLevel === 'none') {
@@ -3307,13 +3086,13 @@
         }
 
         // =====================================================================
-        // 10. KURZANLEITUNG (Handbook - für alle Rollen sichtbar)
+        // KURZANLEITUNG (Handbook)
         // =====================================================================
         function renderHandbook() {
             const grid = document.getElementById('handbookGrid');
             if (!grid) return;
-
             grid.innerHTML = '';
+
             const permLabels = {
                 stopwatch: '⏱️ Stoppuhr',
                 confiscations: '📋 Beschlagn.',
@@ -3348,62 +3127,14 @@
         }
 
         // =====================================================================
-        // 11. LOGIN SUGGESTIONS
-        // =====================================================================
-        async function updateAllUsernameLists() {
-            try {
-                const snap = await database.ref('Navy-boote/users_auth').once('value');
-                const users = snap.val() || {};
-                allUsernames = [];
-                userDisplayNames = {};
-                for (const [key] of Object.entries(users)) {
-                    if (key === BLOCKED_USER) continue;
-                    const displayName = getDisplayName(key);
-                    allUsernames.push(displayName);
-                    userDisplayNames[displayName] = key;
-                }
-            } catch (error) {
-                console.error('Fehler beim Aktualisieren der Benutzernamen:', error);
-            }
-        }
-
-        function showSuggestions(value) {
-            const dropdown = document.getElementById('suggestDropdown');
-            if (!value || value.length < 1) {
-                dropdown.classList.remove('show');
-                return;
-            }
-            const val = value.toLowerCase();
-            const matches = allUsernames.filter(name => name.toLowerCase().includes(val));
-            if (matches.length === 0) {
-                dropdown.classList.remove('show');
-                return;
-            }
-            dropdown.innerHTML = '';
-            matches.forEach(name => {
-                const div = document.createElement('div');
-                div.textContent = name;
-                div.onclick = () => {
-                    document.getElementById('loginUsername').value = name;
-                    dropdown.classList.remove('show');
-                };
-                dropdown.appendChild(div);
-            });
-            dropdown.classList.add('show');
-        }
-
-        // =====================================================================
-        // 12. BOOTVERWALTUNG (gekürzt aus Platzgründen - volle Funktionen vorhanden)
+        // BOOTVERWALTUNG
         // =====================================================================
         async function loadBoats() {
             const snap = await database.ref('Navy-boote/boats').once('value');
             const boats = snap.val() || {};
-            let updated = false;
             for (const [key, def] of Object.entries(DEFAULT_BOATS)) {
-                if (!boats[key]) { boats[key] = def;
-                    updated = true; }
+                if (!boats[key]) { boats[key] = def; }
             }
-            if (updated) await database.ref('Navy-boote/boats').set(boats);
             return boats;
         }
 
@@ -3415,14 +3146,9 @@
             } else {
                 const boats = await loadBoats();
                 boatOrder = Object.keys(boats).sort();
-                await saveBoatOrder(boatOrder);
+                await database.ref('Navy-boote/boatOrder').set(boatOrder);
             }
             return boatOrder;
-        }
-
-        async function saveBoatOrder(order) {
-            await database.ref('Navy-boote/boatOrder').set(order);
-            boatOrder = order;
         }
 
         function renderBoatOrderList() {
@@ -3489,7 +3215,7 @@
                     const toIndex = boatOrder.indexOf(toKey);
                     if (fromIndex === -1 || toIndex === -1) return;
                     boatOrder.splice(toIndex, 0, boatOrder.splice(fromIndex, 1)[0]);
-                    await saveBoatOrder(boatOrder);
+                    await database.ref('Navy-boote/boatOrder').set(boatOrder);
                     renderBoatOrderList();
                     renderBoats();
                     loadAllSoldiersAverage();
@@ -3597,7 +3323,7 @@
                     await database.ref('Navy-boote/boats/' + key).set(boatData);
                     const idx = boatOrder.indexOf(editingBoatKey);
                     if (idx !== -1) { boatOrder[idx] = key;
-                        await saveBoatOrder(boatOrder); }
+                        await database.ref('Navy-boote/boatOrder').set(boatOrder); }
                     if (currentUser) await addLog(currentUser.username, 'Boot umbenannt', `Von "${editingBoatKey}" zu "${key}"`);
                 } else {
                     await database.ref('Navy-boote/boats/' + key).update(boatData);
@@ -3610,7 +3336,7 @@
                 }
                 await database.ref('Navy-boote/boats/' + key).set(boatData);
                 boatOrder.push(key);
-                await saveBoatOrder(boatOrder);
+                await database.ref('Navy-boote/boatOrder').set(boatOrder);
                 if (currentUser) await addLog(currentUser.username, 'Boot erstellt', `Neues Boot: ${key}`);
             }
             closeBoatModal();
@@ -3629,7 +3355,7 @@
             await database.ref('Navy-boote/boats/' + key).remove();
             const idx = boatOrder.indexOf(key);
             if (idx !== -1) { boatOrder.splice(idx, 1);
-                await saveBoatOrder(boatOrder); }
+                await database.ref('Navy-boote/boatOrder').set(boatOrder); }
             if (currentUser) await addLog(currentUser.username, 'Boot gelöscht', `Boot: ${key}`);
             showToast('Boot gelöscht.', 'error');
             await renderBoats();
@@ -3654,10 +3380,10 @@
             if (!newVisibility) {
                 const idx = boatOrder.indexOf(key);
                 if (idx !== -1) { boatOrder.splice(idx, 1);
-                    await saveBoatOrder(boatOrder); }
+                    await database.ref('Navy-boote/boatOrder').set(boatOrder); }
             } else {
                 if (!boatOrder.includes(key)) { boatOrder.push(key);
-                    await saveBoatOrder(boatOrder); }
+                    await database.ref('Navy-boote/boatOrder').set(boatOrder); }
             }
             boatCache[key].visible = newVisibility;
             renderBoatOrderList();
@@ -3675,7 +3401,7 @@
         }
 
         // =====================================================================
-        // 13. STOPPUHR
+        // STOPPUHR
         // =====================================================================
         function updateDisplay() {
             elapsed = Date.now() - startTime;
@@ -3754,7 +3480,7 @@
         }
 
         // =====================================================================
-        // 14. ALLE USER LISTE
+        // ALLE USER LISTE
         // =====================================================================
         function loadAllUsersList() {
             database.ref('Navy-boote/users').on('value', snap => {
@@ -3788,7 +3514,7 @@
         }
 
         // =====================================================================
-        // 15. DURCHSCHNITTS-ANZEIGE
+        // DURCHSCHNITTS-ANZEIGE
         // =====================================================================
         async function loadAllSoldiersAverage() {
             const boats = await loadBoats();
@@ -3837,7 +3563,7 @@
         }
 
         // =====================================================================
-        // 16. PERSÖNLICHE STATS
+        // PERSÖNLICHE STATS
         // =====================================================================
         async function loadPersonalStats(nameLower) {
             const boats = await loadBoats();
@@ -3870,7 +3596,7 @@
         }
 
         // =====================================================================
-        // 17. AUTO LOAD PERSON
+        // AUTO LOAD PERSON
         // =====================================================================
         async function autoLoadPerson() {
             let raw = document.getElementById('searchName').value.trim();
@@ -3958,7 +3684,7 @@
         };
 
         // =====================================================================
-        // 18. BESCHLAGNAHMUNGEN (gekürzt)
+        // BESCHLAGNAHMUNGEN
         // =====================================================================
         function getConfiscationWeekRange(offset) {
             const now = new Date();
@@ -4203,7 +3929,7 @@
         }
 
         // =====================================================================
-        // 19. BESCHLAGNAHMUNG DETAIL - EIGENE SCHÖNE ANSICHT (KEIN Chrome-Popup)
+        // BESCHLAGNAHMUNG DETAIL - EIGENE MODAL-ANSICHT
         // =====================================================================
         function showConfiscationDetail(id) {
             const entry = allConfiscations.find(e => e.id === id);
@@ -4268,7 +3994,7 @@
         }
 
         // =====================================================================
-        // 20. AUSZAHLUNG (gekürzt)
+        // AUSZAHLUNG
         // =====================================================================
         function getMonday(date) {
             const d = new Date(date);
@@ -4276,13 +4002,6 @@
             const diff = d.getDate() - day + (day === 0 ? -6 : 1);
             d.setDate(diff);
             d.setHours(0, 0, 0, 0);
-            return d;
-        }
-
-        function getSunday(monday) {
-            const d = new Date(monday);
-            d.setDate(d.getDate() + 6);
-            d.setHours(23, 59, 59, 999);
             return d;
         }
 
@@ -4294,7 +4013,8 @@
         }
 
         function getWeekString(monday) {
-            const sun = getSunday(monday);
+            const sun = new Date(monday);
+            sun.setDate(sun.getDate() + 6);
             const mo = monday.getDate() + '.' + (monday.getMonth() + 1);
             const so = sun.getDate() + '.' + (sun.getMonth() + 1) + '.' + sun.getFullYear();
             return mo + ' - ' + so;
@@ -4596,10 +4316,8 @@
         }
 
         // =====================================================================
-        // 21. ADMIN: BENUTZERVERWALTUNG
+        // ADMIN: BENUTZERVERWALTUNG
         // =====================================================================
-        let allUsersCache = [];
-
         async function loadUserList() {
             const snap = await database.ref('Navy-boote/users_auth').once('value');
             const users = snap.val();
@@ -4633,8 +4351,8 @@
 
             let html = '';
             filtered.forEach(({ username, userData }) => {
-                const role = userData.role || 'user';
-                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['user'];
+                const role = userData.role || 'cadet';
+                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['cadet'];
                 const perms = userData.permissions || {};
 
                 const permLabels = {
@@ -4659,7 +4377,7 @@
                 const created = userData.created ? new Date(userData.created).toLocaleDateString('de-DE') : '-';
 
                 html += `<tr>
-                    <td><span style="cursor:pointer;color:#3b82f6;" onclick="loadPermissionsForUser('${username}')">${esc(getDisplayName(username))}</span></td>
+                    <td><span style="cursor:pointer;color:#3b82f6;" onclick="openEditUserModal('${username}')">${esc(getDisplayName(username))}</span></td>
                     <td>${roleHtml}</td>
                     <td style="font-size:11px;">${permHtml}</td>
                     <td>${created}</td>
@@ -4679,15 +4397,8 @@
             renderUserTable(filter);
         }
 
-        function loadPermissionsForUser(username) {
-            const select = document.getElementById('permissionUserSelect');
-            select.value = username;
-            loadUserPermissions();
-            document.querySelector('.admin-section:nth-child(2)').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-
         // =====================================================================
-        // 22. ADMIN: USER ERSTELLEN & LÖSCHEN
+        // ADMIN: USER ERSTELLEN & LÖSCHEN
         // =====================================================================
         async function createUser() {
             if (userPermissions.admin !== 'write') {
@@ -4700,10 +4411,9 @@
             if (!usernameInput || !passwordInput) { showToast('Bitte Benutzername und Passwort eingeben!', 'warning'); return; }
             const u = usernameInput.value.trim().toLowerCase();
             const p = passwordInput.value.trim();
-            const role = roleSelect.value || 'user';
+            const role = roleSelect.value || 'cadet';
             if (!u || !p) { showToast('Bitte Benutzername und Passwort eingeben!', 'warning'); return; }
 
-            // COLIN BLOCKIEREN
             if (u === BLOCKED_USER) {
                 showToast('❌ Dieser Benutzername ist gesperrt!', 'error');
                 usernameInput.value = '';
@@ -4714,7 +4424,7 @@
                 const existing = await database.ref('Navy-boote/users_auth/' + u).once('value');
                 if (existing.exists()) { showToast('Benutzer existiert bereits!', 'warning'); return; }
 
-                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['user'];
+                const roleDef = ROLE_DEFS[role] || ROLE_DEFS['cadet'];
                 const userData = {
                     password: p,
                     isAdmin: role === 'admin',
@@ -4791,7 +4501,7 @@
         }
 
         // =====================================================================
-        // 23. ADMIN: USER BEARBEITEN
+        // ADMIN: USER BEARBEITEN
         // =====================================================================
         function openEditUserModal(username) {
             if (userPermissions.admin !== 'write') {
@@ -4807,7 +4517,6 @@
             document.getElementById('editUsername').value = '';
             document.getElementById('editPassword').value = '';
 
-            // Rollen in Select laden
             const roleSelect = document.getElementById('editUserRole');
             roleSelect.innerHTML = '';
             for (const [key, def] of Object.entries(ROLE_DEFS)) {
@@ -4820,7 +4529,7 @@
             database.ref('Navy-boote/users_auth/' + username).once('value').then(snap => {
                 const data = snap.val();
                 if (data) {
-                    document.getElementById('editUserRole').value = data.role || 'user';
+                    document.getElementById('editUserRole').value = data.role || 'cadet';
                 }
             });
 
@@ -4863,7 +4572,7 @@
                 if (newRole && newRole !== userData.role) {
                     updates.role = newRole;
                     updates.isAdmin = newRole === 'admin';
-                    const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['user'];
+                    const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['cadet'];
                     updates.permissions = { ...roleDef.permissions };
                 }
 
@@ -4886,7 +4595,7 @@
                         if (newRole) {
                             userRole = newRole;
                             isAdmin = newRole === 'admin';
-                            const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['user'];
+                            const roleDef = ROLE_DEFS[newRole] || ROLE_DEFS['cadet'];
                             userPermissions = { ...roleDef.permissions };
                             saveSession(currentUser.username, isAdmin, userPermissions, newRole);
                             updateUserBadge();
@@ -4912,12 +4621,9 @@
         }
 
         // =====================================================================
-        // 24. ADMIN: ROLLEN & BERECHTIGUNGEN (3-Stufen: write, read, none)
+        // ADMIN: ROLLEN & BERECHTIGUNGEN (3-Stufen)
         // =====================================================================
-        let currentRole = null;
-
         async function populateRoleSelect() {
-            // Für Benutzer-Erstellung
             const createSelect = document.getElementById('newUserRole');
             if (createSelect) {
                 createSelect.innerHTML = '';
@@ -4929,7 +4635,6 @@
                 }
             }
 
-            // Für Rollen-Editor
             const select = document.getElementById('roleSelect');
             if (!select) return;
             select.innerHTML = '<option value="">-- Rolle wählen --</option>';
@@ -4989,10 +4694,10 @@
             try {
                 ROLE_DEFS[currentRole].permissions = perms;
 
-                // In Firebase speichern
+                // IN FIREBASE SPEICHERN
                 await database.ref('Navy-boote/roles/' + currentRole).set(perms);
 
-                // Alle Benutzer mit dieser Rolle aktualisieren
+                // ALLE BENUTZER MIT DIESER ROLLE AKTUALISIEREN
                 const usersSnap = await database.ref('Navy-boote/users_auth').once('value');
                 const users = usersSnap.val() || {};
                 const updates = {};
@@ -5008,7 +4713,6 @@
                 if (currentUser) await addLog(currentUser.username, 'Rollen-Berechtigungen gespeichert',
                     `Rolle: ${ROLE_DEFS[currentRole].label}`);
 
-                // Wenn aktueller Benutzer diese Rolle hat, aktualisieren
                 if (currentUser && userRole === currentRole) {
                     userPermissions = { ...perms };
                     isAdmin = perms.admin === 'write';
@@ -5052,6 +4756,7 @@
                     admin: 'none' }
             };
 
+            // IN FIREBASE SPEICHERN
             await database.ref('Navy-boote/roles/' + key).set(ROLE_DEFS[key].permissions);
 
             await populateRoleSelect();
@@ -5069,7 +4774,7 @@
                 return;
             }
             if (!currentRole || !ROLE_DEFS[currentRole]) return;
-            if (currentRole === 'admin' || currentRole === 'user' || currentRole === 'cadet') {
+            if (currentRole === 'admin' || currentRole === 'cadet') {
                 showToast('⚠️ System-Rollen können nicht gelöscht werden!', 'warning');
                 return;
             }
@@ -5080,14 +4785,15 @@
             const updates = {};
             for (const [username, userData] of Object.entries(users)) {
                 if (userData.role === currentRole) {
-                    updates[username + '/role'] = 'user';
-                    updates[username + '/permissions'] = ROLE_DEFS['user'].permissions;
+                    updates[username + '/role'] = 'cadet';
+                    updates[username + '/permissions'] = ROLE_DEFS['cadet'].permissions;
                 }
             }
             if (Object.keys(updates).length > 0) {
                 await database.ref('Navy-boote/users_auth').update(updates);
             }
 
+            // AUS FIREBASE LÖSCHEN
             await database.ref('Navy-boote/roles/' + currentRole).remove();
 
             delete ROLE_DEFS[currentRole];
@@ -5099,7 +4805,7 @@
         }
 
         // =====================================================================
-        // 25. LOGS
+        // LOGS
         // =====================================================================
         async function populateLogUserSelect() {
             const select = document.getElementById('logUserSelect');
@@ -5154,9 +4860,8 @@
         }
 
         // =====================================================================
-        // 26. ELK
+        // ELK
         // =====================================================================
-        let elkData = [];
         let ELK_FIELD_DEFS = [
             { id: 'sperrzone', label: 'Sperrzone erstellen/erneuern' },
             { id: 'sperrradius', label: 'Sperrzonenradius' },
@@ -5175,7 +4880,7 @@
         function getDefaultElkCard() {
             const fields = {};
             ELK_FIELD_DEFS.forEach(f => fields[f.id] = false);
-            return { id: 'default_elk', name: 'Standard ELK', fields: fields, createdAt: Date.now(), isDefault: true };
+            return { id: 'default_elk', name: 'Standard ELK', fields, createdAt: Date.now(), isDefault: true };
         }
 
         async function loadElkData() {
@@ -5189,7 +4894,7 @@
                         renderElkAdmin(); return; }
                 }
                 elkData = [getDefaultElkCard()];
-                await saveElkData(elkData);
+                await database.ref('Navy-boote/elk').set({ default_elk: elkData[0] });
                 renderElk();
                 renderElkAdmin();
             } catch (error) {
@@ -5198,12 +4903,6 @@
                 renderElk();
                 renderElkAdmin();
             }
-        }
-
-        async function saveElkData(cards) {
-            const obj = {};
-            cards.forEach(c => obj[c.id] = c);
-            await database.ref('Navy-boote/elk').set(obj);
         }
 
         function renderElk() {
@@ -5326,6 +5025,12 @@
             showToast('✅ Feld hinzugefügt!', 'success');
         }
 
+        async function saveElkData(cards) {
+            const obj = {};
+            cards.forEach(c => obj[c.id] = c);
+            await database.ref('Navy-boote/elk').set(obj);
+        }
+
         async function deleteElkCard(id) {
             if (userPermissions.elk !== 'write') {
                 showToast('❌ Keine Berechtigung!', 'error');
@@ -5360,7 +5065,7 @@
         }
 
         // =====================================================================
-        // 27. ADMIN SETUP
+        // ADMIN SETUP
         // =====================================================================
         function setupAdminTab() {
             if (userPermissions.admin !== 'write') return;
@@ -5373,7 +5078,7 @@
         }
 
         // =====================================================================
-        // 28. EVENT LISTENER
+        // EVENT LISTENER
         // =====================================================================
         document.addEventListener('click', function(e) {
             const dropdown = document.getElementById('suggestDropdown');
@@ -5393,7 +5098,7 @@
         });
 
         // =====================================================================
-        // 29. INITIALISIERUNG
+        // INITIALISIERUNG
         // =====================================================================
         async function init() {
             try {
@@ -5431,7 +5136,7 @@
                 updateConfiscationWeekUI();
                 renderHandbook();
 
-                console.log('🚀 System initialisiert - Diensthandbuch & Rollenverwaltung aktiv!');
+                console.log('🚀 System initialisiert - SEA CADET ist Standard-Rolle!');
                 console.log('🔒 Colin ist permanent gesperrt!');
             } catch (error) {
                 console.error('Init-Fehler:', error);
