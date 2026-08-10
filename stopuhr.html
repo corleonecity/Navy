@@ -1,0 +1,478 @@
+<div class="time" id="display">00:00.00</div>
+
+<div class="input-group">
+    <input type="text" id="personName" placeholder="👤 Name der Person" autocomplete="off">
+    <button id="startBtn" onclick="startStop()" class="btn-primary"><i class="fas fa-play"></i> Start</button>
+    <button onclick="resetTimer()"><i class="fas fa-redo"></i> Reset</button>
+</div>
+
+<div class="section-title"><i class="fas fa-ship"></i> BOOTE & SPEICHERN</div>
+<div class="boats-grid" id="dynamicBoatsContainer"></div>
+
+<div class="stopwatch-layout">
+    <div class="stopwatch-left">
+        <div class="avg-panel">
+            <h4><i class="fas fa-chart-bar"></i> DURCHSCHNITT ALLER SOLDATEN</h4>
+            <table class="avg-table">
+                <thead><tr><th>Boot</th><th>⌀ Durchschnitt</th><th>📋 Einträge</th></tr></thead>
+                <tbody id="avgTableBody"></tbody>
+            </table>
+        </div>
+        <div class="section-title"><i class="fas fa-users"></i> REGISTRIERTE PERSONEN</div>
+        <div id="allNamesList" class="name-list"><span class="text-muted">Laden...</span></div>
+    </div>
+    <div class="stopwatch-right">
+        <div class="personal-panel" id="personalPanel">
+            <h4><i class="fas fa-user"></i> PERSÖNLICHE STATS: <span id="personalPanelName" class="text-blue"></span></h4>
+            <table class="personal-table">
+                <thead><tr><th>Boot</th><th>⌀ Durchschnitt</th><th>📋 Einträge</th></tr></thead>
+                <tbody id="personalTableBody"></tbody>
+            </table>
+        </div>
+        <div class="search-results">
+            <h4><i class="fas fa-search"></i> SUCHE</h4>
+            <div class="input-group" style="justify-content:flex-start;">
+                <input type="text" id="searchName" placeholder="Name eingeben..." oninput="autoLoadPerson()" style="flex:1;">
+            </div>
+            <div id="resultTable"><p class="text-muted">🔍 Wähle eine Person aus oder suche.</p></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // =====================================================================
+    // STOPPUHR - VARIABLEN
+    // =====================================================================
+    let startTime = 0,
+        elapsed = 0,
+        stopwatchInterval = null,
+        running = false;
+    let selectedPersonName = '';
+    let currentListener = null;
+    let boatOrder = [];
+    let boatCache = {};
+
+    const DEFAULT_BOATS = {
+        'Predator': { emoji: '⚡', label: 'Predator' },
+        'Dinghy': { emoji: '🛶', label: 'Dinghy' },
+        'PatrolBoat': { emoji: '🚢', label: 'Kurtz 31 Patrol Boat' },
+        'WeaponizedDinghy': { emoji: '💥', label: 'Weaponized Dinghy' }
+    };
+
+    // =====================================================================
+    // HELPER FUNKTIONEN
+    // =====================================================================
+    function msToTimeString(ms) {
+        if (!ms || ms === 0) return '--';
+        const minutes = Math.floor(ms / 60000);
+        const seconds = Math.floor((ms % 60000) / 1000);
+        const centiseconds = Math.floor((ms % 1000) / 10);
+        return String(minutes).padStart(2, '0') + ':' + String(seconds).padStart(2, '0') + '.' + String(centiseconds).padStart(2,
+            '0');
+    }
+
+    function timeStringToMs(timeStr) {
+        if (!timeStr || typeof timeStr !== 'string') return 0;
+        const parts = timeStr.split(':');
+        if (parts.length < 2) return 0;
+        const minutes = parseInt(parts[0]) || 0;
+        const secMs = parts[1].split('.');
+        const seconds = parseInt(secMs[0]) || 0;
+        const centiseconds = parseInt(secMs[1]) || 0;
+        return (minutes * 60 * 1000) + (seconds * 1000) + (centiseconds * 10);
+    }
+
+    function calcStats(entries) {
+        if (!entries || !Array.isArray(entries) || entries.length === 0) return { avgMs: 0, count: 0 };
+        const validTimes = entries.map(e => timeStringToMs(e.time)).filter(ms => ms > 0);
+        if (validTimes.length === 0) return { avgMs: 0, count: 0 };
+        const sum = validTimes.reduce((a, b) => a + b, 0);
+        return { avgMs: Math.round(sum / validTimes.length), count: validTimes.length };
+    }
+
+    function formatTime(ms) {
+        const m = Math.floor(ms / 60000);
+        const s = Math.floor((ms % 60000) / 1000);
+        const c = Math.floor((ms % 1000) / 10);
+        return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(c).padStart(2, '0');
+    }
+
+    // =====================================================================
+    // STOPPUHR FUNKTIONEN
+    // =====================================================================
+    function updateDisplay() {
+        elapsed = Date.now() - startTime;
+        document.getElementById('display').textContent = formatTime(elapsed);
+    }
+
+    function startStop() {
+        if (userPermissions.stopwatch?.create !== 'write') {
+            showToast('Keine Berechtigung zum Starten der Stoppuhr!', 'error');
+            return;
+        }
+        if (!running) {
+            startTime = Date.now() - elapsed;
+            stopwatchInterval = setInterval(updateDisplay, 10);
+            running = true;
+            const btn = document.getElementById('startBtn');
+            btn.innerHTML = '<i class="fas fa-pause"></i> Stop';
+            btn.className = 'btn-danger';
+        } else {
+            clearInterval(stopwatchInterval);
+            running = false;
+            const btn = document.getElementById('startBtn');
+            btn.innerHTML = '<i class="fas fa-play"></i> Start';
+            btn.className = 'btn-primary';
+        }
+    }
+
+    function resetTimer() {
+        clearInterval(stopwatchInterval);
+        running = false;
+        elapsed = 0;
+        startTime = 0;
+        document.getElementById('display').textContent = '00:00.00';
+        const btn = document.getElementById('startBtn');
+        btn.innerHTML = '<i class="fas fa-play"></i> Start';
+        btn.className = 'btn-primary';
+    }
+
+    async function saveTimeWithDesc(boatKey, taId) {
+        if (userPermissions.stopwatch?.create !== 'write') {
+            showToast('Keine Berechtigung zum Speichern!', 'error');
+            return;
+        }
+        let nameInput = document.getElementById('personName').value.trim();
+        if (!nameInput) { showToast('Name eingeben!', 'warning'); return; }
+        let name = nameInput.toLowerCase();
+        if (userDisplayNames[nameInput]) name = userDisplayNames[nameInput];
+        name = name.toLowerCase();
+
+        const currentElapsed = running ? (Date.now() - startTime) : elapsed;
+        if (currentElapsed === 0) { showToast('Keine Zeit gestoppt!', 'warning'); return; }
+        const timeStr = formatTime(currentElapsed);
+        const desc = document.getElementById(taId).value.trim();
+
+        const ref = database.ref('Navy-boote/users/' + name + '/' + boatKey);
+        const snap = await ref.once('value');
+        let arr = snap.val();
+        if (!arr || !Array.isArray(arr)) arr = [];
+        const creator = currentUser ? currentUser.username : 'Unbekannt';
+        arr.push({ time: timeStr, desc: desc || 'Keine Beschreibung', timestamp: Date.now(), creator: creator });
+        await ref.set(arr);
+        await database.ref('Navy-boote/users/' + name + '/lastUpdated').set(Date.now());
+
+        if (currentUser) {
+            await addLog(currentUser.username, 'Stoppuhr gespeichert',
+                `Person: ${getDisplayName(name)}, Boot: ${boatKey}, Zeit: ${timeStr}`);
+        }
+        document.getElementById(taId).value = '';
+        document.getElementById('searchName').value = getDisplayName(name);
+        selectedPersonName = name;
+        loadPersonalStats(name);
+        autoLoadPerson();
+        resetTimer();
+        showToast('✅ ' + timeStr + ' gespeichert!', 'success');
+    }
+
+    // =====================================================================
+    // BOOTVERWALTUNG
+    // =====================================================================
+    async function loadBoats() {
+        const snap = await database.ref('Navy-boote/boats').once('value');
+        const boats = snap.val() || {};
+        for (const [key, def] of Object.entries(DEFAULT_BOATS)) {
+            if (!boats[key]) { boats[key] = def; }
+        }
+        return boats;
+    }
+
+    async function loadBoatOrder() {
+        const snap = await database.ref('Navy-boote/boatOrder').once('value');
+        const order = snap.val();
+        if (order && Array.isArray(order) && order.length > 0) {
+            boatOrder = order;
+        } else {
+            const boats = await loadBoats();
+            boatOrder = Object.keys(boats).sort();
+            await database.ref('Navy-boote/boatOrder').set(boatOrder);
+        }
+        return boatOrder;
+    }
+
+    async function renderBoats() {
+        const boats = await loadBoats();
+        boatCache = boats;
+        await loadBoatOrder();
+
+        const container = document.getElementById('dynamicBoatsContainer');
+        const avgBody = document.getElementById('avgTableBody');
+        container.innerHTML = '';
+        avgBody.innerHTML = '';
+
+        const orderedKeys = boatOrder.filter(key => boats[key] && boats[key].visible !== false);
+        const missingKeys = Object.keys(boats).filter(key => !orderedKeys.includes(key) && boats[key].visible !== false);
+        const allKeys = [...orderedKeys, ...missingKeys];
+
+        if (allKeys.length === 0) {
+            container.innerHTML = '<p style="color:#62676c;text-align:center;padding:20px;">🚤 Keine sichtbaren Boote vorhanden.</p>';
+            avgBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#62676c;">Keine Boote</td></tr>';
+            return;
+        }
+
+        for (const key of allKeys) {
+            const boat = boats[key];
+            if (!boat) continue;
+            const emoji = boat.emoji || '🚤';
+            const label = boat.label || key;
+            const descId = 'desc_' + key;
+            const panel = document.createElement('div');
+            panel.className = 'boat-panel';
+            panel.innerHTML = `
+                <h4>${emoji} ${label}</h4>
+                <textarea id="${descId}" rows="2" placeholder="Beschreibung der Kontrolle..."></textarea>
+                <button class="btn-save" onclick="saveTimeWithDesc('${key}','${descId}')"><i class="fas fa-save"></i> Speichern</button>
+            `;
+            container.appendChild(panel);
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="boat-name">${emoji} ${label}</td>
+                <td class="avg-time" id="avg${key}">--</td>
+                <td id="count${key}">0</td>
+            `;
+            avgBody.appendChild(tr);
+        }
+        loadAllSoldiersAverage();
+    }
+
+    // =====================================================================
+    // ALLE USER LISTE
+    // =====================================================================
+    function loadAllUsersList() {
+        database.ref('Navy-boote/users').on('value', snap => {
+            const users = snap.val();
+            const d = document.getElementById('allNamesList');
+            d.innerHTML = '';
+            if (users) {
+                const sorted = Object.keys(users)
+                    .filter(k => k !== BLOCKED_USER)
+                    .map(k => ({ name: k, lu: users[k].lastUpdated || 0 }))
+                    .sort((a, b) => b.lu - a.lu);
+                sorted.forEach(u => {
+                    const btn = document.createElement('div');
+                    btn.className = 'name-tag';
+                    btn.textContent = getDisplayName(u.name);
+                    btn.onclick = () => {
+                        d.querySelectorAll('.name-tag').forEach(t => t.classList.remove('active'));
+                        btn.classList.add('active');
+                        document.getElementById('personName').value = getDisplayName(u.name);
+                        document.getElementById('searchName').value = getDisplayName(u.name);
+                        selectedPersonName = u.name;
+                        loadPersonalStats(u.name);
+                        autoLoadPerson();
+                    };
+                    d.appendChild(btn);
+                });
+            } else {
+                d.innerHTML = '<span class="text-muted">⚓ Keine Personen.</span>';
+            }
+        });
+    }
+
+    // =====================================================================
+    // DURCHSCHNITTS-ANZEIGE
+    // =====================================================================
+    async function loadAllSoldiersAverage() {
+        const boats = await loadBoats();
+        const boatKeys = Object.keys(boats).filter(key => boats[key].visible !== false);
+        const orderedKeys = boatOrder.filter(key => boatKeys.includes(key));
+        const sortedKeys = [...orderedKeys, ...boatKeys.filter(key => !orderedKeys.includes(key))];
+
+        const snap = await database.ref('Navy-boote/users').once('value');
+        const users = snap.val();
+
+        const allEntries = {};
+        sortedKeys.forEach(k => allEntries[k] = []);
+
+        if (users) {
+            Object.entries(users).forEach(([userName, userData]) => {
+                if (userName === BLOCKED_USER) return;
+                if (userData && typeof userData === 'object') {
+                    sortedKeys.forEach(boatKey => {
+                        const entries = userData[boatKey];
+                        if (entries && Array.isArray(entries)) {
+                            allEntries[boatKey].push(...entries);
+                        }
+                    });
+                }
+            });
+        }
+
+        const avgBody = document.getElementById('avgTableBody');
+        avgBody.innerHTML = '';
+        let hasAnyEntries = false;
+        sortedKeys.forEach(boatKey => {
+            const boat = boats[boatKey];
+            const stats = calcStats(allEntries[boatKey]);
+            if (stats.count > 0) hasAnyEntries = true;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="boat-name">${boat.emoji || '🚤'} ${boat.label || boatKey}</td>
+                <td class="avg-time">${stats.avgMs > 0 ? msToTimeString(stats.avgMs) : '--'}</td>
+                <td>${stats.count}</td>
+            `;
+            avgBody.appendChild(tr);
+        });
+        if (!hasAnyEntries && sortedKeys.length > 0) {
+            avgBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#62676c;">📭 Keine Einträge vorhanden</td></tr>';
+        }
+    }
+
+    // =====================================================================
+    // PERSÖNLICHE STATS
+    // =====================================================================
+    async function loadPersonalStats(nameLower) {
+        const boats = await loadBoats();
+        const boatKeys = Object.keys(boats).filter(key => boats[key].visible !== false);
+        const orderedKeys = boatOrder.filter(key => boatKeys.includes(key));
+        const sortedKeys = [...orderedKeys, ...boatKeys.filter(key => !orderedKeys.includes(key))];
+
+        const snap = await database.ref('Navy-boote/users/' + nameLower).once('value');
+        const data = snap.val();
+        const panel = document.getElementById('personalPanel');
+        const nameEl = document.getElementById('personalPanelName');
+        const tbody = document.getElementById('personalTableBody');
+        if (!data) { panel.classList.remove('show'); return; }
+        panel.classList.add('show');
+        nameEl.textContent = getDisplayName(nameLower);
+        tbody.innerHTML = '';
+
+        for (const boatKey of sortedKeys) {
+            const boat = boats[boatKey];
+            const entries = data[boatKey];
+            const stats = calcStats(entries);
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="boat-name">${boat.emoji || '🚤'} ${boat.label || boatKey}</td>
+                <td class="avg-time">${stats.avgMs > 0 ? msToTimeString(stats.avgMs) : '--'}</td>
+                <td>${stats.count}</td>
+            `;
+            tbody.appendChild(tr);
+        }
+    }
+
+    // =====================================================================
+    // AUTO LOAD PERSON
+    // =====================================================================
+    async function autoLoadPerson() {
+        let raw = document.getElementById('searchName').value.trim();
+        if (!raw) {
+            document.getElementById('resultTable').innerHTML = '<p class="text-muted">✏️ Namen eingeben...</p>';
+            if (currentListener) currentListener.off();
+            return;
+        }
+        let name = raw.toLowerCase();
+        if (userDisplayNames[raw]) name = userDisplayNames[raw];
+        name = name.toLowerCase();
+        selectedPersonName = name;
+        loadPersonalStats(name);
+        listenToPersonData(name);
+    }
+
+    async function listenToPersonData(nl) {
+        if (currentListener) currentListener.off();
+        currentListener = database.ref('Navy-boote/users/' + nl);
+        currentListener.on('value', async snap => {
+            const data = snap.val();
+            const c = document.getElementById('resultTable');
+            const dn = getDisplayName(nl);
+            if (!data) {
+                c.innerHTML = '<div style="padding:15px;">⚓ ' + dn + ' hat noch keine Zeiten.</div>';
+                return;
+            }
+
+            const boats = await loadBoats();
+            const boatKeys = Object.keys(boats).filter(key => boats[key].visible !== false);
+            const orderedKeys = boatOrder.filter(key => boatKeys.includes(key));
+            const sortedKeys = [...orderedKeys, ...boatKeys.filter(key => !orderedKeys.includes(key))];
+
+            let h = '<div class="table-wrapper"><table><thead><tr><th>Boot</th><th>Zeit</th><th>Beschreibung</th><th>Eingetragen von</th>' +
+                (userPermissions.stopwatch?.delete === 'write' ? '<th>Aktion</th>' : '') + '</tr></thead><tbody>';
+
+            for (const bi of sortedKeys) {
+                const boat = boats[bi];
+                const entries = data[bi];
+                const displayName = (boat.emoji || '🚤') + ' ' + (boat.label || bi);
+                if (entries && Array.isArray(entries) && entries.length) {
+                    [...entries].sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)).forEach((e, i) => {
+                        const creatorDisplay = e.creator ? getDisplayName(e.creator) : 'Unbekannt';
+                        h += '<tr><td>' + (i === 0 ? displayName : '↳ ' + displayName) + '</td>';
+                        h += '<td><span class="badge-time">⏱️ ' + (e.time || '??:??.??') + '</span></td>';
+                        h += '<td>' + esc(e.desc || '-') + '</td>';
+                        h += '<td>' + esc(creatorDisplay) + '</td>';
+                        if (userPermissions.stopwatch?.delete === 'write') h +=
+                            '<td><button onclick="deleteSingleEntry(\'' + nl + '\',\'' +
+                            bi + '\',' + (e.timestamp || Date.now()) + ')" style="background:none;border:none;color:#d3212d;cursor:pointer;">🗑️</button></td>';
+                        h += '</tr>';
+                    });
+                } else {
+                    h += '<tr><td>' + displayName + '</td><td colspan="' + (userPermissions.stopwatch?.delete ===
+                            'write' ? 4 : 3) +
+                        '" style="color:#62676c;">— keine —</td>' + (userPermissions.stopwatch?.delete === 'write' ?
+                            '<td></td>' : '') + '</tr>';
+                }
+            }
+            h += '</tbody></table></div>';
+            c.innerHTML = h;
+        });
+    }
+
+    window.deleteSingleEntry = async function(nl, bi, ts) {
+        if (userPermissions.stopwatch?.delete !== 'write') {
+            showToast('Keine Berechtigung zum Löschen!', 'error');
+            return;
+        }
+        showConfirmModal(
+            'Eintrag löschen?',
+            `Möchten Sie diesen Zeiteintrag für "${getDisplayName(nl)}" wirklich löschen?`,
+            async function() {
+                const ref = database.ref('Navy-boote/users/' + nl + '/' + bi);
+                const snap = await ref.once('value');
+                let arr = snap.val();
+                if (arr && Array.isArray(arr)) {
+                    arr = arr.filter(e => e.timestamp !== ts);
+                    await ref.set(arr);
+                    await database.ref('Navy-boote/users/' + nl + '/lastUpdated').set(Date.now());
+                    if (currentUser) await addLog(currentUser.username, 'Zeiteintrag gelöscht',
+                        `Person: ${getDisplayName(nl)}, Boot: ${bi}`);
+                    autoLoadPerson();
+                    loadAllSoldiersAverage();
+                    loadPersonalStats(nl);
+                    showToast('🗑️ Gelöscht.', 'error');
+                }
+            }
+        );
+    };
+
+    // =====================================================================
+    // INITIALISIERUNG (wird von index.html aufgerufen)
+    // =====================================================================
+    async function initStopwatch() {
+        await renderBoats();
+        loadAllSoldiersAverage();
+        loadAllUsersList();
+        document.getElementById('searchName').addEventListener('input', autoLoadPerson);
+    }
+
+    // Bei direktem Aufruf der Seite (nicht über index.html)
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof userPermissions === 'undefined') {
+            // Wenn die Seite direkt geladen wird (ohne index.html), zeige Fehler
+            document.body.innerHTML =
+                '<div style="text-align:center;padding:60px;color:#d3212d;"><h1>⚠️ Diese Seite muss über die index.html geladen werden!</h1><p style="color:#8f9499;">Bitte öffne zuerst die Hauptseite.</p></div>';
+            return;
+        }
+        initStopwatch();
+    });
+</script>
