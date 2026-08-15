@@ -3955,7 +3955,7 @@
         }
 
         // =====================================================================
-        // BESCHLAGNAHMUNGEN
+        // BESCHLAGNAHMUNGEN - FIXED (mit ID-basierter Übergabe)
         // =====================================================================
         function openNewConfiscationModal(editData = null) {
             const confPerms = userPermissions.confiscations || {};
@@ -3965,21 +3965,35 @@
             }
 
             if (editData) {
+                // Wenn nur eine ID übergeben wurde, lade die Daten aus allConfiscations
+                if (typeof editData === 'string') {
+                    const found = allConfiscations.find(e => e.id === editData);
+                    if (found) {
+                        editData = found;
+                    } else {
+                        showToast('Eintrag nicht gefunden!', 'error');
+                        return;
+                    }
+                }
+
                 const isOwner = editData.createdBy === currentUser?.username;
                 const isAdminUser = userPermissions.admin === 'write';
                 const timeSinceCreation = Date.now() - (editData.createdAt || 0);
                 const canEdit = (isOwner && timeSinceCreation < EDIT_TIMEOUT) || isAdminUser;
 
-                if (!canEdit) {
+                if (!canEdit && !isAdminUser) {
                     showToast('⏰ Bearbeitungszeit abgelaufen (2 Stunden) oder nicht der Ersteller!', 'warning');
                     return;
                 }
-                if (confPerms.edit !== 'write') {
+                if (confPerms.edit !== 'write' && !isAdminUser) {
                     showToast('Keine Berechtigung zum Bearbeiten!', 'error');
                     return;
                 }
+
                 editingConfiscationId = editData.id;
                 document.getElementById('confiscationModalTitle').innerHTML = '<i class="fas fa-edit"></i> Bearbeiten';
+
+                // Werte sicher setzen
                 document.getElementById('modalAkteName').value = editData.akteName || '';
                 document.getElementById('modalOrganisation').value = editData.organisation || 'Unternehmen';
                 document.getElementById('modalFamilyName').value = editData.familyName || '';
@@ -4153,60 +4167,15 @@
 
                 const confPerms = userPermissions.confiscations || {};
                 const canDelete = confPerms.delete === 'write';
+                const canEdit = confPerms.edit === 'write';
                 const username = currentUser?.username || '';
 
                 cardsDiv.innerHTML = filtered.map(e => {
                     const isOwner = e.createdBy === username;
                     const isAdminUser = userPermissions.admin === 'write';
                     const timeSinceCreation = Date.now() - (e.createdAt || 0);
-                    const canEdit = (isOwner && timeSinceCreation < EDIT_TIMEOUT) || isAdminUser;
-                    const editDisabled = !canEdit;
-
-                    // Sicher escaped für den onclick-String
-                    const escapedData = {
-                        id: e.id || '',
-                        akteName: esc(e.akteName || ''),
-                        organisation: esc(e.organisation || ''),
-                        familyName: esc(e.familyName || ''),
-                        takenBy: esc(e.takenBy || ''),
-                        takenByName: esc(e.takenByName || ''),
-                        date: esc(e.date || ''),
-                        givenTo: esc(e.givenTo || ''),
-                        givenToName: esc(e.givenToName || ''),
-                        givenDate: esc(e.givenDate || ''),
-                        einsatzleitung: esc(e.einsatzleitung || ''),
-                        verhandlungsfuehrung: esc(e.verhandlungsfuehrung || ''),
-                        greenMoney: e.greenMoney || 0,
-                        blackMoney: e.blackMoney || 0,
-                        itemsTotal: e.itemsTotal || 0,
-                        items: esc(e.items || ''),
-                        notes: esc(e.notes || ''),
-                        createdBy: esc(e.createdBy || ''),
-                        createdAt: e.createdAt || 0
-                    };
-
-                    // Erstelle den onclick Aufruf sicher
-                    const editOnclick = `openNewConfiscationModal({
-                        id: '${escapedData.id}',
-                        akteName: '${escapedData.akteName}',
-                        organisation: '${escapedData.organisation}',
-                        familyName: '${escapedData.familyName}',
-                        takenBy: '${escapedData.takenBy}',
-                        takenByName: '${escapedData.takenByName}',
-                        date: '${escapedData.date}',
-                        givenTo: '${escapedData.givenTo}',
-                        givenToName: '${escapedData.givenToName}',
-                        givenDate: '${escapedData.givenDate}',
-                        einsatzleitung: '${escapedData.einsatzleitung}',
-                        verhandlungsfuehrung: '${escapedData.verhandlungsfuehrung}',
-                        greenMoney: ${escapedData.greenMoney},
-                        blackMoney: ${escapedData.blackMoney},
-                        itemsTotal: ${escapedData.itemsTotal},
-                        items: '${escapedData.items}',
-                        notes: '${escapedData.notes}',
-                        createdBy: '${escapedData.createdBy}',
-                        createdAt: ${escapedData.createdAt}
-                    })`;
+                    const canEditThis = (isOwner && timeSinceCreation < EDIT_TIMEOUT) || isAdminUser;
+                    const editDisabled = !canEditThis;
 
                     return `
                     <div class="confiscation-card">
@@ -4226,7 +4195,7 @@
                         ${e.notes?`<div style="font-size:12px;color:#8f9499;font-style:italic;margin-top:4px;">📝 ${esc(e.notes)}</div>`:''}
                         <div style="display:flex;gap:6px;margin-top:10px;justify-content:flex-end;flex-wrap:wrap;">
                             <button onclick="showConfiscationDetail('${e.id}')" class="btn-xs" style="border-color:#ffaa33;color:#ffaa33;"><i class="fas fa-eye"></i> Details</button>
-                            ${confPerms.edit === 'write' ? `<button onclick="${editOnclick}" class="btn-xs ${editDisabled ? 'btn-edit-disabled' : ''}" style="border-color:#1f6feb;color:#3b82f6;" ${editDisabled ? 'disabled title="⏰ Bearbeitungszeit abgelaufen (2 Stunden)"' : ''}>
+                            ${canEdit ? `<button onclick="openNewConfiscationModal('${e.id}')" class="btn-xs ${editDisabled ? 'btn-edit-disabled' : ''}" style="border-color:#1f6feb;color:#3b82f6;" ${editDisabled ? 'disabled title="⏰ Bearbeitungszeit abgelaufen (2 Stunden)"' : ''}>
                                 <i class="fas fa-edit"></i> ${editDisabled ? '⏰' : ''}
                             </button>` : ''}
                             ${canDelete ? `<button onclick="deleteConfiscation('${e.id}')" class="btn-xs" style="border-color:#d3212d;color:#d3212d;"><i class="fas fa-trash"></i></button>` : ''}
@@ -6245,7 +6214,6 @@
             const newLabel = prompt('Neuer Name für das Feld:', currentLabel);
             if (newLabel && newLabel.trim().length > 0) {
                 const trimmed = newLabel.trim();
-                // Prüfen ob Name bereits existiert
                 if (elkFieldDefs.some((f, i) => i !== index && f.label.toLowerCase() === trimmed.toLowerCase())) {
                     showToast('⚠️ Ein Feld mit diesem Namen existiert bereits!', 'warning');
                     return;
@@ -6253,10 +6221,6 @@
                 elkFieldDefs[index].label = trimmed;
                 const saved = await saveElkFieldDefs();
                 if (saved) {
-                    // Aktualisiere auch die Felder in allen ELK-Karten
-                    const oldId = elkFieldDefs[index].id;
-                    // Für jede Karte das Feld mit der alten ID behalten, aber Label ändern
-                    // Die ID bleibt gleich, nur das Label ändert sich
                     renderElk();
                     renderElkAdmin();
                     if (currentUser) await addLog(currentUser.username, 'ELK Feld umbenannt', `Neuer Name: ${trimmed}`);
@@ -6285,7 +6249,6 @@
                     elkFieldDefs.splice(index, 1);
                     const saved = await saveElkFieldDefs();
                     if (saved) {
-                        // Feld aus allen ELK-Karten entfernen
                         elkData.forEach(card => delete card.fields[fieldId]);
                         await saveElkData(elkData);
                         renderElk();
@@ -6317,7 +6280,6 @@
             elkFieldDefs.push({ id, label });
             const saved = await saveElkFieldDefs();
             if (saved) {
-                // Feld zu allen ELK-Karten hinzufügen
                 elkData.forEach(card => card.fields[id] = false);
                 await saveElkData(elkData);
                 renderElk();
@@ -6454,6 +6416,7 @@
                 console.log('✅ Neue ELK Felder werden permanent gespeichert!');
                 console.log('📜 Auszahlungs-History: Nur sichtbare Benutzer, nur mit >0 Kontrollen!');
                 console.log('✅ Logs werden nach 7 Tagen gelöscht!');
+                console.log('🐛 FIX: Beschlagnahmungen können jetzt wieder bearbeitet werden (ID-basierte Übergabe)!');
             } catch (error) {
                 console.error('Init-Fehler:', error);
             }
