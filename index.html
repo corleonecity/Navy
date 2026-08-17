@@ -1459,6 +1459,9 @@
             font-weight: 700;
             color: #22c55e;
         }
+        .payout-table .amount-cell.fail {
+            color: #ffaa33;
+        }
         .payout-checkbox {
             width: 18px;
             height: 18px;
@@ -1492,6 +1495,9 @@
         }
         .payout-total-item .big.blue {
             color: #3b82f6;
+        }
+        .payout-total-item .big.red {
+            color: #ef3340;
         }
         .payout-total-item .lbl {
             color: #8ab4e0;
@@ -2416,7 +2422,7 @@
             </div>
 
             <!-- ============================================================
-            TAB: PAYOUT - MIT HISTORY
+            TAB: PAYOUT - MIT HISTORY & FAIL PROTOKOLLEN
             ============================================================ -->
             <div id="tab-payout" class="tab-content">
                 <div class="page-header">
@@ -2457,22 +2463,27 @@
                     <table class="payout-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Bootskontrollen</th>
-                                <th>Pro Kontrolle</th>
-                                <th>Summe</th>
-                                <th>Status</th>
+                                <th style="width:10%;">Name</th>
+                                <th style="width:10%;">Boots-<br>kontrollen</th>
+                                <th style="width:10%;">Fail-<br>Protokoll</th>
+                                <th style="width:10%;">Pro<br>Kontrolle</th>
+                                <th style="width:12%;">Brutto</th>
+                                <th style="width:10%;">Abzug<br>(10% pro Fail)</th>
+                                <th style="width:12%;">Netto</th>
+                                <th style="width:12%;">Status</th>
                             </tr>
                         </thead>
-                        <tbody id="payoutTableBody"><tr><td colspan="5" style="text-align:center;color:#8f9499;padding:20px;">Laden...</td></tr></tbody>
+                        <tbody id="payoutTableBody"><tr><td colspan="8" style="text-align:center;color:#8f9499;padding:20px;">Laden...</td></tr></tbody>
                     </table>
                 </div>
 
                 <div class="payout-total">
                     <div class="payout-total-item"><div class="big" id="totalKontrollen">0</div><div class="lbl">Kontrollen</div></div>
-                    <div class="payout-total-item"><div class="big green" id="totalAusgezahlt">0 $</div><div class="lbl">Ausgezahlt</div></div>
-                    <div class="payout-total-item"><div class="big gold" id="totalOffen">0 $</div><div class="lbl">Offen</div></div>
-                    <div class="payout-total-item"><div class="big blue" id="totalSumme">0 $</div><div class="lbl">Gesamt</div></div>
+                    <div class="payout-total-item"><div class="big" id="totalFail">0</div><div class="lbl">Fail-Protokolle</div></div>
+                    <div class="payout-total-item"><div class="big green" id="totalAusgezahlt">0 $</div><div class="lbl">Ausgezahlt (Netto)</div></div>
+                    <div class="payout-total-item"><div class="big gold" id="totalOffen">0 $</div><div class="lbl">Offen (Netto)</div></div>
+                    <div class="payout-total-item"><div class="big blue" id="totalBrutto">0 $</div><div class="lbl">Brutto</div></div>
+                    <div class="payout-total-item"><div class="big red" id="totalAbzuege">0 $</div><div class="lbl">Abzüge (10% pro Fail)</div></div>
                 </div>
 
                 <!-- ============================================================
@@ -2493,15 +2504,18 @@
                         <table class="payout-history-table">
                             <thead>
                                 <tr>
-                                    <th style="width:25%;">📅 Woche</th>
-                                    <th style="width:15%;">📋 Kontrollen</th>
-                                    <th style="width:20%;">💰 Summe</th>
-                                    <th style="width:20%;">📊 Status</th>
-                                    <th style="width:20%;">⚡ Aktion</th>
+                                    <th style="width:18%;">📅 Woche</th>
+                                    <th style="width:10%;">📋 Kontrollen</th>
+                                    <th style="width:10%;">❌ Fail</th>
+                                    <th style="width:15%;">💰 Brutto</th>
+                                    <th style="width:12%;">📉 Abzug</th>
+                                    <th style="width:15%;">💵 Netto</th>
+                                    <th style="width:10%;">📊 Status</th>
+                                    <th style="width:10%;">⚡ Aktion</th>
                                 </tr>
                             </thead>
                             <tbody id="historyTableBody">
-                                <tr><td colspan="5" style="text-align:center;color:#62676c;padding:20px;">Bitte wähle einen Benutzer aus.</td></tr>
+                                <tr><td colspan="8" style="text-align:center;color:#62676c;padding:20px;">Bitte wähle einen Benutzer aus.</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -3712,7 +3726,7 @@
                 key: 'payout',
                 icon: '💰',
                 name: 'Auszahlung',
-                desc: 'Hier siehst du die wöchentlichen Auszahlungen für alle sichtbaren Benutzer. Du kannst Kontrollen zählen, Auszahlungen als "bezahlt" markieren und die History jedes Benutzers einsehen.',
+                desc: 'Hier siehst du die wöchentlichen Auszahlungen für alle sichtbaren Benutzer. Du kannst Kontrollen und Fail-Protokolle erfassen. Jedes Fail-Protokoll = 10% Abzug vom Brutto.',
                 visible: userPermissions.payout?.view === 'read'
             }, {
                 key: 'elk',
@@ -3955,7 +3969,7 @@
         }
 
         // =====================================================================
-        // BESCHLAGNAHMUNGEN - FIXED (mit ID-basierter Übergabe)
+        // BESCHLAGNAHMUNGEN
         // =====================================================================
         function openNewConfiscationModal(editData = null) {
             const confPerms = userPermissions.confiscations || {};
@@ -3965,7 +3979,6 @@
             }
 
             if (editData) {
-                // Wenn nur eine ID übergeben wurde, lade die Daten aus allConfiscations
                 if (typeof editData === 'string') {
                     const found = allConfiscations.find(e => e.id === editData);
                     if (found) {
@@ -3992,8 +4005,6 @@
 
                 editingConfiscationId = editData.id;
                 document.getElementById('confiscationModalTitle').innerHTML = '<i class="fas fa-edit"></i> Bearbeiten';
-
-                // Werte sicher setzen
                 document.getElementById('modalAkteName').value = editData.akteName || '';
                 document.getElementById('modalOrganisation').value = editData.organisation || 'Unternehmen';
                 document.getElementById('modalFamilyName').value = editData.familyName || '';
@@ -4441,7 +4452,7 @@
             const tbody = document.getElementById('historyTableBody');
 
             if (!username) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#62676c;padding:20px;">Bitte wähle einen Benutzer aus.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#62676c;padding:20px;">Bitte wähle einen Benutzer aus.</td></tr>';
                 document.getElementById('historyCountDisplay').textContent = '0 Einträge';
                 return;
             }
@@ -4455,14 +4466,22 @@
                     if (weekData[username]) {
                         const entry = weekData[username];
                         const count = entry.count || 0;
-                        if (count === 0) continue;
+                        const fail = entry.fail || 0;
+                        if (count === 0 && fail === 0) continue;
 
                         const price = await getPriceForWeek(weekKey);
-                        const summe = count * price;
+                        const brutto = count * price;
+                        // Jedes Fail-Protokoll = 10% Abzug vom Brutto
+                        const abzug = brutto * (fail * 0.1);
+                        const netto = brutto - abzug;
+
                         history.push({
                             week: weekKey,
                             count: count,
-                            summe: summe,
+                            fail: fail,
+                            brutto: brutto,
+                            abzug: abzug,
+                            netto: netto,
                             paid: entry.paid === true,
                             price: price
                         });
@@ -4476,7 +4495,7 @@
 
             } catch (error) {
                 console.error('Fehler beim Laden der History:', error);
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#d3212d;padding:20px;">❌ Fehler beim Laden!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#d3212d;padding:20px;">❌ Fehler beim Laden!</td></tr>';
             }
         }
 
@@ -4493,7 +4512,7 @@
             document.getElementById('historyCountDisplay').textContent = filtered.length + ' Einträge';
 
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#62676c;padding:20px;">Keine Einträge gefunden.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#62676c;padding:20px;">Keine Einträge gefunden.</td></tr>';
                 return;
             }
 
@@ -4509,7 +4528,10 @@
                 html += `<tr>
                     <td class="week-cell">${weekDisplay}</td>
                     <td>${entry.count}</td>
-                    <td style="color:#22c55e;font-weight:600;">${formatNumber(entry.summe)} $</td>
+                    <td>${entry.fail}</td>
+                    <td style="color:#22c55e;font-weight:600;">${formatNumber(entry.brutto)} $</td>
+                    <td style="color:#ef3340;">-${formatNumber(entry.abzug)} $</td>
+                    <td style="color:#ffaa33;font-weight:600;">${formatNumber(entry.netto)} $</td>
                     <td>${statusHtml}</td>
                     <td>
                         ${canEdit ? `<button onclick="toggleHistoryPaid('${username}','${entry.week}', ${entry.paid})" class="btn-xs" style="border-color:${entry.paid ? '#d3212d' : '#22c55e'};color:${entry.paid ? '#d3212d' : '#22c55e'};">
@@ -4569,7 +4591,7 @@
         }
 
         // =====================================================================
-        // AUSZAHLUNG
+        // AUSZAHLUNG - MIT FAIL PROTOKOLLEN
         // =====================================================================
         function getMonday(date) {
             const d = new Date(date);
@@ -4742,6 +4764,9 @@
             } catch (error) { showToast('❌ Fehler beim Speichern!', 'error'); }
         }
 
+        // =====================================================================
+        // AUSZAHLUNG DATA LADEN - MIT FAIL PROTOKOLLEN
+        // =====================================================================
         async function loadPayoutData() {
             const weekInput = document.getElementById('payoutWeekInput').value;
             if (!weekInput) return;
@@ -4762,7 +4787,9 @@
 
             const tbody = document.getElementById('payoutTableBody');
             let totalKontrollen = 0,
-                totalSumme = 0,
+                totalFail = 0,
+                totalBrutto = 0,
+                totalAbzuege = 0,
                 totalAusgezahlt = 0,
                 totalOffen = 0;
             tbody.innerHTML = '';
@@ -4775,13 +4802,21 @@
             const canWrite = userPermissions.payout?.edit === 'write';
 
             for (const name of authorizedUsers) {
-                const saved = payoutData[name] || { count: 0, paid: false };
+                const saved = payoutData[name] || { count: 0, fail: 0, paid: false };
                 const displayCount = saved.count || 0;
-                const summe = displayCount * weekPrice;
+                const displayFail = saved.fail || 0;
+
+                const brutto = displayCount * weekPrice;
+                // Jedes Fail-Protokoll = 10% Abzug vom Brutto
+                const abzug = brutto * (displayFail * 0.1);
+                const netto = brutto - abzug;
+
                 totalKontrollen += displayCount;
-                totalSumme += summe;
-                if (saved.paid) totalAusgezahlt += summe;
-                else totalOffen += summe;
+                totalFail += displayFail;
+                totalBrutto += brutto;
+                totalAbzuege += abzug;
+                if (saved.paid) totalAusgezahlt += netto;
+                else totalOffen += netto;
 
                 const paidStatus = saved.paid ?
                     '<span class="payout-status paid">✅ Ausgezahlt</span>' :
@@ -4790,9 +4825,12 @@
                 tbody.innerHTML += `
                     <tr>
                         <td><strong>${esc(getDisplayName(name))}</strong></td>
-                        <td>${canWrite ? `<input type="number" class="count-input" value="${displayCount}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value)">` : `<strong>${displayCount}</strong>`}</td>
+                        <td>${canWrite ? `<input type="number" class="count-input" value="${displayCount}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value, 'count')" style="width:60px;">` : `<strong>${displayCount}</strong>`}</td>
+                        <td>${canWrite ? `<input type="number" class="count-input" value="${displayFail}" min="0" onchange="updatePayoutCount('${esc(name)}', this.value, 'fail')" style="width:60px;">` : `<strong>${displayFail}</strong>`}</td>
                         <td>${formatNumber(weekPrice)} $</td>
-                        <td class="amount-cell">${formatNumber(summe)} $</td>
+                        <td class="amount-cell">${formatNumber(brutto)} $</td>
+                        <td class="amount-cell fail">-${formatNumber(abzug)} $</td>
+                        <td style="color:#ffaa33;font-weight:700;">${formatNumber(netto)} $</td>
                         <td style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
                             ${canWrite ? `<input type="checkbox" class="payout-checkbox" ${saved.paid ? 'checked' : ''} onchange="togglePayoutPaid('${esc(name)}', this.checked)">` : ''}
                             ${paidStatus}
@@ -4801,21 +4839,31 @@
             }
 
             document.getElementById('totalKontrollen').textContent = formatNumber(totalKontrollen);
-            document.getElementById('totalSumme').textContent = formatNumber(totalSumme) + ' $';
+            document.getElementById('totalFail').textContent = formatNumber(totalFail);
+            document.getElementById('totalBrutto').textContent = formatNumber(totalBrutto) + ' $';
+            document.getElementById('totalAbzuege').textContent = formatNumber(totalAbzuege) + ' $';
             document.getElementById('totalAusgezahlt').textContent = formatNumber(totalAusgezahlt) + ' $';
             document.getElementById('totalOffen').textContent = formatNumber(totalOffen) + ' $';
         }
 
-        async function updatePayoutCount(name, newCount) {
+        async function updatePayoutCount(name, newCount, type) {
             if (userPermissions.payout?.edit !== 'write') {
                 showToast('Keine Berechtigung!', 'error');
                 return;
             }
             const count = parseInt(newCount) || 0;
             const weekKey = currentPayoutWeek;
-            await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ count });
-            if (currentUser) await addLog(currentUser.username, 'Auszahlung aktualisiert',
-                `Benutzer: ${getDisplayName(name)}, Woche: ${weekKey}, Kontrollen: ${count}`);
+            const updateData = {};
+            if (type === 'count') {
+                updateData.count = count;
+            } else if (type === 'fail') {
+                updateData.fail = count;
+            }
+            await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update(updateData);
+            if (currentUser) {
+                await addLog(currentUser.username, 'Auszahlung aktualisiert',
+                    `Benutzer: ${getDisplayName(name)}, Woche: ${weekKey}, ${type}: ${count}`);
+            }
             loadPayoutData();
         }
 
@@ -4826,8 +4874,10 @@
             }
             const weekKey = currentPayoutWeek;
             await database.ref('Navy-boote/payouts/' + weekKey + '/' + name).update({ paid: isPaid });
-            if (currentUser) await addLog(currentUser.username, 'Auszahlungsstatus geändert',
-                `Benutzer: ${getDisplayName(name)}, Woche: ${weekKey}, Status: ${isPaid ? 'Ausgezahlt' : 'Offen'}`);
+            if (currentUser) {
+                await addLog(currentUser.username, 'Auszahlungsstatus geändert',
+                    `Benutzer: ${getDisplayName(name)}, Woche: ${weekKey}, Status: ${isPaid ? 'Ausgezahlt' : 'Offen'}`);
+            }
             loadPayoutData();
         }
 
@@ -6060,7 +6110,7 @@
         }
 
         // =====================================================================
-        // ⭐ ELK - KOMPLETT ÜBERARBEITET (SPEICHERT IN FIREBASE)
+        // ELK
         // =====================================================================
         async function loadElkFieldDefs() {
             try {
@@ -6409,14 +6459,12 @@
                 updateConfiscationWeekUI();
                 renderHandbook();
 
-                console.log('🚀 System initialisiert - NUR ADMIN Rolle!');
+                console.log('🚀 System initialisiert - Mit Fail-Protokollen!');
                 console.log('🔒 Colin ist permanent gesperrt!');
-                console.log('📋 ELK Felder werden jetzt in Firebase gespeichert!');
-                console.log('📝 ELK Feld bearbeiten funktioniert jetzt mit Prompt!');
-                console.log('✅ Neue ELK Felder werden permanent gespeichert!');
-                console.log('📜 Auszahlungs-History: Nur sichtbare Benutzer, nur mit >0 Kontrollen!');
+                console.log('📊 Auszahlung: Jedes Fail-Protokoll = 10% Abzug vom Brutto!');
+                console.log('📈 Beispiel: 2 Kontrollen × 5.000 = 10.000 Brutto, 1 Fail = 10% Abzug = 9.000 Netto');
+                console.log('📈 Beispiel: 2 Kontrollen × 5.000 = 10.000 Brutto, 2 Fail = 20% Abzug = 8.000 Netto');
                 console.log('✅ Logs werden nach 7 Tagen gelöscht!');
-                console.log('🐛 FIX: Beschlagnahmungen können jetzt wieder bearbeitet werden (ID-basierte Übergabe)!');
             } catch (error) {
                 console.error('Init-Fehler:', error);
             }
